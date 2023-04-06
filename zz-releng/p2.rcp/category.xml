@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <category-def name="org.toxsoft.skf.bridge.releng.category" label="org.toxsoft.skf.bridge.releng Category">
+      <description>
+         org.toxsoft.skf.bridge.releng Category
+      </description>
+   </category-def>
+   <!-- TODO: -->
+   <!-- <bundle id="org.toxsoft.uskat.???"/> -->
+
+   <!-- sources -->
+   <!-- TODO: -->
+   <!-- <bundle id="org.toxsoft.uskat.???.source"/> -->
+
+</site>
