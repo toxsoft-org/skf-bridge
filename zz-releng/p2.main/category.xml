@@ -7,9 +7,13 @@
    </category-def>
    <bundle id="org.toxsoft.skf.bridge.lib"/>
    <bundle id="org.toxsoft.skf.bridge.gui"/>
+   <bundle id="org.toxsoft.skf.bridge.cfg.opcua.gui"/>
+   <bundle id="org.toxsoft.skf.bridge.cfg.opcua.skide"/>
 
    <!-- sources -->
    <bundle id="org.toxsoft.skf.bridge.lib.source"/>
    <bundle id="org.toxsoft.skf.bridge.gui.source"/>
+   <bundle id="org.toxsoft.skf.bridge.cfg.opcua.gui.source"/>
+   <bundle id="org.toxsoft.skf.bridge.cfg.opcua.skide.source"/>
 
 </site>

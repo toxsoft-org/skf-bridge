@@ -566,6 +566,8 @@
   <modules>
     <module>org.toxsoft.skf.bridge.lib</module>
     <module>org.toxsoft.skf.bridge.gui</module>
+    <module>org.toxsoft.skf.bridge.cfg.opcua.gui</module> 
+    <module>org.toxsoft.skf.bridge.cfg.opcua.skide</module> 
 
     <module>zz-releng/p2.main</module>
     <module>zz-releng/ant.main</module>
