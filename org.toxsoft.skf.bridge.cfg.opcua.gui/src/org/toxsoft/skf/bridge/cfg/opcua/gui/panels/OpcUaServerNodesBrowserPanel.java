@@ -38,10 +38,12 @@ import org.toxsoft.core.tslib.av.metainfo.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.*;
 import org.toxsoft.core.tslib.bricks.events.change.*;
+import org.toxsoft.core.tslib.bricks.strid.coll.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.gw.*;
 import org.toxsoft.core.tslib.gw.skid.*;
+import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
@@ -63,8 +65,81 @@ import org.toxsoft.uskat.core.impl.dto.*;
 public class OpcUaServerNodesBrowserPanel
     extends TsPanel {
 
+  /**
+   * id параметра события: старое значение.
+   * <p>
+   * Параметр имеет тип {@link EAtomicType#FLOATING}.
+   */
+  static String EVPID_OLD_VAL = "oldVal"; //$NON-NLS-1$
+
+  /**
+   * Параметр события: старое значение.
+   * <p>
+   * Параметр имеет тип {@link EAtomicType#FLOATING}.
+   */
+  static DataDef EVPDD_OLD_VAL_FLOAT =
+      DataDef.create( EVPID_OLD_VAL, EAtomicType.FLOATING, TSID_NAME, STR_N_EV_PARAM_OLD_VAL, //
+          TSID_DESCRIPTION, STR_D_EV_PARAM_OLD_VAL, //
+          TSID_IS_NULL_ALLOWED, AV_TRUE );
+
+  /**
+   * /** Параметр события: старое значение.
+   * <p>
+   * Параметр имеет тип {@link EAtomicType#INTEGER}.
+   */
+  static DataDef EVPDD_OLD_VAL_INT =
+      DataDef.create( EVPID_OLD_VAL, EAtomicType.INTEGER, TSID_NAME, STR_N_EV_PARAM_OLD_VAL, //
+          TSID_DESCRIPTION, STR_D_EV_PARAM_OLD_VAL, //
+          TSID_IS_NULL_ALLOWED, AV_TRUE );
+
+  /**
+   * id параметра события: новое значение.
+   */
+
+  static String EVPID_NEW_VAL = "newVal"; //$NON-NLS-1$
+
+  /**
+   * Параметр события: новое значение.
+   * <p>
+   * Параметр имеет тип {@link EAtomicType#FLOATING}.
+   */
+  static DataDef EVPDD_NEW_VAL_FLOAT =
+      DataDef.create( EVPID_NEW_VAL, EAtomicType.FLOATING, TSID_NAME, STR_N_EV_PARAM_NEW_VAL, //
+          TSID_DESCRIPTION, STR_D_EV_PARAM_NEW_VAL, //
+          TSID_IS_NULL_ALLOWED, AV_FALSE, //
+          TSID_DEFAULT_VALUE, AV_STR_EMPTY );
+
+  /**
+   * Параметр события: новое значение.
+   * <p>
+   * Параметр имеет тип {@link EAtomicType#INTEGER}.
+   */
+  static DataDef EVPDD_NEW_VAL_INT =
+      DataDef.create( EVPID_NEW_VAL, EAtomicType.INTEGER, TSID_NAME, STR_N_EV_PARAM_NEW_VAL, //
+          TSID_DESCRIPTION, STR_D_EV_PARAM_NEW_VAL, //
+          TSID_IS_NULL_ALLOWED, AV_FALSE, //
+          TSID_DEFAULT_VALUE, AV_STR_EMPTY );
+
+  /**
+   * Параметр события: включен.
+   * <p>
+   * Параметр имеет тип {@link EAtomicType#BOOLEAN}.
+   */
+  static String EVPID_ON = "on"; //$NON-NLS-1$
+
+  /**
+   * Параметр события: on.
+   * <p>
+   * Параметр имеет тип {@link EAtomicType#BOOLEAN}.
+   */
+  static DataDef EVPDD_ON = DataDef.create( EVPID_ON, EAtomicType.BOOLEAN, TSID_NAME, STR_N_EV_PARAM_ON, //
+      TSID_DESCRIPTION, STR_D_EV_PARAM_ON, //
+      TSID_IS_NULL_ALLOWED, AV_FALSE, //
+      TSID_DEFAULT_VALUE, AV_FALSE );
+
   private final ISkConnection conn;
   static private String       RTD_PREFIX = "rtd"; //$NON-NLS-1$
+  static private String       EVT_PREFIX = "evt"; //$NON-NLS-1$
 
   private IM5CollectionPanel<UaTreeNode> opcUaNodePanel;
   /**
@@ -362,7 +437,8 @@ public class OpcUaServerNodesBrowserPanel
     DtoClassInfo cinf = new DtoClassInfo( id, IGwHardConstants.GW_ROOT_CLASS_ID, params );
     for( UaNode node : aNodes ) {
       if( node instanceof UaVariableNode varNode ) {
-        readDataInfo( cinf, (UaVariableNode)node );
+        readDataInfo( cinf, varNode );
+        readEventInfo( cinf, varNode );
       }
     }
     // добавим атрибут который сигнализирует что класс из OPC UA node
@@ -406,7 +482,7 @@ public class OpcUaServerNodesBrowserPanel
     // описание
     String descr = result.length > 2 ? result[1] : paramDescrStr;
     // sync
-    boolean sync = true;
+    boolean sync = false; // по умолчанию асинхронное
     int deltaT = sync ? 1000 : 1;
 
     IDtoRtdataInfo dataInfo = DtoRtdataInfo.create1( dataId, new DataType( type ), //
@@ -420,6 +496,55 @@ public class OpcUaServerNodesBrowserPanel
         ) );
 
     aDtoClass.rtdataInfos().add( dataInfo );
+  }
+
+  /**
+   * Читает описание данного и добавляет его в описание класса {@link IDtoClassInfo}
+   *
+   * @param aDtoClass текущее описание класса
+   * @param aVariableNode описание узла типа переменная
+   */
+  private static void readEventInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode ) {
+    // id события
+    String evtId = aVariableNode.getBrowseName().getName();
+    // соблюдаем соглашения о наименовании
+    if( !evtId.startsWith( EVT_PREFIX ) ) {
+      evtId = EVT_PREFIX + evtId;
+    }
+    String evtDescrStr = aVariableNode.getDisplayName().getText();
+    String[] result = evtDescrStr.split( "\\|" ); //$NON-NLS-1$
+
+    // тип данного
+    Class<?> clazz = OpcUaUtils.getNodeDataTypeClass( aVariableNode );
+    EAtomicType type = OpcUaUtils.getAtomicType( clazz );
+    // название
+    String name = result.length > 1 ? result[0] : evtDescrStr;
+    // описание
+    String descr = result.length > 2 ? result[1] : evtDescrStr;
+    StridablesList<IDataDef> evParams;
+    evParams = switch( type ) {
+      case INTEGER -> new StridablesList<>( EVPDD_OLD_VAL_INT, EVPDD_NEW_VAL_INT );
+      case BOOLEAN -> new StridablesList<>( EVPDD_ON );
+      case FLOATING -> new StridablesList<>( EVPDD_OLD_VAL_FLOAT, EVPDD_NEW_VAL_FLOAT );
+      case NONE -> throw invalidParamTypeExcpt( type );
+      case STRING -> throw invalidParamTypeExcpt( type );
+      case TIMESTAMP -> throw invalidParamTypeExcpt( type );
+      case VALOBJ -> throw invalidParamTypeExcpt( type );
+    };
+
+    IDtoEventInfo evtInfo = DtoEventInfo.create1( evtId, true, //
+        evParams, //
+        OptionSetUtils.createOpSet( //
+            IAvMetaConstants.TSID_NAME, name, //
+            IAvMetaConstants.TSID_DESCRIPTION, descr //
+        ) ); //
+
+    aDtoClass.eventInfos().add( evtInfo );
+  }
+
+  private static TsIllegalArgumentRtException invalidParamTypeExcpt( EAtomicType type ) {
+    return new TsIllegalArgumentRtException( "Can't create event parameters with type %s", //$NON-NLS-1$
+        type.id() );
   }
 
   private static void markClassOPC_UA( DtoClassInfo aCinf ) {
