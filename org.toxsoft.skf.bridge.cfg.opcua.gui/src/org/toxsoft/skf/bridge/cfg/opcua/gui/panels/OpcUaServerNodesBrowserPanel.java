@@ -375,7 +375,9 @@ public class OpcUaServerNodesBrowserPanel
   private void createClassFromNodes( ITsGuiContext aContext ) {
     // создать класс из информации об UaNode
     IList<UaNode> selNodes =
-        OpcUaNodesSelector.selectUaNodes4Class( aContext, selectedNode.getUaNode().getNodeId(), client );
+        // for debug
+        // OpcUaNodesSelector.selectUaNodes4Class( aContext, selectedNode.getUaNode().getNodeId(), client );
+        OpcUaNodesLazySelector.selectUaNodes4Class( aContext, selectedNode.getUaNode().getNodeId(), client );
     if( selNodes != null ) {
       // создаем описание класса из списка выбранных узлов
       // отредактируем список узлов чтобы в нем была вся необходимая информация для описания класса
@@ -391,8 +393,11 @@ public class OpcUaServerNodesBrowserPanel
       // просим прользователя верифицировать/редактировать описание класса и нажать Ok
       dtoClassInfo =
           M5GuiUtils.askCreate( tsContext(), modelDto, bunchOfFieldVals, cdi, modelDto.getLifecycleManager( conn ) );
-      // подтверждаем успешное создание класса
-      TsDialogUtils.info( getShell(), "Операция завершена успешно, создан/обновлен class: %s", dtoClassInfo.id() );
+
+      if( dtoClassInfo != null ) {
+        // подтверждаем успешное создание класса
+        TsDialogUtils.info( getShell(), "Операция завершена успешно, создан/обновлен class: %s", dtoClassInfo.id() );
+      }
     }
   }
 
