@@ -1,14 +1,25 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
 
+import static org.toxsoft.core.tslib.bricks.strio.IStrioHardConstants.*;
+
+import org.eclipse.milo.opcua.sdk.client.*;
 import org.eclipse.milo.opcua.sdk.client.nodes.*;
+import org.eclipse.milo.opcua.stack.core.*;
+import org.eclipse.milo.opcua.stack.core.types.builtin.*;
+import org.toxsoft.core.tslib.bricks.keeper.*;
+import org.toxsoft.core.tslib.bricks.keeper.AbstractEntityKeeper.*;
+import org.toxsoft.core.tslib.bricks.strio.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
+import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
+import org.toxsoft.core.tslib.utils.logs.impl.*;
 
 /**
  * Tree node, aggragating UaNode, and forming tree structure.
  *
  * @author max
+ * @author dima // make storable
  */
 public class UaTreeNode {
 
@@ -16,7 +27,68 @@ public class UaTreeNode {
 
   private UaTreeNode parent = null;
 
-  private UaNode uaNode = null;
+  private UaNode uaNode       = null;
+  private String parentNodeId = null;
+  private String nodeId       = null;
+  private String browseName   = null;
+  private String displayName  = null;
+  private String description  = null;
+
+  private OpcUaClient        client;
+  /**
+   * Value-object keeper identifier.
+   */
+  public static final String KEEPER_ID = "UaTreeNode"; //$NON-NLS-1$
+
+  /**
+   * Keeper singleton.
+   */
+  public final static IEntityKeeper<UaTreeNode> KEEPER =
+      new AbstractEntityKeeper<>( UaTreeNode.class, EEncloseMode.NOT_IN_PARENTHESES, null ) {
+
+        @Override
+        protected void doWrite( IStrioWriter aSw, UaTreeNode aEntity ) {
+          // пишем parent NodeId
+          String parentNodeIdStr =
+              aEntity.parent == null ? TsLibUtils.EMPTY_STRING : aEntity.parent.uaNode.getNodeId().toParseableString();
+          aSw.writeQuotedString( parentNodeIdStr );
+          aSw.writeChar( CHAR_ITEM_SEPARATOR );
+          // пишем NodeId
+          aSw.writeQuotedString( aEntity.uaNode.getNodeId().toParseableString() );
+          aSw.writeChar( CHAR_ITEM_SEPARATOR );
+          // browseName
+          String browseName = aEntity.uaNode.getBrowseName() == null ? TsLibUtils.EMPTY_STRING
+              : aEntity.uaNode.getBrowseName().getName();
+          aSw.writeQuotedString( browseName );
+          aSw.writeChar( CHAR_ITEM_SEPARATOR );
+          // displayName
+          String displayName = aEntity.uaNode.getDisplayName() == null ? TsLibUtils.EMPTY_STRING
+              : aEntity.uaNode.getDisplayName().getText();
+          aSw.writeQuotedString( displayName );
+          aSw.writeChar( CHAR_ITEM_SEPARATOR );
+          // description
+          String description =
+              (aEntity.uaNode.getDescription() != null) && (aEntity.uaNode.getDescription().getText() != null)
+                  ? aEntity.uaNode.getDescription().getText()
+                  : TsLibUtils.EMPTY_STRING;
+          aSw.writeQuotedString( description );
+          aSw.writeEol();
+        }
+
+        @Override
+        protected UaTreeNode doRead( IStrioReader aSr ) {
+          String parentNodeId = aSr.readQuotedString();
+          aSr.ensureChar( CHAR_ITEM_SEPARATOR );
+          String nodeId = aSr.readQuotedString();
+          aSr.ensureChar( CHAR_ITEM_SEPARATOR );
+          String browseName = aSr.readQuotedString();
+          aSr.ensureChar( CHAR_ITEM_SEPARATOR );
+          String displayName = aSr.readQuotedString();
+          aSr.ensureChar( CHAR_ITEM_SEPARATOR );
+          String description = aSr.readQuotedString();
+          return new UaTreeNode( parentNodeId, nodeId, browseName, displayName, description );
+        }
+      };
 
   /**
    * Constructor by parent node and content.
@@ -36,6 +108,25 @@ public class UaTreeNode {
   }
 
   /**
+   * Constructor by parent nodeId and fields values.
+   *
+   * @param aParentNodeId UaTreeNode - parent node id, can be NULL - if this node is root.
+   * @param aNodeId - node id
+   * @param aBrowseName - node browse name
+   * @param aDisplayName - node display name
+   * @param aDescription - node description
+   */
+  public UaTreeNode( String aParentNodeId, String aNodeId, String aBrowseName, String aDisplayName,
+      String aDescription ) {
+    super();
+    parentNodeId = aParentNodeId;
+    nodeId = aNodeId;
+    browseName = aBrowseName;
+    displayName = aDisplayName;
+    description = aDescription;
+  }
+
+  /**
    * Returns parent node.
    *
    * @return UaTreeNode - parent node, it can be null - if the node is root.
@@ -45,11 +136,32 @@ public class UaTreeNode {
   }
 
   /**
+   * @param aParent - a parent node
+   * @param aClient - OPC UA connection
+   */
+  public void init( UaTreeNode aParent, OpcUaClient aClient ) {
+    parent = aParent;
+    client = aClient;
+    if( aParent != null ) {
+      aParent.children.add( this );
+    }
+  }
+
+  /**
    * Returns opc ua node.
    *
    * @return UaNode - opc ua node.
    */
   public UaNode getUaNode() {
+    if( uaNode == null ) {
+      try {
+        NodeId ni = NodeId.parse( getNodeId() );
+        uaNode = client.getAddressSpace().getNode( ni );
+      }
+      catch( UaException ex ) {
+        LoggerUtils.errorLogger().error( ex );
+      }
+    }
     return uaNode;
   }
 
@@ -60,6 +172,45 @@ public class UaTreeNode {
    */
   public IList<UaTreeNode> getChildren() {
     return children;
+  }
+
+  /**
+   * @return OPC UA Node Id
+   */
+  public String getNodeId() {
+    return nodeId == null ? uaNode.getNodeId().toParseableString() : nodeId;
+  }
+
+  /**
+   * @return parent OPC UA Node Id
+   */
+  public String getParentNodeId() {
+    return parentNodeId;
+  }
+
+  /**
+   * @return OPC UA browse name
+   */
+  public String getBrowseName() {
+    return browseName == null ? uaNode.getBrowseName().getName() : browseName;
+  }
+
+  /**
+   * @return OPC UA display name
+   */
+  public String getDisplayName() {
+    return displayName == null ? uaNode.getDisplayName().getText() : displayName;
+  }
+
+  /**
+   * @return OPC UA description
+   */
+  public String getDescription() {
+    return description == null ? uaNode.getDescription().getText() : description;
+  }
+
+  public void clearParent() {
+    parent = null;
   }
 
 }

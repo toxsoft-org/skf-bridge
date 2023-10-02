@@ -220,7 +220,7 @@ public class OpcUaServerNodesBrowserPanel
       return;
     }
 
-    IM5LifecycleManager<UaTreeNode> lm = new OpcUaNodeM5LifecycleManager( model, client );
+    IM5LifecycleManager<UaTreeNode> lm = new OpcUaNodeM5LifecycleManager( model, client, aContext );
     ITsGuiContext ctx = new TsGuiContext( aContext );
     ctx.params().addAll( aContext.params() );
     IMultiPaneComponentConstants.OPDEF_IS_DETAILS_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
@@ -335,13 +335,14 @@ public class OpcUaServerNodesBrowserPanel
     private void formTree( DefaultTsNode<UaTreeNode> aParentNode ) {
       for( UaTreeNode child : aParentNode.entity().getChildren() ) {
         DefaultTsNode<UaTreeNode> childNode = new DefaultTsNode<>( kind, aParentNode, child );
-        if( childNode.entity().getUaNode() instanceof VariableNode ) {
-          // FIXME иконки не отображаются, выяснить у Гоги пачему
-          childNode.setIconId( ICONID_VARIABLE_NODE );
-        }
-        if( childNode.entity().getUaNode() instanceof ObjectNode ) {
-          childNode.setIconId( ICONID_OBJECT_NODE );
-        }
+        // отключаем подгрузку узлов потому что она на 3 порядка повышает время загрузки 2 сек -> 1000 сек
+        // if( childNode.entity().getUaNode() instanceof VariableNode ) {
+        // // FIXME иконки не отображаются, выяснить у Гоги пачему
+        // childNode.setIconId( ICONID_VARIABLE_NODE );
+        // }
+        // if( childNode.entity().getUaNode() instanceof ObjectNode ) {
+        // childNode.setIconId( ICONID_OBJECT_NODE );
+        // }
         aParentNode.addNode( childNode );
         formTree( childNode );
       }
@@ -375,9 +376,10 @@ public class OpcUaServerNodesBrowserPanel
   private void createClassFromNodes( ITsGuiContext aContext ) {
     // создать класс из информации об UaNode
     IList<UaNode> selNodes =
-        // for debug
-        // OpcUaNodesSelector.selectUaNodes4Class( aContext, selectedNode.getUaNode().getNodeId(), client );
-        OpcUaNodesLazySelector.selectUaNodes4Class( aContext, selectedNode.getUaNode().getNodeId(), client );
+        OpcUaNodesSelector.selectUaNodes4Class( aContext, selectedNode.getUaNode().getNodeId(), client );
+    // for debug
+    // OpcUaNodesSelector.selectUaNode( aContext, client );
+    // OpcUaNodesLazySelector.selectUaNodes4Class( aContext, selectedNode.getUaNode().getNodeId(), client );
     if( selNodes != null ) {
       // создаем описание класса из списка выбранных узлов
       // отредактируем список узлов чтобы в нем была вся необходимая информация для описания класса

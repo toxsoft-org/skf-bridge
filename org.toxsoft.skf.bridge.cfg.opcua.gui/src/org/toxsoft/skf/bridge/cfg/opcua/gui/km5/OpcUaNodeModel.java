@@ -10,7 +10,6 @@ import org.eclipse.milo.opcua.sdk.core.nodes.*;
 import org.toxsoft.core.tsgui.m5.model.impl.*;
 import org.toxsoft.core.tsgui.valed.controls.av.*;
 import org.toxsoft.core.tslib.av.*;
-import org.toxsoft.core.tslib.utils.*;
 
 /**
  * M5 model realization for {@link Node} entities.
@@ -60,7 +59,7 @@ public class OpcUaNodeModel
     }
 
     protected IAtomicValue doGetFieldValue( UaTreeNode aEntity ) {
-      return avStr( aEntity.getUaNode().getNodeId().toParseableString() );
+      return avStr( aEntity.getNodeId() );
     }
 
   };
@@ -80,7 +79,7 @@ public class OpcUaNodeModel
     }
 
     protected IAtomicValue doGetFieldValue( UaTreeNode aEntity ) {
-      return avStr( aEntity.getUaNode().getBrowseName().getName() );
+      return avStr( aEntity.getBrowseName() );
     }
 
   };
@@ -100,7 +99,7 @@ public class OpcUaNodeModel
     }
 
     protected IAtomicValue doGetFieldValue( UaTreeNode aEntity ) {
-      return avStr( aEntity.getUaNode().getDisplayName().getText() );
+      return avStr( aEntity.getDisplayName() );
     }
 
   };
@@ -120,8 +119,7 @@ public class OpcUaNodeModel
     }
 
     protected IAtomicValue doGetFieldValue( UaTreeNode aEntity ) {
-      return avStr( aEntity.getUaNode().getDescription().getText() == null ? TsLibUtils.EMPTY_STRING
-          : aEntity.getUaNode().getDescription().getText() );
+      return avStr( aEntity.getDescription() );
     }
 
   };

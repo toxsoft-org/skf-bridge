@@ -7,6 +7,7 @@ import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.
 import org.eclipse.milo.opcua.sdk.client.*;
 import org.eclipse.milo.opcua.sdk.client.nodes.*;
 import org.eclipse.milo.opcua.sdk.core.nodes.*;
+import org.eclipse.milo.opcua.stack.core.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
@@ -43,11 +44,14 @@ public class OpcUaNodesSelector
     private final NodeId      topNode;
     private final OpcUaClient client;
     private final boolean     hideVariableNodes;
+    private final boolean     checkable;
 
-    public OpcUaNodesSelectorContext( NodeId aTopNode, OpcUaClient aClient, boolean isHideVariableNodes ) {
+    public OpcUaNodesSelectorContext( NodeId aTopNode, OpcUaClient aClient, boolean isHideVariableNodes,
+        boolean isCheckable ) {
       topNode = aTopNode;
       client = aClient;
       hideVariableNodes = isHideVariableNodes;
+      checkable = isCheckable;
     }
 
   }
@@ -71,7 +75,8 @@ public class OpcUaNodesSelector
     IM5Domain m5 = conn.scope().get( IM5Domain.class );
     IM5Model<UaTreeNode> model = m5.getModel( OpcUaNodeModel.MODEL_ID, UaTreeNode.class );
 
-    IM5LifecycleManager<UaTreeNode> lm = new OpcUaNodeM5LifecycleManager( model, environ().client, environ().topNode );
+    IM5LifecycleManager<UaTreeNode> lm =
+        new OpcUaNodeM5LifecycleManager( model, environ().client, environ().topNode, tsContext() );
     ITsGuiContext ctx = new TsGuiContext( tsContext() );
     ctx.params().addAll( tsContext().params() );
     IMultiPaneComponentConstants.OPDEF_IS_DETAILS_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
@@ -81,8 +86,10 @@ public class OpcUaNodesSelector
     IMultiPaneComponentConstants.OPDEF_IS_ACTIONS_CRUD.setValue( ctx.params(), AvUtils.AV_FALSE );
     // добавляем в панель фильтр
     IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
-    // делаем возможность ставить "крыжики"
-    IMultiPaneComponentConstants.OPDEF_IS_SUPPORTS_CHECKS.setValue( ctx.params(), AV_TRUE );
+
+    // возможность ставить "крыжики"
+    IMultiPaneComponentConstants.OPDEF_IS_SUPPORTS_CHECKS.setValue( ctx.params(),
+        environ().checkable ? AV_TRUE : AV_FALSE );
     // обнуляем действие по умолчанию на dbl click
     IMultiPaneComponentConstants.OPDEF_DBLCLICK_ACTION_ID.setValue( ctx.params(), AvUtils.AV_STR_EMPTY );
 
@@ -145,22 +152,24 @@ public class OpcUaNodesSelector
         if( hideVariableNodes && child.getUaNode() instanceof VariableNode ) {
           continue;
         }
-        if( !hideVariableNodes && child.getUaNode() instanceof VariableNode ) {
+        // if( !hideVariableNodes && child.getUaNode() instanceof VariableNode ) {
+        if( !hideVariableNodes ) {
           // отсекаем узлы у которых имя начинается с символа '/'
-          VariableNode varNode = (VariableNode)child.getUaNode();
-          String name = varNode.getDisplayName().getText();
+          // VariableNode varNode = (VariableNode)child.getUaNode();
+          // String name = varNode.getDisplayName().getText();
+          String name = child.getDisplayName();
           if( name.startsWith( IGNORE_REFIX ) ) {
             continue;
           }
         }
         DefaultTsNode<UaTreeNode> childNode = new DefaultTsNode<>( kind, aParentNode, child );
-        if( childNode.entity().getUaNode() instanceof VariableNode ) {
-          // FIXME иконки не отображаются, выяснить у Гоги пачему
-          childNode.setIconId( ICONID_VARIABLE_NODE );
-        }
-        if( childNode.entity().getUaNode() instanceof ObjectNode ) {
-          childNode.setIconId( ICONID_OBJECT_NODE );
-        }
+        // if( childNode.entity().getUaNode() instanceof VariableNode ) {
+        // // FIXME иконки не отображаются, выяснить у Гоги пачему
+        // childNode.setIconId( ICONID_VARIABLE_NODE );
+        // }
+        // if( childNode.entity().getUaNode() instanceof ObjectNode ) {
+        // childNode.setIconId( ICONID_OBJECT_NODE );
+        // }
         aParentNode.addNode( childNode );
         formTree( childNode );
       }
@@ -185,18 +194,39 @@ public class OpcUaNodesSelector
   @Override
   protected IList<UaNode> doGetDataRecord() {
     IListEdit<UaNode> retVal = new ElemArrayList<>();
-    for( UaTreeNode treeNode : opcUaNodePanel.checkSupport().listCheckedItems( true ) ) {
-      retVal.add( treeNode.getUaNode() );
+    if( opcUaNodePanel.checkSupport().isChecksSupported() ) {
+      for( UaTreeNode treeNode : opcUaNodePanel.checkSupport().listCheckedItems( true ) ) {
+        retVal.add( treeNode.getUaNode() );
+      }
+    }
+    else {
+      retVal.add( opcUaNodePanel.selectedItem().getUaNode() );
     }
     return retVal;
   }
 
   // ------------------------------------------------------------------------------------
-  // Статический метод вызова диалога
+  // Статические метод вызова диалога
   //
 
   /**
-   * Вызов дилога для выбора узлов OPC UA для создания описания класса
+   * Вызов диалога для выбора одного произвольного узла OPC UA
+   *
+   * @param aTsContext ITsGuiContext - соответствующий контекст
+   * @param aClient - OPC UA
+   * @return IList<UaNode> - список выбранных узлов или <b>null</b> в случае отказа от выбора
+   */
+  public static IList<UaNode> selectUaNode( ITsGuiContext aTsContext, OpcUaClient aClient ) {
+    ITsDialogInfo cdi = new TsDialogInfo( aTsContext, "Выбор узла из дерева OPC UA", "Выделите нужный и нажмите Ok" );
+    OpcUaNodesSelectorContext ctx = new OpcUaNodesSelectorContext( Identifiers.RootFolder, aClient, false, false );
+
+    IDialogPanelCreator<IList<UaNode>, OpcUaNodesSelectorContext> creator = OpcUaNodesSelector::new;
+    TsDialog<IList<UaNode>, OpcUaNodesSelectorContext> d = new TsDialog<>( cdi, null, ctx, creator );
+    return d.execData();
+  }
+
+  /**
+   * Вызов диалога для выбора узлов OPC UA для создания описания класса
    *
    * @param aTsContext ITsGuiContext - соответствующий контекст
    * @param aTopNode - верхний узел поддерева
@@ -206,7 +236,7 @@ public class OpcUaNodesSelector
   public static IList<UaNode> selectUaNodes4Class( ITsGuiContext aTsContext, NodeId aTopNode, OpcUaClient aClient ) {
     ITsDialogInfo cdi =
         new TsDialogInfo( aTsContext, "Создание класса из дерева узлов OPC UA", "Пометьте нужные узлы и нажмите Ok" );
-    OpcUaNodesSelectorContext ctx = new OpcUaNodesSelectorContext( aTopNode, aClient, false );
+    OpcUaNodesSelectorContext ctx = new OpcUaNodesSelectorContext( aTopNode, aClient, false, true );
 
     IDialogPanelCreator<IList<UaNode>, OpcUaNodesSelectorContext> creator = OpcUaNodesSelector::new;
     TsDialog<IList<UaNode>, OpcUaNodesSelectorContext> d = new TsDialog<>( cdi, null, ctx, creator );
@@ -224,7 +254,7 @@ public class OpcUaNodesSelector
   public static IList<UaNode> selectUaNodes4Objects( ITsGuiContext aTsContext, NodeId aTopNode, OpcUaClient aClient ) {
     ITsDialogInfo cdi =
         new TsDialogInfo( aTsContext, "Создание объектов из дерева узлов OPC UA", "Пометьте нужные узлы и нажмите Ok" );
-    OpcUaNodesSelectorContext ctx = new OpcUaNodesSelectorContext( aTopNode, aClient, true );
+    OpcUaNodesSelectorContext ctx = new OpcUaNodesSelectorContext( aTopNode, aClient, true, true );
 
     IDialogPanelCreator<IList<UaNode>, OpcUaNodesSelectorContext> creator = OpcUaNodesSelector::new;
     TsDialog<IList<UaNode>, OpcUaNodesSelectorContext> d = new TsDialog<>( cdi, null, ctx, creator );

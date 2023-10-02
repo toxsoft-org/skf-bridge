@@ -14,14 +14,13 @@ import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
 import org.eclipse.milo.opcua.stack.core.types.structured.*;
 import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
-import org.toxsoft.core.log4j.*;
+import org.slf4j.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tsgui.bricks.tsnodes.*;
 import org.toxsoft.core.tsgui.utils.layout.*;
 import org.toxsoft.core.tsgui.widgets.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
-import org.toxsoft.core.tslib.utils.logs.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 
@@ -36,15 +35,17 @@ public class OpcUANodesTreeComposite
   /**
    * Журнал работы
    */
-  private ILogger logger = LoggerWrapper.getLogger( this.getClass().getName() );
+  // private ILogger logger = LoggerWrapper.getLogger( this.getClass().getName() );
+  private final Logger logger = LoggerFactory.getLogger( getClass() );
+
   // корень дерева
   private NodeId            topNodeId = Identifiers.RootFolder;
   private final OpcUaClient clientOpcUA;
 
   private static final String UA_NODE_KIND_ID = "uaNode"; //$NON-NLS-1$
 
-  static ITsNodeKind<UaTreeNode> nodeKind =
-      new TsNodeKind<>( UA_NODE_KIND_ID, "UA node", "OPC UA node", UaTreeNode.class, true, null ); //$NON-NLS-1$ //$NON-NLS-2$
+  static ITsNodeKind<UaNode> nodeKind =
+      new TsNodeKind<>( UA_NODE_KIND_ID, "UA node", "OPC UA node", UaNode.class, true, null ); //$NON-NLS-1$ //$NON-NLS-2$
 
   IListEdit<ITsNode>   roots = new ElemArrayList<>();
   /**
@@ -101,8 +102,6 @@ public class OpcUANodesTreeComposite
   public void setRoot( NodeId aTopNodeId ) {
     topNodeId = aTopNodeId;
 
-    IListEdit<UaTreeNode> children = new ElemArrayList<>();
-
     UaNode rootNode;
     try {
       rootNode = clientOpcUA.getAddressSpace().getNode( topNodeId );
@@ -114,66 +113,69 @@ public class OpcUANodesTreeComposite
 
     UaTreeNode root = new UaTreeNode( null, rootNode );
 
-    browseNode( clientOpcUA, root, children );
-    for( UaTreeNode node : children ) {
-      ITsNode tsNode = createNode( opcUaNodesTreeViewer, node );
-      if( tsNode != null ) {
-        roots.add( tsNode );
-      }
-    }
-    // browseNodeConcurrent( clientOpcUA, root, children, roots ).thenAccept( nodes -> {
+    // browseNode( clientOpcUA, root, children );
     // for( UaTreeNode node : children ) {
     // ITsNode tsNode = createNode( opcUaNodesTreeViewer, node );
     // if( tsNode != null ) {
     // roots.add( tsNode );
     // }
     // }
-    // refresh();
-    // } );
+    browseNodeAsync( rootNode ).thenAccept( nodes -> {
+      for( UaNode node : nodes ) {
+        ITsNode tsNode = createNode( opcUaNodesTreeViewer, node );
+        if( tsNode != null ) {
+          roots.add( tsNode );
+        }
+      }
+      refresh();
+    } );
 
-    opcUaNodesTreeViewer.setRootNodes( roots );
+    // opcUaNodesTreeViewer.setRootNodes( roots );
   }
 
-  private ITsNode createNode( ITsNode aParentNode, UaTreeNode aUaTreeNode ) {
+  private ITsNode createNode( ITsNode aParentNode, UaNode aUaNode ) {
 
-    ChildedTsNode<UaTreeNode> retVal = new ChildedTsNode<>( nodeKind, aParentNode, aUaTreeNode ) {
+    ChildedTsNode<UaNode> retVal = new ChildedTsNode<>( nodeKind, aParentNode, aUaNode ) {
 
       @Override
       protected String doGetName() {
-        return String.format( "%s [%s]", entity().getUaNode().getBrowseName().getName(), //$NON-NLS-1$
-            entity().getUaNode().getNodeId().toParseableString() );
+        return String.format( "%s [%s]", entity().getBrowseName().getName(), //$NON-NLS-1$
+            entity().getNodeId().toParseableString() );
       }
 
-      @Override
-      protected void doCollectNodes( IListEdit<ITsNode> aChilds ) {
-        // лениво запрашиваем своих детей
-        IListEdit<UaTreeNode> children = new ElemArrayList<>();
-        browseNode( clientOpcUA, aUaTreeNode, children );
-        for( UaTreeNode node : children ) {
-          ITsNode tsNode = createNode( this, node );
-          if( tsNode != null ) {
-            aChilds.add( tsNode );
-          }
-        }
-      }
       // @Override
       // protected void doCollectNodes( IListEdit<ITsNode> aChilds ) {
       // // лениво запрашиваем своих детей
       // IListEdit<UaTreeNode> children = new ElemArrayList<>();
-      // browseNodeConcurrent( clientOpcUA, aUaTreeNode, children, roots ).thenAccept( nodes -> {
+      // browseNode( clientOpcUA, aUaTreeNode, children );
       // for( UaTreeNode node : children ) {
-      // ITsNode tsNode = createNode( opcUaNodesTreeViewer, node );
+      // ITsNode tsNode = createNode( this, node );
       // if( tsNode != null ) {
-      // roots.add( tsNode );
+      // aChilds.add( tsNode );
       // }
       // }
-      // refresh();
-      // } );
       // }
+      @Override
+      protected void doCollectNodes( IListEdit<ITsNode> aChilds ) {
+        // лениво запрашиваем своих детей
+        try {
+          browseNodeAsync( aUaNode ).thenAccept( nodes -> {
+            for( UaNode uaNode : nodes ) {
+              ITsNode tsNode = createNode( this, uaNode );
+              aChilds.add( tsNode );
+            }
+            // refresh();
+          } ).get();
+        }
+        catch( InterruptedException | ExecutionException ex ) {
+          LoggerUtils.errorLogger().error( ex );
+        }
+      }
 
     };
 
     return retVal;
+
   }
 
   protected void refresh() {
@@ -231,24 +233,23 @@ public class OpcUANodesTreeComposite
       }
     }
     catch( Exception e ) {
-      logger.error( e, "Browsing nodeId=%s failed: %s", aParent.getUaNode().getNodeId().toParseableString(), //$NON-NLS-1$
-          e.getMessage() );
+      // logger.error( e, "Browsing nodeId=%s failed: %s", aParent.getUaNode().getNodeId().toParseableString(),
+      // //$NON-NLS-1$
+      // e.getMessage() );
     }
   }
 
-  private CompletableFuture<List<? extends UaNode>> browseNodeConcurrent( OpcUaClient client, UaTreeNode aParent,
-      IListEdit<UaTreeNode> rNodes, IListEdit<ITsNode> aRoots ) {
-    return client.getAddressSpace().browseNodesAsync( aParent.getUaNode() )
-        .thenApply( nodes -> prettyPrint( nodes, aParent, rNodes ) );
+  private CompletableFuture<List<? extends UaNode>> browseNodeAsync( UaNode aParent ) {
+    return clientOpcUA.getAddressSpace().browseNodesAsync( aParent );
   }
 
-  private static List<? extends UaNode> prettyPrint( List<? extends UaNode> nodes, UaTreeNode aParent,
-      IListEdit<UaTreeNode> rNodes ) {
-    for( UaNode node : nodes ) {
-      UaTreeNode treeNode = new UaTreeNode( aParent, node );
-      rNodes.add( treeNode );
-    }
-
-    return nodes;
-  }
+  // private static List<? extends UaNode> fillTreeNodes( List<? extends UaNode> aNodes, UaTreeNode aParent,
+  // IListEdit<UaTreeNode> aResultNodes ) {
+  // for( UaNode node : aNodes ) {
+  // UaTreeNode treeNode = new UaTreeNode( aParent, node );
+  // aResultNodes.add( treeNode );
+  // }
+  //
+  // return aNodes;
+  // }
 }
