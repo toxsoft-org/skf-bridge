@@ -14,6 +14,7 @@ import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.tsgui.bricks.actions.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tsgui.bricks.ctx.impl.*;
+import org.toxsoft.core.tsgui.dialogs.*;
 import org.toxsoft.core.tsgui.graphics.icons.*;
 import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tsgui.m5.gui.mpc.*;
@@ -30,6 +31,9 @@ import org.toxsoft.core.tslib.bricks.apprefs.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
+import org.toxsoft.core.txtproj.lib.storage.*;
+import org.toxsoft.core.txtproj.lib.workroom.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.service.*;
 import org.toxsoft.skf.bridge.cfg.opcua.service.impl.*;
@@ -59,6 +63,14 @@ public class OpcUaServerConnCfgEditorPanel
 
   final static TsActionDef ACDEF_BROWSE_CONN =
       TsActionDef.ofPush2( ACTID_BROWSE_CONN, STR_N_BROWSE_CONN, STR_D_BROWSE_CONN, ITsStdIconIds.ICONID_VIEW_AS_TREE );
+
+  /**
+   * id действия "remove OPC UA nodes cache"
+   */
+  final static String REMOVE_CACHED_NODES_OPC_UA_ACT_ID = "remove_cached_nodes_opc_ua_act_id"; //$NON-NLS-1$
+
+  TsActionDef ACDEF_REMOVE_CACHE = TsActionDef.ofPush2( REMOVE_CACHED_NODES_OPC_UA_ACT_ID,
+      STR_N_REMOVE_CACHED_NODES_OPC_UA, STR_D_REMOVE_CACHED_NODES_OPC_UA, ITsStdIconIds.ICONID_EDIT_CLEAR );
 
   /**
    * Конструктор панели.
@@ -103,12 +115,8 @@ public class OpcUaServerConnCfgEditorPanel
           protected ITsToolbar doCreateToolbar( @SuppressWarnings( "hiding" ) ITsGuiContext aContext, String aName,
               EIconSize aIconSize, IListEdit<ITsActionDef> aActs ) {
             aActs.add( ITsStdActionDefs.ACDEF_SEPARATOR );
-            // aActs.add( ReportTemplateEditorPanel.ACDEF_COPY_TEMPLATE );
-            //
-            // if( SHOW_APPLY_BUTTON.getValue( aContext.params() ).asBool() ) {
-            // aActs.add( ACDEF_SEPARATOR );
             aActs.add( ACDEF_BROWSE_CONN );
-            // }
+            aActs.add( ACDEF_REMOVE_CACHE );
 
             ITsToolbar toolbar =
 
@@ -130,6 +138,17 @@ public class OpcUaServerConnCfgEditorPanel
             switch( aActionId ) {
               case ACTID_BROWSE_CONN:
                 browseConn( selConfig );
+                break;
+              case REMOVE_CACHED_NODES_OPC_UA_ACT_ID:
+                Shell shell = tsContext().get( Shell.class );
+                if( TsDialogUtils.askYesNoCancel( shell, MSG_ASK_REMOVE_CACHE_CONFIRM ) == ETsDialogCode.YES ) {
+
+                  ITsWorkroom workroom = tsContext().eclipseContext().get( ITsWorkroom.class );
+                  TsInternalErrorRtException.checkNull( workroom );
+                  IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
+
+                  storage.removeSection( OpcUaNodeM5LifecycleManager.SECTID_OPC_UA_NODES );
+                }
                 break;
               default:
                 throw new TsNotAllEnumsUsedRtException( aActionId );

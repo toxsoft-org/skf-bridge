@@ -9,7 +9,6 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.*;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
 import org.eclipse.milo.opcua.stack.core.types.structured.*;
-import org.toxsoft.core.log4j.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tsgui.m5.model.impl.*;
@@ -17,7 +16,6 @@ import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
-import org.toxsoft.core.tslib.utils.logs.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.core.txtproj.lib.storage.*;
 import org.toxsoft.core.txtproj.lib.workroom.*;
@@ -32,16 +30,15 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.*;
 public class OpcUaNodeM5LifecycleManager
     extends M5LifecycleManager<UaTreeNode, OpcUaClient> {
 
-  private static final String SECTID_OPC_UA_NODES = "opc.ua.nodes";
+  /**
+   * id secton for cached OPC UA nodes
+   */
+  public static final String SECTID_OPC_UA_NODES = "opc.ua.nodes"; //$NON-NLS-1$
+  private IList<UaTreeNode>  cached;
 
   private NodeId              topNodeId = Identifiers.RootFolder;
   private UaTreeNode          topNode   = null;
   private final ITsGuiContext context;
-
-  /**
-   * Журнал работы
-   */
-  private ILogger logger = LoggerWrapper.getLogger( this.getClass().getName() );
 
   /**
    * Constructor by M5 model and service
@@ -70,14 +67,16 @@ public class OpcUaNodeM5LifecycleManager
     context = aContext;
   }
 
+  @SuppressWarnings( "boxing" )
   @Override
   protected IList<UaTreeNode> doListEntities() {
-    IList<UaTreeNode> cached = loadUaTreeNodes( master() );
-    if( cached.size() > 0 ) {
+    cached = loadUaTreeNodes( master() );
+    if( !cached.isEmpty() ) {
       return cached;
     }
 
     IListEdit<UaTreeNode> result = new ElemArrayList<>();
+    long startTime = System.currentTimeMillis();
 
     UaNode rootNode;
     try {
@@ -90,8 +89,12 @@ public class OpcUaNodeM5LifecycleManager
     UaTreeNode root = new UaTreeNode( null, rootNode );
     result.add( root );
     browseNode( TsLibUtils.EMPTY_STRING, master(), root, result );
+    long endTime = System.currentTimeMillis();
+
     // сохраним загруженное дерево, чтобы в дальнейшем не ждать годами :)
     saveUaTreeNodes( result );
+    long delta = endTime - startTime;
+    LoggerUtils.defaultLogger().debug( "Browse took %d[ms]", delta ); //$NON-NLS-1$
 
     return result;
   }
@@ -117,7 +120,6 @@ public class OpcUaNodeM5LifecycleManager
       for( ReferenceDescription rd : references ) {
         ExpandedNodeId eNodeId = rd.getNodeId();
 
-        logger.info( "%s NodE=%s", indent, eNodeId );// .toParseableString()); //$NON-NLS-1$
         // recursively browse to children
         Optional<NodeId> oNodeId = rd.getNodeId().toNodeId( client.getNamespaceTable() );
 
@@ -145,8 +147,8 @@ public class OpcUaNodeM5LifecycleManager
       }
     }
     catch( Exception e ) {
-      logger.error( e, "Browsing nodeId=%s failed: %s", aParent.getUaNode().getNodeId().toParseableString(), //$NON-NLS-1$
-          e.getMessage() );
+      LoggerUtils.errorLogger().error( e, "Browsing nodeId=%s failed: %s", //$NON-NLS-1$
+          aParent.getUaNode().getNodeId().toParseableString(), e.getMessage() );
     }
   }
 

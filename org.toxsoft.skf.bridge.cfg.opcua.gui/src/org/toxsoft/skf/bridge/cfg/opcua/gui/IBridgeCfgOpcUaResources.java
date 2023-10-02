@@ -18,8 +18,11 @@ public interface IBridgeCfgOpcUaResources {
   String STR_D_BY_OPC_NODES_STRUCT = "В соответствии со структурой узлов OPC UA";
   String STR_N_BY_OPC_NODES_STRUCT = "По OPC структуре";
 
-  String STR_N_BROWSE_CONN = "Просмотр структуры узлов OPC UA сервера";
-  String STR_D_BROWSE_CONN = "Подключение к серверу OPC UF и просмотр структуры узлов этого сервера";
+  String STR_N_BROWSE_CONN                = "Просмотр структуры узлов OPC UA сервера";
+  String STR_D_BROWSE_CONN                = "Подключение к серверу OPC UF и просмотр структуры узлов этого сервера";
+  String STR_N_REMOVE_CACHED_NODES_OPC_UA = "Очистить кеш дерева узлов OPC UA";
+  String STR_D_REMOVE_CACHED_NODES_OPC_UA = "Очистить кеш и построить заново дерево узлов OPC UA";
+  String MSG_ASK_REMOVE_CACHE_CONFIRM     = "Очистить кеш дерева узлов OPC UA?";
 
   String STR_LOADING_OPC_UA_NODES_STRUCT = "Загрузка структуры узлов OPC UA";
 

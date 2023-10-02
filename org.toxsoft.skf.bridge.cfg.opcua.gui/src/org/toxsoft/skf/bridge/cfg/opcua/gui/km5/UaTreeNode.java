@@ -206,9 +206,19 @@ public class UaTreeNode {
    * @return OPC UA description
    */
   public String getDescription() {
-    return description == null ? uaNode.getDescription().getText() : description;
+    String retVal = TsLibUtils.EMPTY_STRING;
+    if( description != null ) {
+      return description;
+    }
+    if( uaNode.getDescription() != null && uaNode.getDescription().getText() != null ) {
+      return uaNode.getDescription().getText();
+    }
+    return retVal;
   }
 
+  /**
+   * make node looks like root
+   */
   public void clearParent() {
     parent = null;
   }
