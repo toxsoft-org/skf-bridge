@@ -71,22 +71,23 @@ public class UaVariableNodeM5Model
   /**
    * Attribute {@link Node#getBrowseName() } browse name
    */
-  public M5AttributeFieldDef<UaTreeNode> BROWSE_NAME = new M5AttributeFieldDef<>( FID_BROWSE_NAME, EAtomicType.STRING, //
-      TSID_NAME, STR_N_PARAM_BROWSE_NAME, //
-      TSID_DESCRIPTION, STR_D_PARAM_BROWSE_NAME, //
-      OPID_EDITOR_FACTORY_NAME, ValedAvStringText.FACTORY_NAME //
-  ) {
+  public M5AttributeFieldDef<UaVariableNode> BROWSE_NAME =
+      new M5AttributeFieldDef<>( FID_BROWSE_NAME, EAtomicType.STRING, //
+          TSID_NAME, STR_N_PARAM_BROWSE_NAME, //
+          TSID_DESCRIPTION, STR_D_PARAM_BROWSE_NAME, //
+          OPID_EDITOR_FACTORY_NAME, ValedAvStringText.FACTORY_NAME //
+      ) {
 
-    @Override
-    protected void doInit() {
-      setFlags( M5FF_COLUMN );
-    }
+        @Override
+        protected void doInit() {
+          setFlags( M5FF_COLUMN );
+        }
 
-    protected IAtomicValue doGetFieldValue( UaTreeNode aEntity ) {
-      return avStr( aEntity.getUaNode().getBrowseName().getName() );
-    }
+        protected IAtomicValue doGetFieldValue( UaVariableNode aEntity ) {
+          return avStr( aEntity.getBrowseName().getName() );
+        }
 
-  };
+      };
 
   /**
    * display name of node

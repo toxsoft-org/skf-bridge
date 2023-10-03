@@ -6,6 +6,7 @@ import org.eclipse.milo.opcua.sdk.client.*;
 import org.eclipse.milo.opcua.sdk.client.nodes.*;
 import org.eclipse.milo.opcua.stack.core.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
+import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
 import org.toxsoft.core.tslib.bricks.keeper.*;
 import org.toxsoft.core.tslib.bricks.keeper.AbstractEntityKeeper.*;
 import org.toxsoft.core.tslib.bricks.strio.*;
@@ -27,12 +28,13 @@ public class UaTreeNode {
 
   private UaTreeNode parent = null;
 
-  private UaNode uaNode       = null;
-  private String parentNodeId = null;
-  private String nodeId       = null;
-  private String browseName   = null;
-  private String displayName  = null;
-  private String description  = null;
+  private UaNode    uaNode       = null;
+  private String    parentNodeId = null;
+  private String    nodeId       = null;
+  private String    browseName   = null;
+  private String    displayName  = null;
+  private String    description  = null;
+  private NodeClass nodeClass    = null;
 
   private OpcUaClient        client;
   /**
@@ -72,6 +74,10 @@ public class UaTreeNode {
                   ? aEntity.uaNode.getDescription().getText()
                   : TsLibUtils.EMPTY_STRING;
           aSw.writeQuotedString( description );
+          aSw.writeChar( CHAR_ITEM_SEPARATOR );
+          // node class
+          int nodeClass = aEntity.uaNode.getNodeClass().getValue();
+          aSw.writeInt( nodeClass );
           aSw.writeEol();
         }
 
@@ -86,7 +92,10 @@ public class UaTreeNode {
           String displayName = aSr.readQuotedString();
           aSr.ensureChar( CHAR_ITEM_SEPARATOR );
           String description = aSr.readQuotedString();
-          return new UaTreeNode( parentNodeId, nodeId, browseName, displayName, description );
+          aSr.ensureChar( CHAR_ITEM_SEPARATOR );
+          int nodeClassVal = aSr.readInt();
+          return new UaTreeNode( parentNodeId, nodeId, browseName, displayName, description,
+              NodeClass.from( nodeClassVal ) );
         }
       };
 
@@ -115,15 +124,17 @@ public class UaTreeNode {
    * @param aBrowseName - node browse name
    * @param aDisplayName - node display name
    * @param aDescription - node description
+   * @param aNodeClass - node class
    */
-  public UaTreeNode( String aParentNodeId, String aNodeId, String aBrowseName, String aDisplayName,
-      String aDescription ) {
+  public UaTreeNode( String aParentNodeId, String aNodeId, String aBrowseName, String aDisplayName, String aDescription,
+      NodeClass aNodeClass ) {
     super();
     parentNodeId = aParentNodeId;
     nodeId = aNodeId;
     browseName = aBrowseName;
     displayName = aDisplayName;
     description = aDescription;
+    nodeClass = aNodeClass;
   }
 
   /**
@@ -200,6 +211,13 @@ public class UaTreeNode {
    */
   public String getDisplayName() {
     return displayName == null ? uaNode.getDisplayName().getText() : displayName;
+  }
+
+  /**
+   * @return OPC UA node class
+   */
+  public NodeClass getNodeClass() {
+    return nodeClass == null ? uaNode.getNodeClass() : nodeClass;
   }
 
   /**

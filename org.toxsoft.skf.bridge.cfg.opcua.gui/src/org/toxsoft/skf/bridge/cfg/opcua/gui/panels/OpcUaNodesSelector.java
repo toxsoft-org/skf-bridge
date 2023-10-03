@@ -6,9 +6,9 @@ import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.
 
 import org.eclipse.milo.opcua.sdk.client.*;
 import org.eclipse.milo.opcua.sdk.client.nodes.*;
-import org.eclipse.milo.opcua.sdk.core.nodes.*;
 import org.eclipse.milo.opcua.stack.core.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
+import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
 import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tsgui.bricks.ctx.impl.*;
@@ -149,27 +149,24 @@ public class OpcUaNodesSelector
 
     private void formTree( DefaultTsNode<UaTreeNode> aParentNode ) {
       for( UaTreeNode child : aParentNode.entity().getChildren() ) {
-        if( hideVariableNodes && child.getUaNode() instanceof VariableNode ) {
+        if( hideVariableNodes && child.getNodeClass().equals( NodeClass.Variable ) ) {
           continue;
         }
-        // if( !hideVariableNodes && child.getUaNode() instanceof VariableNode ) {
-        if( !hideVariableNodes ) {
+        if( !hideVariableNodes && child.getNodeClass().equals( NodeClass.Variable ) ) {
           // отсекаем узлы у которых имя начинается с символа '/'
-          // VariableNode varNode = (VariableNode)child.getUaNode();
-          // String name = varNode.getDisplayName().getText();
           String name = child.getDisplayName();
           if( name.startsWith( IGNORE_REFIX ) ) {
             continue;
           }
         }
         DefaultTsNode<UaTreeNode> childNode = new DefaultTsNode<>( kind, aParentNode, child );
-        // if( childNode.entity().getUaNode() instanceof VariableNode ) {
-        // // FIXME иконки не отображаются, выяснить у Гоги пачему
-        // childNode.setIconId( ICONID_VARIABLE_NODE );
-        // }
-        // if( childNode.entity().getUaNode() instanceof ObjectNode ) {
-        // childNode.setIconId( ICONID_OBJECT_NODE );
-        // }
+        if( childNode.entity().getNodeClass().equals( NodeClass.Variable ) ) {
+          // FIXME иконки не отображаются, выяснить у Гоги пачему
+          childNode.setIconId( ICONID_VARIABLE_NODE );
+        }
+        if( childNode.entity().getNodeClass().equals( NodeClass.Object ) ) {
+          childNode.setIconId( ICONID_OBJECT_NODE );
+        }
         aParentNode.addNode( childNode );
         formTree( childNode );
       }
