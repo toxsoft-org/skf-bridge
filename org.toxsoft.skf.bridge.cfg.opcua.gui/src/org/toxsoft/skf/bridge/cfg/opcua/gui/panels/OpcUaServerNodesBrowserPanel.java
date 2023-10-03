@@ -9,9 +9,14 @@ import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
+import java.util.*;
+
 import org.eclipse.milo.opcua.sdk.client.*;
 import org.eclipse.milo.opcua.sdk.client.nodes.*;
 import org.eclipse.milo.opcua.sdk.core.nodes.*;
+import org.eclipse.milo.opcua.stack.core.*;
+import org.eclipse.milo.opcua.stack.core.types.builtin.*;
+import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
 import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.tsgui.bricks.actions.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
@@ -42,6 +47,7 @@ import org.toxsoft.core.tslib.bricks.strid.coll.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.gw.*;
+import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.gw.skid.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
@@ -161,24 +167,27 @@ public class OpcUaServerNodesBrowserPanel
   static class OpcUANode2SkObjectItemsProvider
       implements IM5ItemsProvider<IDtoObject> {
 
-    private IListEdit<IDtoObject> items = new ElemArrayList<>();
-    private final ISkCoreApi      coreApi;
+    private IListEdit<IDtoObject>   items   = new ElemArrayList<>();
+    private final ISkCoreApi        coreApi;
+    private Map<String, UaTreeNode> id2Node = new HashMap<>();
 
     // Создаем IDpuObject и инициализируем его значениями из узла
-    private IDtoObject makeObjDto( String aClassId, UaNode aObjNode ) {
-      String id = aObjNode.getDisplayName().getText();
+    private IDtoObject makeObjDto( String aClassId, UaTreeNode aObjNode ) {
+      String id = aObjNode.getDisplayName();
       Skid skid = new Skid( aClassId, id );
       DtoObject dtoObj = DtoObject.createDtoObject( skid, coreApi );
-      dtoObj.attrs().setValue( FID_NAME, AvUtils.avStr( aObjNode.getDescription().getText() ) );
-      dtoObj.attrs().setValue( FID_DESCRIPTION, AvUtils.avStr( aObjNode.getDescription().getText() ) );
+      dtoObj.attrs().setValue( FID_NAME, AvUtils.avStr( aObjNode.getDescription() ) );
+      dtoObj.attrs().setValue( FID_DESCRIPTION, AvUtils.avStr( aObjNode.getDescription() ) );
       return dtoObj;
     }
 
-    OpcUANode2SkObjectItemsProvider( IList<UaNode> aSelectedNodes, ISkCoreApi aSkCoreApi,
+    OpcUANode2SkObjectItemsProvider( IList<UaTreeNode> aSelectedNodes, ISkCoreApi aSkCoreApi,
         ISkClassInfo aSelectedClassInfo ) {
       coreApi = aSkCoreApi;
-      for( UaNode objNode : aSelectedNodes ) {
-        items.add( makeObjDto( aSelectedClassInfo.id(), objNode ) );
+      for( UaTreeNode objNode : aSelectedNodes ) {
+        IDtoObject dtoObj = makeObjDto( aSelectedClassInfo.id(), objNode );
+        items.add( dtoObj );
+        id2Node.put( dtoObj.id(), objNode );
       }
     }
 
@@ -190,6 +199,10 @@ public class OpcUaServerNodesBrowserPanel
     @Override
     public IList<IDtoObject> listItems() {
       return items;
+    }
+
+    public UaTreeNode nodeById( String aObjId ) {
+      return id2Node.get( aObjId );
     }
 
   }
@@ -335,14 +348,13 @@ public class OpcUaServerNodesBrowserPanel
     private void formTree( DefaultTsNode<UaTreeNode> aParentNode ) {
       for( UaTreeNode child : aParentNode.entity().getChildren() ) {
         DefaultTsNode<UaTreeNode> childNode = new DefaultTsNode<>( kind, aParentNode, child );
-        // отключаем подгрузку узлов потому что она на 3 порядка повышает время загрузки 2 сек -> 1000 сек
-        // if( childNode.entity().getUaNode() instanceof VariableNode ) {
-        // // FIXME иконки не отображаются, выяснить у Гоги пачему
-        // childNode.setIconId( ICONID_VARIABLE_NODE );
-        // }
-        // if( childNode.entity().getUaNode() instanceof ObjectNode ) {
-        // childNode.setIconId( ICONID_OBJECT_NODE );
-        // }
+        if( childNode.entity().getNodeClass().equals( NodeClass.Variable ) ) {
+          // FIXME иконки не отображаются, выяснить у Гоги пачему
+          childNode.setIconId( ICONID_VARIABLE_NODE );
+        }
+        if( childNode.entity().getNodeClass().equals( NodeClass.Object ) ) {
+          childNode.setIconId( ICONID_OBJECT_NODE );
+        }
         aParentNode.addNode( childNode );
         formTree( childNode );
       }
@@ -375,7 +387,7 @@ public class OpcUaServerNodesBrowserPanel
 
   private void createClassFromNodes( ITsGuiContext aContext ) {
     // создать класс из информации об UaNode
-    IList<UaNode> selNodes =
+    IList<UaTreeNode> selNodes =
         OpcUaNodesSelector.selectUaNodes4Class( aContext, selectedNode.getUaNode().getNodeId(), client );
     // for debug
     // OpcUaNodesSelector.selectUaNode( aContext, client );
@@ -383,7 +395,7 @@ public class OpcUaServerNodesBrowserPanel
     if( selNodes != null ) {
       // создаем описание класса из списка выбранных узлов
       // отредактируем список узлов чтобы в нем была вся необходимая информация для описания класса
-      IList<UaNode> nodes4DtoClass = nodes4DtoClass( selectedNode.getUaNode(), selNodes );
+      IList<UaTreeNode> nodes4DtoClass = nodes4DtoClass( selectedNode, selNodes );
       IDtoClassInfo dtoClassInfo = makeDtoClassInfo( nodes4DtoClass );
       IM5Model<IDtoClassInfo> modelDto = conn.scope().get( IM5Domain.class )
           .getModel( IKM5SdedConstants.MID_SDED_DTO_CLASS_INFO, IDtoClassInfo.class );
@@ -412,12 +424,12 @@ public class OpcUaServerNodesBrowserPanel
    * @param aSelNodes выбранные узлы
    * @return список узлов один из которых описание класса, остальные описание RtData этого класса
    */
-  private static IList<UaNode> nodes4DtoClass( UaNode aClassNode, IList<UaNode> aSelNodes ) {
-    IListEdit<UaNode> retVal = new ElemArrayList<>();
+  private static IList<UaTreeNode> nodes4DtoClass( UaTreeNode aClassNode, IList<UaTreeNode> aSelNodes ) {
+    IListEdit<UaTreeNode> retVal = new ElemArrayList<>();
     // первый элемент - описание класса
     retVal.add( aClassNode );
-    for( UaNode node : aSelNodes ) {
-      if( node instanceof UaVariableNode objNode ) {
+    for( UaTreeNode node : aSelNodes ) {
+      if( node.getNodeClass().equals( NodeClass.Variable ) ) {
         retVal.add( node );
       }
     }
@@ -428,24 +440,29 @@ public class OpcUaServerNodesBrowserPanel
   // implementation
   //
 
-  private static IDtoClassInfo makeDtoClassInfo( IList<UaNode> aNodes ) {
+  private IDtoClassInfo makeDtoClassInfo( IList<UaTreeNode> aNodes ) {
     // узел типа Object, его данные используются для создания описания класса
-    UaObjectNode classNode = objNode( aNodes );
+    UaTreeNode classNode = objNode( aNodes );
 
-    String id = classNode.getBrowseName().getName();
-    String name = classNode.getDisplayName().getText();
-    String description =
-        classNode.getDescription().getText().trim().length() > 0 ? classNode.getDescription().getText() : name;
+    String id = classNode.getBrowseName();
+    String name = classNode.getDisplayName();
+    String description = classNode.getDescription().trim().length() > 0 ? classNode.getDescription() : name;
 
     IOptionSetEdit params = new OptionSet();
 
     params.setStr( FID_NAME, name );
     params.setStr( FID_DESCRIPTION, description );
     DtoClassInfo cinf = new DtoClassInfo( id, IGwHardConstants.GW_ROOT_CLASS_ID, params );
-    for( UaNode node : aNodes ) {
-      if( node instanceof UaVariableNode varNode ) {
-        readDataInfo( cinf, varNode );
-        readEventInfo( cinf, varNode );
+    for( UaTreeNode node : aNodes ) {
+      if( node.getNodeClass().equals( NodeClass.Variable ) ) {
+        try {
+          UaVariableNode varNode = client.getAddressSpace().getVariableNode( NodeId.parse( node.getNodeId() ) );
+          readDataInfo( cinf, varNode );
+          readEventInfo( cinf, varNode );
+        }
+        catch( UaRuntimeException | UaException ex ) {
+          LoggerUtils.errorLogger().error( ex );
+        }
       }
     }
     // добавим атрибут который сигнализирует что класс из OPC UA node
@@ -453,12 +470,12 @@ public class OpcUaServerNodesBrowserPanel
     return cinf;
   }
 
-  private static UaObjectNode objNode( IList<UaNode> aNodes ) {
-    UaObjectNode retVal = null;
+  private static UaTreeNode objNode( IList<UaTreeNode> aNodes ) {
+    UaTreeNode retVal = null;
     // ищем элемент типа Object
-    for( UaNode node : aNodes ) {
-      if( node instanceof UaObjectNode ) {
-        retVal = (UaObjectNode)node;
+    for( UaTreeNode node : aNodes ) {
+      if( node.getNodeClass().equals( NodeClass.Object ) ) {
+        retVal = node;
         break;
       }
     }
@@ -570,10 +587,9 @@ public class OpcUaServerNodesBrowserPanel
 
   private void createObjsFromNodes( ITsGuiContext aContext ) {
     // создать объекты по списку UaNode
-    IList<UaNode> tmpListNodes =
+    IList<UaTreeNode> selNodes =
         OpcUaNodesSelector.selectUaNodes4Objects( aContext, selectedNode.getUaNode().getNodeId(), client );
-    if( tmpListNodes != null ) {
-      IListEdit<UaNode> selNodes = new ElemArrayList<>( tmpListNodes );
+    if( selNodes != null ) {
       // получаем М5 модель IDtoObject
       IM5Model<IDtoObject> modelSk =
           conn.scope().get( IM5Domain.class ).getModel( DtoObjectM5Model.MODEL_ID, IDtoObject.class );
@@ -585,7 +601,7 @@ public class OpcUaServerNodesBrowserPanel
 
         // подсунем свой item provider
         // IM5ItemsProvider<ISkObject> ip = lmSk.itemsProvider();
-        IM5ItemsProvider<IDtoObject> itemProvider =
+        OpcUANode2SkObjectItemsProvider itemProvider =
             new OpcUANode2SkObjectItemsProvider( selNodes, conn.coreApi(), selectedClassInfo );
 
         IListEdit<IDtoObject> llObjs = new ElemArrayList<>();
@@ -611,9 +627,49 @@ public class OpcUaServerNodesBrowserPanel
           }
           // подтверждаем успешное создание объектов
           TsDialogUtils.info( getShell(), "Операция завершена успешно, созданы/обновлены объекты: %s", sb.toString() );
+          // for debug пробуем автоматическую привязку NodeId -> Gwid
+          // идем по списку объектов
+          for( IDtoObject obj : localLM.itemsProvider().listItems() ) {
+            // идем по списку его rtdProperties
+            for( IDtoRtdataInfo rtdInfo : selectedClassInfo.rtdata().list() ) {
+              // находим свой UaNode
+              UaTreeNode itsNode = itemProvider.nodeById( obj.id() );
+              UaTreeNode uaNode = findVarNode( rtdInfo, itsNode.getChildren() );
+              Gwid gwid = Gwid.createRtdata( obj.classId(), obj.id(), rtdInfo.id() );
+              if( uaNode != null ) {
+                LoggerUtils.defaultLogger().debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(),
+                    gwid.asString() );
+              }
+              else {
+                LoggerUtils.errorLogger().error( "Can't match: ? -> %s", gwid.asString() );
+
+              }
+            }
+          }
         }
       }
     }
+  }
+
+  /**
+   * По описанию параметра ищем подходящий UaNode
+   *
+   * @param aRtdInfo описание RtData
+   * @param aVarNodes список узлов типа Variable
+   * @return подходящий узел или null
+   */
+  private static UaTreeNode findVarNode( IDtoRtdataInfo aRtdInfo, IList<UaTreeNode> aVarNodes ) {
+    UaTreeNode retVal = null;
+    for( UaTreeNode varNode : aVarNodes ) {
+      if( varNode.getNodeClass().equals( NodeClass.Variable ) ) {
+        String name4Search = varNode.getBrowseName();
+        if( aRtdInfo.id().indexOf( name4Search ) >= 0 ) {
+          retVal = varNode;
+          break;
+        }
+      }
+    }
+    return retVal;
   }
 
   /**

@@ -5,7 +5,6 @@ import static org.toxsoft.skf.bridge.cfg.opcua.gui.IBridgeCfgOpcUaResources.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
 
 import org.eclipse.milo.opcua.sdk.client.*;
-import org.eclipse.milo.opcua.sdk.client.nodes.*;
 import org.eclipse.milo.opcua.stack.core.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
@@ -37,7 +36,7 @@ import org.toxsoft.uskat.core.gui.conn.*;
  * @author dima
  */
 public class OpcUaNodesSelector
-    extends AbstractTsDialogPanel<IList<UaNode>, OpcUaNodesSelectorContext> {
+    extends AbstractTsDialogPanel<IList<UaTreeNode>, OpcUaNodesSelectorContext> {
 
   static class OpcUaNodesSelectorContext {
 
@@ -66,7 +65,8 @@ public class OpcUaNodesSelector
    * @param aParent Composite - parent component.
    * @param aEnviroment - enviroment of run.
    */
-  protected OpcUaNodesSelector( Composite aParent, TsDialog<IList<UaNode>, OpcUaNodesSelectorContext> aEnviroment ) {
+  protected OpcUaNodesSelector( Composite aParent,
+      TsDialog<IList<UaTreeNode>, OpcUaNodesSelectorContext> aEnviroment ) {
     super( aParent, aEnviroment );
     this.setLayout( new BorderLayout() );
     ISkConnectionSupplier connSup = tsContext().get( ISkConnectionSupplier.class );
@@ -183,25 +183,25 @@ public class OpcUaNodesSelector
   //
 
   @Override
-  protected void doSetDataRecord( IList<UaNode> aData ) {
+  protected void doSetDataRecord( IList<UaTreeNode> aData ) {
     // TODO
 
   }
 
   @Override
-  protected IList<UaNode> doGetDataRecord() {
-    IListEdit<UaNode> retVal = new ElemArrayList<>();
+  protected IList<UaTreeNode> doGetDataRecord() {
+    IListEdit<UaTreeNode> retVal = new ElemArrayList<>();
     if( opcUaNodePanel.checkSupport().isChecksSupported() ) {
       for( UaTreeNode treeNode : opcUaNodePanel.checkSupport().listCheckedItems( true ) ) {
         if( environ().hideVariableNodes && treeNode.getNodeClass().equals( NodeClass.Variable ) ) {
           // игнорируем узлы описания переменных
           continue;
         }
-        retVal.add( treeNode.getUaNode() );
+        retVal.add( treeNode );
       }
     }
     else {
-      retVal.add( opcUaNodePanel.selectedItem().getUaNode() );
+      retVal.add( opcUaNodePanel.selectedItem() );
     }
     return retVal;
   }
@@ -215,14 +215,14 @@ public class OpcUaNodesSelector
    *
    * @param aTsContext ITsGuiContext - соответствующий контекст
    * @param aClient - OPC UA
-   * @return IList<UaNode> - список выбранных узлов или <b>null</b> в случае отказа от выбора
+   * @return IList<UaTreeNode> - список выбранных узлов или <b>null</b> в случае отказа от выбора
    */
-  public static IList<UaNode> selectUaNode( ITsGuiContext aTsContext, OpcUaClient aClient ) {
+  public static IList<UaTreeNode> selectUaNode( ITsGuiContext aTsContext, OpcUaClient aClient ) {
     ITsDialogInfo cdi = new TsDialogInfo( aTsContext, "Выбор узла из дерева OPC UA", "Выделите нужный и нажмите Ok" );
     OpcUaNodesSelectorContext ctx = new OpcUaNodesSelectorContext( Identifiers.RootFolder, aClient, false, false );
 
-    IDialogPanelCreator<IList<UaNode>, OpcUaNodesSelectorContext> creator = OpcUaNodesSelector::new;
-    TsDialog<IList<UaNode>, OpcUaNodesSelectorContext> d = new TsDialog<>( cdi, null, ctx, creator );
+    IDialogPanelCreator<IList<UaTreeNode>, OpcUaNodesSelectorContext> creator = OpcUaNodesSelector::new;
+    TsDialog<IList<UaTreeNode>, OpcUaNodesSelectorContext> d = new TsDialog<>( cdi, null, ctx, creator );
     return d.execData();
   }
 
@@ -232,15 +232,16 @@ public class OpcUaNodesSelector
    * @param aTsContext ITsGuiContext - соответствующий контекст
    * @param aTopNode - верхний узел поддерева
    * @param aClient - OPC UA
-   * @return IList<UaNode> - список выбранных узлов или <b>null</b> в случае отказа от выбора
+   * @return IList<UaTreeNode> - список выбранных узлов или <b>null</b> в случае отказа от выбора
    */
-  public static IList<UaNode> selectUaNodes4Class( ITsGuiContext aTsContext, NodeId aTopNode, OpcUaClient aClient ) {
+  public static IList<UaTreeNode> selectUaNodes4Class( ITsGuiContext aTsContext, NodeId aTopNode,
+      OpcUaClient aClient ) {
     ITsDialogInfo cdi =
         new TsDialogInfo( aTsContext, "Создание класса из дерева узлов OPC UA", "Пометьте нужные узлы и нажмите Ok" );
     OpcUaNodesSelectorContext ctx = new OpcUaNodesSelectorContext( aTopNode, aClient, false, true );
 
-    IDialogPanelCreator<IList<UaNode>, OpcUaNodesSelectorContext> creator = OpcUaNodesSelector::new;
-    TsDialog<IList<UaNode>, OpcUaNodesSelectorContext> d = new TsDialog<>( cdi, null, ctx, creator );
+    IDialogPanelCreator<IList<UaTreeNode>, OpcUaNodesSelectorContext> creator = OpcUaNodesSelector::new;
+    TsDialog<IList<UaTreeNode>, OpcUaNodesSelectorContext> d = new TsDialog<>( cdi, null, ctx, creator );
     return d.execData();
   }
 
@@ -250,15 +251,16 @@ public class OpcUaNodesSelector
    * @param aTsContext ITsGuiContext - соответствующий контекст
    * @param aTopNode - верхний узел поддерева
    * @param aClient - OPC UA
-   * @return IList<UaNode> - список выбранных узлов или <b>null</b> в случае отказа от выбора
+   * @return IList<UaTreeNode> - список выбранных узлов или <b>null</b> в случае отказа от выбора
    */
-  public static IList<UaNode> selectUaNodes4Objects( ITsGuiContext aTsContext, NodeId aTopNode, OpcUaClient aClient ) {
+  public static IList<UaTreeNode> selectUaNodes4Objects( ITsGuiContext aTsContext, NodeId aTopNode,
+      OpcUaClient aClient ) {
     ITsDialogInfo cdi =
         new TsDialogInfo( aTsContext, "Создание объектов из дерева узлов OPC UA", "Пометьте нужные узлы и нажмите Ok" );
     OpcUaNodesSelectorContext ctx = new OpcUaNodesSelectorContext( aTopNode, aClient, true, true );
 
-    IDialogPanelCreator<IList<UaNode>, OpcUaNodesSelectorContext> creator = OpcUaNodesSelector::new;
-    TsDialog<IList<UaNode>, OpcUaNodesSelectorContext> d = new TsDialog<>( cdi, null, ctx, creator );
+    IDialogPanelCreator<IList<UaTreeNode>, OpcUaNodesSelectorContext> creator = OpcUaNodesSelector::new;
+    TsDialog<IList<UaTreeNode>, OpcUaNodesSelectorContext> d = new TsDialog<>( cdi, null, ctx, creator );
     return d.execData();
   }
 
