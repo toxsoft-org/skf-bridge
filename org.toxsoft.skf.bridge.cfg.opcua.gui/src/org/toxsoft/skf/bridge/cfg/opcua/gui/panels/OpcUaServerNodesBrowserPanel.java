@@ -574,8 +574,6 @@ public class OpcUaServerNodesBrowserPanel
         OpcUaNodesSelector.selectUaNodes4Objects( aContext, selectedNode.getUaNode().getNodeId(), client );
     if( tmpListNodes != null ) {
       IListEdit<UaNode> selNodes = new ElemArrayList<>( tmpListNodes );
-      // отрезаем первый, это узловой нод он лишний
-      selNodes.removeByIndex( 0 );
       // получаем М5 модель IDtoObject
       IM5Model<IDtoObject> modelSk =
           conn.scope().get( IM5Domain.class ).getModel( DtoObjectM5Model.MODEL_ID, IDtoObject.class );

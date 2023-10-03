@@ -193,6 +193,10 @@ public class OpcUaNodesSelector
     IListEdit<UaNode> retVal = new ElemArrayList<>();
     if( opcUaNodePanel.checkSupport().isChecksSupported() ) {
       for( UaTreeNode treeNode : opcUaNodePanel.checkSupport().listCheckedItems( true ) ) {
+        if( environ().hideVariableNodes && treeNode.getNodeClass().equals( NodeClass.Variable ) ) {
+          // игнорируем узлы описания переменных
+          continue;
+        }
         retVal.add( treeNode.getUaNode() );
       }
     }
