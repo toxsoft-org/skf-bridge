@@ -43,6 +43,7 @@ import org.toxsoft.core.tslib.av.metainfo.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.*;
 import org.toxsoft.core.tslib.bricks.events.change.*;
+import org.toxsoft.core.tslib.bricks.strid.coll.*;
 import org.toxsoft.core.tslib.bricks.strid.coll.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
@@ -72,10 +73,16 @@ import org.toxsoft.uskat.core.impl.dto.*;
 public class OpcUaServerNodesBrowserPanel
     extends TsPanel {
 
-  private static final String nodeCmdIdBrowseName       = "CmdId";
-  private static final String nodeCmdArgIntdBrowseName  = "CmdArgInt";
-  private static final String nodeCmdArgFltBrowseName   = "CmdArgFlt";
-  private static final String nodeCmdFeedbackBrowseName = "CmdFeedback";
+  private static final String nodeCmdIdBrowseName       = "CmdId";       //$NON-NLS-1$
+  private static final String nodeCmdArgIntdBrowseName  = "CmdArgInt";   //$NON-NLS-1$
+  private static final String nodeCmdArgFltBrowseName   = "CmdArgFlt";   //$NON-NLS-1$
+  private static final String nodeCmdFeedbackBrowseName = "CmdFeedback"; //$NON-NLS-1$
+  /**
+   * Аргумент команды: значение.
+   * <p>
+   * Аргумент имеет тип {@link EAtomicType#FLOATING}.
+   */
+  static String               CMDARGID_VALUE            = "value";       //$NON-NLS-1$
 
   /**
    * id параметра события: старое значение.
@@ -488,7 +495,60 @@ public class OpcUaServerNodesBrowserPanel
     }
     // добавим атрибут который сигнализирует что класс из OPC UA node
     markClassOPC_UA( cinf );
+    // создадим шаблоны команд, если необходимо
+    createCmdTemplates( cinf, aNodes );
+
     return cinf;
+  }
+
+  @SuppressWarnings( "nls" )
+  private static void createCmdTemplates( DtoClassInfo aCinf, IList<UaTreeNode> aNodes ) {
+    // Проходим по всем детям и если встречаем командные узлы, то создаем команды
+    for( UaTreeNode node : aNodes ) {
+      if( node.getNodeClass().equals( NodeClass.Variable ) ) {
+        String nodeBrowseName = node.getBrowseName();
+        if( nodeCmdIdBrowseName.compareTo( nodeBrowseName ) == 0 ) {
+          // создаем команду без аргументов
+          IStridablesList<IDataDef> argDefs = new StridablesList<>(); //
+          createCmdInfo( aCinf, "cmdXxxNoArg", argDefs );
+          continue;
+        }
+        if( nodeCmdArgIntdBrowseName.compareTo( nodeBrowseName ) == 0 ) {
+          // создаем команду с int аргументом
+          IStridablesList<IDataDef> argDefs = new StridablesList<>( //
+              DataDef.create( CMDARGID_VALUE, EAtomicType.INTEGER, TSID_NAME, STR_N_ARG_VALUE, //
+                  TSID_DESCRIPTION, STR_D_ARG_VALUE, //
+                  TSID_IS_NULL_ALLOWED, AV_FALSE ) //
+          ); //
+          createCmdInfo( aCinf, "cmdXxxArgInt", argDefs );
+          continue;
+        }
+        if( nodeCmdArgFltBrowseName.compareTo( nodeBrowseName ) == 0 ) {
+          // создаем команду с float аргументом
+          IStridablesList<IDataDef> argDefs = new StridablesList<>( //
+              DataDef.create( CMDARGID_VALUE, EAtomicType.FLOATING, TSID_NAME, STR_N_ARG_VALUE, //
+                  TSID_DESCRIPTION, STR_D_ARG_VALUE, //
+                  TSID_IS_NULL_ALLOWED, AV_FALSE ) //
+          ); //
+          createCmdInfo( aCinf, "cmdXxxFltArg", argDefs );
+          continue;
+        }
+      }
+    }
+  }
+
+  private static void createCmdInfo( DtoClassInfo aCinf, String aCmdId, IStridablesList<IDataDef> aArgDefs ) {
+    // название
+    String name = "<введите название>";
+    // описание
+    String descr = "<введите описание>";
+    IDtoCmdInfo cmdInfo = DtoCmdInfo.create1( aCmdId, //
+        aArgDefs, //
+        OptionSetUtils.createOpSet( //
+            IAvMetaConstants.TSID_NAME, name, //
+            IAvMetaConstants.TSID_DESCRIPTION, descr //
+        ) ); //
+    aCinf.cmdInfos().add( cmdInfo );
   }
 
   private static UaTreeNode objNode( IList<UaTreeNode> aNodes ) {

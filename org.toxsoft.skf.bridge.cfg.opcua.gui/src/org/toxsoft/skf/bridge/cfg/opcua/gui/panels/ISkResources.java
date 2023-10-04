@@ -29,12 +29,13 @@ interface ISkResources {
   String STR_D_EV_AUTO          = "Регулятор в автомате";
   String STR_N_EV_ON            = "Команда включения от регулятора";
   String STR_D_EV_ON            = "Команда включения от регулятора";
-
+  String STR_N_ARG_VALUE        = "значение";
+  String STR_D_ARG_VALUE        = "значение аргумента команды";
   /**
    * {@link PanelClassInfoSelector}
    */
-  String DLG_C_CLASS_INFO = "Выбор класса";
-  String DLG_T_CLASS_INFO = "Выберите класс и нажмите Ok";
-  String STR_CLASSES_LIST = "id класса";
+  String DLG_C_CLASS_INFO       = "Выбор класса";
+  String DLG_T_CLASS_INFO       = "Выберите класс и нажмите Ok";
+  String STR_CLASSES_LIST       = "id класса";
 
 }

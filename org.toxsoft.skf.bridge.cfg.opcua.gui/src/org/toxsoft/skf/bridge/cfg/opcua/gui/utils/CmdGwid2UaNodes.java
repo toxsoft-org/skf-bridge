@@ -73,7 +73,7 @@ public class CmdGwid2UaNodes {
           aSr.ensureChar( CHAR_ITEM_SEPARATOR );
           String niCmdFeedback = aSr.readQuotedString();
           return new CmdGwid2UaNodes( gwid, nodeDescr, niCmdId, niCmdArgInt.isBlank() ? null : niCmdArgInt,
-              niCmdArgFlt.isBlank() ? null : niCmdArgInt, niCmdFeedback );
+              niCmdArgFlt.isBlank() ? null : niCmdArgFlt, niCmdFeedback );
         }
       };
 
