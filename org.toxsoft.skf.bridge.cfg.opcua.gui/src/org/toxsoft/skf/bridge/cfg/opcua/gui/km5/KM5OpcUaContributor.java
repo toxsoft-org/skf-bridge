@@ -4,6 +4,7 @@ import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.utils.errors.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.gui.km5.*;
 
@@ -29,7 +30,9 @@ public class KM5OpcUaContributor
       GwidsForCfgM5Model.MODEL_ID, //
       OpcToS5DataCfgUnitM5Model.MODEL_ID, //
       OpcToS5DataCfgDocM5Model.MODEL_ID, //
-      NodesForCfgM5Model.MODEL_ID );
+      NodesForCfgM5Model.MODEL_ID, //
+      CfgUnitRealizationTypeM5Model.MODEL_ID, //
+      CfgOpcUaNodeM5Model.MODEL_ID );
 
   private final IStringListEdit myModels = new StringArrayList();
 
@@ -46,6 +49,7 @@ public class KM5OpcUaContributor
 
   @Override
   protected IStringList papiCreateModels() {
+    OpcUaUtils.registerCfgUnitRealizationTypes( m5().tsContext() );
     OpcUaServerConnCfgModel opcUaServerConnCfgModel = new OpcUaServerConnCfgModel();
     myModels.add( opcUaServerConnCfgModel.id() );
     m5().addModel( opcUaServerConnCfgModel );
@@ -61,7 +65,7 @@ public class KM5OpcUaContributor
     DtoObjectM5Model dtoObjectM5Model = new DtoObjectM5Model( skConn() );
     myModels.add( dtoObjectM5Model.id() );
     m5().addModel( dtoObjectM5Model );
-    
+
     GwidsForCfgM5Model gwidsForCfgM5Model = new GwidsForCfgM5Model();
     myModels.add( gwidsForCfgM5Model.id() );
     m5().addModel( gwidsForCfgM5Model );
@@ -77,6 +81,14 @@ public class KM5OpcUaContributor
     NodesForCfgM5Model nodesForCfgM5Model = new NodesForCfgM5Model();
     myModels.add( nodesForCfgM5Model.id() );
     m5().addModel( nodesForCfgM5Model );
+
+    CfgUnitRealizationTypeM5Model cfgUnitRealizationTypeM5Model = new CfgUnitRealizationTypeM5Model();
+    myModels.add( cfgUnitRealizationTypeM5Model.id() );
+    m5().addModel( cfgUnitRealizationTypeM5Model );
+
+    CfgOpcUaNodeM5Model cfgOpcUaNodeM5Model = new CfgOpcUaNodeM5Model();
+    myModels.add( cfgOpcUaNodeM5Model.id() );
+    m5().addModel( cfgOpcUaNodeM5Model );
 
     return CONRTIBUTED_MODEL_IDS;
   }

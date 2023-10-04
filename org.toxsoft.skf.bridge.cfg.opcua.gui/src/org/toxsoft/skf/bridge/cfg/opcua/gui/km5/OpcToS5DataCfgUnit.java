@@ -1,6 +1,8 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
 
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
+import org.toxsoft.core.tslib.av.opset.*;
+import org.toxsoft.core.tslib.av.opset.impl.*;
 import org.toxsoft.core.tslib.bricks.keeper.*;
 import org.toxsoft.core.tslib.bricks.keeper.AbstractEntityKeeper.*;
 import org.toxsoft.core.tslib.bricks.strid.impl.*;
@@ -8,6 +10,8 @@ import org.toxsoft.core.tslib.bricks.strio.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 
 /**
  * Модельный класс конфигурируемой связи opc ua на данные s5. \\ Типичная единица конфигурации - мапирование один узел
@@ -38,7 +42,7 @@ public class OpcToS5DataCfgUnit
           aSw.writeEol();
 
           // type
-          aSw.writeAsIs( aEntity.typeOfDataCfg.name() );
+          aSw.writeAsIs( aEntity.typeOfCfgUnit.name() );
           aSw.writeSeparatorChar();
           aSw.writeEol();
 
@@ -68,6 +72,14 @@ public class OpcToS5DataCfgUnit
             aSw.writeEol();
           }
 
+          // realization type id
+          aSw.writeAsIs( aEntity.getRelizationTypeId() );
+          aSw.writeSeparatorChar();
+          aSw.writeEol();
+
+          // realization options
+          OptionSetKeeper.KEEPER.write( aSw, aEntity.getRealizationOpts() );
+
           aSw.writeQuotedString( "CheckUnit" );
 
           aSw.decNewLine();
@@ -83,7 +95,7 @@ public class OpcToS5DataCfgUnit
 
           // type
           String typeName = aSr.readIdName();
-          EDataCfgType type = EDataCfgType.valueOf( typeName );
+          ECfgUnitType type = ECfgUnitType.searchByEnumName( typeName, ECfgUnitType.DATA );
           aSr.ensureSeparatorChar();
 
           // Gwids
@@ -114,14 +126,21 @@ public class OpcToS5DataCfgUnit
             nodes.add( nodeId );
           }
 
+          String relizationTypeId = aSr.readIdPath();
+          aSr.ensureSeparatorChar();
+
+          IOptionSet realizationOpts = OptionSetKeeper.KEEPER.read( aSr );
+
           if( !aSr.readQuotedString().equals( "CheckUnit" ) ) {
             System.out.println( "Error Unit Read" );
           }
 
           OpcToS5DataCfgUnit result = new OpcToS5DataCfgUnit( id, name );
-          result.typeOfDataCfg = type;
+          result.typeOfCfgUnit = type;
           result.setDataGwids( gwids );
           result.setDataNodes( nodes );
+          result.setRelizationTypeId( relizationTypeId );
+          result.setRealizationOpts( realizationOpts );
           return result;
         }
       };
@@ -134,12 +153,15 @@ public class OpcToS5DataCfgUnit
    */
   public OpcToS5DataCfgUnit( String aId, String aName ) {
     super( aId, aName, aName );
+
+    // realizationOpts.setStr( "param.str", "string" );
+    // realizationOpts.setInt( "param.int", 5 );
   }
 
   /**
-   * Тип связи
+   * Тип конфигурационной единицы
    */
-  private EDataCfgType typeOfDataCfg = EDataCfgType.ONE_TO_ONE;
+  private ECfgUnitType typeOfCfgUnit = ECfgUnitType.DATA;
 
   /**
    * Список данных сервера S5, используемых в этой единице конфигурации
@@ -151,18 +173,28 @@ public class OpcToS5DataCfgUnit
    */
   private IList<NodeId> dataNodes = new ElemArrayList<>();
 
+  /**
+   * Ид Типа реализации
+   */
+  private String relizationTypeId = OpcUaUtils.CFG_UNIT_REALIZATION_TYPE_ONT_TO_ONE_DATA;
+
+  /**
+   * Параметры реализации
+   */
+  private IOptionSetEdit realizationOpts = new OptionSet();
+
   @Override
   public void setName( String aName ) {
     super.setName( aName );
 
   }
 
-  public EDataCfgType getTypeOfDataCfg() {
-    return typeOfDataCfg;
+  public ECfgUnitType getTypeOfCfgUnit() {
+    return typeOfCfgUnit;
   }
 
-  public void setTypeOfDataCfg( EDataCfgType aType ) {
-    typeOfDataCfg = aType;
+  public void setTypeOfCfgUnit( ECfgUnitType aType ) {
+    typeOfCfgUnit = aType;
   }
 
   public IList<Gwid> getDataGwids() {
@@ -179,6 +211,22 @@ public class OpcToS5DataCfgUnit
 
   protected void setDataNodes( IList<NodeId> aNodes ) {
     dataNodes = aNodes;
+  }
+
+  public IOptionSet getRealizationOpts() {
+    return realizationOpts;
+  }
+
+  public void setRealizationOpts( IOptionSet aRealizationOpts ) {
+    realizationOpts = new OptionSet( aRealizationOpts );
+  }
+
+  public String getRelizationTypeId() {
+    return relizationTypeId;
+  }
+
+  public void setRelizationTypeId( String aRelizationTypeId ) {
+    relizationTypeId = aRelizationTypeId;
   }
 
 }

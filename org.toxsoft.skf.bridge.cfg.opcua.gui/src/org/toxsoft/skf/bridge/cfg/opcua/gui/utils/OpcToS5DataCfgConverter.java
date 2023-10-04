@@ -1,15 +1,20 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.utils;
 
+import java.util.*;
+
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.toxsoft.core.tslib.av.avtree.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.*;
 import org.toxsoft.core.tslib.bricks.validator.impl.*;
 import org.toxsoft.core.tslib.coll.*;
+import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.filegen.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 
 /**
  * Converter of cfg to avtree and back
@@ -22,6 +27,8 @@ public class OpcToS5DataCfgConverter {
   private static final String DESCRIPTION_STR                                   = "description";
   private static final String ID_STR                                            = "id";
   private static final String DATA_DEF_FORMAT                                   = "data.%s.def";
+  private static final String CMD_DEF_FORMAT                                    = "cmd.%s.def";
+  private static final String CLASS_DEF_FORMAT                                  = "class.%s.def";
   private static final String DLM_ID_TEMPLATE                                   =
       "ru.toxsoft.l2.dlm.tags.common.OpcBridgeDlm";
   private static final String DLM_DESCR_TEMPLATE                                =
@@ -31,11 +38,67 @@ public class OpcToS5DataCfgConverter {
   private static final String ONE_INT_TO_ONE_BIT_DATA_TRANSMITTER_FACTORY_CLASS =
       "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.SingleIntToSingleBoolDataTransmitterFactory";
   private static final String OPC_TAG_DEVICE                                    = "opc2s5.bridge.collection.id";
+  private static final String EVENT_TRIGGER_DEF_FORMAT                          = "event.trigger.%s.def";
+
+  private static final String OUTPUT_TAGS_ARRAY_ID    = "output.tags";
+  private static final String ASYNC_TAGS_ARRAY_ID     = "async.tags";
+  private static final String SYNC_TAGS_ARRAY_ID      = "sync.tags";
+  private static final String OUTPUT_GROUP_NODE_ID    = "output.group.def";
+  private static final String ASYNC_GROUP_NODE_ID     = "async.group.def";
+  private static final String SYNC_GROUP_NODE_ID      = "sync.group.def";
+  private static final String SYNCH_PERIOD_PARAM_NAME = "period";
+
+  private static final String GROUPS_ARRAY_NAME  = "groups";
+  private static final String BRIDGES_ARRAY_NAME = "bridges";
+
+  private static final String OPC_TAG_DEVICE_UA = "opc2s5.bridge.collection.id";
+
+  private static final String DESCRIPTION_PARAM_NAME         = "description";
+  private static final String DESCRIPTION_PARAM_VAL_TEMPLATE = "opc 2 s5 pins UA apparat producer";
+
+  private static final String ID_PARAM_NAME = "id";
+
+  private static final String JAVA_CLASS_PARAM_NAME         = "javaClassName";
+  private static final String JAVA_CLASS_PARAM_VAL_TEMPLATE = "org.toxsoft.l2.thd.opc.ua.milo.OpcUaMiloDriverProducer";
+
+  private static final String HOST_PARAM_NAME         = "host";
+  private static final String HOST_PARAM_VAL_TEMPLATE = "opc.tcp://192.168.0.???:4840";
+
+  private static final String USER_PARAM_NAME         = "user";
+  private static final String USER_PARAM_VAL_TEMPLATE = "";
+
+  private static final String PASSWORD_PARAM_NAME         = "password";
+  private static final String PASSWORD_PARAM_VAL_TEMPLATE = "";
+
+  private static final String SIEMENS_BRIDGE_NODE_ID = "device1.opc.def";
+
+  private static final String OPC2S5_CFG_NODE_ID = "opc2s5.cfg";
+
+  private static final String OPC_TAG_PARAM_NAME        = "opc.tag";
+  private static final String PIN_ID_PARAM_NAME         = "pin.id";
+  private static final String PIN_TYPE_PARAM_NAME       = "pin.type";
+  private static final String PIN_TYPE_EXTRA_PARAM_NAME = "pin.type.extra";
+  private static final String PIN_TAG_NODE_ID_FORMAT    = "pin.tag.%s.def";
 
   /**
    * Начало блока, отвечающего за конфигурацию данных.
    */
   private static final String DATA_DEFS = "dataDefs";
+
+  /**
+   * Начало блока, отвечающего за конфигурацию команд.
+   */
+  private static final String CMD_DEFS = "cmdDefs";
+
+  /**
+   * Начало блока, отвечающего за конфигурацию команд для регистрации в качестве слушателя.
+   */
+  private static final String CMD_CLASS_DEFS = "cmdClassDefs";
+
+  /**
+   * Начало блока, отвечающего за события.
+   */
+  private static final String EVENT_DEFS = "eventDefs";
 
   /**
    * Имя параметра - идентификатор пина.
@@ -56,6 +119,16 @@ public class OpcToS5DataCfgConverter {
    * Имя параметра - идентификатор данного.
    */
   private static final String DATA_ID = "data.id";
+
+  /**
+   * Имя параметра - идентификатор команды.
+   */
+  private static final String CMD_ID = "cmd.id";
+
+  /**
+   * Имя параметра - массив тегов на входе команды.
+   */
+  private static final String COMMAND_TAGS_ARRAY = "tags";
 
   /**
    * Имя параметра - java-класс.
@@ -92,16 +165,43 @@ public class OpcToS5DataCfgConverter {
    */
   private static final String SYNCH_PERIOD = "synch.period";
 
+  /**
+   * Разделитель имён объектов в списке объектов, предназначенных для выполнения команд (а также в списке команд)
+   */
+  private static final String LIST_DELIM = ",";
+
+  /**
+   * Имя параметра - список идентификаторов команд.
+   */
+  private static final String CMD_IDS_LIST = "cmd.ids.list";
+
+  /**
+   * Имя параметра - список имён объектов..
+   */
+  private static final String OBJ_NAMES_LIST = "obj.names.list";
+
   private OpcToS5DataCfgConverter() {
 
   }
 
-  public static IAvTree convertToTree( OpcToS5DataCfgDoc aDoc ) {
+  public static IAvTree convertToDlmCfgTree( OpcToS5DataCfgDoc aDoc ) {
     StringMap<IAvTree> nodes = new StringMap<>();
 
     // данные
     IAvTree datasMassivTree = createDatas( aDoc );
     nodes.put( DATA_DEFS, datasMassivTree );
+
+    // перечисление возможных команд по классам
+    IAvTree commandInfoesMassivTree = createCommandInfoes( aDoc );
+    nodes.put( CMD_CLASS_DEFS, commandInfoesMassivTree );
+
+    // команды
+    IAvTree commandsMassivTree = createCommands( aDoc );
+    nodes.put( CMD_DEFS, commandsMassivTree );
+
+    // события
+    IAvTree eventsMassivTree = createEvents( aDoc );
+    nodes.put( EVENT_DEFS, eventsMassivTree );
 
     IOptionSetEdit opSet = new OptionSet();
 
@@ -116,19 +216,20 @@ public class OpcToS5DataCfgConverter {
   /**
    * Создаёт конфигурацию всех данных для подмодуля данных базового DLM.
    *
+   * @param aDoc OpcToS5DataCfgDoc - набор единиц конфигурации
    * @return IAvTree - конфигурация в стандартном виде.
    */
   private static IAvTree createDatas( OpcToS5DataCfgDoc aDoc ) {
     AvTree pinsMassivTree = AvTree.createArrayAvTree();
-
-    // Set<String> alreadyAddedTags = new HashSet<>();
 
     IList<OpcToS5DataCfgUnit> cfgUnits = aDoc.dataUnits();
 
     for( int i = 0; i < cfgUnits.size(); i++ ) {
       OpcToS5DataCfgUnit unit = cfgUnits.get( i );
 
-      pinsMassivTree.addElement( createDataPin( unit ) );
+      if( unit.getTypeOfCfgUnit() == ECfgUnitType.DATA ) {
+        pinsMassivTree.addElement( createDataPin( unit ) );
+      }
     }
 
     return pinsMassivTree;
@@ -140,7 +241,7 @@ public class OpcToS5DataCfgConverter {
    * @param aUnit OpcToS5DataCfgUnit - описание данного (пина-тега). Предполагается что все параметры заполнены.
    * @return IAvTree - конфигурация в стандартном виде.
    */
-  @SuppressWarnings( "unchecked" )
+
   private static IAvTree createDataPin( OpcToS5DataCfgUnit aUnit ) {
     String pinId = aUnit.id();
 
@@ -185,7 +286,7 @@ public class OpcToS5DataCfgConverter {
     // pinOpSet1.setInt( BIT_INDEX, aTagData.getCmdWordBitIndex() );
     // }
 
-    // признак текущности, историчности
+    // признак текущности, историчности TODO
     pinOpSet1.setBool( IS_HIST, true );
     pinOpSet1.setBool( IS_CURR, true );
 
@@ -204,5 +305,344 @@ public class OpcToS5DataCfgConverter {
       throw e;
     }
 
+  }
+
+  /**
+   * Создаёт и возвращает конфигурацию всех событий.
+   *
+   * @param aDoc OpcToS5DataCfgDoc - набор единиц конфигурации
+   * @return IAvTree - конфигурация в стандартном виде.
+   */
+  private static IAvTree createCommands( OpcToS5DataCfgDoc aDoc ) {
+    AvTree commandsMassivTree = AvTree.createArrayAvTree();
+
+    IList<OpcToS5DataCfgUnit> cfgUnits = aDoc.dataUnits();
+
+    for( int i = 0; i < cfgUnits.size(); i++ ) {
+      OpcToS5DataCfgUnit unit = cfgUnits.get( i );
+
+      if( unit.getTypeOfCfgUnit() == ECfgUnitType.COMMAND ) {
+        commandsMassivTree.addElement( createCommand( unit ) );
+      }
+    }
+
+    return commandsMassivTree;
+  }
+
+  /**
+   * Создаёт и возвращает конфигурацию команды.
+   *
+   * @param aUnit OpcToS5DataCfgUnit - данные для конфигурации команды
+   * @return IAvTree - конфигурация в стандартном виде.
+   */
+
+  private static IAvTree createCommand( OpcToS5DataCfgUnit aUnit ) {
+    String pinId = aUnit.id();
+
+    IOptionSetEdit pinOpSet1 = new OptionSet();
+    // pinOpSet1.setStr( PIN_ID, pinId );
+    // pinOpSet1.setStr( JAVA_CLASS, ONE_TO_ONE_DATA_TRANSMITTER_FACTORY_CLASS );
+
+    IList<Gwid> gwids = aUnit.getDataGwids();
+    Gwid gwid = gwids.first();
+
+    // класс
+    String classId = gwid.classId();
+    String objName = gwid.strid();
+    String cmdId = gwid.propId();
+
+    // класс-объект-данное - остаётся как есть
+    pinOpSet1.setStr( CLASS_ID, classId );
+    pinOpSet1.setStr( OBJ_NAME, objName );
+    pinOpSet1.setStr( CMD_ID, cmdId );
+
+    // параметры реализации
+    pinOpSet1.addAll( aUnit.getRealizationOpts() );
+
+    IStringMapEdit<IAvTree> cmdTreeNodes = new StringMap<>();
+
+    AvTree tagsTree = AvTree.createArrayAvTree();
+    cmdTreeNodes.put( COMMAND_TAGS_ARRAY, tagsTree );
+
+    // вместо пина - данные о теге
+    // идентификатор OPC-устройства (драйвера)
+    // pinOpSet1.setStr( TAG_DEVICE_ID, OPC_TAG_DEVICE );
+
+    IList<NodeId> nodes = aUnit.getDataNodes();
+
+    for( int i = 0; i < nodes.size(); i++ ) {
+      NodeId node = nodes.get( i );
+
+      IOptionSetEdit nodeOpSet = new OptionSet();
+
+      nodeOpSet.setStr( TAG_DEVICE_ID, OPC_TAG_DEVICE );
+      nodeOpSet.setStr( TAG_ID, node.toParseableString() );
+      IAvTree nodeTree = AvTree.createSingleAvTree( "tag" + (i + 1), nodeOpSet, IStringMap.EMPTY );
+      tagsTree.addElement( nodeTree );
+    }
+
+    try {
+      IAvTree pinTree1 = AvTree.createSingleAvTree( String.format( CMD_DEF_FORMAT, pinId ), pinOpSet1, cmdTreeNodes );
+      return pinTree1;
+    }
+    catch( TsValidationFailedRtException e ) {
+      System.out.println( "Validation Exception" ); //$NON-NLS-1$
+      throw e;
+    }
+  }
+
+  /**
+   * Создаёт и возвращает перечисление возможных команд по классам.
+   *
+   * @param aDoc OpcToS5DataCfgDoc - набор единиц конфигурации
+   * @return IAvTree - конфигурация в стандартном виде.
+   */
+  private static IAvTree createCommandInfoes( OpcToS5DataCfgDoc aDoc ) {
+    AvTree commandInfoesMassivTree = AvTree.createArrayAvTree();
+
+    IMapEdit<String, IListEdit<String>> objsByClass = new ElemMap<>();
+    IMapEdit<String, IListEdit<String>> cmdsByClass = new ElemMap<>();
+
+    IList<OpcToS5DataCfgUnit> cfgUnits = aDoc.dataUnits();
+
+    for( int i = 0; i < cfgUnits.size(); i++ ) {
+      OpcToS5DataCfgUnit unit = cfgUnits.get( i );
+
+      if( unit.getTypeOfCfgUnit() == ECfgUnitType.COMMAND ) {
+        IList<Gwid> gwids = unit.getDataGwids();
+        for( Gwid gwid : gwids ) {
+
+          // класс
+          String classId = gwid.classId();
+          String objName = gwid.strid();
+          String cmdId = gwid.propId();
+
+          IListEdit<String> objs;
+          IListEdit<String> cmds;
+
+          if( objsByClass.hasKey( classId ) ) {
+            objs = objsByClass.getByKey( classId );
+            cmds = cmdsByClass.getByKey( classId );
+          }
+          else {
+            objs = new ElemArrayList<>( false );
+            cmds = new ElemArrayList<>( false );
+
+            objsByClass.put( classId, objs );
+            cmdsByClass.put( classId, cmds );
+          }
+
+          objs.add( objName );
+          cmds.add( cmdId );
+        }
+      }
+    }
+
+    Iterator<String> classIterator = objsByClass.keys().iterator();
+
+    while( classIterator.hasNext() ) {
+      String classId = classIterator.next();
+
+      IAvTree classDef =
+          createClassCommandsInfo( classId, objsByClass.getByKey( classId ), cmdsByClass.getByKey( classId ) );
+      commandInfoesMassivTree.addElement( classDef );
+    }
+
+    return commandInfoesMassivTree;
+
+  }
+
+  /**
+   * Создаёт и возвращает перечисление возможных команд одного класса.
+   *
+   * @param aClassId - идентификатор класса
+   * @param aObjNames - имена объектов
+   * @param aCmdIds - идентификаторы команд класса.
+   * @return IAvTree - конфигурация в стандартном виде.
+   */
+
+  private static IAvTree createClassCommandsInfo( String aClassId, IList<String> aObjNames, IList<String> aCmdIds ) {
+    IOptionSetEdit pinOpSet1 = new OptionSet();
+    pinOpSet1.setStr( CLASS_ID, aClassId );
+
+    StringBuilder objList = new StringBuilder();
+    String add = new String();
+    for( String str : aObjNames ) {
+      objList.append( add );
+      objList.append( str );
+      add = LIST_DELIM;
+    }
+    pinOpSet1.setStr( OBJ_NAMES_LIST, objList.toString() );
+
+    StringBuilder cmdList = new StringBuilder();
+    add = new String();
+    for( String str : aCmdIds ) {
+      cmdList.append( add );
+      cmdList.append( str );
+      add = LIST_DELIM;
+    }
+    pinOpSet1.setStr( CMD_IDS_LIST, cmdList.toString() );
+
+    IAvTree pinTree1 =
+        AvTree.createSingleAvTree( String.format( CLASS_DEF_FORMAT, aClassId ), pinOpSet1, IStringMap.EMPTY );
+    return pinTree1;
+  }
+
+  /**
+   * Создаёт и возвращает конфигурацию всех событий.
+   *
+   * @param aDoc OpcToS5DataCfgDoc - набор единиц конфигурации
+   * @return IAvTree - конфигурация в стандартном виде.
+   */
+  private static IAvTree createEvents( OpcToS5DataCfgDoc aDoc ) {
+    AvTree eventsMassivTree = AvTree.createArrayAvTree();
+
+    IList<OpcToS5DataCfgUnit> cfgUnits = aDoc.dataUnits();
+
+    for( int i = 0; i < cfgUnits.size(); i++ ) {
+      OpcToS5DataCfgUnit unit = cfgUnits.get( i );
+
+      if( unit.getTypeOfCfgUnit() == ECfgUnitType.EVENT ) {
+        // eventsMassivTree.addElement( createEvent( unit ) );
+      }
+    }
+
+    return eventsMassivTree;
+  }
+
+  /**
+   * Создаёт конфигурацию события и возвращает её.
+   *
+   * @return IAvTree - конфигурация события.
+   */
+  @SuppressWarnings( "unchecked" )
+  private static IAvTree createEvent( OpcToS5DataCfgUnit aUnit ) {
+    IAvTree triggerTree =
+        AvTree.createSingleAvTree( String.format( EVENT_TRIGGER_DEF_FORMAT, "" ), IOptionSet.NULL, IStringMap.EMPTY );
+
+    return triggerTree;
+  }
+
+  public static IAvTree convertToDevCfgTree( OpcToS5DataCfgDoc aDoc ) {
+
+    IOptionSetEdit opSet = new OptionSet();
+
+    opSet.setStr( JAVA_CLASS_PARAM_NAME, JAVA_CLASS_PARAM_VAL_TEMPLATE );
+    opSet.setStr( ID_PARAM_NAME, OPC_TAG_DEVICE_UA );
+    opSet.setStr( DESCRIPTION_PARAM_NAME, DESCRIPTION_PARAM_VAL_TEMPLATE );
+
+    IOptionSetEdit bridgeOps = new OptionSet();
+
+    bridgeOps.setStr( ID_PARAM_NAME, OPC_TAG_DEVICE_UA );
+    bridgeOps.setStr( DESCRIPTION_PARAM_NAME, DESCRIPTION_PARAM_VAL_TEMPLATE );
+    bridgeOps.setStr( HOST_PARAM_NAME, HOST_PARAM_VAL_TEMPLATE );
+    bridgeOps.setStr( USER_PARAM_NAME, USER_PARAM_VAL_TEMPLATE );
+    bridgeOps.setStr( PASSWORD_PARAM_NAME, PASSWORD_PARAM_VAL_TEMPLATE );
+
+    AvTree synchGroup = createGroup( aDoc, aCfgNode -> (aCfgNode.isRead() && aCfgNode.isSynch()), SYNC_TAGS_ARRAY_ID,
+        SYNC_GROUP_NODE_ID );
+
+    synchGroup.fieldsEdit().setInt( SYNCH_PERIOD_PARAM_NAME, 500 );
+
+    IAvTree asynchGroup = createGroup( aDoc, aCfgNode -> (aCfgNode.isRead() && !aCfgNode.isSynch()),
+        ASYNC_TAGS_ARRAY_ID, ASYNC_GROUP_NODE_ID );
+
+    IAvTree outputGroup = createGroup( aDoc, CfgOpcUaNode::isWrite, OUTPUT_TAGS_ARRAY_ID, OUTPUT_GROUP_NODE_ID );
+
+    // массив групп
+    AvTree groupsMassivTree = AvTree.createArrayAvTree();
+
+    groupsMassivTree.addElement( synchGroup );
+    groupsMassivTree.addElement( asynchGroup );
+    groupsMassivTree.addElement( outputGroup );
+
+    // массив групп
+    AvTree bridgesMassivTree = AvTree.createArrayAvTree();
+
+    StringMap<IAvTree> groupsNodes = new StringMap<>();
+    groupsNodes.put( GROUPS_ARRAY_NAME, groupsMassivTree );
+
+    IAvTree siemensBridge = AvTree.createSingleAvTree( SIEMENS_BRIDGE_NODE_ID, bridgeOps, groupsNodes );
+    bridgesMassivTree.addElement( siemensBridge );
+
+    StringMap<IAvTree> nodes = new StringMap<>();
+    nodes.put( BRIDGES_ARRAY_NAME, bridgesMassivTree );
+
+    IAvTree tree = AvTree.createSingleAvTree( OPC2S5_CFG_NODE_ID, opSet, nodes );
+
+    return tree;
+  }
+
+  private static AvTree createGroup( OpcToS5DataCfgDoc aDoc, IGroupFilter aGroupFilter, String aArrayId,
+      String aGroupNodeId ) {
+
+    // массив тегов группы
+    AvTree tagsMassivTree = AvTree.createArrayAvTree();
+
+    Set<String> alreadyAddedTags = new HashSet<>();
+
+    IList<CfgOpcUaNode> cfgNodes = aDoc.getNodesCfgs();
+
+    for( CfgOpcUaNode tagData : cfgNodes ) {
+      if( !aGroupFilter.isValid( tagData ) ) {
+        continue;
+      }
+
+      IAvTree tag = createTag( tagData );
+
+      tagsMassivTree.addElement( tag );
+    }
+
+    StringMap<IAvTree> nodes = new StringMap<>();
+    nodes.put( aArrayId, tagsMassivTree );
+
+    IOptionSetEdit pinOpSet1 = new OptionSet();
+
+    AvTree groupTree = AvTree.createSingleAvTree( aGroupNodeId, pinOpSet1, nodes );
+    return groupTree;
+  }
+
+  private static IAvTree createTag( CfgOpcUaNode aData ) {
+
+    IOptionSetEdit pinOpSet1 = new OptionSet();
+
+    pinOpSet1.setStr( OPC_TAG_PARAM_NAME, aData.getNodeId() );
+    pinOpSet1.setStr( PIN_ID_PARAM_NAME, getPinId( aData.getNodeId() ) );
+    pinOpSet1.setStr( PIN_TYPE_PARAM_NAME, aData.getType().id() );
+    // pinOpSet1.setStr( PIN_TYPE_EXTRA_PARAM_NAME, aData.getTagValueRawType() );
+
+    // if( aData.getCmdWordBitIndex() > -1 ) {
+    // pinOpSet1.setBool( PIN_CONTROL_WORD_PARAM_NAME, true );
+    // }
+
+    IAvTree pinTree1 = null;
+    try {
+      pinTree1 = AvTree.createSingleAvTree( String.format( PIN_TAG_NODE_ID_FORMAT, getPinId( aData.getNodeId() ) ),
+          pinOpSet1, IStringMap.EMPTY );
+    }
+    catch( TsValidationFailedRtException e ) {
+      System.out.println( aData.getNodeId() );
+      throw e;
+    }
+    return pinTree1;
+  }
+
+  private static String getPinId( String aTagName ) {
+    String result = aTagName;
+    result = result.replace( " ", "_" );
+    result = result.replace( "-", "_" );
+    result = result.replace( ".", "_" );
+    result = result.replace( "(", "_" );
+    result = result.replace( ")", "_" );
+    result = result.replace( "=", "_" );
+    result = result.replace( ";", "_" );
+    result = result.replace( "\\\"", "" );
+    result = result.replace( "\"", "" );
+    return result;
+  }
+
+  interface IGroupFilter {
+
+    boolean isValid( CfgOpcUaNode aCfgOpcUaNode );
   }
 }

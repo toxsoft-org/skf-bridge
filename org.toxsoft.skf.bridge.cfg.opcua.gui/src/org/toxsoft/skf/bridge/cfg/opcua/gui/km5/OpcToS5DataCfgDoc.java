@@ -1,12 +1,17 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
 
+import org.eclipse.milo.opcua.stack.core.types.builtin.*;
+import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.bricks.keeper.*;
 import org.toxsoft.core.tslib.bricks.keeper.AbstractEntityKeeper.*;
 import org.toxsoft.core.tslib.bricks.strid.impl.*;
 import org.toxsoft.core.tslib.bricks.strio.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
+import org.toxsoft.core.tslib.coll.primtypes.*;
+import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.utils.errors.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.filegen.*;
 
 /**
  * A hole configuration of opc ua <-> s5 bridge, contains several devisions (data, commands, events) each contains units
@@ -52,6 +57,21 @@ public class OpcToS5DataCfgDoc
             aSw.writeEol();
           }
 
+          IList<CfgOpcUaNode> nodes = aEntity.getNodesCfgs();
+
+          // Nodes
+          // nodes count
+          aSw.writeInt( nodes.size() );
+          aSw.writeSeparatorChar();
+          aSw.writeEol();
+
+          for( int i = 0; i < nodes.size(); i++ ) {
+            // one node
+            CfgOpcUaNode.KEEPER.write( aSw, nodes.get( i ) );
+            aSw.writeSeparatorChar();
+            aSw.writeEol();
+          }
+
           aSw.writeQuotedString( "CheckDoc" );
           aSw.decNewLine();
         }
@@ -79,12 +99,28 @@ public class OpcToS5DataCfgDoc
             units.add( unit );
           }
 
+          // Nodes
+          // nodes count
+          int nodesCount = aSr.readInt();
+          aSr.ensureSeparatorChar();
+
+          IStringMapEdit<CfgOpcUaNode> nodes = new StringMap<>();
+          for( int i = 0; i < nodesCount; i++ ) {
+            // one node
+            CfgOpcUaNode node = CfgOpcUaNode.KEEPER.read( aSr );
+            aSr.ensureSeparatorChar();
+            nodes.put( node.getNodeId(), node );
+          }
+
+          System.out.println( "Loaded nodes count = " + nodes.size() );
+
           if( !aSr.readQuotedString().equals( "CheckDoc" ) ) {
             System.out.println( "Error Doc Read" );
           }
 
           OpcToS5DataCfgDoc result = new OpcToS5DataCfgDoc( id, name, descr );
           result.dataCfgUnits = units;
+          result.nodesCfgs = nodes;
           return result;
         }
       };
@@ -93,6 +129,11 @@ public class OpcToS5DataCfgDoc
    * List of data cfg units.
    */
   private IListEdit<OpcToS5DataCfgUnit> dataCfgUnits = new ElemArrayList<>();
+
+  /**
+   * List of nodes cfgs.
+   */
+  private IStringMapEdit<CfgOpcUaNode> nodesCfgs = new StringMap<>();
 
   /**
    * Constructor by id, name and description/
@@ -137,5 +178,30 @@ public class OpcToS5DataCfgDoc
 
   public void removeDataUnit( OpcToS5DataCfgUnit aDataUnit ) {
     dataCfgUnits.remove( aDataUnit );
+  }
+
+  /**
+   * Returns list of configurations for all node existed in document (and may be more - configs are not deleted)
+   *
+   * @return IList - list of configurations for all node existed in document
+   */
+  public IList<CfgOpcUaNode> getNodesCfgs() {
+    ensureNodesCfgs();
+    return nodesCfgs.values();
+  }
+
+  /**
+   * Synchronizes loaded and existed in units nodes cfgs.
+   */
+  private void ensureNodesCfgs() {
+    for( OpcToS5DataCfgUnit unit : dataCfgUnits ) {
+      IList<NodeId> nodes = unit.getDataNodes();
+      for( NodeId node : nodes ) {
+        if( !nodesCfgs.hasKey( node.toParseableString() ) ) {
+          nodesCfgs.put( node.toParseableString(),
+              new CfgOpcUaNode( node.toParseableString(), false, true, false, EAtomicType.INTEGER ) );
+        }
+      }
+    }
   }
 }

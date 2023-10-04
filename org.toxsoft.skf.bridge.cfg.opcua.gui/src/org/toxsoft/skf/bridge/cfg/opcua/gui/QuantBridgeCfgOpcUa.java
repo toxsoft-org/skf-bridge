@@ -8,6 +8,7 @@ import org.toxsoft.core.tslib.utils.valobj.*;
 import org.toxsoft.core.txtproj.lib.storage.*;
 import org.toxsoft.core.txtproj.lib.workroom.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.uskat.core.gui.km5.*;
 
 /**
@@ -24,7 +25,7 @@ public class QuantBridgeCfgOpcUa
   public QuantBridgeCfgOpcUa() {
     super( QuantBridgeCfgOpcUa.class.getSimpleName() );
 
-    TsValobjUtils.registerKeeperIfNone( EDataCfgType.KEEPER_ID, EDataCfgType.KEEPER );
+    TsValobjUtils.registerKeeperIfNone( ECfgUnitType.KEEPER_ID, ECfgUnitType.KEEPER );
     // TsValobjUtils.registerKeeperIfNone( EDisplayFormat.KEEPER_ID, EDisplayFormat.KEEPER );
     // TsValobjUtils.registerKeeperIfNone( ETimeUnit.KEEPER_ID, ETimeUnit.KEEPER );
     // TsValobjUtils.registerKeeperIfNone( VtGraphParamsList.KEEPER_ID, VtGraphParamsList.KEEPER );

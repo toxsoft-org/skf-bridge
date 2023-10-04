@@ -23,6 +23,7 @@ import org.toxsoft.core.tsgui.utils.layout.*;
 import org.toxsoft.core.tslib.av.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.utils.errors.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.filegen.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 import org.toxsoft.uskat.core.connection.*;
@@ -38,8 +39,13 @@ public class OpcToS5DataCfgDocEditorPanel
 
   final static String ACTID_EDIT_UNITS = SK_ID + ".users.gui.EditUnits"; //$NON-NLS-1$
 
+  final static String ACTID_EDIT_NODES = SK_ID + ".users.gui.EditNodes"; //$NON-NLS-1$
+
   final static TsActionDef ACDEF_EDIT_UNITS = TsActionDef.ofPush2( ACTID_EDIT_UNITS, "Редактировать состав",
       "Редактировать состав единиц конфигурации", ICONID_RUN );
+
+  final static TsActionDef ACDEF_EDIT_NODES = TsActionDef.ofPush2( ACTID_EDIT_NODES, "Редактировать свойства узлов OPC",
+      "Редактировать конфигурационные свойства узлов OPC", ICONID_RUN );
 
   final ISkConnection conn;
 
@@ -75,6 +81,7 @@ public class OpcToS5DataCfgDocEditorPanel
     IM5LifecycleManager<OpcToS5DataCfgDoc> lm = new OpcToS5DataCfgDocM5LifecycleManager( model, docService );
     ITsGuiContext ctx = new TsGuiContext( aContext );
     ctx.params().addAll( aContext.params() );
+
     // IMultiPaneComponentConstants.OPDEF_IS_DETAILS_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
     // IMultiPaneComponentConstants.OPDEF_DETAILS_PANE_PLACE.setValue( ctx.params(),
     // avValobj( EBorderLayoutPlacement.SOUTH ) );
@@ -91,6 +98,7 @@ public class OpcToS5DataCfgDocEditorPanel
               IListEdit<ITsActionDef> aActs ) {
             aActs.add( ACDEF_SEPARATOR );
             aActs.add( ACDEF_EDIT_UNITS );
+            aActs.add( ACDEF_EDIT_NODES );
 
             ITsToolbar toolbar =
 
@@ -112,6 +120,10 @@ public class OpcToS5DataCfgDocEditorPanel
 
               case ACTID_EDIT_UNITS:
                 editOpcCfgDoc( selDoc );
+                break;
+
+              case ACTID_EDIT_NODES:
+                editOpcCfgNodes( selDoc );
                 break;
 
               default:
@@ -156,11 +168,47 @@ public class OpcToS5DataCfgDocEditorPanel
     // IM5CollectionPanel<OpcToS5DataCfgUnit> opcToS5DataCfgUnitPanel =
     // new M5CollectionPanelMpcModownWrapper<>( componentModown2, false );
 
-    IM5LifecycleManager<OpcToS5DataCfgUnit> lm = new OpcToS5DataCfgUnitM5LifecycleManager( model, ctx, aSelDoc );
+    IM5LifecycleManager<OpcToS5DataCfgUnit> lm = new OpcToS5DataCfgUnitM5LifecycleManager( model, aSelDoc );
     IM5CollectionPanel<OpcToS5DataCfgUnit> opcToS5DataCfgUnitPanel =
         model.panelCreator().createCollEditPanel( ctx, lm.itemsProvider(), lm );
 
     tabItem.setControl( opcToS5DataCfgUnitPanel.createControl( tabFolder ) );
+
+    tabFolder.setSelection( tabItem );
+
+  }
+
+  protected void editOpcCfgNodes( OpcToS5DataCfgDoc aSelDoc ) {
+
+    // создаем новую закладку
+    CTabItem tabItem = new CTabItem( tabFolder, SWT.CLOSE );
+    tabItem.setText( "Узлы " + aSelDoc.nmName() );
+
+    IM5Domain m5 = conn.scope().get( IM5Domain.class );
+    IM5Model<CfgOpcUaNode> model = m5.getModel( CfgOpcUaNodeM5Model.MODEL_ID, CfgOpcUaNode.class );
+
+    ITsGuiContext ctx = new TsGuiContext( tsContext() );
+    ctx.params().addAll( tsContext().params() );
+
+    // IMultiPaneComponentConstants.OPDEF_IS_DETAILS_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
+    // IMultiPaneComponentConstants.OPDEF_DETAILS_PANE_PLACE.setValue( ctx.params(),
+    // avValobj( EBorderLayoutPlacement.SOUTH ) );
+    // IMultiPaneComponentConstants.OPDEF_IS_SUPPORTS_TREE.setValue( ctx.params(), AvUtils.AV_TRUE );
+    IMultiPaneComponentConstants.OPDEF_IS_ACTIONS_CRUD.setValue( ctx.params(), AvUtils.AV_TRUE );
+    // добавляем в панель фильтр
+    // IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
+
+    // MultiPaneComponentModown<OpcToS5DataCfgUnit> componentModown2 =
+    // new MultiPaneComponentModown<>( ctx, model, lm.itemsProvider(), lm );
+    // IM5CollectionPanel<OpcToS5DataCfgUnit> opcToS5DataCfgUnitPanel =
+    // new M5CollectionPanelMpcModownWrapper<>( componentModown2, false );
+
+    IM5LifecycleManager<CfgOpcUaNode> lm = model.getLifecycleManager( aSelDoc );
+
+    IM5CollectionPanel<CfgOpcUaNode> cfgNodesPanel =
+        model.panelCreator().createCollEditPanel( ctx, lm.itemsProvider(), lm );
+
+    tabItem.setControl( cfgNodesPanel.createControl( tabFolder ) );
 
     tabFolder.setSelection( tabItem );
 

@@ -1,4 +1,4 @@
-package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
+package org.toxsoft.skf.bridge.cfg.opcua.gui.types;
 
 import org.toxsoft.core.tslib.bricks.keeper.*;
 import org.toxsoft.core.tslib.bricks.keeper.AbstractEntityKeeper.*;

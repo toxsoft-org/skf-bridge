@@ -10,6 +10,7 @@ import org.toxsoft.core.tsgui.m5.model.*;
 import org.toxsoft.core.tsgui.panels.*;
 import org.toxsoft.core.tsgui.utils.layout.*;
 import org.toxsoft.core.tslib.av.impl.*;
+import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.uskat.core.connection.*;
@@ -57,7 +58,8 @@ public class OpcToS5DataCfgUnitEditorPanel
 
     // MultiPaneComponentModown<OpcToS5DataCfgUnit> componentModown =
     // new MultiPaneComponentModown<>( ctx, model, lm.itemsProvider(), lm );
-    IM5LifecycleManager<OpcToS5DataCfgUnit> lm = new OpcToS5DataCfgUnitM5LifecycleManager( model, ctx );
+    IM5LifecycleManager<OpcToS5DataCfgUnit> lm = new OpcToS5DataCfgUnitM5LifecycleManager( model,
+        new OpcToS5DataCfgDoc( TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING ) );
     opcUaConnCfgPanel = model.panelCreator().createCollEditPanel( ctx, lm.itemsProvider(), lm );
 
     // new M5CollectionPanelMpcModownWrapper<>( componentModown, false );

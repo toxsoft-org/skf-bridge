@@ -8,9 +8,11 @@ import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tsgui.m5.model.impl.*;
 import org.toxsoft.core.tslib.av.avtree.*;
+import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.utils.logs.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 
 /**
@@ -19,7 +21,7 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
  * @author max
  */
 public class OpcToS5DataCfgUnitM5LifecycleManager
-    extends M5LifecycleManager<OpcToS5DataCfgUnit, ITsGuiContext> {
+    extends M5LifecycleManager<OpcToS5DataCfgUnit, OpcToS5DataCfgDoc> {
 
   /**
    * Журнал работы
@@ -29,16 +31,16 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
   /**
    * тестовый список конфигураций
    */
-  private OpcToS5DataCfgDoc cfgDoc = new OpcToS5DataCfgDoc( "id", "name", "descr" );
+  // private OpcToS5DataCfgDoc cfgDoc = new OpcToS5DataCfgDoc( "id", "name", "descr" );
 
   /**
    * Constructor by M5 model and context
    *
    * @param aModel IM5Model - model
-   * @param aContext ITsGuiContext - context
+   * @param aCfgDoc OpcToS5DataCfgDoc - config document
    */
-  public OpcToS5DataCfgUnitM5LifecycleManager( IM5Model<OpcToS5DataCfgUnit> aModel, ITsGuiContext aContext ) {
-    super( aModel, true, true, true, true, aContext );
+  public OpcToS5DataCfgUnitM5LifecycleManager( IM5Model<OpcToS5DataCfgUnit> aModel, OpcToS5DataCfgDoc aCfgDoc ) {
+    super( aModel, true, true, true, true, aCfgDoc );
 
   }
 
@@ -49,30 +51,36 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
    * @param aContext ITsGuiContext - context
    * @param aCfgDoc OpcToS5DataCfgDoc - cfg doc
    */
-  public OpcToS5DataCfgUnitM5LifecycleManager( IM5Model<OpcToS5DataCfgUnit> aModel, ITsGuiContext aContext,
-      OpcToS5DataCfgDoc aCfgDoc ) {
-    super( aModel, true, true, true, true, aContext );
-    cfgDoc = aCfgDoc;
-  }
+  // public OpcToS5DataCfgUnitM5LifecycleManager( IM5Model<OpcToS5DataCfgUnit> aModel, ITsGuiContext aContext,
+  // OpcToS5DataCfgDoc aCfgDoc ) {
+  // super( aModel, true, true, true, true, aContext );
+  // cfgDoc = aCfgDoc;
+  // }
 
   @Override
   protected IList<OpcToS5DataCfgUnit> doListEntities() {
-    return cfgDoc.dataUnits();
+    return master().dataUnits();
   }
 
   @Override
   protected OpcToS5DataCfgUnit doCreate( IM5Bunch<OpcToS5DataCfgUnit> aValues ) {
     String name = OpcToS5DataCfgUnitM5Model.DISPLAY_NAME.getFieldValue( aValues ).asString();
     String strid = "opctos5.bridge.cfg.unit.id" + System.currentTimeMillis();// OpcToS5DataCfgUnitM5Model.STRID.getFieldValue(
-    EDataCfgType type = OpcToS5DataCfgUnitM5Model.TYPE.getFieldValue( aValues ).asValobj();
+    ECfgUnitType type = OpcToS5DataCfgUnitM5Model.TYPE.getFieldValue( aValues ).asValobj();
     // aValues ).asString();
     IList<Gwid> gwids = OpcToS5DataCfgUnitM5Model.GWIDS.getFieldValue( aValues );
     IList<NodeId> nodes = OpcToS5DataCfgUnitM5Model.NODES.getFieldValue( aValues );
+
+    ICfgUnitRealizationType realType = OpcToS5DataCfgUnitM5Model.REALIZATION_TYPE.getFieldValue( aValues );
+    IOptionSet realization = OpcToS5DataCfgUnitM5Model.REALIZATION.getFieldValue( aValues );
+
     OpcToS5DataCfgUnit result = new OpcToS5DataCfgUnit( strid, name );
     result.setDataNodes( nodes );
     result.setDataGwids( gwids );
-    result.setTypeOfDataCfg( type );
-    cfgDoc.addDataUnit( result );
+    result.setTypeOfCfgUnit( type );
+    result.setRelizationTypeId( realType.id() );
+    result.setRealizationOpts( realization );
+    master().addDataUnit( result );
     return result;
   }
 
@@ -81,26 +89,31 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
     String name = OpcToS5DataCfgUnitM5Model.DISPLAY_NAME.getFieldValue( aValues ).asString();
     // String strid = OpcToS5DataCfgUnitM5Model.STRID.getFieldValue( aValues ).asString();
     IList<Gwid> gwids = OpcToS5DataCfgUnitM5Model.GWIDS.getFieldValue( aValues );
-    EDataCfgType type = OpcToS5DataCfgUnitM5Model.TYPE.getFieldValue( aValues ).asValobj();
+    ECfgUnitType type = OpcToS5DataCfgUnitM5Model.TYPE.getFieldValue( aValues ).asValobj();
     IList<NodeId> nodes = OpcToS5DataCfgUnitM5Model.NODES.getFieldValue( aValues );
+
+    ICfgUnitRealizationType realType = OpcToS5DataCfgUnitM5Model.REALIZATION_TYPE.getFieldValue( aValues );
+    IOptionSet realization = OpcToS5DataCfgUnitM5Model.REALIZATION.getFieldValue( aValues );
 
     OpcToS5DataCfgUnit result = aValues.originalEntity();
     result.setDataNodes( nodes );
     result.setName( name );
     result.setDataGwids( gwids );
-    result.setTypeOfDataCfg( type );
+    result.setTypeOfCfgUnit( type );
+    result.setRelizationTypeId( realType.id() );
+    result.setRealizationOpts( realization );
 
     return result;
   }
 
   @Override
   protected void doRemove( OpcToS5DataCfgUnit aEntity ) {
-    cfgDoc.removeDataUnit( aEntity );
+    master().removeDataUnit( aEntity );
   }
 
-  void saveCurrState() {
-    OpcToS5DataCfgDocService service = master().get( OpcToS5DataCfgDocService.class );
-    service.saveCfgDoc( cfgDoc );
+  void saveCurrState( ITsGuiContext aContext ) {
+    OpcToS5DataCfgDocService service = aContext.get( OpcToS5DataCfgDocService.class );
+    service.saveCfgDoc( master() );
   }
 
   void generateFileFromCurrState() {
@@ -110,7 +123,7 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
       // CharOutputStreamWriter chOut = new CharOutputStreamWriter( fw );
       // StrioWriter strioWriter = new StrioWriter( chOut );
 
-      IAvTree avTree = OpcToS5DataCfgConverter.convertToTree( cfgDoc );
+      IAvTree avTree = OpcToS5DataCfgConverter.convertToDlmCfgTree( master() );
       // OpcToS5DataCfgDoc.KEEPER.write( strioWriter, cfgDoc );
       String TMP_DEST_FILE = "destDlmFile.tmp";
 

@@ -1,5 +1,10 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.utils;
 
+import static org.toxsoft.core.tslib.av.EAtomicType.*;
+import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
+import static org.toxsoft.core.tslib.av.impl.DataDef.*;
+import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
+
 import java.nio.file.*;
 import java.util.*;
 import java.util.function.*;
@@ -17,6 +22,9 @@ import org.eclipse.milo.opcua.stack.core.util.*;
 import org.toxsoft.core.log4j.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tslib.av.*;
+import org.toxsoft.core.tslib.av.metainfo.*;
+import org.toxsoft.core.tslib.av.opset.*;
+import org.toxsoft.core.tslib.av.opset.impl.OptionSet;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
@@ -26,6 +34,7 @@ import org.toxsoft.core.txtproj.lib.storage.*;
 import org.toxsoft.core.txtproj.lib.workroom.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 
 /**
  * Utils of OPC UA server connections.
@@ -34,6 +43,8 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
  * @author dima
  */
 public class OpcUaUtils {
+
+  public static final String CFG_UNIT_REALIZATION_TYPE_ONT_TO_ONE_DATA = "ont.to.one.data";
 
   /**
    * id secton for store links UaNode->Gwid
@@ -355,6 +366,100 @@ public class OpcUaUtils {
       retVal = cmdGwid2NodeIdsMap.get( gwidKey );
     }
     return retVal;
+  }
+
+  public static final IDataDef OP_CMD_JAVA_CLASS = create( "command.exec.java.class", STRING, //$NON-NLS-1$
+      TSID_NAME, "java класс", //
+      TSID_DESCRIPTION, "java class of realization", //
+      TSID_IS_READ_ONLY, AV_TRUE );
+
+  public static final IDataDef OP_CMD_VALUE_PARAM_ID = create( "value.param.id", STRING, //$NON-NLS-1$
+      TSID_NAME, "ИД параметра", //
+      TSID_DESCRIPTION, "Идентификатор параметра" ); //
+
+  public static final IDataDef OP_CMD_OPC_ID = create( "cmd.opc.id", INTEGER, //$NON-NLS-1$
+      TSID_NAME, "ИД команды в OPC", //
+      TSID_DESCRIPTION, "Идентификатор команды в OPC сервера" ); //
+
+  /**
+   * Registers cfg unit realization types in holder and adds it into context.
+   *
+   * @param aContext ITsGuiContext - context.
+   */
+  public static void registerCfgUnitRealizationTypes( ITsGuiContext aContext ) {
+    if( aContext.hasKey( CfgUnitRealizationTypeRegister.class ) ) {
+      return;
+    }
+    CfgUnitRealizationTypeRegister realizationTypeRegister = new CfgUnitRealizationTypeRegister();
+    aContext.put( CfgUnitRealizationTypeRegister.class, realizationTypeRegister );
+
+    // ----------------------------------------------------
+    // Определение первой реализации команд
+
+    IListEdit<IDataDef> paramDefenitions = new ElemArrayList<>();
+
+    paramDefenitions.add( OP_CMD_JAVA_CLASS );
+    paramDefenitions.add( OP_CMD_VALUE_PARAM_ID );
+    paramDefenitions.add( OP_CMD_OPC_ID );
+
+    IOptionSetEdit defaultParams = new OptionSet();
+    OP_CMD_JAVA_CLASS.setValue( defaultParams,
+        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.commands.ValCommandByOneTagWithParamExec" ) );
+
+    ICfgUnitRealizationType cmdRealValCommandByOneTagWithParamExec = new CfgUnitRealizationType( "val.command.one.tag",
+        "Установка значения через командный узел", ECfgUnitType.COMMAND, paramDefenitions, defaultParams );
+
+    realizationTypeRegister.registerType( cmdRealValCommandByOneTagWithParamExec );
+
+    // ----------------------------------------------------
+    // Определение второй реализации команд
+
+    paramDefenitions = new ElemArrayList<>();
+
+    paramDefenitions.add( OP_CMD_JAVA_CLASS );
+    paramDefenitions.add( OP_CMD_VALUE_PARAM_ID );
+
+    defaultParams = new OptionSet();
+    OP_CMD_JAVA_CLASS.setValue( defaultParams,
+        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.commands.ValueCommandExec" ) );
+    OP_CMD_VALUE_PARAM_ID.setValue( defaultParams, avStr( "value" ) );
+
+    ICfgUnitRealizationType cmdRealValueCommandExec = new CfgUnitRealizationType( "value.command",
+        "Установка значения в узел", ECfgUnitType.COMMAND, paramDefenitions, defaultParams );
+
+    realizationTypeRegister.registerType( cmdRealValueCommandExec );
+
+    // ----------------------------------------------------
+    // Определение первой реализации данных (простое - один к одному)
+
+    paramDefenitions = new ElemArrayList<>();
+
+    paramDefenitions.add( OP_CMD_JAVA_CLASS );
+
+    defaultParams = new OptionSet();
+    OP_CMD_JAVA_CLASS.setValue( defaultParams,
+        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.OneToOneDataTransmitterFactory" ) );
+
+    ICfgUnitRealizationType dataOneToOne = new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_ONT_TO_ONE_DATA,
+        "Один к одному", ECfgUnitType.DATA, paramDefenitions, defaultParams );
+
+    realizationTypeRegister.registerType( dataOneToOne );
+
+    // ----------------------------------------------------
+    // Определение первой реализации события
+
+    paramDefenitions = new ElemArrayList<>();
+
+    paramDefenitions.add( OP_CMD_JAVA_CLASS );
+
+    defaultParams = new OptionSet();
+    OP_CMD_JAVA_CLASS.setValue( defaultParams,
+        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OpcTagsEventSender" ) );
+
+    ICfgUnitRealizationType opcTagsEventSender = new CfgUnitRealizationType( "opc.tags.event.sender", "Простое событие",
+        ECfgUnitType.EVENT, paramDefenitions, defaultParams );
+
+    realizationTypeRegister.registerType( opcTagsEventSender );
   }
 
 }

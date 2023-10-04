@@ -30,7 +30,12 @@ public class OpcToS5DataCfgDocService {
       ITsWorkroom workroom = context.eclipseContext().get( ITsWorkroom.class );
       TsInternalErrorRtException.checkNull( workroom );
       IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
-      workCopy = new StridablesList<>( storage.readColl( SECTID_OPC_CFG_DOCS, OpcToS5DataCfgDoc.KEEPER ) );
+      try {
+        workCopy = new StridablesList<>( storage.readColl( SECTID_OPC_CFG_DOCS, OpcToS5DataCfgDoc.KEEPER ) );
+      }
+      catch( Exception e ) {
+        e.printStackTrace();
+      }
     }
     return workCopy;
   }
@@ -39,8 +44,13 @@ public class OpcToS5DataCfgDocService {
     ITsWorkroom workroom = context.eclipseContext().get( ITsWorkroom.class );
     TsInternalErrorRtException.checkNull( workroom );
     IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
-    IStridablesListEdit<OpcToS5DataCfgDoc> stored =
-        new StridablesList<>( storage.readColl( SECTID_OPC_CFG_DOCS, OpcToS5DataCfgDoc.KEEPER ) );
+    IStridablesListEdit<OpcToS5DataCfgDoc> stored = new StridablesList<>();
+    try {
+      stored = new StridablesList<>( storage.readColl( SECTID_OPC_CFG_DOCS, OpcToS5DataCfgDoc.KEEPER ) );
+    }
+    catch( Exception e ) {
+      e.printStackTrace();
+    }
     if( stored.hasKey( aDoc.id() ) ) {
       stored.replace( aDoc.id(), aDoc );
     }

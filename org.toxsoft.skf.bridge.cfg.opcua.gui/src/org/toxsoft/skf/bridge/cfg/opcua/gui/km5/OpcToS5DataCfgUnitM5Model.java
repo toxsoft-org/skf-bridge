@@ -10,6 +10,7 @@ import static org.toxsoft.skf.bridge.cfg.opcua.gui.IBridgeCfgOpcUaResources.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
 import static org.toxsoft.skide.plugin.exconn.ISkidePluginExconnSharedResources.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
+//import static org.toxsoft.uskat.core.gui.conn.cfg.m5.IConnectionConfigM5Constants.*;
 
 import java.io.*;
 
@@ -26,9 +27,13 @@ import org.toxsoft.core.tsgui.m5.gui.panels.*;
 import org.toxsoft.core.tsgui.m5.gui.panels.impl.*;
 import org.toxsoft.core.tsgui.m5.model.*;
 import org.toxsoft.core.tsgui.m5.model.impl.*;
+import org.toxsoft.core.tsgui.m5.valeds.singlelookup.*;
 import org.toxsoft.core.tsgui.panels.toolbar.*;
+import org.toxsoft.core.tsgui.valed.api.*;
 import org.toxsoft.core.tsgui.valed.controls.av.*;
+import org.toxsoft.core.tsgui.valed.controls.basic.*;
 import org.toxsoft.core.tslib.av.*;
+import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.bricks.apprefs.*;
 import org.toxsoft.core.tslib.bricks.apprefs.impl.*;
 import org.toxsoft.core.tslib.bricks.strid.more.*;
@@ -36,6 +41,7 @@ import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 import org.toxsoft.skf.bridge.cfg.opcua.service.impl.*;
 import org.toxsoft.skide.plugin.exconn.service.*;
@@ -115,6 +121,16 @@ public class OpcToS5DataCfgUnitM5Model
   public static final String FID_DISPLAY_NAME = "display.name"; //$NON-NLS-1$
 
   /**
+   * Realization options of cfg unit
+   */
+  public static final String FID_REALIZATION = "realization.opts"; //$NON-NLS-1$
+
+  /**
+   * Realization type of cfg unit
+   */
+  public static final String FID_REALIZATION_TYPE = "realization.type"; //$NON-NLS-1$
+
+  /**
    * string id of cfg gwids field
    */
   public static final String FID_GWIDS = "gwids"; //$NON-NLS-1$
@@ -135,7 +151,7 @@ public class OpcToS5DataCfgUnitM5Model
 
     @Override
     protected void doInit() {
-      setFlags( M5FF_READ_ONLY );
+      setFlags( M5FF_READ_ONLY | M5FF_HIDDEN );
     }
 
     protected IAtomicValue doGetFieldValue( OpcToS5DataCfgUnit aEntity ) {
@@ -200,21 +216,22 @@ public class OpcToS5DataCfgUnitM5Model
   // M5EnumModelBase<Enum<T>>
 
   /**
-   * Attribute {@link OpcToS5DataCfgUnit#getTypeOfDataCfg() } type
+   * Attribute {@link OpcToS5DataCfgUnit#getTypeOfCfgUnit() } type
    */
   static M5AttributeFieldDef<OpcToS5DataCfgUnit> TYPE = new M5AttributeFieldDef<>( FID_TYPE, EAtomicType.VALOBJ, //
-      TSID_NAME, "Реализация", //
-      TSID_DESCRIPTION, "Реализация", //
-      TSID_KEEPER_ID, EDataCfgType.KEEPER_ID //
+      TSID_NAME, "Тип", //
+      TSID_DESCRIPTION, "Тип", //
+      TSID_KEEPER_ID, ECfgUnitType.KEEPER_ID //
   ) {
 
     @Override
     protected void doInit() {
       setFlags( M5FF_COLUMN );
+      setDefaultValue( avValobj( ECfgUnitType.DATA ) );
     }
 
     protected IAtomicValue doGetFieldValue( OpcToS5DataCfgUnit aEntity ) {
-      return avValobj( aEntity.getTypeOfDataCfg() );
+      return avValobj( aEntity.getTypeOfCfgUnit() );
     }
   };
 
@@ -251,14 +268,140 @@ public class OpcToS5DataCfgUnitM5Model
       };
 
   /**
+   * Attribute {@link OpcToS5DataCfgUnit#getRelizationTypeId() } realization options
+   */
+
+  static IM5SingleLookupFieldDef<OpcToS5DataCfgUnit, ICfgUnitRealizationType> REALIZATION_TYPE =
+      new M5SingleLookupFieldDef<>( FID_REALIZATION_TYPE, CfgUnitRealizationTypeM5Model.MODEL_ID ) {
+
+        @Override
+        protected void doInit() {
+          setNameAndDescription( "Тип реализации", "Тип реализации" );
+          setFlags( M5FF_COLUMN );
+          CfgUnitRealizationTypeRegister typeReg2 = m5().tsContext().get( CfgUnitRealizationTypeRegister.class );
+          setDefaultValue( typeReg2.getTypesOfRealizationForCfgUnitType( ECfgUnitType.DATA ).first() );
+          setLookupProvider( () -> {
+            CfgUnitRealizationTypeRegister typeReg = m5().tsContext().get( CfgUnitRealizationTypeRegister.class );
+
+            return typeReg.getTypesOfRealizationForCfgUnitType( ECfgUnitType.DATA );
+          } );
+          setValedEditor( ValedSingleLookupEditor.FACTORY_NAME );
+          // setDefaultValue( IOptionSet.NULL );
+          params().setBool( IValedControlConstants.OPDEF_IS_WIDTH_FIXED, false );
+        }
+
+        @Override
+        protected ICfgUnitRealizationType doGetFieldValue( OpcToS5DataCfgUnit aEntity ) {
+          CfgUnitRealizationTypeRegister typeReg = m5().tsContext().get( CfgUnitRealizationTypeRegister.class );
+          return typeReg.getTypeOfRealizationById( aEntity.getTypeOfCfgUnit(), aEntity.getRelizationTypeId() );
+        }
+      };
+
+  /**
+   * Attribute {@link OpcToS5DataCfgUnit#getRealizationOpts() } realization options
+   */
+  static IM5FieldDef<OpcToS5DataCfgUnit, IOptionSet> REALIZATION =
+      new M5FieldDef<>( FID_REALIZATION, IOptionSet.class ) {
+
+        @Override
+        protected void doInit() {
+          setNameAndDescription( "Реализация", "Реализация" );
+          setFlags( M5FF_COLUMN );
+          setValedEditor( ValedOptionSet.FACTORY_NAME );
+          CfgUnitRealizationTypeRegister typeReg2 = m5().tsContext().get( CfgUnitRealizationTypeRegister.class );
+          setDefaultValue(
+              typeReg2.getTypesOfRealizationForCfgUnitType( ECfgUnitType.DATA ).first().getDefaultValues() );
+          params().setBool( IValedControlConstants.OPDEF_IS_WIDTH_FIXED, false );
+        }
+
+        protected IOptionSet doGetFieldValue( OpcToS5DataCfgUnit aEntity ) {
+          return aEntity.getRealizationOpts();
+        }
+
+        protected String doGetFieldValueName( OpcToS5DataCfgUnit aEntity ) {
+          return "" + aEntity.getRealizationOpts().size();
+        }
+
+      };
+
+  /**
    * Constructor.
    */
   public OpcToS5DataCfgUnitM5Model() {
     super( MODEL_ID, OpcToS5DataCfgUnit.class );
 
-    addFieldDefs( STRID, DISPLAY_NAME, TYPE, GWIDS, NODES );
+    addFieldDefs( STRID, DISPLAY_NAME, TYPE, REALIZATION_TYPE, REALIZATION, GWIDS, NODES );
 
     setPanelCreator( new M5DefaultPanelCreator<>() {
+
+      class Controller
+          extends M5EntityPanelWithValedsController<OpcToS5DataCfgUnit> {
+
+        @Override
+        public void beforeSetValues( IM5Bunch<OpcToS5DataCfgUnit> aValues ) {
+          IAtomicValue unitTypeVal = (IAtomicValue)aValues.get( FID_TYPE );
+          ECfgUnitType unitType = unitTypeVal.asValobj();
+          prepareRealizationsComboEditor( unitType );
+          ICfgUnitRealizationType realizationType = (ICfgUnitRealizationType)aValues.get( FID_REALIZATION_TYPE );
+          prepareValusEditor( realizationType );
+        }
+
+        @Override
+        public boolean doProcessEditorValueChange( IValedControl<?> aEditor,
+            IM5FieldDef<OpcToS5DataCfgUnit, ?> aFieldDef, boolean aEditFinished ) {
+          switch( aFieldDef.id() ) {
+            case FID_REALIZATION_TYPE:
+              // when changing the provider, change the value editor
+              ICfgUnitRealizationType realizationType =
+                  (ICfgUnitRealizationType)editors().getByKey( FID_REALIZATION_TYPE ).getValue();
+              prepareValusEditor( realizationType );
+              // we will try to use the available value as much as possible
+              // ValedOptionSet vops = getEditor( FID_REALIZATION, ValedOptionSet.class );
+              // vops.setValue( lastValues().getAs( FID_REALIZATION, IOptionSet.class ) );
+              break;
+            case FID_TYPE:
+              IAtomicValue unitTypeVal = (IAtomicValue)editors().getByKey( FID_TYPE ).getValue();
+              ECfgUnitType unitType = unitTypeVal.asValobj();
+              prepareRealizationsComboEditor( unitType );
+
+              ValedSingleLookupComboEditor<ICfgUnitRealizationType> lEditor =
+                  getEditor( FID_REALIZATION_TYPE, ValedSingleLookupComboEditor.class );
+              CfgUnitRealizationTypeRegister typeReg2 = m5().tsContext().get( CfgUnitRealizationTypeRegister.class );
+              ICfgUnitRealizationType realizationType2 =
+                  typeReg2.getTypesOfRealizationForCfgUnitType( unitType ).first();
+              lEditor.setValue( realizationType2 );
+
+              prepareValusEditor( realizationType2 );
+              break;
+            default:
+              break;
+          }
+          return true;
+        }
+
+        private void prepareValusEditor( ICfgUnitRealizationType aRealizationType ) {
+          ValedOptionSet vops = getEditor( FID_REALIZATION, ValedOptionSet.class );
+          vops.setOptionDefs( aRealizationType.paramDefenitions() );
+          vops.setValue( aRealizationType.getDefaultValues() );
+        }
+
+        private void prepareRealizationsComboEditor( ECfgUnitType aUnitType ) {
+          ValedSingleLookupComboEditor<ICfgUnitRealizationType> lEditor =
+              getEditor( FID_REALIZATION_TYPE, ValedSingleLookupComboEditor.class );
+          lEditor.setLookupProvider( () -> {
+            CfgUnitRealizationTypeRegister typeReg = m5().tsContext().get( CfgUnitRealizationTypeRegister.class );
+
+            return typeReg.getTypesOfRealizationForCfgUnitType( aUnitType );
+          } );
+        }
+
+      }
+
+      @Override
+      protected IM5EntityPanel<OpcToS5DataCfgUnit> doCreateEntityEditorPanel( ITsGuiContext aContext,
+          IM5LifecycleManager<OpcToS5DataCfgUnit> aLifecycleManager ) {
+        return new M5DefaultEntityControlledPanel<>( aContext, model(), aLifecycleManager, new Controller() );
+      }
 
       protected IM5CollectionPanel<OpcToS5DataCfgUnit> doCreateCollEditPanel( ITsGuiContext aContext,
           IM5ItemsProvider<OpcToS5DataCfgUnit> aItemsProvider,
@@ -296,7 +439,7 @@ public class OpcToS5DataCfgUnitM5Model
 
                 switch( aActionId ) {
                   case ACTID_SAVE_DOC:
-                    ((OpcToS5DataCfgUnitM5LifecycleManager)lifecycleManager()).saveCurrState();
+                    ((OpcToS5DataCfgUnitM5LifecycleManager)lifecycleManager()).saveCurrState( tsContext() );
                     break;
 
                   case ACTID_S5_SERVER_SELECT:
@@ -391,4 +534,5 @@ public class OpcToS5DataCfgUnitM5Model
     }
 
   }
+
 }
