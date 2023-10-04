@@ -7,6 +7,7 @@ import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
+import org.eclipse.milo.opcua.sdk.client.*;
 import org.eclipse.milo.opcua.sdk.client.api.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.toxsoft.core.tsgui.bricks.actions.*;
@@ -24,6 +25,7 @@ import org.toxsoft.core.tslib.bricks.validator.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.helpers.*;
 import org.toxsoft.core.tslib.utils.errors.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.panels.*;
 import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.gui.conn.*;
 
@@ -142,16 +144,16 @@ public class NodesForCfgM5Model
                   System.out.println( "Selecetd opc conn: " + "null" );
                 }
 
-                NodeId nodeId = null;// PanelGwidSelector.selectGwid( null, tsContext() );
+                IList<UaTreeNode> selNodes = OpcUaNodesSelector.selectUaNode( aContext, (OpcUaClient)uaClient );
 
-                if( nodeId == null ) {
+                if( selNodes == null || selNodes.size() == 0 ) {
                   return null;
                 }
 
                 IM5BunchEdit<NodeId> bunch = new M5BunchEdit<>( model() );
-                bunch.set( FID_NODE_STR, avStr( nodeId.toParseableString() ) );
+                bunch.set( FID_NODE_STR, avStr( selNodes.first().getNodeId() ) );
                 aLifecycleManager.create( bunch );
-                return nodeId;
+                return NodeId.parse( selNodes.first().getNodeId() );
               }
 
               @Override
@@ -166,17 +168,17 @@ public class NodesForCfgM5Model
                   System.out.println( "Selecetd opc conn: " + "null" );
                 }
 
-                NodeId nodeId = null;// PanelGwidSelector.selectGwid( null, tsContext() );
+                IList<UaTreeNode> selNodes = OpcUaNodesSelector.selectUaNode( aContext, (OpcUaClient)uaClient );
 
-                if( nodeId == null ) {
+                if( selNodes == null || selNodes.size() == 0 ) {
                   return aItem;
                 }
 
                 IM5BunchEdit<NodeId> bunch = new M5BunchEdit<>( model() );
                 bunch.fillFrom( aItem, true );
-                bunch.set( FID_NODE_STR, avStr( nodeId.toParseableString() ) );
+                bunch.set( FID_NODE_STR, avStr( selNodes.first().getNodeId() ) );
                 aLifecycleManager.edit( bunch );
-                return nodeId;
+                return NodeId.parse( selNodes.first().getNodeId() );
               }
 
               @Override
