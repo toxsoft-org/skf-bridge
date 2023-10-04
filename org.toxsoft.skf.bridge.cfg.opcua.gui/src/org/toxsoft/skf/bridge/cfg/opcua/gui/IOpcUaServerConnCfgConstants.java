@@ -75,11 +75,20 @@ public interface IOpcUaServerConnCfgConstants {
    */
   String CREATE_OBJS_FROM_OPC_UA_ACT_ID = "create_objs_from_opc_ua_act_id"; //$NON-NLS-1$
 
-  TsActionDef createClass_OPC_UA_Item = TsActionDef.ofPush2( CREATE_CINFO_FROM_OPC_UA_ACT_ID,
+  /**
+   * id действия "отобразить UaNode -> Gwid"
+   */
+  String SHOW_OPC_UA_NODE_2_GWID_ACT_ID = "show_opc_ua_node_2_gwid_act_id"; //$NON-NLS-1$
+
+  TsActionDef ACTDEF_CREATE_CLASS_OPC_UA_ITEM = TsActionDef.ofPush2( CREATE_CINFO_FROM_OPC_UA_ACT_ID,
       STR_N_CREATE_CINFO_FROM_OPC_UA, STR_D_CREATE_CINFO_FROM_OPC_UA, ICONID_NEW_CLASS );
 
-  TsActionDef createObjs_OPC_UA_Item = TsActionDef.ofPush2( CREATE_OBJS_FROM_OPC_UA_ACT_ID,
+  TsActionDef ACTDEF_CREATE_OBJS_OPC_UA_ITEM = TsActionDef.ofPush2( CREATE_OBJS_FROM_OPC_UA_ACT_ID,
       STR_N_CREATE_OBJS_FROM_OPC_UA, STR_D_CREATE_OBJS_FROM_OPC_UA, ICONID_NEW_OBJECTS );
+
+  TsActionDef ACTDEF_SHOW_OPC_UA_NODE_2_GWID =
+      TsActionDef.ofPush2( SHOW_OPC_UA_NODE_2_GWID_ACT_ID, STR_N_SHOW_OPC_UA_NODE_2_GWID_ACT_ID,
+          STR_D_SHOW_OPC_UA_NODE_2_GWID_ACT_ID, ITsStdIconIds.ICONID_EDIT_FIND_REPLACE );
 
   /**
    * Id of tree mode using origin nodes structure.

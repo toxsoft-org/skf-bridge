@@ -49,6 +49,7 @@ import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.gw.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.gw.skid.*;
+import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.*;
@@ -254,8 +255,10 @@ public class OpcUaServerNodesBrowserPanel
           protected ITsToolbar doCreateToolbar( @SuppressWarnings( "hiding" ) ITsGuiContext aContext, String aName,
               EIconSize aIconSize, IListEdit<ITsActionDef> aActs ) {
             aActs.add( ITsStdActionDefs.ACDEF_SEPARATOR );
-            aActs.add( IOpcUaServerConnCfgConstants.createClass_OPC_UA_Item );
-            aActs.add( IOpcUaServerConnCfgConstants.createObjs_OPC_UA_Item );
+            aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_CREATE_CLASS_OPC_UA_ITEM );
+            aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_CREATE_OBJS_OPC_UA_ITEM );
+            aActs.add( ITsStdActionDefs.ACDEF_SEPARATOR );
+            aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_SHOW_OPC_UA_NODE_2_GWID );
 
             ITsToolbar toolBar = super.doCreateToolbar( aContext, aName, aIconSize, aActs );
 
@@ -266,6 +269,10 @@ public class OpcUaServerNodesBrowserPanel
 
               if( aActionId == CREATE_OBJS_FROM_OPC_UA_ACT_ID ) {
                 createObjsFromNodes( aContext );
+              }
+
+              if( aActionId == SHOW_OPC_UA_NODE_2_GWID_ACT_ID ) {
+                checkNode2Gwid( aContext );
               }
 
             } );
@@ -310,6 +317,15 @@ public class OpcUaServerNodesBrowserPanel
 
     } );
 
+  }
+
+  @SuppressWarnings( "nls" )
+  protected void checkNode2Gwid( ITsGuiContext aContext ) {
+    NodeId nodeId = selectedNode.getUaNode().getNodeId();
+    Gwid gwid = OpcUaUtils.uaNode2rtdGwid( aContext, nodeId );
+    String checkResult = String.format( "%s [%s] -> %s", selectedNode.getUaNode().getBrowseName().getName(),
+        nodeId.toParseableString(), gwid == null ? TsLibUtils.EMPTY_STRING : gwid.asString() );
+    TsDialogUtils.info( getShell(), "Check link result: %s", checkResult );
   }
 
   private static class UaNodesTreeMaker
@@ -629,6 +645,7 @@ public class OpcUaServerNodesBrowserPanel
           TsDialogUtils.info( getShell(), "Операция завершена успешно, созданы/обновлены объекты: %s", sb.toString() );
           // for debug пробуем автоматическую привязку NodeId -> Gwid
           // идем по списку объектов
+          IListEdit<UaNode2RtdGwid> node2GwidList = new ElemArrayList<>();
           for( IDtoObject obj : localLM.itemsProvider().listItems() ) {
             // идем по списку его rtdProperties
             for( IDtoRtdataInfo rtdInfo : selectedClassInfo.rtdata().list() ) {
@@ -639,6 +656,9 @@ public class OpcUaServerNodesBrowserPanel
               if( uaNode != null ) {
                 LoggerUtils.defaultLogger().debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(),
                     gwid.asString() );
+                String nodeDescr = itsNode.getBrowseName() + "::" + uaNode.getBrowseName();
+                UaNode2RtdGwid node2Gwid = new UaNode2RtdGwid( uaNode.getNodeId(), nodeDescr, gwid );
+                node2GwidList.add( node2Gwid );
               }
               else {
                 LoggerUtils.errorLogger().error( "Can't match: ? -> %s", gwid.asString() );
@@ -646,6 +666,8 @@ public class OpcUaServerNodesBrowserPanel
               }
             }
           }
+          // заливаем в хранилище
+          OpcUaUtils.saveNodes2Gwids( aContext, node2GwidList );
         }
       }
     }
