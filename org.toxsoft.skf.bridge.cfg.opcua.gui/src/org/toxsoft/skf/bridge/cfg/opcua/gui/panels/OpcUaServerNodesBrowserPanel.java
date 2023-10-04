@@ -7,7 +7,6 @@ import static org.toxsoft.core.tslib.gw.IGwHardConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IBridgeCfgOpcUaResources.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.*;
-import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
 import java.util.*;
 
@@ -318,11 +317,14 @@ public class OpcUaServerNodesBrowserPanel
     // пока не выбран ни один узел, отключаем
     componentModown.toolbar().getAction( CREATE_CINFO_FROM_OPC_UA_ACT_ID ).setEnabled( false );
     componentModown.toolbar().getAction( CREATE_OBJS_FROM_OPC_UA_ACT_ID ).setEnabled( false );
+    componentModown.toolbar().getAction( SHOW_OPC_UA_NODE_2_GWID_ACT_ID ).setEnabled( false );
     componentModown.addTsSelectionListener( ( aSource, aSelectedItem ) -> {
       // просто активируем кнопки создания/обнолвения классов/объектов
       boolean enableCreateBttns = (aSelectedItem != null);
       componentModown.toolbar().getAction( CREATE_CINFO_FROM_OPC_UA_ACT_ID ).setEnabled( enableCreateBttns );
       componentModown.toolbar().getAction( CREATE_OBJS_FROM_OPC_UA_ACT_ID ).setEnabled( enableCreateBttns );
+      componentModown.toolbar().getAction( SHOW_OPC_UA_NODE_2_GWID_ACT_ID ).setEnabled( enableCreateBttns );
+
       if( aSelectedItem != null ) {
         selectedNode = aSelectedItem;
       }
@@ -438,7 +440,7 @@ public class OpcUaServerNodesBrowserPanel
 
       if( dtoClassInfo != null ) {
         // подтверждаем успешное создание класса
-        TsDialogUtils.info( getShell(), "Операция завершена успешно, создан/обновлен class: %s", dtoClassInfo.id() );
+        TsDialogUtils.info( getShell(), STR_SUCCESS_CLASS_UPDATED, dtoClassInfo.id() );
       }
     }
   }
@@ -539,9 +541,9 @@ public class OpcUaServerNodesBrowserPanel
 
   private static void createCmdInfo( DtoClassInfo aCinf, String aCmdId, IStridablesList<IDataDef> aArgDefs ) {
     // название
-    String name = "<введите название>";
+    String name = STR_ENTER_NAME;
     // описание
-    String descr = "<введите описание>";
+    String descr = STR_ENTER_DESCR;
     IDtoCmdInfo cmdInfo = DtoCmdInfo.create1( aCmdId, //
         aArgDefs, //
         OptionSetUtils.createOpSet( //
@@ -655,9 +657,9 @@ public class OpcUaServerNodesBrowserPanel
   private static void markClassOPC_UA( DtoClassInfo aCinf ) {
     IDataDef ddType = DDEF_BOOLEAN;
     // название
-    String name = "маркер OPC UA";
+    String name = STR_N_OPC_UA_MARKER;
     // описание
-    String descr = "маркер класса сгенерированного из OPC UA";
+    String descr = STR_D_OPC_UA_MARKER;
 
     IDtoAttrInfo atrInfo = DtoAttrInfo.create2( IOpcUaServerConnCfgConstants.OPC_AU_CLASS_MARKER, ddType, //
         TSID_NAME, name, //
@@ -704,10 +706,10 @@ public class OpcUaServerNodesBrowserPanel
           // создаем выбранные объекты
           for( IDtoObject obj : localLM.itemsProvider().listItems() ) {
             conn.coreApi().objService().defineObject( obj );
-            sb.append( "\n" + obj.skid() + " - " + obj.nmName() );
+            sb.append( "\n" + obj.skid() + " - " + obj.nmName() ); //$NON-NLS-1$ //$NON-NLS-2$
           }
           // подтверждаем успешное создание объектов
-          TsDialogUtils.info( getShell(), "Операция завершена успешно, созданы/обновлены объекты: %s", sb.toString() );
+          TsDialogUtils.info( getShell(), STR_SUCCESS_OBJS_UPDATED, sb.toString() );
           // for debug пробуем автоматическую привязку NodeId -> Gwid
           // идем по списку объектов
           IListEdit<UaNode2RtdGwid> node2GwidList = new ElemArrayList<>();
@@ -726,14 +728,14 @@ public class OpcUaServerNodesBrowserPanel
               UaTreeNode uaNode = findVarNode( rtdInfo, itsNode.getChildren() );
               Gwid gwid = Gwid.createRtdata( obj.classId(), obj.id(), rtdInfo.id() );
               if( uaNode != null ) {
-                LoggerUtils.defaultLogger().debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(),
+                LoggerUtils.defaultLogger().debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
                     gwid.asString() );
-                String nodeDescr = itsNode.getBrowseName() + "::" + uaNode.getBrowseName();
+                String nodeDescr = itsNode.getBrowseName() + "::" + uaNode.getBrowseName(); //$NON-NLS-1$
                 UaNode2RtdGwid node2Gwid = new UaNode2RtdGwid( uaNode.getNodeId(), nodeDescr, gwid );
                 node2GwidList.add( node2Gwid );
               }
               else {
-                LoggerUtils.errorLogger().error( "Can't match: ? -> %s", gwid.asString() );
+                LoggerUtils.errorLogger().error( "Can't match: ? -> %s", gwid.asString() ); //$NON-NLS-1$
 
               }
             }
@@ -846,19 +848,4 @@ public class OpcUaServerNodesBrowserPanel
     return retVal;
   }
 
-  /**
-   * Создает, если нужно базовый класс для всех классов сгенерированных из дерева OPC UA
-   *
-   * @param aConn соединение с сервером
-   */
-  private static void ensureOPC_UABaseClass( ISkConnection aConn ) {
-    IOptionSetEdit params = new OptionSet();
-    params.setStr( FID_NAME, "Базовый класс для всех OPC UA сущностей" );
-    params.setStr( FID_DESCRIPTION, "Базовый класс для всех OPC UA сущностей" );
-
-    DtoClassInfo dtoClassInfo = new DtoClassInfo( "OPC_UAObject", GW_ROOT_CLASS_ID, params );
-    OPDEF_SK_IS_SOURCE_CODE_DEFINED_CLASS.setValue( dtoClassInfo.params(), AV_FALSE );
-    OPDEF_SK_IS_SOURCE_USKAT_CORE_CLASS.setValue( dtoClassInfo.params(), AV_FALSE );
-    aConn.coreApi().sysdescr().defineClass( dtoClassInfo );
-  }
 }
