@@ -72,6 +72,11 @@ import org.toxsoft.uskat.core.impl.dto.*;
 public class OpcUaServerNodesBrowserPanel
     extends TsPanel {
 
+  private static final String nodeCmdIdBrowseName       = "CmdId";
+  private static final String nodeCmdArgIntdBrowseName  = "CmdArgInt";
+  private static final String nodeCmdArgFltBrowseName   = "CmdArgFlt";
+  private static final String nodeCmdFeedbackBrowseName = "CmdFeedback";
+
   /**
    * id параметра события: старое значение.
    * <p>
@@ -646,11 +651,18 @@ public class OpcUaServerNodesBrowserPanel
           // for debug пробуем автоматическую привязку NodeId -> Gwid
           // идем по списку объектов
           IListEdit<UaNode2RtdGwid> node2GwidList = new ElemArrayList<>();
+          IListEdit<CmdGwid2UaNodes> cmdGwid2UaNodesList = new ElemArrayList<>();
           for( IDtoObject obj : localLM.itemsProvider().listItems() ) {
+            // находим родительский UaNode
+            UaTreeNode itsNode = itemProvider.nodeById( obj.id() );
+            // привязываем команды
+            for( IDtoCmdInfo cmdInfo : selectedClassInfo.cmds().list() ) {
+              CmdGwid2UaNodes cmdGwid2UaNodes = findCmdNodes( obj, cmdInfo, itsNode );
+              cmdGwid2UaNodesList.add( cmdGwid2UaNodes );
+            }
             // идем по списку его rtdProperties
             for( IDtoRtdataInfo rtdInfo : selectedClassInfo.rtdata().list() ) {
               // находим свой UaNode
-              UaTreeNode itsNode = itemProvider.nodeById( obj.id() );
               UaTreeNode uaNode = findVarNode( rtdInfo, itsNode.getChildren() );
               Gwid gwid = Gwid.createRtdata( obj.classId(), obj.id(), rtdInfo.id() );
               if( uaNode != null ) {
@@ -668,9 +680,52 @@ public class OpcUaServerNodesBrowserPanel
           }
           // заливаем в хранилище
           OpcUaUtils.saveNodes2Gwids( aContext, node2GwidList );
+          OpcUaUtils.saveCmdGwid2Nodes( aContext, cmdGwid2UaNodesList );
         }
       }
     }
+  }
+
+  /**
+   * По описанию команды ищем подходящие UaNodes
+   *
+   * @param aObj описание объекта
+   * @param aCmdInfo описание command
+   * @param aObjNode родительский узел описывающий объект
+   * @return контейнер с описание узлов или null
+   */
+  private static CmdGwid2UaNodes findCmdNodes( IDtoObject aObj, IDtoCmdInfo aCmdInfo, UaTreeNode aObjNode ) {
+    CmdGwid2UaNodes retVal = null;
+    Gwid gwid = Gwid.createCmd( aObj.classId(), aObj.id(), aCmdInfo.id() );
+    String nodeDescr = aObjNode.getBrowseName();
+    String niCmdId = null;
+    String niCmdArgInt = null; // может и не быть
+    String niCmdArgFlt = null;
+    String niCmdFeedback = null;
+    // перебираем все узлы и заполняем нужные нам для описания связи
+    for( UaTreeNode varNode : aObjNode.getChildren() ) {
+      if( varNode.getNodeClass().equals( NodeClass.Variable ) ) {
+        String candidateBrowseName = varNode.getBrowseName();
+        if( nodeCmdIdBrowseName.compareTo( candidateBrowseName ) == 0 ) {
+          niCmdId = varNode.getNodeId();
+          continue;
+        }
+        if( nodeCmdArgIntdBrowseName.compareTo( candidateBrowseName ) == 0 ) {
+          niCmdArgInt = varNode.getNodeId();
+          continue;
+        }
+        if( nodeCmdArgFltBrowseName.compareTo( candidateBrowseName ) == 0 ) {
+          niCmdArgFlt = varNode.getNodeId();
+          continue;
+        }
+        if( nodeCmdFeedbackBrowseName.compareTo( candidateBrowseName ) == 0 ) {
+          niCmdFeedback = varNode.getNodeId();
+          continue;
+        }
+      }
+    }
+    retVal = new CmdGwid2UaNodes( gwid, nodeDescr, niCmdId, niCmdArgInt, niCmdArgFlt, niCmdFeedback );
+    return retVal;
   }
 
   /**

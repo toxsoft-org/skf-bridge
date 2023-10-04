@@ -7,6 +7,8 @@ import org.toxsoft.core.tslib.bricks.keeper.*;
 import org.toxsoft.core.tslib.bricks.keeper.AbstractEntityKeeper.*;
 import org.toxsoft.core.tslib.bricks.strio.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
+import org.toxsoft.core.tslib.utils.*;
+import org.toxsoft.core.tslib.utils.errors.*;
 
 /**
  * Simple container to store link command Gwid → three UaNode.
@@ -45,10 +47,12 @@ public class CmdGwid2UaNodes {
           aSw.writeQuotedString( aEntity.getNodeCmdId().toParseableString() );
           aSw.writeChar( CHAR_ITEM_SEPARATOR );
           // пишем niCmdArgInt
-          aSw.writeQuotedString( aEntity.getNodeCmdArgInt().toParseableString() );
+          aSw.writeQuotedString( aEntity.getNodeCmdArgInt() == null ? TsLibUtils.EMPTY_STRING
+              : aEntity.getNodeCmdArgInt().toParseableString() );
           aSw.writeChar( CHAR_ITEM_SEPARATOR );
           // пишем niCmdArgFlt
-          aSw.writeQuotedString( aEntity.getNodeCmdArgFlt().toParseableString() );
+          aSw.writeQuotedString( aEntity.getNodeCmdArgFlt() == null ? TsLibUtils.EMPTY_STRING
+              : aEntity.getNodeCmdArgFlt().toParseableString() );
           aSw.writeChar( CHAR_ITEM_SEPARATOR );
           // пишем niCmdFeedback
           aSw.writeQuotedString( aEntity.getNodeCmdFeedback().toParseableString() );
@@ -68,29 +72,32 @@ public class CmdGwid2UaNodes {
           String niCmdArgFlt = aSr.readQuotedString();
           aSr.ensureChar( CHAR_ITEM_SEPARATOR );
           String niCmdFeedback = aSr.readQuotedString();
-          return new CmdGwid2UaNodes( gwid, nodeDescr, niCmdId, niCmdArgInt, niCmdArgFlt, niCmdFeedback );
+          return new CmdGwid2UaNodes( gwid, nodeDescr, niCmdId, niCmdArgInt.isBlank() ? null : niCmdArgInt,
+              niCmdArgFlt.isBlank() ? null : niCmdArgInt, niCmdFeedback );
         }
       };
 
   /**
    * Constructor by parent nodeId and fields values.
    *
-   * @param aRtdGwid - rtData Gwid
+   * @param aCmdGwid - command Gwid
    * @param aNodeDescr - description parent.browseName()::this.browseName()
    * @param aNiCmdId - node for set command code (id)
    * @param aNiCmdArgInt - node for set command arg of integer type
    * @param aNiCmdArgFlt - node for set command arg of float type
    * @param aNiCmdFeedback - node for read command feedback
    */
-  public CmdGwid2UaNodes( Gwid aRtdGwid, String aNodeDescr, String aNiCmdId, String aNiCmdArgInt, String aNiCmdArgFlt,
+  public CmdGwid2UaNodes( Gwid aCmdGwid, String aNodeDescr, String aNiCmdId, String aNiCmdArgInt, String aNiCmdArgFlt,
       String aNiCmdFeedback ) {
     super();
-    cmdGwid = aRtdGwid;
+    TsNullArgumentRtException.checkNull( aNiCmdId );
+    TsNullArgumentRtException.checkNull( aNiCmdFeedback );
+    cmdGwid = aCmdGwid;
     nodeDescr = aNodeDescr;
     niCmdId = aNiCmdId;
     niCmdArgInt = aNiCmdArgInt;
-    niCmdArgFlt = aNiCmdArgInt;
-    niCmdFeedback = aNiCmdArgInt;
+    niCmdArgFlt = aNiCmdArgFlt;
+    niCmdFeedback = aNiCmdFeedback;
   }
 
   /**
@@ -104,14 +111,14 @@ public class CmdGwid2UaNodes {
    * @return {@link NodeId} niCmdArgFlt
    */
   public NodeId getNodeCmdArgFlt() {
-    return NodeId.parse( niCmdArgFlt );
+    return niCmdArgFlt == null ? null : NodeId.parse( niCmdArgFlt );
   }
 
   /**
    * @return {@link NodeId} niCmdArgInt
    */
   public NodeId getNodeCmdArgInt() {
-    return NodeId.parse( niCmdArgInt );
+    return niCmdArgInt == null ? null : NodeId.parse( niCmdArgInt );
   }
 
   /**
