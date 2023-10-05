@@ -319,11 +319,13 @@ public class OpcUaServerNodesBrowserPanel
     componentModown.toolbar().getAction( CREATE_OBJS_FROM_OPC_UA_ACT_ID ).setEnabled( false );
     componentModown.toolbar().getAction( SHOW_OPC_UA_NODE_2_GWID_ACT_ID ).setEnabled( false );
     componentModown.addTsSelectionListener( ( aSource, aSelectedItem ) -> {
-      // просто активируем кнопки создания/обнолвения классов/объектов
-      boolean enableCreateBttns = (aSelectedItem != null);
-      componentModown.toolbar().getAction( CREATE_CINFO_FROM_OPC_UA_ACT_ID ).setEnabled( enableCreateBttns );
-      componentModown.toolbar().getAction( CREATE_OBJS_FROM_OPC_UA_ACT_ID ).setEnabled( enableCreateBttns );
-      componentModown.toolbar().getAction( SHOW_OPC_UA_NODE_2_GWID_ACT_ID ).setEnabled( enableCreateBttns );
+      // просто активируем кнопки создания/обновления классов/объектов
+      boolean enableCreateClassBttn = isCtreateClassEnable( aSelectedItem );
+      boolean enableCreateObjBttn = isCtreateObjEnable( aSelectedItem );
+      boolean enableCheckLinkBttn = isCheckLinkEnable( aSelectedItem );
+      componentModown.toolbar().getAction( CREATE_CINFO_FROM_OPC_UA_ACT_ID ).setEnabled( enableCreateClassBttn );
+      componentModown.toolbar().getAction( CREATE_OBJS_FROM_OPC_UA_ACT_ID ).setEnabled( enableCreateObjBttn );
+      componentModown.toolbar().getAction( SHOW_OPC_UA_NODE_2_GWID_ACT_ID ).setEnabled( enableCheckLinkBttn );
 
       if( aSelectedItem != null ) {
         selectedNode = aSelectedItem;
@@ -331,6 +333,47 @@ public class OpcUaServerNodesBrowserPanel
 
     } );
 
+  }
+
+  private static boolean isCheckLinkEnable( UaTreeNode aSelectedItem ) {
+    boolean enable = false;
+    // узел у которого тип Variable
+    if( aSelectedItem != null ) {
+      if( aSelectedItem.getNodeClass().equals( NodeClass.Variable ) ) {
+        enable = true;
+      }
+    }
+    return enable;
+  }
+
+  private static boolean isCtreateObjEnable( UaTreeNode aSelectedItem ) {
+    boolean enable = false;
+    // узел у которого есть прямые дети с типом Object
+    if( aSelectedItem != null ) {
+      IList<UaTreeNode> children = aSelectedItem.getChildren();
+      for( UaTreeNode child : children ) {
+        if( child.getNodeClass().equals( NodeClass.Object ) ) {
+          enable = true;
+          break;
+        }
+      }
+    }
+    return enable;
+  }
+
+  private static boolean isCtreateClassEnable( UaTreeNode aSelectedItem ) {
+    boolean enable = false;
+    // узел у которого есть прямые дети с типом Variable
+    if( aSelectedItem != null ) {
+      IList<UaTreeNode> children = aSelectedItem.getChildren();
+      for( UaTreeNode child : children ) {
+        if( child.getNodeClass().equals( NodeClass.Variable ) ) {
+          enable = true;
+          break;
+        }
+      }
+    }
+    return enable;
   }
 
   @SuppressWarnings( "nls" )
@@ -420,7 +463,6 @@ public class OpcUaServerNodesBrowserPanel
     IList<UaTreeNode> selNodes =
         OpcUaNodesSelector.selectUaNodes4Class( aContext, selectedNode.getUaNode().getNodeId(), client );
     // for debug
-    // OpcUaNodesSelector.selectUaNode( aContext, client );
     // OpcUaNodesLazySelector.selectUaNodes4Class( aContext, selectedNode.getUaNode().getNodeId(), client );
     if( selNodes != null ) {
       // создаем описание класса из списка выбранных узлов
@@ -741,8 +783,8 @@ public class OpcUaServerNodesBrowserPanel
             }
           }
           // заливаем в хранилище
-          OpcUaUtils.saveNodes2Gwids( aContext, node2GwidList );
-          OpcUaUtils.saveCmdGwid2Nodes( aContext, cmdGwid2UaNodesList );
+          OpcUaUtils.addNodes2GwidsInStore( aContext, node2GwidList );
+          OpcUaUtils.addCmdGwid2NodesInStore( aContext, cmdGwid2UaNodesList );
         }
       }
     }

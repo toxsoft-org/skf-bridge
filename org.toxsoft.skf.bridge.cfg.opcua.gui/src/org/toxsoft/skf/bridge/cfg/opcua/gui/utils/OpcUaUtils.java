@@ -245,12 +245,29 @@ public class OpcUaUtils {
   }
 
   /**
+   * Add list of links UaNode->Gwid {@link UaNode2RtdGwid} to store in inner storage
+   *
+   * @param aContext app context
+   * @param aNodes2Gwids list of links UaNode->Gwid
+   */
+  public static void addNodes2GwidsInStore( ITsGuiContext aContext, IList<UaNode2RtdGwid> aNodes2Gwids ) {
+    ITsWorkroom workroom = aContext.eclipseContext().get( ITsWorkroom.class );
+    TsInternalErrorRtException.checkNull( workroom );
+    IList<UaNode2RtdGwid> oldList = loadNodes2Gwids( aContext );
+    IListEdit<UaNode2RtdGwid> newList = new ElemArrayList<>();
+    newList.addAll( oldList );
+    newList.addAll( aNodes2Gwids );
+    IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
+    storage.writeColl( SECTID_OPC_UA_NODES_2_RTD_GWIDS, newList, UaNode2RtdGwid.KEEPER );
+  }
+
+  /**
    * Store in inner storage list of links UaNode->Gwid
    *
    * @param aContext app context
    * @param aNodes2Gwids list of links UaNode->Gwid
    */
-  public static void saveNodes2Gwids( ITsGuiContext aContext, IList<UaNode2RtdGwid> aNodes2Gwids ) {
+  private static void storeNodes2Gwids( ITsGuiContext aContext, IList<UaNode2RtdGwid> aNodes2Gwids ) {
     ITsWorkroom workroom = aContext.eclipseContext().get( ITsWorkroom.class );
     TsInternalErrorRtException.checkNull( workroom );
     IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
@@ -319,16 +336,20 @@ public class OpcUaUtils {
   }
 
   /**
-   * Store in inner storage list of links CmdGwid->UaNodes
+   * Add in inner storage list of {@link CmdGwid2UaNodes} links CmdGwid->UaNodes
    *
    * @param aContext app context
    * @param aCmdGwid2UaNodes list of links CmdGwid->UaNodes
    */
-  public static void saveCmdGwid2Nodes( ITsGuiContext aContext, IList<CmdGwid2UaNodes> aCmdGwid2UaNodes ) {
+  public static void addCmdGwid2NodesInStore( ITsGuiContext aContext, IList<CmdGwid2UaNodes> aCmdGwid2UaNodes ) {
     ITsWorkroom workroom = aContext.eclipseContext().get( ITsWorkroom.class );
     TsInternalErrorRtException.checkNull( workroom );
+    IList<CmdGwid2UaNodes> oldList = loadCmdGwid2Nodes( aContext );
+    IListEdit<CmdGwid2UaNodes> newList = new ElemArrayList<>();
+    newList.addAll( oldList );
+    newList.addAll( aCmdGwid2UaNodes );
     IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
-    storage.writeColl( SECTID_CMD_GWIDS_2_OPC_UA_NODES, aCmdGwid2UaNodes, CmdGwid2UaNodes.KEEPER );
+    storage.writeColl( SECTID_CMD_GWIDS_2_OPC_UA_NODES, newList, CmdGwid2UaNodes.KEEPER );
   }
 
   /**
