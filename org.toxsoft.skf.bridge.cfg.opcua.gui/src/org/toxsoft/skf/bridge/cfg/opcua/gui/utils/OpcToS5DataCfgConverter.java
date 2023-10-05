@@ -23,16 +23,14 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
  */
 public class OpcToS5DataCfgConverter {
 
-  private static final String DLM_CFG_NODE_ID_TEMPLATE                          = "dispatch.dlm.cfg";
+  private static final String DLM_CFG_NODE_ID_TEMPLATE                          = "opc.dlm.cfg";
   private static final String DESCRIPTION_STR                                   = "description";
   private static final String ID_STR                                            = "id";
   private static final String DATA_DEF_FORMAT                                   = "data.%s.def";
   private static final String CMD_DEF_FORMAT                                    = "cmd.%s.def";
   private static final String CLASS_DEF_FORMAT                                  = "class.%s.def";
-  private static final String DLM_ID_TEMPLATE                                   =
-      "ru.toxsoft.l2.dlm.tags.common.OpcBridgeDlm";
-  private static final String DLM_DESCR_TEMPLATE                                =
-      "ru.toxsoft.l2.dlm.tags.common.OpcBridgeDlm";
+  private static final String DLM_ID_TEMPLATE                                   = "ru.toxsoft.l2.dlm.tags.common";
+  private static final String DLM_DESCR_TEMPLATE                                = "ru.toxsoft.l2.dlm.tags.common";
   private static final String ONE_TO_ONE_DATA_TRANSMITTER_FACTORY_CLASS         =
       "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.OneToOneDataTransmitterFactory";
   private static final String ONE_INT_TO_ONE_BIT_DATA_TRANSMITTER_FACTORY_CLASS =
@@ -43,9 +41,9 @@ public class OpcToS5DataCfgConverter {
   private static final String OUTPUT_TAGS_ARRAY_ID    = "output.tags";
   private static final String ASYNC_TAGS_ARRAY_ID     = "async.tags";
   private static final String SYNC_TAGS_ARRAY_ID      = "sync.tags";
-  private static final String OUTPUT_GROUP_NODE_ID    = "output.group.def";
-  private static final String ASYNC_GROUP_NODE_ID     = "async.group.def";
-  private static final String SYNC_GROUP_NODE_ID      = "sync.group.def";
+  private static final String OUTPUT_GROUP_NODE_ID    = "opc.output.group.def";
+  private static final String ASYNC_GROUP_NODE_ID     = "opc.async.group.def";
+  private static final String SYNC_GROUP_NODE_ID      = "opc.sync.group.def";
   private static final String SYNCH_PERIOD_PARAM_NAME = "period";
 
   private static final String GROUPS_ARRAY_NAME  = "groups";
