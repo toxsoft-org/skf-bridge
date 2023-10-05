@@ -24,6 +24,7 @@ import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.skf.reports.gui.panels.*;
+import org.toxsoft.uskat.core.api.sysdescr.*;
 import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.gui.conn.*;
 
@@ -176,7 +177,7 @@ public class GwidsForCfgM5Model
                   System.out.println( "Selecetd conn: " + "null" );
                 }
 
-                Gwid gwid = PanelGwidSelector.selectGwid( null, tsContext() );
+                Gwid gwid = PanelGwidSelector.selectGwid( null, tsContext(), ESkClassPropKind.RTDATA );
 
                 if( gwid == null ) {
                   return null;
@@ -200,7 +201,7 @@ public class GwidsForCfgM5Model
                   System.out.println( "Selecetd conn: " + "null" );
                 }
 
-                Gwid gwid = PanelGwidSelector.selectGwid( aItem, tsContext() );
+                Gwid gwid = PanelGwidSelector.selectGwid( aItem, tsContext(), ESkClassPropKind.RTDATA );
                 if( gwid == null ) {
                   return aItem;
                 }

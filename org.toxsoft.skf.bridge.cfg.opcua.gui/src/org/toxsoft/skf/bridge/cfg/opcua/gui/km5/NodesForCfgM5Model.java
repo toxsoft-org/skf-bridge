@@ -144,7 +144,8 @@ public class NodesForCfgM5Model
                   System.out.println( "Selecetd opc conn: " + "null" );
                 }
 
-                IList<UaTreeNode> selNodes = OpcUaNodesSelector.selectUaNode( aContext, (OpcUaClient)uaClient );
+                IList<UaTreeNode> selNodes =
+                    OpcUaNodesSelector.selectUaNode( aContext, (OpcUaClient)uaClient, IList.EMPTY );
 
                 if( selNodes == null || selNodes.size() == 0 ) {
                   return null;
@@ -168,7 +169,8 @@ public class NodesForCfgM5Model
                   System.out.println( "Selecetd opc conn: " + "null" );
                 }
 
-                IList<UaTreeNode> selNodes = OpcUaNodesSelector.selectUaNode( aContext, (OpcUaClient)uaClient );
+                IList<UaTreeNode> selNodes =
+                    OpcUaNodesSelector.selectUaNode( aContext, (OpcUaClient)uaClient, IList.EMPTY );
 
                 if( selNodes == null || selNodes.size() == 0 ) {
                   return aItem;

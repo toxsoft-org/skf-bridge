@@ -184,7 +184,7 @@ public class OpcUaNodesSelector
 
   @Override
   protected void doSetDataRecord( IList<UaTreeNode> aData ) {
-    // TODO
+    opcUaNodePanel.checkSupport().setItemsCheckState( aData, true );
 
   }
 
@@ -215,14 +215,16 @@ public class OpcUaNodesSelector
    *
    * @param aTsContext ITsGuiContext - соответствующий контекст
    * @param aClient - OPC UA
+   * @param aCheckedNodes - список помеченных узлов
    * @return IList<UaTreeNode> - список выбранных узлов или <b>null</b> в случае отказа от выбора
    */
-  public static IList<UaTreeNode> selectUaNode( ITsGuiContext aTsContext, OpcUaClient aClient ) {
+  public static IList<UaTreeNode> selectUaNode( ITsGuiContext aTsContext, OpcUaClient aClient,
+      IList<UaTreeNode> aCheckedNodes ) {
     ITsDialogInfo cdi = new TsDialogInfo( aTsContext, "Выбор узла из дерева OPC UA", "Выделите нужный и нажмите Ok" );
     OpcUaNodesSelectorContext ctx = new OpcUaNodesSelectorContext( Identifiers.RootFolder, aClient, false, false );
 
     IDialogPanelCreator<IList<UaTreeNode>, OpcUaNodesSelectorContext> creator = OpcUaNodesSelector::new;
-    TsDialog<IList<UaTreeNode>, OpcUaNodesSelectorContext> d = new TsDialog<>( cdi, null, ctx, creator );
+    TsDialog<IList<UaTreeNode>, OpcUaNodesSelectorContext> d = new TsDialog<>( cdi, aCheckedNodes, ctx, creator );
     return d.execData();
   }
 
