@@ -1,5 +1,7 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
 
+import static org.toxsoft.skf.bridge.cfg.opcua.gui.km5.ISkResources.*;
+
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -61,8 +63,7 @@ public class UaVariableNodeM5LifecycleManager
     List<NodeId> nodeIds = ImmutableList.of( aValues.originalEntity().getNodeId() );
     boolean needWarn = !isWritable( nodeIds );
     if( needWarn ) {
-      ETsDialogCode userAnswer = TsDialogUtils.askYesNoCancel( tsContext().get( Shell.class ),
-          "В системе Poligon запрещена запись в узлы с ns > 0x8000.\n Вы уверены что хотите зписать в узел %s?",
+      ETsDialogCode userAnswer = TsDialogUtils.askYesNoCancel( tsContext().get( Shell.class ), STR_WRITE_NODE_CONFIRM,
           aValues.originalEntity().getNodeId().toParseableString() );
       if( userAnswer != ETsDialogCode.YES ) {
         return ValidationResult.error( "User cancel operation" );

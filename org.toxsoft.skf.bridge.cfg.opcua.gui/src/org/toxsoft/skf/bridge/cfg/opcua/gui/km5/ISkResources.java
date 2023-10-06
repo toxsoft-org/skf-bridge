@@ -23,4 +23,9 @@ interface ISkResources {
   String STR_N_SERVER_TIMESTAMP = "Server timestamp";
   String STR_D_SERVER_TIMESTAMP = "Server timestamp";
 
+  /**
+   * {@link UaVariableNodeM5LifecycleManager}
+   */
+  String STR_WRITE_NODE_CONFIRM =
+      "В системе Poligon запрещена запись в узлы с ns > 0x8000.\n Вы уверены что хотите записать в узел %s?";
 }
