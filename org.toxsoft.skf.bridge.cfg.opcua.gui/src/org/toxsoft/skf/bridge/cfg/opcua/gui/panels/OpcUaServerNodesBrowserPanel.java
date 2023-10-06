@@ -769,7 +769,7 @@ public class OpcUaServerNodesBrowserPanel
           llObjs.add( dtoObj );
         }
 
-        IM5LifecycleManager<IDtoObject> localLM = localLifeCycleManager( modelSk, llObjs );
+        IM5LifecycleManager<IDtoObject> localLM = localLifeCycleManager( modelSk, llObjs, itemProvider );
 
         // ITsGuiContext ctxSk = new TsGuiContext( tsContext() );
 
@@ -891,10 +891,11 @@ public class OpcUaServerNodesBrowserPanel
   /**
    * @param aModel M5 модель {@link IDtoObject}
    * @param aListObjs список объектов для верификации пользователем перед реальным созданием в БД сервера
+   * @param aItemProvider локальный поставщик списка сущностей
    * @return lm заточенный под редактирование списка сущностей без реального обновления на сервере
    */
   private IM5LifecycleManager<IDtoObject> localLifeCycleManager( IM5Model<IDtoObject> aModel,
-      IListEdit<IDtoObject> aListObjs ) {
+      IListEdit<IDtoObject> aListObjs, OpcUANode2SkObjectItemsProvider aItemProvider ) {
     IM5LifecycleManager<IDtoObject> retVal = new M5LifecycleManager<>( aModel, false, true, true, true, null ) {
 
       private IDtoObject makeDtoObject( IM5Bunch<IDtoObject> aValues ) {
@@ -913,7 +914,10 @@ public class OpcUaServerNodesBrowserPanel
       protected IDtoObject doEdit( IM5Bunch<IDtoObject> aValues ) {
         IDtoObject edited = makeDtoObject( aValues );
         int index = aListObjs.indexOf( aValues.originalEntity() );
+        // обновим кеш провайдера
+        UaTreeNode treeNode = aItemProvider.id2Node.remove( aValues.originalEntity().id() );
         aListObjs.set( index, edited );
+        aItemProvider.id2Node.put( edited.id(), treeNode );
         return edited;
       }
 
