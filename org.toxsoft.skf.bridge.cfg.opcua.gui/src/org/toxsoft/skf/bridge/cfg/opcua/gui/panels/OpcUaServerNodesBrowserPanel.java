@@ -539,8 +539,9 @@ public class OpcUaServerNodesBrowserPanel
     }
     // добавим атрибут который сигнализирует что класс из OPC UA node
     markClassOPC_UA( cinf );
+    // dima 06.10.23 пока не вижу смысла
     // создадим шаблоны команд, если необходимо
-    createCmdTemplates( cinf, aNodes );
+    // createCmdTemplates( cinf, aNodes );
 
     return cinf;
   }
@@ -620,6 +621,9 @@ public class OpcUaServerNodesBrowserPanel
     if( !dataId.startsWith( RTD_PREFIX ) ) {
       dataId = RTD_PREFIX + dataId;
     }
+    if( isIgnore4RtData( dataId ) ) {
+      return;
+    }
     String paramDescrStr = aVariableNode.getDisplayName().getText();
     String[] result = paramDescrStr.split( "\\|" ); //$NON-NLS-1$
 
@@ -647,6 +651,34 @@ public class OpcUaServerNodesBrowserPanel
     aDtoClass.rtdataInfos().add( dataInfo );
   }
 
+  private static boolean isIgnore4RtData( String aDataId ) {
+    // игнорируем узлы для работы с командами
+    if( aDataId.indexOf( nodeCmdIdBrowseName ) >= 0 ) {
+      return true;
+    }
+    if( aDataId.indexOf( nodeCmdArgFltBrowseName ) >= 0 ) {
+      return true;
+    }
+    if( aDataId.indexOf( nodeCmdArgIntdBrowseName ) >= 0 ) {
+      return true;
+    }
+    return false;
+  }
+
+  private static boolean isIgnore4Event( String aEvId ) {
+    // игнорируем узлы для работы с командами
+    if( aEvId.indexOf( nodeCmdIdBrowseName ) >= 0 ) {
+      return true;
+    }
+    if( aEvId.indexOf( nodeCmdArgFltBrowseName ) >= 0 ) {
+      return true;
+    }
+    if( aEvId.indexOf( nodeCmdArgIntdBrowseName ) >= 0 ) {
+      return true;
+    }
+    return false;
+  }
+
   /**
    * Читает описание данного и добавляет его в описание класса {@link IDtoClassInfo}
    *
@@ -659,6 +691,9 @@ public class OpcUaServerNodesBrowserPanel
     // соблюдаем соглашения о наименовании
     if( !evtId.startsWith( EVT_PREFIX ) ) {
       evtId = EVT_PREFIX + evtId;
+    }
+    if( isIgnore4Event( evtId ) ) {
+      return;
     }
     String evtDescrStr = aVariableNode.getDisplayName().getText();
     String[] result = evtDescrStr.split( "\\|" ); //$NON-NLS-1$

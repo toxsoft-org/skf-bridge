@@ -184,9 +184,10 @@ public class OpcUaNodesSelector
   //
 
   @Override
-  protected void doSetDataRecord( IList<UaTreeNode> aData ) {
-    opcUaNodePanel.checkSupport().setItemsCheckState( aData, true );
-
+  protected void doSetDataRecord( IList<UaTreeNode> aInitNodes ) {
+    if( aInitNodes != null ) {
+      opcUaNodePanel.checkSupport().setItemsCheckState( aInitNodes, true );
+    }
   }
 
   @Override

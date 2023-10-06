@@ -1,21 +1,25 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
 
-import java.util.*;
+import java.util.List;
 import java.util.concurrent.*;
 
 import org.eclipse.milo.opcua.sdk.client.*;
 import org.eclipse.milo.opcua.sdk.client.nodes.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
+import org.eclipse.milo.opcua.stack.core.types.builtin.DateTime;
+import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.*;
+import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.log4j.*;
+import org.toxsoft.core.tsgui.dialogs.*;
 import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tsgui.m5.model.impl.*;
+import org.toxsoft.core.tslib.bricks.validator.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.utils.logs.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 
-//import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -43,6 +47,31 @@ public class UaVariableNodeM5LifecycleManager
     super( aModel, false, true, true, true, aClient );
   }
 
+  /**
+   * Subclass may perform validation before existing editing.
+   * <p>
+   * In base class returns {@link ValidationResult#SUCCESS}, there is no need to call superclass method when overriding.
+   *
+   * @param aValues {@link IM5Bunch} - field values, never is <code>null</code>
+   * @return {@link ValidationResult} - the validation result
+   */
+  @Override
+  protected ValidationResult doBeforeEdit( IM5Bunch<UaVariableNode> aValues ) {
+    // проверяем что можно писать в узлы и предупреждаем пользователя
+    List<NodeId> nodeIds = ImmutableList.of( aValues.originalEntity().getNodeId() );
+    boolean needWarn = !isWritable( nodeIds );
+    if( needWarn ) {
+      ETsDialogCode userAnswer = TsDialogUtils.askYesNoCancel( tsContext().get( Shell.class ),
+          "В системе Poligon запрещена запись в узлы с ns > 0x8000.\n Вы уверены что хотите зписать в узел %s?",
+          aValues.originalEntity().getNodeId().toParseableString() );
+      if( userAnswer != ETsDialogCode.YES ) {
+        return ValidationResult.error( "User cancel operation" );
+      }
+    }
+
+    return ValidationResult.SUCCESS;
+  }
+
   @Override
   protected UaVariableNode doEdit( IM5Bunch<UaVariableNode> aValues ) {
     UaVariableNode original = aValues.originalEntity();
@@ -53,7 +82,6 @@ public class UaVariableNodeM5LifecycleManager
     List<NodeId> nodeIds = ImmutableList.of( aValues.originalEntity().getNodeId() );
     Class<?> clazz = OpcUaUtils.getNodeDataTypeClass( original );
     Variant v = OpcUaUtils.getVariant( clazz, newVal );
-
     // don't write status or timestamps
     DataValue dv = new DataValue( v, null, null );
 
@@ -76,6 +104,17 @@ public class UaVariableNodeM5LifecycleManager
       LoggerUtils.errorLogger().error( ex );
     }
     return original;
+  }
+
+  private static boolean isWritable( List<NodeId> aNodeIds ) {
+    for( NodeId nodeId : aNodeIds ) {
+      // в Poligon выставленный старший бит говорит "писать нельзя"
+      UShort ni = nodeId.getNamespaceIndex();
+      if( (ni.intValue() & 0x8000) > 0 ) {
+        return false;
+      }
+    }
+    return true;
   }
 
   @Override
