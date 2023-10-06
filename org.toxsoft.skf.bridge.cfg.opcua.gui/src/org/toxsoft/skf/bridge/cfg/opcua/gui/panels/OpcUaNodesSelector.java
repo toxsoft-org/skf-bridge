@@ -3,6 +3,7 @@ package org.toxsoft.skf.bridge.cfg.opcua.gui.panels;
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IBridgeCfgOpcUaResources.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
+import static org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.*;
 
 import org.eclipse.milo.opcua.sdk.client.*;
 import org.eclipse.milo.opcua.stack.core.*;
@@ -220,7 +221,7 @@ public class OpcUaNodesSelector
    */
   public static IList<UaTreeNode> selectUaNode( ITsGuiContext aTsContext, OpcUaClient aClient,
       IList<UaTreeNode> aCheckedNodes ) {
-    ITsDialogInfo cdi = new TsDialogInfo( aTsContext, "Выбор узла из дерева OPC UA", "Выделите нужный и нажмите Ok" );
+    ITsDialogInfo cdi = new TsDialogInfo( aTsContext, STR_MSG_SELECT_NODE, STR_DESCR_SELECT_NODE );
     OpcUaNodesSelectorContext ctx = new OpcUaNodesSelectorContext( Identifiers.RootFolder, aClient, false, false );
 
     IDialogPanelCreator<IList<UaTreeNode>, OpcUaNodesSelectorContext> creator = OpcUaNodesSelector::new;
@@ -238,8 +239,7 @@ public class OpcUaNodesSelector
    */
   public static IList<UaTreeNode> selectUaNodes4Class( ITsGuiContext aTsContext, NodeId aTopNode,
       OpcUaClient aClient ) {
-    ITsDialogInfo cdi =
-        new TsDialogInfo( aTsContext, "Создание класса из дерева узлов OPC UA", "Пометьте нужные узлы и нажмите Ok" );
+    ITsDialogInfo cdi = new TsDialogInfo( aTsContext, STR_MSG_SELECT_NODE_4_CLASS, STR_DESCR_SELECT_NODE );
     OpcUaNodesSelectorContext ctx = new OpcUaNodesSelectorContext( aTopNode, aClient, false, true );
 
     IDialogPanelCreator<IList<UaTreeNode>, OpcUaNodesSelectorContext> creator = OpcUaNodesSelector::new;
@@ -257,8 +257,7 @@ public class OpcUaNodesSelector
    */
   public static IList<UaTreeNode> selectUaNodes4Objects( ITsGuiContext aTsContext, NodeId aTopNode,
       OpcUaClient aClient ) {
-    ITsDialogInfo cdi =
-        new TsDialogInfo( aTsContext, "Создание объектов из дерева узлов OPC UA", "Пометьте нужные узлы и нажмите Ok" );
+    ITsDialogInfo cdi = new TsDialogInfo( aTsContext, STR_MSG_SELECT_NODE_4_OBJS, STR_DESCR_SELECT_NODE );
     OpcUaNodesSelectorContext ctx = new OpcUaNodesSelectorContext( aTopNode, aClient, true, true );
 
     IDialogPanelCreator<IList<UaTreeNode>, OpcUaNodesSelectorContext> creator = OpcUaNodesSelector::new;

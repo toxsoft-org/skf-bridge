@@ -40,8 +40,11 @@ interface ISkResources {
   /**
    * {@link PanelClassInfoSelector}
    */
-  String DLG_C_CLASS_INFO = "Выбор класса";
-  String DLG_T_CLASS_INFO = "Выберите класс и нажмите Ok";
-  String STR_CLASSES_LIST = "id класса";
-
+  String DLG_C_CLASS_INFO            = "Выбор класса";
+  String DLG_T_CLASS_INFO            = "Выберите класс и нажмите Ok";
+  String STR_CLASSES_LIST            = "id класса";
+  String STR_MSG_SELECT_NODE         = "Выбор узла из дерева OPC UA";
+  String STR_DESCR_SELECT_NODE       = "Выделите нужный и нажмите Ok";
+  String STR_MSG_SELECT_NODE_4_OBJS  = "Создание объектов из дерева узлов OPC UA";
+  String STR_MSG_SELECT_NODE_4_CLASS = "Создание класса из дерева узлов OPC UA";
 }
