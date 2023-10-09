@@ -42,6 +42,7 @@ import org.toxsoft.core.tslib.av.metainfo.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.*;
 import org.toxsoft.core.tslib.bricks.events.change.*;
+import org.toxsoft.core.tslib.bricks.geometry.impl.*;
 import org.toxsoft.core.tslib.bricks.strid.coll.*;
 import org.toxsoft.core.tslib.bricks.strid.coll.impl.*;
 import org.toxsoft.core.tslib.coll.*;
@@ -471,9 +472,9 @@ public class OpcUaServerNodesBrowserPanel
       IDtoClassInfo dtoClassInfo = makeDtoClassInfo( nodes4DtoClass );
       IM5Model<IDtoClassInfo> modelDto = conn.scope().get( IM5Domain.class )
           .getModel( IKM5SdedConstants.MID_SDED_DTO_CLASS_INFO, IDtoClassInfo.class );
-      // TODO тут нужно вызвать код выбора соединения куда писать
-      // nop
-      ITsDialogInfo cdi = new TsDialogInfo( tsContext(), null, DLG_C_NEW_CLASS, DLG_T_NEW_CLASS, 0 );
+      TsDialogInfo cdi = new TsDialogInfo( tsContext(), null, DLG_C_NEW_CLASS, DLG_T_NEW_CLASS, 0 );
+      // установим нормальный размер диалога
+      cdi.setMinSize( new TsPoint( -30, -60 ) );
       // создаем пучок из модели
       IM5Bunch<IDtoClassInfo> bunchOfFieldVals = modelDto.valuesOf( dtoClassInfo );
       // просим прользователя верифицировать/редактировать описание класса и нажать Ok
