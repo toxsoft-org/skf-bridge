@@ -23,6 +23,7 @@ import org.toxsoft.core.tsgui.m5.gui.panels.impl.*;
 import org.toxsoft.core.tsgui.m5.model.*;
 import org.toxsoft.core.tsgui.utils.layout.*;
 import org.toxsoft.core.tslib.av.impl.*;
+import org.toxsoft.core.tslib.bricks.geometry.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.*;
@@ -240,7 +241,9 @@ public class OpcUaNodesSelector
    */
   public static IList<UaTreeNode> selectUaNodes4Class( ITsGuiContext aTsContext, NodeId aTopNode,
       OpcUaClient aClient ) {
-    ITsDialogInfo cdi = new TsDialogInfo( aTsContext, STR_MSG_SELECT_NODE_4_CLASS, STR_DESCR_SELECT_NODE );
+    TsDialogInfo cdi = new TsDialogInfo( aTsContext, STR_MSG_SELECT_NODE_4_CLASS, STR_DESCR_SELECT_NODE );
+    // установим нормальный размер диалога
+    cdi.setMinSize( new TsPoint( -30, -60 ) );
     OpcUaNodesSelectorContext ctx = new OpcUaNodesSelectorContext( aTopNode, aClient, false, true );
 
     IDialogPanelCreator<IList<UaTreeNode>, OpcUaNodesSelectorContext> creator = OpcUaNodesSelector::new;
