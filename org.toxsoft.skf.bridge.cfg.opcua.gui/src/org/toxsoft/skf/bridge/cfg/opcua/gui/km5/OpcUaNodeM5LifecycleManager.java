@@ -152,6 +152,7 @@ public class OpcUaNodeM5LifecycleManager
     }
   }
 
+  // TODO использовать конфигурационную информацию чтобы разделять кэши для разных подключений
   private IList<UaTreeNode> loadUaTreeNodes( OpcUaClient aOpcUaClient ) {
     ITsWorkroom workroom = context.eclipseContext().get( ITsWorkroom.class );
     TsInternalErrorRtException.checkNull( workroom );

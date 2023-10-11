@@ -115,7 +115,7 @@ public class OpcUaNodesSelector
   private static class UaNodesTreeMaker
       implements ITsTreeMaker<UaTreeNode> {
 
-    private static final String IGNORE_REFIX = "/"; //$NON-NLS-1$
+    private static final String IGNORE_REFIX = "null"; //$NON-NLS-1$
 
     private final ITsNodeKind<UaTreeNode> kind =
         new TsNodeKind<>( "UaTreeNode", UaTreeNode.class, true, IOpcUaServerConnCfgConstants.ICONID_APP_ICON ); //$NON-NLS-1$
@@ -156,7 +156,7 @@ public class OpcUaNodesSelector
         }
         if( !hideVariableNodes && child.getNodeClass().equals( NodeClass.Variable ) ) {
           // отсекаем узлы у которых имя начинается с символа '/'
-          String name = child.getDisplayName();
+          String name = child.getBrowseName();
           if( name.startsWith( IGNORE_REFIX ) ) {
             continue;
           }
