@@ -31,6 +31,7 @@ public interface IOpcUaServerConnCfgConstants {
   String ICONID_OBJECT_NODE   = "s5-obj";        //$NON-NLS-1$
   String ICONID_NEW_CLASS     = "s5-class-new";  //$NON-NLS-1$
   String ICONID_NEW_OBJECTS   = "s5-objs-class"; //$NON-NLS-1$
+  String ICONID_IMPORT        = "import";        //$NON-NLS-1$
   //
   // -------------------------------------------------------------------------------------
   // Params of conn to opc ua server (constants)
@@ -94,8 +95,8 @@ public interface IOpcUaServerConnCfgConstants {
   TsActionDef ACTDEF_SHOW_OPC_UA_NODE_2_GWID = TsActionDef.ofPush2( SHOW_OPC_UA_NODE_2_GWID_ACT_ID,
       STR_N_SHOW_OPC_UA_NODE_2_GWID, STR_D_SHOW_OPC_UA_NODE_2_GWID, ITsStdIconIds.ICONID_EDIT_FIND_REPLACE );
 
-  TsActionDef ACTDEF_LOAD_CMD_DESCR = TsActionDef.ofPush2( LOAD_CMD_DESCR_ACT_ID, STR_N_LOAD_CMD_DESCR,
-      STR_D_LOAD_CMD_DESCR, ITsStdIconIds.ICONID_DOCUMENT_IMPORT );
+  TsActionDef ACTDEF_LOAD_CMD_DESCR =
+      TsActionDef.ofPush2( LOAD_CMD_DESCR_ACT_ID, STR_N_LOAD_CMD_DESCR, STR_D_LOAD_CMD_DESCR, ICONID_IMPORT );
 
   /**
    * Id of tree mode using origin nodes structure.

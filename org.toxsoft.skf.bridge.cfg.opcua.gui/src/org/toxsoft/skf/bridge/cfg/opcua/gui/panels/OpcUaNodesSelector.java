@@ -108,7 +108,8 @@ public class OpcUaNodesSelector
 
     opcUaNodePanel = new M5CollectionPanelMpcModownWrapper<>( componentModown, false );
     opcUaNodePanel.createControl( this );
-
+    // сразу расхлопнем все дерево
+    componentModown.tree().console().expandAll();
   }
 
   // TODO копия кода из класса OpcUaServerNodesBrowserPanel
