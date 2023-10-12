@@ -664,7 +664,7 @@ public class OpcUaServerNodesBrowserPanel
     // описание
     String descr = aVariableNode.getDescription().getText();
     // описание
-    if( descr.isBlank() ) {
+    if( (descr == null) || descr.isBlank() ) {
       descr = name;
     }
 
