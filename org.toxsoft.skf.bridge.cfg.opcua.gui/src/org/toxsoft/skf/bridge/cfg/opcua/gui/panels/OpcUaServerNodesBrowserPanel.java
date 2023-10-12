@@ -572,9 +572,11 @@ public class OpcUaServerNodesBrowserPanel
     // добавим атрибут который сигнализирует что класс из OPC UA node
     markClassOPC_UA( cinf );
     // добавим команды, если они описаны
-    if( clsId2CmdInfoes.hasKey( id ) ) {
-      IList<IDtoCmdInfo> cmdInfioes = clsId2CmdInfoes.getByKey( id );
-      cinf.cmdInfos().addAll( cmdInfioes );
+    if( clsId2CmdInfoes != null ) {
+      if( clsId2CmdInfoes.hasKey( id ) ) {
+        IList<IDtoCmdInfo> cmdInfioes = clsId2CmdInfoes.getByKey( id );
+        cinf.cmdInfos().addAll( cmdInfioes );
+      }
     }
     // createCmdTemplates( cinf, aNodes );
 
@@ -737,7 +739,7 @@ public class OpcUaServerNodesBrowserPanel
     // описание
     String descr = aVariableNode.getDescription().getText();
     // описание
-    if( descr.isBlank() ) {
+    if( (descr == null) || descr.isBlank() ) {
       descr = name;
     }
 
