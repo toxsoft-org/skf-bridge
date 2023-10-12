@@ -36,6 +36,7 @@ interface ISkResources {
   String STR_N_OPC_UA_MARKER       = "маркер OPC UA";
   String STR_D_OPC_UA_MARKER       = "маркер класса сгенерированного из OPC UA";
   String STR_SUCCESS_OBJS_UPDATED  = "Операция завершена успешно, создан/обновлены объекты: %s";
+  String SELECT_FILE_4_IMPORT_CMD  = "Выберите файл с описанием команд";
 
   /**
    * {@link PanelClassInfoSelector}

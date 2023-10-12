@@ -18,7 +18,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.toxsoft.extlibs.log4j;bundle-version="1.0.0",
  org.toxsoft.skf.reports.gui,
  org.toxsoft.core.txtproj.lib,
- org.toxsoft.skide.plugin.exconn
+ org.toxsoft.skide.plugin.exconn,
+ org.toxsoft.extlibs.opendocument
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Automatic-Module-Name: org.toxsoft.skf.bridge.cfg.opcua.gui
 Bundle-ActivationPolicy: lazy

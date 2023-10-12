@@ -8,6 +8,7 @@ import static org.toxsoft.skf.bridge.cfg.opcua.gui.IBridgeCfgOpcUaResources.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.*;
 
+import java.io.*;
 import java.util.*;
 
 import org.eclipse.milo.opcua.sdk.client.*;
@@ -16,6 +17,7 @@ import org.eclipse.milo.opcua.sdk.core.nodes.*;
 import org.eclipse.milo.opcua.stack.core.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
+import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.tsgui.bricks.actions.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
@@ -47,6 +49,7 @@ import org.toxsoft.core.tslib.bricks.strid.coll.*;
 import org.toxsoft.core.tslib.bricks.strid.coll.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
+import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.gw.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.gw.skid.*;
@@ -73,16 +76,17 @@ import org.toxsoft.uskat.core.impl.dto.*;
 public class OpcUaServerNodesBrowserPanel
     extends TsPanel {
 
-  private static final String nodeCmdIdBrowseName       = "CmdId";       //$NON-NLS-1$
-  private static final String nodeCmdArgIntdBrowseName  = "CmdArgInt";   //$NON-NLS-1$
-  private static final String nodeCmdArgFltBrowseName   = "CmdArgFlt";   //$NON-NLS-1$
-  private static final String nodeCmdFeedbackBrowseName = "CmdFeedback"; //$NON-NLS-1$
+  private static final String           nodeCmdIdBrowseName       = "CmdId";       //$NON-NLS-1$
+  private static final String           nodeCmdArgIntdBrowseName  = "CmdArgInt";   //$NON-NLS-1$
+  private static final String           nodeCmdArgFltBrowseName   = "CmdArgFlt";   //$NON-NLS-1$
+  private static final String           nodeCmdFeedbackBrowseName = "CmdFeedback"; //$NON-NLS-1$
+  private StringMap<IList<IDtoCmdInfo>> clsId2CmdInfoes           = null;
   /**
    * Аргумент команды: значение.
    * <p>
    * Аргумент имеет тип {@link EAtomicType#FLOATING}.
    */
-  static String               CMDARGID_VALUE            = "value";       //$NON-NLS-1$
+  static String                         CMDARGID_VALUE            = "value";       //$NON-NLS-1$
 
   /**
    * id параметра события: старое значение.
@@ -170,7 +174,9 @@ public class OpcUaServerNodesBrowserPanel
    * Собственно клиент OPC UA сервера
    */
   private OpcUaClient client;
-  private UaTreeNode  selectedNode = null;
+  private UaTreeNode  selectedNode     = null;
+  private String      ODS_EXT          = "*.ods"; //$NON-NLS-1$
+  private String      DEFAULT_PATH_STR = "";
 
   /**
    * Items provider for ISkObject created on OPC UA node.
@@ -271,6 +277,8 @@ public class OpcUaServerNodesBrowserPanel
             aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_CREATE_OBJS_OPC_UA_ITEM );
             aActs.add( ITsStdActionDefs.ACDEF_SEPARATOR );
             aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_SHOW_OPC_UA_NODE_2_GWID );
+            aActs.add( ITsStdActionDefs.ACDEF_SEPARATOR );
+            aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_LOAD_CMD_DESCR );
 
             ITsToolbar toolBar = super.doCreateToolbar( aContext, aName, aIconSize, aActs );
 
@@ -285,6 +293,19 @@ public class OpcUaServerNodesBrowserPanel
 
               if( aActionId == SHOW_OPC_UA_NODE_2_GWID_ACT_ID ) {
                 checkNode2Gwid( aContext );
+              }
+              if( aActionId == LOAD_CMD_DESCR_ACT_ID ) {
+                String cmdFileDescr = getCmdDescrFile();
+                if( cmdFileDescr != null ) {
+                  File file = new File( cmdFileDescr );
+                  try {
+                    clsId2CmdInfoes = Ods2DtoCmdInfoParser.parse( file );
+                    TsDialogUtils.info( getShell(), "Loaded command description from file: %s", cmdFileDescr );
+                  }
+                  catch( IOException ex ) {
+                    LoggerUtils.errorLogger().error( ex );
+                  }
+                }
               }
 
             } );
@@ -345,6 +366,16 @@ public class OpcUaServerNodesBrowserPanel
       }
     }
     return enable;
+  }
+
+  private String getCmdDescrFile() {
+    FileDialog fd = new FileDialog( getShell(), SWT.OPEN );
+    fd.setText( SELECT_FILE_4_IMPORT_CMD );
+    fd.setFilterPath( DEFAULT_PATH_STR );
+    String[] filterExt = { ODS_EXT };
+    fd.setFilterExtensions( filterExt );
+    String selected = fd.open();
+    return selected;
   }
 
   private static boolean isCtreateObjEnable( UaTreeNode aSelectedItem ) {
@@ -540,8 +571,11 @@ public class OpcUaServerNodesBrowserPanel
     }
     // добавим атрибут который сигнализирует что класс из OPC UA node
     markClassOPC_UA( cinf );
-    // dima 06.10.23 пока не вижу смысла
-    // создадим шаблоны команд, если необходимо
+    // добавим команды, если они описаны
+    if( clsId2CmdInfoes.hasKey( id ) ) {
+      IList<IDtoCmdInfo> cmdInfioes = clsId2CmdInfoes.getByKey( id );
+      cinf.cmdInfos().addAll( cmdInfioes );
+    }
     // createCmdTemplates( cinf, aNodes );
 
     return cinf;
@@ -625,16 +659,18 @@ public class OpcUaServerNodesBrowserPanel
     if( isIgnore4RtData( dataId ) ) {
       return;
     }
-    String paramDescrStr = aVariableNode.getDisplayName().getText();
-    String[] result = paramDescrStr.split( "\\|" ); //$NON-NLS-1$
+    // название
+    String name = aVariableNode.getDisplayName().getText();
+    // описание
+    String descr = aVariableNode.getDescription().getText();
+    // описание
+    if( descr.isBlank() ) {
+      descr = name;
+    }
 
     // тип данного
     Class<?> clazz = OpcUaUtils.getNodeDataTypeClass( aVariableNode );
     EAtomicType type = OpcUaUtils.getAtomicType( clazz );
-    // название
-    String name = result.length > 1 ? result[0] : paramDescrStr;
-    // описание
-    String descr = result.length > 2 ? result[1] : paramDescrStr;
     // sync
     boolean sync = false; // по умолчанию асинхронное
     int deltaT = sync ? 1000 : 1;
@@ -696,16 +732,18 @@ public class OpcUaServerNodesBrowserPanel
     if( isIgnore4Event( evtId ) ) {
       return;
     }
-    String evtDescrStr = aVariableNode.getDisplayName().getText();
-    String[] result = evtDescrStr.split( "\\|" ); //$NON-NLS-1$
+    // название
+    String name = aVariableNode.getDisplayName().getText();
+    // описание
+    String descr = aVariableNode.getDescription().getText();
+    // описание
+    if( descr.isBlank() ) {
+      descr = name;
+    }
 
     // тип данного
     Class<?> clazz = OpcUaUtils.getNodeDataTypeClass( aVariableNode );
     EAtomicType type = OpcUaUtils.getAtomicType( clazz );
-    // название
-    String name = result.length > 1 ? result[0] : evtDescrStr;
-    // описание
-    String descr = result.length > 2 ? result[1] : evtDescrStr;
     StridablesList<IDataDef> evParams;
     evParams = switch( type ) {
       case INTEGER -> new StridablesList<>( EVPDD_OLD_VAL_INT, EVPDD_NEW_VAL_INT );
