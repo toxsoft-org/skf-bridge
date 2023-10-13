@@ -192,10 +192,10 @@ public class OpcUaServerNodesBrowserPanel
 
     // Создаем IDpuObject и инициализируем его значениями из узла
     private IDtoObject makeObjDto( String aClassId, UaTreeNode aObjNode ) {
-      String id = aObjNode.getDisplayName();
+      String id = aObjNode.getBrowseName();
       Skid skid = new Skid( aClassId, id );
       DtoObject dtoObj = DtoObject.createDtoObject( skid, coreApi );
-      dtoObj.attrs().setValue( FID_NAME, AvUtils.avStr( aObjNode.getDescription() ) );
+      dtoObj.attrs().setValue( FID_NAME, AvUtils.avStr( aObjNode.getDisplayName() ) );
       dtoObj.attrs().setValue( FID_DESCRIPTION, AvUtils.avStr( aObjNode.getDescription() ) );
       return dtoObj;
     }
@@ -739,7 +739,7 @@ public class OpcUaServerNodesBrowserPanel
     // описание
     String descr = aVariableNode.getDescription().getText();
     // описание
-    if( (descr == null) || descr.isBlank() ) {
+    if( descr == null ) {
       descr = name;
     }
 
