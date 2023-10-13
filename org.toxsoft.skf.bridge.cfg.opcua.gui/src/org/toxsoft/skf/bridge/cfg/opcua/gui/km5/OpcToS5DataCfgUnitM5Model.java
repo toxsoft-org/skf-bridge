@@ -34,10 +34,12 @@ import org.toxsoft.core.tsgui.valed.controls.av.*;
 import org.toxsoft.core.tsgui.valed.controls.basic.*;
 import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.opset.*;
+import org.toxsoft.core.tslib.av.opset.impl.*;
 import org.toxsoft.core.tslib.bricks.apprefs.*;
 import org.toxsoft.core.tslib.bricks.apprefs.impl.*;
 import org.toxsoft.core.tslib.bricks.strid.more.*;
 import org.toxsoft.core.tslib.coll.*;
+import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
@@ -460,6 +462,92 @@ public class OpcToS5DataCfgUnitM5Model
 
                   case ACTID_GENERATE_FILE:
                     ((OpcToS5DataCfgUnitM5LifecycleManager)lifecycleManager()).generateFileFromCurrState();
+                    break;
+
+                  case ACTID_AUTO_LINK:
+                    // Commands
+                    IList<CmdGwid2UaNodes> autoElements = OpcUaUtils.loadCmdGwid2Nodes( aContext );
+                    System.out.println( "Auto elements size = " + autoElements.size() );
+                    for( CmdGwid2UaNodes cmd2Nodes : autoElements ) {
+
+                      IList<Gwid> gwids = new ElemArrayList<>( cmd2Nodes.gwid() );
+                      String cmdArgParam = null;
+                      IListEdit<NodeId> nodes = new ElemArrayList<>();
+                      nodes.add( cmd2Nodes.getNodeCmdId() );
+                      if( cmd2Nodes.getNodeCmdArgInt() != null ) {
+                        nodes.add( cmd2Nodes.getNodeCmdArgInt() );
+                        cmdArgParam = "argInt";
+                      }
+                      else
+                        if( cmd2Nodes.getNodeCmdArgFlt() != null ) {
+                          nodes.add( cmd2Nodes.getNodeCmdArgFlt() );
+                          cmdArgParam = "argFlt";
+                        }
+                      nodes.add( cmd2Nodes.getNodeCmdFeedback() );
+
+                      String strid = "opctos5.bridge.cfg.cmd.unit.id" + System.currentTimeMillis() + "."
+                          + cmd2Nodes.gwid().strid();// OpcToS5DataCfgUnitM5Model.STRID.getFieldValue(
+                      ECfgUnitType type = ECfgUnitType.COMMAND;
+
+                      CfgUnitRealizationTypeRegister typeReg2 =
+                          m5().tsContext().get( CfgUnitRealizationTypeRegister.class );
+
+                      ICfgUnitRealizationType realType =
+                          typeReg2.getTypeOfRealizationById( type, "val.command.one.tag" );
+                      OptionSet realization = new OptionSet();
+                      OpcUaUtils.OP_CMD_JAVA_CLASS.setValue( realization,
+                          avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.commands.ValCommandByOneTagWithParamExec" ) );
+                      if( cmdArgParam != null ) {
+                        OpcUaUtils.OP_CMD_VALUE_PARAM_ID.setValue( realization, avStr( cmdArgParam ) );
+                      }
+                      OpcUaUtils.OP_CMD_OPC_ID.setValue( realization, avInt( 1 ) );
+
+                      String name = "generated for " + cmd2Nodes.gwid().asString();
+
+                      OpcToS5DataCfgUnit result = new OpcToS5DataCfgUnit( strid, name );
+                      result.setDataNodes( nodes );
+                      result.setDataGwids( gwids );
+                      result.setTypeOfCfgUnit( type );
+                      result.setRelizationTypeId( realType.id() );
+                      result.setRealizationOpts( realization );
+
+                      ((OpcToS5DataCfgUnitM5LifecycleManager)lifecycleManager()).addCfgUnit( result );
+                      // master().addDataUnit( result );
+                    }
+                    // Data
+                    IList<UaNode2RtdGwid> nodes2Gwids = OpcUaUtils.loadNodes2Gwids( aContext );
+                    for( UaNode2RtdGwid dataNode : nodes2Gwids ) {
+
+                      IList<Gwid> gwids = new ElemArrayList<>( dataNode.gwid() );
+
+                      IListEdit<NodeId> nodes = new ElemArrayList<>( dataNode.getNodeId() );
+
+                      String strid = "opctos5.bridge.cfg.data.unit.id" + System.currentTimeMillis() + "."
+                          + dataNode.gwid().strid();// OpcToS5DataCfgUnitM5Model.STRID.getFieldValue(
+                      ECfgUnitType type = ECfgUnitType.DATA;
+
+                      CfgUnitRealizationTypeRegister typeReg2 =
+                          m5().tsContext().get( CfgUnitRealizationTypeRegister.class );
+
+                      ICfgUnitRealizationType realType = typeReg2.getTypeOfRealizationById( type,
+                          OpcUaUtils.CFG_UNIT_REALIZATION_TYPE_ONT_TO_ONE_DATA );
+                      OptionSet realization = new OptionSet();
+                      OpcUaUtils.OP_CMD_JAVA_CLASS.setValue( realization,
+                          avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.OneToOneDataTransmitterFactory" ) );
+
+                      String name = "generated for " + dataNode.gwid().asString();
+
+                      OpcToS5DataCfgUnit result = new OpcToS5DataCfgUnit( strid, name );
+                      result.setDataNodes( nodes );
+                      result.setDataGwids( gwids );
+                      result.setTypeOfCfgUnit( type );
+                      result.setRelizationTypeId( realType.id() );
+                      result.setRealizationOpts( realization );
+
+                      ((OpcToS5DataCfgUnitM5LifecycleManager)lifecycleManager()).addCfgUnit( result );
+                      // master().addDataUnit( result );
+                    }
+                    doFillTree();
                     break;
 
                   default:

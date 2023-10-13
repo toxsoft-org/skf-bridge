@@ -4,6 +4,7 @@ import static org.toxsoft.core.tsgui.bricks.actions.ITsStdActionDefs.*;
 import static org.toxsoft.skf.reports.gui.IReportsGuiConstants.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
+import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.swt.*;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.widgets.*;
@@ -22,9 +23,12 @@ import org.toxsoft.core.tsgui.panels.toolbar.*;
 import org.toxsoft.core.tsgui.utils.layout.*;
 import org.toxsoft.core.tslib.av.impl.*;
 import org.toxsoft.core.tslib.coll.*;
+import org.toxsoft.core.tslib.coll.primtypes.*;
+import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.filegen.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.gui.conn.*;
@@ -203,6 +207,8 @@ public class OpcToS5DataCfgDocEditorPanel
     // IM5CollectionPanel<OpcToS5DataCfgUnit> opcToS5DataCfgUnitPanel =
     // new M5CollectionPanelMpcModownWrapper<>( componentModown2, false );
 
+    ensureNodesCfgs( m5().tsContext(), aSelDoc );
+
     IM5LifecycleManager<CfgOpcUaNode> lm = model.getLifecycleManager( aSelDoc );
 
     IM5CollectionPanel<CfgOpcUaNode> cfgNodesPanel =
@@ -212,6 +218,39 @@ public class OpcToS5DataCfgDocEditorPanel
 
     tabFolder.setSelection( tabItem );
 
+  }
+
+  /**
+   * Synchronizes loaded and existed in units nodes cfgs.
+   */
+  private void ensureNodesCfgs( ITsGuiContext aContext, OpcToS5DataCfgDoc aDoc ) {
+    IList<OpcToS5DataCfgUnit> dataCfgUnits = aDoc.dataUnits();
+
+    IList<CfgOpcUaNode> nodesCfgsList = aDoc.getNodesCfgs();
+    IStringMapEdit<CfgOpcUaNode> nodesCfgs = new StringMap<>();
+    for( CfgOpcUaNode node : nodesCfgsList ) {
+      nodesCfgs.put( node.getNodeId(), node );
+    }
+
+    for( OpcToS5DataCfgUnit unit : dataCfgUnits ) {
+      IList<NodeId> nodes = unit.getDataNodes();
+
+      String relizationTypeId = unit.getRelizationTypeId();
+      CfgUnitRealizationTypeRegister typeReg2 = aContext.get( CfgUnitRealizationTypeRegister.class );
+
+      ICfgUnitRealizationType realType = typeReg2.getTypeOfRealizationById( unit.getTypeOfCfgUnit(), relizationTypeId );
+
+      for( int i = 0; i < nodes.size(); i++ ) {
+        NodeId node = nodes.get( i );
+        if( !nodesCfgs.hasKey( node.toParseableString() ) ) {
+          nodesCfgs.put( node.toParseableString(),
+              realType.createInitCfg( node.toParseableString(), i, nodes.size() ) );
+          // new CfgOpcUaNode( node.toParseableString(), false, true, false, EAtomicType.INTEGER ) );
+        }
+      }
+
+      aDoc.setNodesCfgs( nodesCfgs.values() );
+    }
   }
 
 }

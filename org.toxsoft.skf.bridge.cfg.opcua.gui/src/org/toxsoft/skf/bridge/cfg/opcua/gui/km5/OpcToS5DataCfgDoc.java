@@ -1,7 +1,5 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
 
-import org.eclipse.milo.opcua.stack.core.types.builtin.*;
-import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.bricks.keeper.*;
 import org.toxsoft.core.tslib.bricks.keeper.AbstractEntityKeeper.*;
 import org.toxsoft.core.tslib.bricks.strid.impl.*;
@@ -186,22 +184,15 @@ public class OpcToS5DataCfgDoc
    * @return IList - list of configurations for all node existed in document
    */
   public IList<CfgOpcUaNode> getNodesCfgs() {
-    ensureNodesCfgs();
+    // ensureNodesCfgs( aContext );
     return nodesCfgs.values();
   }
 
-  /**
-   * Synchronizes loaded and existed in units nodes cfgs.
-   */
-  private void ensureNodesCfgs() {
-    for( OpcToS5DataCfgUnit unit : dataCfgUnits ) {
-      IList<NodeId> nodes = unit.getDataNodes();
-      for( NodeId node : nodes ) {
-        if( !nodesCfgs.hasKey( node.toParseableString() ) ) {
-          nodesCfgs.put( node.toParseableString(),
-              new CfgOpcUaNode( node.toParseableString(), false, true, false, EAtomicType.INTEGER ) );
-        }
-      }
+  public void setNodesCfgs( IList<CfgOpcUaNode> aNodesCfgs ) {
+    nodesCfgs.clear();
+    for( CfgOpcUaNode cfg : aNodesCfgs ) {
+      nodesCfgs.put( cfg.getNodeId(), cfg );
     }
   }
+
 }
