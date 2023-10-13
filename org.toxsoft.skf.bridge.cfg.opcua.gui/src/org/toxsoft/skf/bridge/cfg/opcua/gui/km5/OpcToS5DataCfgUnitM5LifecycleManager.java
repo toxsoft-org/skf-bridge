@@ -143,4 +143,8 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
       // throw new TsIllegalArgumentRtException( e );
     }
   }
+
+  public void addCfgUnit( OpcToS5DataCfgUnit aResult ) {
+    master().addDataUnit( aResult );
+  }
 }

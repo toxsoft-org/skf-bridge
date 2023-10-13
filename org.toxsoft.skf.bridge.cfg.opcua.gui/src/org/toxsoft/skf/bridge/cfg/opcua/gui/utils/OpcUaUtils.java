@@ -34,6 +34,7 @@ import org.toxsoft.core.tslib.utils.logs.*;
 import org.toxsoft.core.txtproj.lib.storage.*;
 import org.toxsoft.core.txtproj.lib.workroom.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.filegen.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 
@@ -433,7 +434,14 @@ public class OpcUaUtils {
         avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.commands.ValCommandByOneTagWithParamExec" ) );
 
     ICfgUnitRealizationType cmdRealValCommandByOneTagWithParamExec = new CfgUnitRealizationType( "val.command.one.tag",
-        "Установка значения через командный узел", ECfgUnitType.COMMAND, paramDefenitions, defaultParams );
+        "Установка значения через командный узел", ECfgUnitType.COMMAND, paramDefenitions, defaultParams ) {
+
+      @Override
+      public CfgOpcUaNode createInitCfg( String aNodeId, int aNodeIndex, int aNodeCount ) {
+        return new CfgOpcUaNode( aNodeId, false, true, aNodeIndex < aNodeCount - 1, EAtomicType.INTEGER );
+      }
+
+    };
 
     realizationTypeRegister.registerType( cmdRealValCommandByOneTagWithParamExec );
 
