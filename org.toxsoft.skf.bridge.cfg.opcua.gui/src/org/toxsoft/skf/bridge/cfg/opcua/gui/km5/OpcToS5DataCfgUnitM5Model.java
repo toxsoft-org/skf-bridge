@@ -59,6 +59,7 @@ public class OpcToS5DataCfgUnitM5Model
   public static final String OPCUA_BRIDGE_CFG_S5_CONNECTION = "opcua.bridge.cfg.s5.connection";
 
   public static final String OPCUA_BRIDGE_CFG_OPC_CONNECTION = "opcua.bridge.cfg.opc.connection";
+  public static final String OPCUA_OPC_CONNECTION_CFG        = "opcua.bridge.connection.cfg";
 
   /**
    * Model ID.
@@ -519,6 +520,8 @@ public class OpcToS5DataCfgUnitM5Model
     TsDialogInfo di = new TsDialogInfo( aContext, DLG_SELECT_CFG_AND_OPEN, DLG_SELECT_CFG_AND_OPEN_D );
 
     IOpcUaServerConnCfg conConf = M5GuiUtils.askSelectItem( di, model, null, lm.itemsProvider(), lm );
+    // dima 13.10.23 сохраним в контекст
+    aContext.put( OPCUA_OPC_CONNECTION_CFG, conConf );
     if( conConf == null ) {
       return null;
     }

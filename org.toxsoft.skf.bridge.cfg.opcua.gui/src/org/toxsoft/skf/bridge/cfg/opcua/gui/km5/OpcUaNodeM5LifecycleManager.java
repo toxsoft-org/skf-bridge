@@ -20,6 +20,7 @@ import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.core.txtproj.lib.storage.*;
 import org.toxsoft.core.txtproj.lib.workroom.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 
 /**
  * Lifecycle Manager of {@link UaTreeNode} entities.
@@ -30,15 +31,12 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.*;
 public class OpcUaNodeM5LifecycleManager
     extends M5LifecycleManager<UaTreeNode, OpcUaClient> {
 
-  /**
-   * id secton for cached OPC UA nodes
-   */
-  public static final String SECTID_OPC_UA_NODES = "opc.ua.nodes"; //$NON-NLS-1$
-  private IList<UaTreeNode>  cached;
+  private IList<UaTreeNode> cached;
 
-  private NodeId              topNodeId = Identifiers.RootFolder;
-  private UaTreeNode          topNode   = null;
-  private final ITsGuiContext context;
+  private NodeId                    topNodeId = Identifiers.RootFolder;
+  private UaTreeNode                topNode   = null;
+  private final ITsGuiContext       context;
+  private final IOpcUaServerConnCfg selConfig;
 
   /**
    * Constructor by M5 model and service
@@ -46,10 +44,13 @@ public class OpcUaNodeM5LifecycleManager
    * @param aModel IM5Model - model
    * @param aClient OpcUaClient - opc ua client
    * @param aContext {@link ITsGuiContext} - app context
+   * @param aSelConfig {@link IOpcUaServerConnCfg} - конфигурация подключения
    */
-  public OpcUaNodeM5LifecycleManager( IM5Model<UaTreeNode> aModel, OpcUaClient aClient, ITsGuiContext aContext ) {
+  public OpcUaNodeM5LifecycleManager( IM5Model<UaTreeNode> aModel, OpcUaClient aClient, ITsGuiContext aContext,
+      IOpcUaServerConnCfg aSelConfig ) {
     super( aModel, false, false, false, true, aClient );
     context = aContext;
+    selConfig = aSelConfig;
   }
 
   /**
@@ -59,12 +60,14 @@ public class OpcUaNodeM5LifecycleManager
    * @param aClient {@link OpcUaClient} - opc ua client
    * @param aTopNodeId {@link NodeId} NodeId - top node id
    * @param aContext {@link ITsGuiContext} - app context
+   * @param aSelConfig {@link IOpcUaServerConnCfg} - конфигурация подключения
    */
   public OpcUaNodeM5LifecycleManager( IM5Model<UaTreeNode> aModel, OpcUaClient aClient, NodeId aTopNodeId,
-      ITsGuiContext aContext ) {
+      ITsGuiContext aContext, IOpcUaServerConnCfg aSelConfig ) {
     super( aModel, false, false, false, true, aClient );
     topNodeId = aTopNodeId;
     context = aContext;
+    selConfig = aSelConfig;
   }
 
   @SuppressWarnings( "boxing" )
@@ -152,12 +155,12 @@ public class OpcUaNodeM5LifecycleManager
     }
   }
 
-  // TODO использовать конфигурационную информацию чтобы разделять кэши для разных подключений
   private IList<UaTreeNode> loadUaTreeNodes( OpcUaClient aOpcUaClient ) {
     ITsWorkroom workroom = context.eclipseContext().get( ITsWorkroom.class );
     TsInternalErrorRtException.checkNull( workroom );
     IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
-    IList<UaTreeNode> retVal = new ElemArrayList<>( storage.readColl( SECTID_OPC_UA_NODES, UaTreeNode.KEEPER ) );
+    String sectionName = OpcUaUtils.getCachedTreeSectionName( selConfig );
+    IList<UaTreeNode> retVal = new ElemArrayList<>( storage.readColl( sectionName, UaTreeNode.KEEPER ) );
     // на этой стадии у нас "сырые" узлы которые необходимо проинициализировать
     for( UaTreeNode uaNode : retVal ) {
       UaTreeNode parent = findParent( uaNode, retVal );
@@ -214,8 +217,8 @@ public class OpcUaNodeM5LifecycleManager
     ITsWorkroom workroom = context.eclipseContext().get( ITsWorkroom.class );
     TsInternalErrorRtException.checkNull( workroom );
     IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
-
-    storage.writeColl( SECTID_OPC_UA_NODES, aUaTreeNodes, UaTreeNode.KEEPER );
+    String sectionName = OpcUaUtils.getCachedTreeSectionName( selConfig );
+    storage.writeColl( sectionName, aUaTreeNodes, UaTreeNode.KEEPER );
   }
 
 }

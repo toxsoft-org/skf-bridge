@@ -137,6 +137,8 @@ public class NodesForCfgM5Model
 
                 UaClient uaClient =
                     (UaClient)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_OPC_CONNECTION );
+                OpcUaServerConnCfg config =
+                    (OpcUaServerConnCfg)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
                 if( uaClient != null ) {
                   System.out.println( "Selecetd opc conn: " + uaClient.toString() );
                 }
@@ -145,7 +147,7 @@ public class NodesForCfgM5Model
                 }
 
                 IList<UaTreeNode> selNodes =
-                    OpcUaNodesSelector.selectUaNode( aContext, (OpcUaClient)uaClient, IList.EMPTY );
+                    OpcUaNodesSelector.selectUaNode( aContext, (OpcUaClient)uaClient, IList.EMPTY, config );
 
                 if( selNodes == null || selNodes.size() == 0 ) {
                   return null;
@@ -162,15 +164,18 @@ public class NodesForCfgM5Model
 
                 UaClient uaClient =
                     (UaClient)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_OPC_CONNECTION );
+                OpcUaServerConnCfg config =
+                    (OpcUaServerConnCfg)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
+
                 if( uaClient != null ) {
-                  System.out.println( "Selecetd opc conn: " + uaClient.toString() );
+                  System.out.println( "Selected opc conn: " + uaClient.toString() );
                 }
                 else {
-                  System.out.println( "Selecetd opc conn: " + "null" );
+                  System.out.println( "Selected opc conn: " + "null" );
                 }
 
                 IList<UaTreeNode> selNodes =
-                    OpcUaNodesSelector.selectUaNode( aContext, (OpcUaClient)uaClient, IList.EMPTY );
+                    OpcUaNodesSelector.selectUaNode( aContext, (OpcUaClient)uaClient, IList.EMPTY, config );
 
                 if( selNodes == null || selNodes.size() == 0 ) {
                   return aItem;

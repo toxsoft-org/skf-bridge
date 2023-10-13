@@ -42,17 +42,19 @@ public class OpcUaNodesSelector
 
   static class OpcUaNodesSelectorContext {
 
-    private final NodeId      topNode;
-    private final OpcUaClient client;
-    private final boolean     hideVariableNodes;
-    private final boolean     checkable;
+    private final NodeId              topNode;
+    private final OpcUaClient         client;
+    private final boolean             hideVariableNodes;
+    private final boolean             checkable;
+    private final IOpcUaServerConnCfg serverConnCfg;
 
     public OpcUaNodesSelectorContext( NodeId aTopNode, OpcUaClient aClient, boolean isHideVariableNodes,
-        boolean isCheckable ) {
+        boolean isCheckable, IOpcUaServerConnCfg aServerConnCfg ) {
       topNode = aTopNode;
       client = aClient;
       hideVariableNodes = isHideVariableNodes;
       checkable = isCheckable;
+      serverConnCfg = aServerConnCfg;
     }
 
   }
@@ -77,8 +79,8 @@ public class OpcUaNodesSelector
     IM5Domain m5 = conn.scope().get( IM5Domain.class );
     IM5Model<UaTreeNode> model = m5.getModel( OpcUaNodeModel.MODEL_ID, UaTreeNode.class );
 
-    IM5LifecycleManager<UaTreeNode> lm =
-        new OpcUaNodeM5LifecycleManager( model, environ().client, environ().topNode, tsContext() );
+    IM5LifecycleManager<UaTreeNode> lm = new OpcUaNodeM5LifecycleManager( model, environ().client, environ().topNode,
+        tsContext(), environ().serverConnCfg );
     ITsGuiContext ctx = new TsGuiContext( tsContext() );
     ctx.params().addAll( tsContext().params() );
     IMultiPaneComponentConstants.OPDEF_IS_DETAILS_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
@@ -220,12 +222,14 @@ public class OpcUaNodesSelector
    * @param aTsContext ITsGuiContext - соответствующий контекст
    * @param aClient - OPC UA
    * @param aCheckedNodes - список помеченных узлов
+   * @param aServerConnCfg - параметры текущего подключения к OPC UA
    * @return IList<UaTreeNode> - список выбранных узлов или <b>null</b> в случае отказа от выбора
    */
   public static IList<UaTreeNode> selectUaNode( ITsGuiContext aTsContext, OpcUaClient aClient,
-      IList<UaTreeNode> aCheckedNodes ) {
+      IList<UaTreeNode> aCheckedNodes, IOpcUaServerConnCfg aServerConnCfg ) {
     ITsDialogInfo cdi = new TsDialogInfo( aTsContext, STR_MSG_SELECT_NODE, STR_DESCR_SELECT_NODE );
-    OpcUaNodesSelectorContext ctx = new OpcUaNodesSelectorContext( Identifiers.RootFolder, aClient, false, false );
+    OpcUaNodesSelectorContext ctx =
+        new OpcUaNodesSelectorContext( Identifiers.RootFolder, aClient, false, false, aServerConnCfg );
 
     IDialogPanelCreator<IList<UaTreeNode>, OpcUaNodesSelectorContext> creator = OpcUaNodesSelector::new;
     TsDialog<IList<UaTreeNode>, OpcUaNodesSelectorContext> d = new TsDialog<>( cdi, aCheckedNodes, ctx, creator );
@@ -238,14 +242,15 @@ public class OpcUaNodesSelector
    * @param aTsContext ITsGuiContext - соответствующий контекст
    * @param aTopNode - верхний узел поддерева
    * @param aClient - OPC UA
+   * @param aServerConnCfg - параметры текущего подключения к OPC UA
    * @return IList<UaTreeNode> - список выбранных узлов или <b>null</b> в случае отказа от выбора
    */
-  public static IList<UaTreeNode> selectUaNodes4Class( ITsGuiContext aTsContext, NodeId aTopNode,
-      OpcUaClient aClient ) {
+  public static IList<UaTreeNode> selectUaNodes4Class( ITsGuiContext aTsContext, NodeId aTopNode, OpcUaClient aClient,
+      IOpcUaServerConnCfg aServerConnCfg ) {
     TsDialogInfo cdi = new TsDialogInfo( aTsContext, STR_MSG_SELECT_NODE_4_CLASS, STR_DESCR_SELECT_NODE );
     // установим нормальный размер диалога
     cdi.setMinSize( new TsPoint( -30, -60 ) );
-    OpcUaNodesSelectorContext ctx = new OpcUaNodesSelectorContext( aTopNode, aClient, false, true );
+    OpcUaNodesSelectorContext ctx = new OpcUaNodesSelectorContext( aTopNode, aClient, false, true, aServerConnCfg );
 
     IDialogPanelCreator<IList<UaTreeNode>, OpcUaNodesSelectorContext> creator = OpcUaNodesSelector::new;
     TsDialog<IList<UaTreeNode>, OpcUaNodesSelectorContext> d = new TsDialog<>( cdi, null, ctx, creator );
@@ -258,12 +263,13 @@ public class OpcUaNodesSelector
    * @param aTsContext ITsGuiContext - соответствующий контекст
    * @param aTopNode - верхний узел поддерева
    * @param aClient - OPC UA
+   * @param aServerConnCfg - параметры текущего подключения к OPC UA
    * @return IList<UaTreeNode> - список выбранных узлов или <b>null</b> в случае отказа от выбора
    */
-  public static IList<UaTreeNode> selectUaNodes4Objects( ITsGuiContext aTsContext, NodeId aTopNode,
-      OpcUaClient aClient ) {
+  public static IList<UaTreeNode> selectUaNodes4Objects( ITsGuiContext aTsContext, NodeId aTopNode, OpcUaClient aClient,
+      IOpcUaServerConnCfg aServerConnCfg ) {
     ITsDialogInfo cdi = new TsDialogInfo( aTsContext, STR_MSG_SELECT_NODE_4_OBJS, STR_DESCR_SELECT_NODE );
-    OpcUaNodesSelectorContext ctx = new OpcUaNodesSelectorContext( aTopNode, aClient, true, true );
+    OpcUaNodesSelectorContext ctx = new OpcUaNodesSelectorContext( aTopNode, aClient, true, true, aServerConnCfg );
 
     IDialogPanelCreator<IList<UaTreeNode>, OpcUaNodesSelectorContext> creator = OpcUaNodesSelector::new;
     TsDialog<IList<UaTreeNode>, OpcUaNodesSelectorContext> d = new TsDialog<>( cdi, null, ctx, creator );

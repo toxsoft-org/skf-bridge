@@ -8,6 +8,7 @@ import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
 import java.nio.file.*;
 import java.util.*;
 import java.util.function.*;
+import java.util.regex.*;
 
 import org.eclipse.milo.opcua.sdk.client.*;
 import org.eclipse.milo.opcua.sdk.client.api.config.*;
@@ -45,6 +46,10 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 public class OpcUaUtils {
 
   public static final String CFG_UNIT_REALIZATION_TYPE_ONT_TO_ONE_DATA = "ont.to.one.data";
+  /**
+   * id secton for cached OPC UA nodes
+   */
+  public static final String SECTID_OPC_UA_NODES_PREFIX                = "cached.opc.ua.nodes"; //$NON-NLS-1$
 
   /**
    * id secton for store links UaNode->Gwid
@@ -481,6 +486,28 @@ public class OpcUaUtils {
         ECfgUnitType.EVENT, paramDefenitions, defaultParams );
 
     realizationTypeRegister.registerType( opcTagsEventSender );
+  }
+
+  /**
+   * По описанию конфигурации подключения к OPC UA выдает имя секции для хранения кэша узлов
+   *
+   * @param aSelConfig - описание конфигурации подключения к OPC UA
+   * @return строка с именем секции
+   */
+  @SuppressWarnings( "nls" )
+  public static String getCachedTreeSectionName( IOpcUaServerConnCfg aSelConfig ) {
+    // создаем имя секции для хранения дерева узлов
+    // выделяем из хоста IP, opc.tcp://192.168.12.61:4840
+    Pattern p = Pattern.compile( "[a-z:\\.\\/]+([0-9\\.]+)" );
+    String host = aSelConfig.host();
+    Matcher n = p.matcher( host );
+    String ipAddress = "localhost";
+    if( n.find() ) {
+      ipAddress = n.group( 1 );
+      // заменим точки на символы подчеркивания
+      ipAddress = ipAddress.replace( '.', '_' );
+    }
+    return SECTID_OPC_UA_NODES_PREFIX + ".IP_Address_" + ipAddress + ".UserName_" + aSelConfig.login();
   }
 
 }

@@ -35,6 +35,7 @@ import org.toxsoft.core.txtproj.lib.storage.*;
 import org.toxsoft.core.txtproj.lib.workroom.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 import org.toxsoft.skf.bridge.cfg.opcua.service.*;
 import org.toxsoft.skf.bridge.cfg.opcua.service.impl.*;
 import org.toxsoft.uskat.core.connection.*;
@@ -45,6 +46,7 @@ import org.toxsoft.uskat.core.gui.glib.query.*;
  * Editor panel for creating, editing, deleting opc ua server connections.
  *
  * @author max
+ * @author dima
  */
 public class OpcUaServerConnCfgEditorPanel
     extends TsPanel {
@@ -147,7 +149,7 @@ public class OpcUaServerConnCfgEditorPanel
                   TsInternalErrorRtException.checkNull( workroom );
                   IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
 
-                  storage.removeSection( OpcUaNodeM5LifecycleManager.SECTID_OPC_UA_NODES );
+                  storage.removeSection( OpcUaUtils.getCachedTreeSectionName( selConfig ) );
                 }
                 break;
               default:
@@ -160,10 +162,12 @@ public class OpcUaServerConnCfgEditorPanel
     opcUaConnCfgPanel.createControl( sf );
     // пока не выбрано ни одно соединение, отключаем
     componentModown.toolbar().getAction( ACDEF_BROWSE_CONN.id() ).setEnabled( false );
+    componentModown.toolbar().getAction( ACDEF_REMOVE_CACHE.id() ).setEnabled( false );
     componentModown.addTsSelectionListener( ( aSource, aSelectedItem ) -> {
       // просто активируем кнопку подключения/просмотра
       boolean enableRunBttn = (aSelectedItem != null);
       componentModown.toolbar().getAction( ACDEF_BROWSE_CONN.id() ).setEnabled( enableRunBttn );
+      componentModown.toolbar().getAction( ACDEF_REMOVE_CACHE.id() ).setEnabled( enableRunBttn );
     } );
 
     tabFolder = new CTabFolder( sf, SWT.BORDER );

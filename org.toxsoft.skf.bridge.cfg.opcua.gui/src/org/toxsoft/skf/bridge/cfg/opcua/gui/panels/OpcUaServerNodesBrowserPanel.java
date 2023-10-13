@@ -45,7 +45,6 @@ import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.*;
 import org.toxsoft.core.tslib.bricks.events.change.*;
 import org.toxsoft.core.tslib.bricks.geometry.impl.*;
-import org.toxsoft.core.tslib.bricks.strid.coll.*;
 import org.toxsoft.core.tslib.bricks.strid.coll.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
@@ -81,6 +80,7 @@ public class OpcUaServerNodesBrowserPanel
   private static final String           nodeCmdArgFltBrowseName   = "CmdArgFlt";   //$NON-NLS-1$
   private static final String           nodeCmdFeedbackBrowseName = "CmdFeedback"; //$NON-NLS-1$
   private StringMap<IList<IDtoCmdInfo>> clsId2CmdInfoes           = null;
+  private final IOpcUaServerConnCfg     opcUaServerConnCfg;
   /**
    * Аргумент команды: значение.
    * <p>
@@ -236,6 +236,7 @@ public class OpcUaServerNodesBrowserPanel
   public OpcUaServerNodesBrowserPanel( Composite aParent, ITsGuiContext aContext,
       IOpcUaServerConnCfg aOpcUaServerConnCfg ) {
     super( aParent, aContext );
+    opcUaServerConnCfg = aOpcUaServerConnCfg;
     this.setLayout( new BorderLayout() );
     ISkConnectionSupplier connSup = aContext.get( ISkConnectionSupplier.class );
     conn = connSup.defConn();
@@ -252,7 +253,8 @@ public class OpcUaServerNodesBrowserPanel
       return;
     }
 
-    IM5LifecycleManager<UaTreeNode> lm = new OpcUaNodeM5LifecycleManager( model, client, aContext );
+    IM5LifecycleManager<UaTreeNode> lm =
+        new OpcUaNodeM5LifecycleManager( model, client, aContext, aOpcUaServerConnCfg );
     ITsGuiContext ctx = new TsGuiContext( aContext );
     ctx.params().addAll( aContext.params() );
     IMultiPaneComponentConstants.OPDEF_IS_DETAILS_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
@@ -492,8 +494,8 @@ public class OpcUaServerNodesBrowserPanel
 
   private void createClassFromNodes( ITsGuiContext aContext ) {
     // создать класс из информации об UaNode
-    IList<UaTreeNode> selNodes =
-        OpcUaNodesSelector.selectUaNodes4Class( aContext, selectedNode.getUaNode().getNodeId(), client );
+    IList<UaTreeNode> selNodes = OpcUaNodesSelector.selectUaNodes4Class( aContext, selectedNode.getUaNode().getNodeId(),
+        client, opcUaServerConnCfg );
     // for debug
     // OpcUaNodesLazySelector.selectUaNodes4Class( aContext, selectedNode.getUaNode().getNodeId(), client );
     if( selNodes != null ) {
@@ -581,56 +583,6 @@ public class OpcUaServerNodesBrowserPanel
     // createCmdTemplates( cinf, aNodes );
 
     return cinf;
-  }
-
-  @SuppressWarnings( "nls" )
-  private static void createCmdTemplates( DtoClassInfo aCinf, IList<UaTreeNode> aNodes ) {
-    // Проходим по всем детям и если встречаем командные узлы, то создаем команды
-    for( UaTreeNode node : aNodes ) {
-      if( node.getNodeClass().equals( NodeClass.Variable ) ) {
-        String nodeBrowseName = node.getBrowseName();
-        if( nodeCmdIdBrowseName.compareTo( nodeBrowseName ) == 0 ) {
-          // создаем команду без аргументов
-          IStridablesList<IDataDef> argDefs = new StridablesList<>(); //
-          createCmdInfo( aCinf, "cmdXxxNoArg", argDefs );
-          continue;
-        }
-        if( nodeCmdArgIntdBrowseName.compareTo( nodeBrowseName ) == 0 ) {
-          // создаем команду с int аргументом
-          IStridablesList<IDataDef> argDefs = new StridablesList<>( //
-              DataDef.create( CMDARGID_VALUE, EAtomicType.INTEGER, TSID_NAME, STR_N_ARG_VALUE, //
-                  TSID_DESCRIPTION, STR_D_ARG_VALUE, //
-                  TSID_IS_NULL_ALLOWED, AV_FALSE ) //
-          ); //
-          createCmdInfo( aCinf, "cmdXxxArgInt", argDefs );
-          continue;
-        }
-        if( nodeCmdArgFltBrowseName.compareTo( nodeBrowseName ) == 0 ) {
-          // создаем команду с float аргументом
-          IStridablesList<IDataDef> argDefs = new StridablesList<>( //
-              DataDef.create( CMDARGID_VALUE, EAtomicType.FLOATING, TSID_NAME, STR_N_ARG_VALUE, //
-                  TSID_DESCRIPTION, STR_D_ARG_VALUE, //
-                  TSID_IS_NULL_ALLOWED, AV_FALSE ) //
-          ); //
-          createCmdInfo( aCinf, "cmdXxxFltArg", argDefs );
-          continue;
-        }
-      }
-    }
-  }
-
-  private static void createCmdInfo( DtoClassInfo aCinf, String aCmdId, IStridablesList<IDataDef> aArgDefs ) {
-    // название
-    String name = STR_ENTER_NAME;
-    // описание
-    String descr = STR_ENTER_DESCR;
-    IDtoCmdInfo cmdInfo = DtoCmdInfo.create1( aCmdId, //
-        aArgDefs, //
-        OptionSetUtils.createOpSet( //
-            IAvMetaConstants.TSID_NAME, name, //
-            IAvMetaConstants.TSID_DESCRIPTION, descr //
-        ) ); //
-    aCinf.cmdInfos().add( cmdInfo );
   }
 
   private static UaTreeNode objNode( IList<UaTreeNode> aNodes ) {
@@ -788,8 +740,8 @@ public class OpcUaServerNodesBrowserPanel
 
   private void createObjsFromNodes( ITsGuiContext aContext ) {
     // создать объекты по списку UaNode
-    IList<UaTreeNode> selNodes =
-        OpcUaNodesSelector.selectUaNodes4Objects( aContext, selectedNode.getUaNode().getNodeId(), client );
+    IList<UaTreeNode> selNodes = OpcUaNodesSelector.selectUaNodes4Objects( aContext,
+        selectedNode.getUaNode().getNodeId(), client, opcUaServerConnCfg );
     if( selNodes != null ) {
       // получаем М5 модель IDtoObject
       IM5Model<IDtoObject> modelSk =
