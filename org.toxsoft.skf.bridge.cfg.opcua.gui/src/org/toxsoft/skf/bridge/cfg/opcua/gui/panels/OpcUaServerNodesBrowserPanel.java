@@ -250,6 +250,8 @@ public class OpcUaServerNodesBrowserPanel
     }
     catch( Exception ex ) {
       LoggerUtils.errorLogger().error( ex );
+      TsDialogUtils.error( getShell(), "Can't connect to OPC UA server: %s\n Error message: %s",
+          aOpcUaServerConnCfg.host(), ex.getMessage() );
       return;
     }
 
@@ -294,6 +296,10 @@ public class OpcUaServerNodesBrowserPanel
               }
 
               if( aActionId == SHOW_OPC_UA_NODE_2_GWID_ACT_ID ) {
+                // for debug
+                // EAtomicType ret = OpcUaUtils.getValueTypeOfNode( aContext, aOpcUaServerConnCfg,
+                // selectedNode.getUaNode().getNodeId().toParseableString() );
+                // LoggerUtils.defaultLogger().debug( ret.toString() );
                 checkNode2Gwid( aContext );
               }
               if( aActionId == LOAD_CMD_DESCR_ACT_ID ) {
@@ -698,6 +704,7 @@ public class OpcUaServerNodesBrowserPanel
     // тип данного
     Class<?> clazz = OpcUaUtils.getNodeDataTypeClass( aVariableNode );
     EAtomicType type = OpcUaUtils.getAtomicType( clazz );
+
     StridablesList<IDataDef> evParams;
     evParams = switch( type ) {
       case INTEGER -> new StridablesList<>( EVPDD_OLD_VAL_INT, EVPDD_NEW_VAL_INT );

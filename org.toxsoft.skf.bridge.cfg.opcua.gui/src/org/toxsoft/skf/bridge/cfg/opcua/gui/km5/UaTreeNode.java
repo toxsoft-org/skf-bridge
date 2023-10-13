@@ -7,6 +7,7 @@ import org.eclipse.milo.opcua.sdk.client.nodes.*;
 import org.eclipse.milo.opcua.stack.core.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
+import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.bricks.keeper.*;
 import org.toxsoft.core.tslib.bricks.keeper.AbstractEntityKeeper.*;
 import org.toxsoft.core.tslib.bricks.strio.*;
@@ -15,6 +16,7 @@ import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 
 /**
  * Tree node, aggragating UaNode, and forming tree structure.
@@ -28,13 +30,14 @@ public class UaTreeNode {
 
   private UaTreeNode parent = null;
 
-  private UaNode    uaNode       = null;
-  private String    parentNodeId = null;
-  private String    nodeId       = null;
-  private String    browseName   = null;
-  private String    displayName  = null;
-  private String    description  = null;
-  private NodeClass nodeClass    = null;
+  private UaNode      uaNode       = null;
+  private String      parentNodeId = null;
+  private String      nodeId       = null;
+  private String      browseName   = null;
+  private String      displayName  = null;
+  private String      description  = null;
+  private NodeClass   nodeClass    = null;
+  private EAtomicType type         = EAtomicType.NONE;
 
   private OpcUaClient        client;
   /**
@@ -78,6 +81,9 @@ public class UaTreeNode {
           // node class
           int nodeClass = aEntity.uaNode.getNodeClass().getValue();
           aSw.writeInt( nodeClass );
+          aSw.writeChar( CHAR_ITEM_SEPARATOR );
+          // type
+          EAtomicType.KEEPER.write( aSw, aEntity.type );
           aSw.writeEol();
         }
 
@@ -94,8 +100,10 @@ public class UaTreeNode {
           String description = aSr.readQuotedString();
           aSr.ensureChar( CHAR_ITEM_SEPARATOR );
           int nodeClassVal = aSr.readInt();
+          aSr.ensureChar( CHAR_ITEM_SEPARATOR );
+          EAtomicType type = EAtomicType.KEEPER.read( aSr );
           return new UaTreeNode( parentNodeId, nodeId, browseName, displayName, description,
-              NodeClass.from( nodeClassVal ) );
+              NodeClass.from( nodeClassVal ), type );
         }
       };
 
@@ -110,7 +118,10 @@ public class UaTreeNode {
     TsNullArgumentRtException.checkNulls( aUaNode );
     parent = aParent;
     uaNode = aUaNode;
-
+    if( uaNode instanceof UaVariableNode variableNode ) {
+      Class<?> clazz = OpcUaUtils.getNodeDataTypeClass( variableNode );
+      type = OpcUaUtils.getAtomicType( clazz );
+    }
     if( aParent != null ) {
       aParent.children.add( this );
     }
@@ -125,9 +136,10 @@ public class UaTreeNode {
    * @param aDisplayName - node display name
    * @param aDescription - node description
    * @param aNodeClass - node class
+   * @param aType - тип данного для node типа Variable
    */
   public UaTreeNode( String aParentNodeId, String aNodeId, String aBrowseName, String aDisplayName, String aDescription,
-      NodeClass aNodeClass ) {
+      NodeClass aNodeClass, EAtomicType aType ) {
     super();
     parentNodeId = aParentNodeId;
     nodeId = aNodeId;
@@ -135,6 +147,7 @@ public class UaTreeNode {
     displayName = aDisplayName;
     description = aDescription;
     nodeClass = aNodeClass;
+    type = aType;
   }
 
   /**
@@ -218,6 +231,13 @@ public class UaTreeNode {
    */
   public NodeClass getNodeClass() {
     return nodeClass == null ? uaNode.getNodeClass() : nodeClass;
+  }
+
+  /**
+   * @return OPC UA node data type
+   */
+  public EAtomicType getDataType() {
+    return type;
   }
 
   /**

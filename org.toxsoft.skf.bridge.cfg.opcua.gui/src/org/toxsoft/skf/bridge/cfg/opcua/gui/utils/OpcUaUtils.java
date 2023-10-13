@@ -28,6 +28,7 @@ import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.OptionSet;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
+import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.*;
@@ -45,6 +46,8 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
  * @author dima
  */
 public class OpcUaUtils {
+
+  private static StringMap<IList<UaTreeNode>> section2NodesList = new StringMap<>();
 
   public static final String CFG_UNIT_REALIZATION_TYPE_ONT_TO_ONE_DATA = "ont.to.one.data";
   /**
@@ -518,4 +521,40 @@ public class OpcUaUtils {
     return SECTID_OPC_UA_NODES_PREFIX + ".IP_Address_" + ipAddress + ".UserName_" + aSelConfig.login();
   }
 
+  private static IList<UaTreeNode> loadUaTreeNodes( ITsGuiContext aContext, IOpcUaServerConnCfg aConnCfg ) {
+    ITsWorkroom workroom = aContext.eclipseContext().get( ITsWorkroom.class );
+    TsInternalErrorRtException.checkNull( workroom );
+    IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
+    String sectionName = OpcUaUtils.getCachedTreeSectionName( aConnCfg );
+    IList<UaTreeNode> retVal = new ElemArrayList<>( storage.readColl( sectionName, UaTreeNode.KEEPER ) );
+    return retVal;
+  }
+
+  /**
+   * По описанию NodeId получить тип узла
+   *
+   * @param aContext - контекст
+   * @param aConnCfg - конфигурация подключения
+   * @param aNodeId - адрес узла в OPC UA
+   * @return тип данного для узла
+   */
+  public static EAtomicType getValueTypeOfNode( ITsGuiContext aContext, IOpcUaServerConnCfg aConnCfg, String aNodeId ) {
+    IList<UaTreeNode> nodes;
+    NodeId nodeId = NodeId.parse( aNodeId );
+    // сначала проверяем в кэше
+    String sectionName = OpcUaUtils.getCachedTreeSectionName( aConnCfg );
+    if( section2NodesList.hasKey( sectionName ) ) {
+      nodes = section2NodesList.getByKey( sectionName );
+    }
+    else {
+      nodes = loadUaTreeNodes( aContext, aConnCfg );
+    }
+    for( UaTreeNode node : nodes ) {
+      NodeId candidateNodeId = NodeId.parse( node.getNodeId() );
+      if( candidateNodeId.equals( nodeId ) ) {
+        return node.getDataType();
+      }
+    }
+    return null;
+  }
 }
