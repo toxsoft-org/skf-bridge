@@ -16,6 +16,8 @@ import java.io.*;
 
 import org.eclipse.milo.opcua.sdk.client.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
+import org.eclipse.swt.*;
+import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.tsgui.bricks.actions.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tsgui.dialogs.datarec.*;
@@ -40,6 +42,8 @@ import org.toxsoft.core.tslib.bricks.apprefs.impl.*;
 import org.toxsoft.core.tslib.bricks.strid.more.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
+import org.toxsoft.core.tslib.coll.primtypes.*;
+import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
@@ -466,6 +470,21 @@ public class OpcToS5DataCfgUnitM5Model
                     break;
 
                   case ACTID_AUTO_LINK:
+
+                    IStringMap<IStringMap<Integer>> cmdOpcCodes = new StringMap<>();
+
+                    String cmdFileDescr = getCmdDescrFile();
+                    if( cmdFileDescr != null ) {
+                      File file = new File( cmdFileDescr );
+                      try {
+                        cmdOpcCodes = Ods2DtoCmdInfoParser.parseOpcCmdCodes( file );
+                        // TsDialogUtils.info( getShell(), "Loaded command description from file: %s", cmdFileDescr );
+                      }
+                      catch( IOException ex ) {
+                        LoggerUtils.errorLogger().error( ex );
+                      }
+                    }
+
                     // Commands
                     IList<CmdGwid2UaNodes> autoElements = OpcUaUtils.loadCmdGwid2Nodes( aContext );
                     System.out.println( "Auto elements size = " + autoElements.size() );
@@ -501,7 +520,17 @@ public class OpcToS5DataCfgUnitM5Model
                       if( cmdArgParam != null ) {
                         OpcUaUtils.OP_CMD_VALUE_PARAM_ID.setValue( realization, avStr( cmdArgParam ) );
                       }
-                      OpcUaUtils.OP_CMD_OPC_ID.setValue( realization, avInt( 1 ) );
+                      int cmdOpcCode = 1;
+
+                      if( cmdOpcCodes.hasKey( cmd2Nodes.gwid().classId() ) ) {
+                        IStringMap<Integer> classCodes = cmdOpcCodes.getByKey( cmd2Nodes.gwid().classId() );
+
+                        if( classCodes.hasKey( cmd2Nodes.gwid().propId() ) ) {
+                          cmdOpcCode = classCodes.getByKey( cmd2Nodes.gwid().propId() ).intValue();
+                        }
+                      }
+
+                      OpcUaUtils.OP_CMD_OPC_ID.setValue( realization, avInt( cmdOpcCode ) );
 
                       String name = "generated for " + cmd2Nodes.gwid().asString();
 
@@ -624,6 +653,20 @@ public class OpcToS5DataCfgUnitM5Model
       return null;
     }
 
+  }
+
+  String         SELECT_FILE_4_IMPORT_CMD = "Выберите файл с описанием команд";
+  private String ODS_EXT                  = "*.ods";                           //$NON-NLS-1$
+  private String DEFAULT_PATH_STR         = "";
+
+  private String getCmdDescrFile() {
+    FileDialog fd = new FileDialog( getShell(), SWT.OPEN );
+    fd.setText( SELECT_FILE_4_IMPORT_CMD );
+    fd.setFilterPath( DEFAULT_PATH_STR );
+    String[] filterExt = { ODS_EXT };
+    fd.setFilterExtensions( filterExt );
+    String selected = fd.open();
+    return selected;
   }
 
 }

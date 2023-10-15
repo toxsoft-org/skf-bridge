@@ -14,6 +14,7 @@ import org.toxsoft.core.tslib.av.opset.impl.*;
 import org.toxsoft.core.tslib.bricks.strid.coll.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
+import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
@@ -31,6 +32,11 @@ public class Ods2DtoCmdInfoParser {
    * карта id класса - > его DtoCmdInfo
    */
   static private final StringMap<IList<IDtoCmdInfo>> dtoCmdInfoesMap = new StringMap<>();
+
+  /**
+   * карта id класса - > карта cmdId -> cmdCod opc
+   */
+  static private final StringMap<IStringMap<Integer>> dtoCmdOpcCodesMap = new StringMap<>();
 
   static private String CMD_PREFIX = "cmd"; //$NON-NLS-1$
 
@@ -228,4 +234,44 @@ public class Ods2DtoCmdInfoParser {
     throw new TsIllegalArgumentRtException( "Unknown type: %s", aDataTypeStr ); //$NON-NLS-1$
   }
 
+  /**
+   * Считывает коды команд на opc сервере
+   *
+   * @param aOdsFile файл с описанием классов
+   * @return {@link StringMap<IStringMap<Integer>>} карта classId -> карта cmdId -> cmdCod opc
+   * @throws IOException исключение при работе с файлом
+   */
+  @SuppressWarnings( "javadoc" )
+  public static IStringMap<IStringMap<Integer>> parseOpcCmdCodes( File aOdsFile )
+      throws IOException {
+
+    // Читаем подряд пока не закончатся закладки с описанием команд
+    SpreadSheet spreadSheet = SpreadSheet.createFromFile( aOdsFile );
+    for( int i = 0; i < spreadSheet.getSheetCount(); i++ ) {
+      Sheet sheet = spreadSheet.getSheet( i );
+      String classId = sheet.getName();
+      IStringMap<Integer> cmdCodes = readCmdOpcCodes( sheet );
+      dtoCmdOpcCodesMap.put( classId, cmdCodes );
+    }
+    return dtoCmdOpcCodesMap;
+  }
+
+  private static IStringMap<Integer> readCmdOpcCodes( Sheet aSheet ) {
+    IStringMapEdit<Integer> retVal = new StringMap<>();
+    // сканируем закладку от 3 ряда
+    for( int currRow = 3; currRow <= aSheet.getRowCount(); currRow++ ) {
+      MutableCell<?> cell = aSheet.getCellAt( cellRef( CMD_CODE_COL, currRow ) );
+      // если нет номера, то выходим
+      if( !isNumber( cell ) ) {
+        return retVal;
+      }
+
+      int code = Integer.parseInt( cell.getTextValue() );
+      IDtoCmdInfo cmdInfo = readCmdInfo( aSheet, currRow );
+      if( cmdInfo != null ) {
+        retVal.put( cmdInfo.id(), Integer.valueOf( code ) );
+      }
+    }
+    return retVal;
+  }
 }
