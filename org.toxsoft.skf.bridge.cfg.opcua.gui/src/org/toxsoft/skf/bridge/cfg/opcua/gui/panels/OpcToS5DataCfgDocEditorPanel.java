@@ -228,9 +228,9 @@ public class OpcToS5DataCfgDocEditorPanel
 
     IList<CfgOpcUaNode> nodesCfgsList = aDoc.getNodesCfgs();
     IStringMapEdit<CfgOpcUaNode> nodesCfgs = new StringMap<>();
-    for( CfgOpcUaNode node : nodesCfgsList ) {
-      nodesCfgs.put( node.getNodeId(), node );
-    }
+    // for( CfgOpcUaNode node : nodesCfgsList ) {
+    // nodesCfgs.put( node.getNodeId(), node );
+    // }
 
     for( OpcToS5DataCfgUnit unit : dataCfgUnits ) {
       IList<NodeId> nodes = unit.getDataNodes();
@@ -244,7 +244,7 @@ public class OpcToS5DataCfgDocEditorPanel
         NodeId node = nodes.get( i );
         if( !nodesCfgs.hasKey( node.toParseableString() ) ) {
           nodesCfgs.put( node.toParseableString(),
-              realType.createInitCfg( node.toParseableString(), i, nodes.size() ) );
+              realType.createInitCfg( aContext, node.toParseableString(), i, nodes.size() ) );
           // new CfgOpcUaNode( node.toParseableString(), false, true, false, EAtomicType.INTEGER ) );
         }
       }

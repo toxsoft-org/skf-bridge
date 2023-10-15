@@ -440,8 +440,13 @@ public class OpcUaUtils {
         "Установка значения через командный узел", ECfgUnitType.COMMAND, paramDefenitions, defaultParams ) {
 
       @Override
-      public CfgOpcUaNode createInitCfg( String aNodeId, int aNodeIndex, int aNodeCount ) {
-        return new CfgOpcUaNode( aNodeId, false, true, aNodeIndex < aNodeCount - 1, EAtomicType.INTEGER );
+      public CfgOpcUaNode createInitCfg( ITsGuiContext aaContext, String aNodeId, int aNodeIndex, int aNodeCount ) {
+        OpcUaServerConnCfg config =
+            (OpcUaServerConnCfg)aContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
+
+        EAtomicType type = OpcUaUtils.getValueTypeOfNode( aaContext, config, aNodeId );
+        return new CfgOpcUaNode( aNodeId, false, true, aNodeIndex < aNodeCount - 1,
+            type != null ? type : EAtomicType.INTEGER );
       }
 
     };

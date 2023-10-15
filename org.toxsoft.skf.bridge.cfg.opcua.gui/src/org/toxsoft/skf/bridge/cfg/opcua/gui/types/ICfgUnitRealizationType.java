@@ -1,5 +1,6 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.types;
 
+import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tslib.av.metainfo.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.bricks.strid.*;
@@ -30,5 +31,5 @@ public interface ICfgUnitRealizationType
    * @param aNodeCount - общее количество узлов
    * @return CfgOpcUaNode - начальная конфигурация, по умолчанию - асинхронный узел Integer на чтение.
    */
-  CfgOpcUaNode createInitCfg( String aNodeId, int aNodeIndex, int aNodeCount );
+  CfgOpcUaNode createInitCfg( ITsGuiContext aContext, String aNodeId, int aNodeIndex, int aNodeCount );
 }
