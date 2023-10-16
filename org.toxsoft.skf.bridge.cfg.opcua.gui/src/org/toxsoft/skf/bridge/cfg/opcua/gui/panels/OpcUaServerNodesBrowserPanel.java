@@ -841,6 +841,11 @@ public class OpcUaServerNodesBrowserPanel
     String niCmdArgInt = null; // может и не быть
     String niCmdArgFlt = null;
     String niCmdFeedback = null;
+    // получаем тип аргумента команды
+    EAtomicType argType = EAtomicType.NONE;
+    if( !aCmdInfo.argDefs().isEmpty() ) {
+      argType = aCmdInfo.argDefs().first().atomicType();
+    }
     // перебираем все узлы и заполняем нужные нам для описания связи
     for( UaTreeNode varNode : aObjNode.getChildren() ) {
       if( varNode.getNodeClass().equals( NodeClass.Variable ) ) {
@@ -863,7 +868,26 @@ public class OpcUaServerNodesBrowserPanel
         }
       }
     }
-    retVal = new CmdGwid2UaNodes( gwid, nodeDescr, niCmdId, niCmdArgInt, niCmdArgFlt, niCmdFeedback );
+    switch( argType ) {
+      case INTEGER: {
+        retVal = new CmdGwid2UaNodes( gwid, nodeDescr, niCmdId, niCmdArgInt, null, niCmdFeedback );
+        break;
+      }
+      case FLOATING: {
+        retVal = new CmdGwid2UaNodes( gwid, nodeDescr, niCmdId, null, niCmdArgFlt, niCmdFeedback );
+        break;
+      }
+      case NONE: {
+        retVal = new CmdGwid2UaNodes( gwid, nodeDescr, niCmdId, null, null, niCmdFeedback );
+        break;
+      }
+      case BOOLEAN:
+      case STRING:
+      case TIMESTAMP:
+      case VALOBJ:
+      default:
+        throw new TsNotAllEnumsUsedRtException( argType.name() );
+    }
     return retVal;
   }
 
