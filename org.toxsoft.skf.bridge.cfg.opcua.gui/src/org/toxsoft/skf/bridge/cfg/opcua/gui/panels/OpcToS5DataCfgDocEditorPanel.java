@@ -156,16 +156,16 @@ public class OpcToS5DataCfgDocEditorPanel
     IM5Domain m5 = conn.scope().get( IM5Domain.class );
     IM5Model<OpcToS5DataCfgUnit> model = m5.getModel( OpcToS5DataCfgUnitM5Model.MODEL_ID, OpcToS5DataCfgUnit.class );
 
-    ITsGuiContext ctx = new TsGuiContext( tsContext() );
-    ctx.params().addAll( tsContext().params() );
+    // ITsGuiContext ctx = new TsGuiContext( tsContext() );
+    // ctx.params().addAll( tsContext().params() );
 
     // IMultiPaneComponentConstants.OPDEF_IS_DETAILS_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
     // IMultiPaneComponentConstants.OPDEF_DETAILS_PANE_PLACE.setValue( ctx.params(),
     // avValobj( EBorderLayoutPlacement.SOUTH ) );
     // IMultiPaneComponentConstants.OPDEF_IS_SUPPORTS_TREE.setValue( ctx.params(), AvUtils.AV_TRUE );
-    IMultiPaneComponentConstants.OPDEF_IS_ACTIONS_CRUD.setValue( ctx.params(), AvUtils.AV_TRUE );
+    IMultiPaneComponentConstants.OPDEF_IS_ACTIONS_CRUD.setValue( tsContext().params(), AvUtils.AV_TRUE );
     // добавляем в панель фильтр
-    // IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
+    IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( tsContext().params(), AvUtils.AV_TRUE );
 
     // MultiPaneComponentModown<OpcToS5DataCfgUnit> componentModown2 =
     // new MultiPaneComponentModown<>( ctx, model, lm.itemsProvider(), lm );
@@ -174,7 +174,7 @@ public class OpcToS5DataCfgDocEditorPanel
 
     IM5LifecycleManager<OpcToS5DataCfgUnit> lm = new OpcToS5DataCfgUnitM5LifecycleManager( model, aSelDoc );
     IM5CollectionPanel<OpcToS5DataCfgUnit> opcToS5DataCfgUnitPanel =
-        model.panelCreator().createCollEditPanel( ctx, lm.itemsProvider(), lm );
+        model.panelCreator().createCollEditPanel( tsContext(), lm.itemsProvider(), lm );
 
     tabItem.setControl( opcToS5DataCfgUnitPanel.createControl( tabFolder ) );
 
@@ -191,28 +191,28 @@ public class OpcToS5DataCfgDocEditorPanel
     IM5Domain m5 = conn.scope().get( IM5Domain.class );
     IM5Model<CfgOpcUaNode> model = m5.getModel( CfgOpcUaNodeM5Model.MODEL_ID, CfgOpcUaNode.class );
 
-    ITsGuiContext ctx = new TsGuiContext( tsContext() );
-    ctx.params().addAll( tsContext().params() );
+    // ITsGuiContext ctx = new TsGuiContext( tsContext() );
+    // ctx.params().addAll( tsContext().params() );
 
     // IMultiPaneComponentConstants.OPDEF_IS_DETAILS_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
     // IMultiPaneComponentConstants.OPDEF_DETAILS_PANE_PLACE.setValue( ctx.params(),
     // avValobj( EBorderLayoutPlacement.SOUTH ) );
     // IMultiPaneComponentConstants.OPDEF_IS_SUPPORTS_TREE.setValue( ctx.params(), AvUtils.AV_TRUE );
-    IMultiPaneComponentConstants.OPDEF_IS_ACTIONS_CRUD.setValue( ctx.params(), AvUtils.AV_TRUE );
+    IMultiPaneComponentConstants.OPDEF_IS_ACTIONS_CRUD.setValue( tsContext().params(), AvUtils.AV_TRUE );
     // добавляем в панель фильтр
-    // IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
+    IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( tsContext().params(), AvUtils.AV_TRUE );
 
     // MultiPaneComponentModown<OpcToS5DataCfgUnit> componentModown2 =
     // new MultiPaneComponentModown<>( ctx, model, lm.itemsProvider(), lm );
     // IM5CollectionPanel<OpcToS5DataCfgUnit> opcToS5DataCfgUnitPanel =
     // new M5CollectionPanelMpcModownWrapper<>( componentModown2, false );
 
-    ensureNodesCfgs( m5().tsContext(), aSelDoc );
+    ensureNodesCfgs( tsContext(), aSelDoc );
 
     IM5LifecycleManager<CfgOpcUaNode> lm = model.getLifecycleManager( aSelDoc );
 
     IM5CollectionPanel<CfgOpcUaNode> cfgNodesPanel =
-        model.panelCreator().createCollEditPanel( ctx, lm.itemsProvider(), lm );
+        model.panelCreator().createCollEditPanel( tsContext(), lm.itemsProvider(), lm );
 
     tabItem.setControl( cfgNodesPanel.createControl( tabFolder ) );
 
@@ -236,7 +236,7 @@ public class OpcToS5DataCfgDocEditorPanel
       IList<NodeId> nodes = unit.getDataNodes();
 
       String relizationTypeId = unit.getRelizationTypeId();
-      CfgUnitRealizationTypeRegister typeReg2 = aContext.get( CfgUnitRealizationTypeRegister.class );
+      CfgUnitRealizationTypeRegister typeReg2 = m5().tsContext().get( CfgUnitRealizationTypeRegister.class );
 
       ICfgUnitRealizationType realType = typeReg2.getTypeOfRealizationById( unit.getTypeOfCfgUnit(), relizationTypeId );
 

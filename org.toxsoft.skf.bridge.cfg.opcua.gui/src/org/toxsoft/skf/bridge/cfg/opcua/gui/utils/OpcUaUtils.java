@@ -442,7 +442,7 @@ public class OpcUaUtils {
       @Override
       public CfgOpcUaNode createInitCfg( ITsGuiContext aaContext, String aNodeId, int aNodeIndex, int aNodeCount ) {
         OpcUaServerConnCfg config =
-            (OpcUaServerConnCfg)aContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
+            (OpcUaServerConnCfg)aaContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
 
         EAtomicType type = OpcUaUtils.getValueTypeOfNode( aaContext, config, aNodeId );
         return new CfgOpcUaNode( aNodeId, false, true, aNodeIndex < aNodeCount - 1,
