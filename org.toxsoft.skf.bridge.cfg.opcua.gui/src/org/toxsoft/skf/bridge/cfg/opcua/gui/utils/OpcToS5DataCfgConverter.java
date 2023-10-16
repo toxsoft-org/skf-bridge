@@ -3,6 +3,7 @@ package org.toxsoft.skf.bridge.cfg.opcua.gui.utils;
 import java.util.*;
 
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
+import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.avtree.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.*;
@@ -607,7 +608,11 @@ public class OpcToS5DataCfgConverter {
     pinOpSet1.setStr( OPC_TAG_PARAM_NAME, aData.getNodeId() );
     pinOpSet1.setStr( PIN_ID_PARAM_NAME, getPinId( aData.getNodeId() ) );
     pinOpSet1.setStr( PIN_TYPE_PARAM_NAME, aData.getType().id() );
-    // pinOpSet1.setStr( PIN_TYPE_EXTRA_PARAM_NAME, aData.getTagValueRawType() );
+
+    // ЗАПЛАТКА TODO - переделать драйвер!!!!!!!!! TODO
+    if( aData.getType() == EAtomicType.INTEGER ) {
+      pinOpSet1.setStr( PIN_TYPE_EXTRA_PARAM_NAME, "INT" );
+    }
 
     // if( aData.getCmdWordBitIndex() > -1 ) {
     // pinOpSet1.setBool( PIN_CONTROL_WORD_PARAM_NAME, true );
