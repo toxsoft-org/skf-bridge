@@ -818,8 +818,8 @@ public class OpcUaServerNodesBrowserPanel
             }
           }
           // заливаем в хранилище
-          OpcUaUtils.addNodes2GwidsInStore( aContext, node2GwidList );
-          OpcUaUtils.addCmdGwid2NodesInStore( aContext, cmdGwid2UaNodesList );
+          OpcUaUtils.updateNodes2GwidsInStore( aContext, node2GwidList );
+          OpcUaUtils.updateCmdGwid2NodesInStore( aContext, cmdGwid2UaNodesList );
         }
       }
     }

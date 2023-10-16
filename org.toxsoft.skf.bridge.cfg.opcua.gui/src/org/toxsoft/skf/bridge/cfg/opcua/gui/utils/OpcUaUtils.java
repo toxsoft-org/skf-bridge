@@ -254,20 +254,33 @@ public class OpcUaUtils {
   }
 
   /**
-   * Add list of links UaNode->Gwid {@link UaNode2RtdGwid} to store in inner storage
+   * Update list of links UaNode->Gwid {@link UaNode2RtdGwid} to store in inner storage
    *
    * @param aContext app context
    * @param aNodes2Gwids list of links UaNode->Gwid
    */
-  public static void addNodes2GwidsInStore( ITsGuiContext aContext, IList<UaNode2RtdGwid> aNodes2Gwids ) {
+  public static void updateNodes2GwidsInStore( ITsGuiContext aContext, IList<UaNode2RtdGwid> aNodes2Gwids ) {
     ITsWorkroom workroom = aContext.eclipseContext().get( ITsWorkroom.class );
     TsInternalErrorRtException.checkNull( workroom );
     IList<UaNode2RtdGwid> oldList = loadNodes2Gwids( aContext );
     IListEdit<UaNode2RtdGwid> newList = new ElemArrayList<>();
-    newList.addAll( oldList );
+    for( UaNode2RtdGwid oldItem : oldList ) {
+      if( !containsNodeIn( aNodes2Gwids, oldItem ) ) {
+        newList.add( oldItem );
+      }
+    }
     newList.addAll( aNodes2Gwids );
     IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
     storage.writeColl( SECTID_OPC_UA_NODES_2_RTD_GWIDS, newList, UaNode2RtdGwid.KEEPER );
+  }
+
+  private static boolean containsNodeIn( IList<UaNode2RtdGwid> aNodes2Gwids, UaNode2RtdGwid aOldItem ) {
+    for( UaNode2RtdGwid node : aNodes2Gwids ) {
+      if( node.getNodeId().equals( aOldItem.getNodeId() ) ) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -350,15 +363,29 @@ public class OpcUaUtils {
    * @param aContext app context
    * @param aCmdGwid2UaNodes list of links CmdGwid->UaNodes
    */
-  public static void addCmdGwid2NodesInStore( ITsGuiContext aContext, IList<CmdGwid2UaNodes> aCmdGwid2UaNodes ) {
+  public static void updateCmdGwid2NodesInStore( ITsGuiContext aContext, IList<CmdGwid2UaNodes> aCmdGwid2UaNodes ) {
     ITsWorkroom workroom = aContext.eclipseContext().get( ITsWorkroom.class );
     TsInternalErrorRtException.checkNull( workroom );
     IList<CmdGwid2UaNodes> oldList = loadCmdGwid2Nodes( aContext );
+    // добавляем в список на запись только те элементы которых нет в новом списке
     IListEdit<CmdGwid2UaNodes> newList = new ElemArrayList<>();
-    newList.addAll( oldList );
+    for( CmdGwid2UaNodes oldItem : oldList ) {
+      if( !containsGwidIn( aCmdGwid2UaNodes, oldItem ) ) {
+        newList.add( oldItem );
+      }
+    }
     newList.addAll( aCmdGwid2UaNodes );
     IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
     storage.writeColl( SECTID_CMD_GWIDS_2_OPC_UA_NODES, newList, CmdGwid2UaNodes.KEEPER );
+  }
+
+  private static boolean containsGwidIn( IList<CmdGwid2UaNodes> aCmdGwid2UaNodes, CmdGwid2UaNodes aOldItem ) {
+    for( CmdGwid2UaNodes item : aCmdGwid2UaNodes ) {
+      if( item.gwid().equals( aOldItem.gwid() ) ) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
