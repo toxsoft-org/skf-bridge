@@ -198,6 +198,8 @@ public class OpcToS5DataCfgUnitM5Model
         protected void doInit() {
           setNameAndDescription( "Gwids", "Gwids" );
           setFlags( M5FF_COLUMN | M5FF_DETAIL );
+          // задаем нормальный размер!
+          params().setInt( IValedControlConstants.OPDEF_VERTICAL_SPAN, 6 );
         }
 
         protected IList<Gwid> doGetFieldValue( OpcToS5DataCfgUnit aEntity ) {
@@ -252,6 +254,8 @@ public class OpcToS5DataCfgUnitM5Model
         protected void doInit() {
           setNameAndDescription( "Nodes", "Nodes" );
           setFlags( M5FF_COLUMN | M5FF_DETAIL );
+          // задаем нормальный размер!
+          params().setInt( IValedControlConstants.OPDEF_VERTICAL_SPAN, 9 );
         }
 
         protected IList<NodeId> doGetFieldValue( OpcToS5DataCfgUnit aEntity ) {
