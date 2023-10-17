@@ -73,7 +73,7 @@ public class CfgOpcUaNode {
 
           // type
           String typeId = aSr.readQuotedString();
-          EAtomicType type = EAtomicType.findById( typeId );
+          EAtomicType type = EAtomicType.getById( typeId );
           aSr.ensureSeparatorChar();
 
           IOptionSet extraParams = OptionSetKeeper.KEEPER.read( aSr );
