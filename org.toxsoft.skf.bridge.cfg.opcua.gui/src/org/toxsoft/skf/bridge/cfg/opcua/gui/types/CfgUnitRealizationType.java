@@ -69,7 +69,7 @@ public class CfgUnitRealizationType
     OpcUaServerConnCfg conConf =
         (OpcUaServerConnCfg)aContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
 
-    EAtomicType type = EAtomicType.INTEGER;
+    EAtomicType type = EAtomicType.NONE;
     if( conConf != null ) {
       type = OpcUaUtils.getValueTypeOfNode( aContext, conConf, aNodeId );
     }

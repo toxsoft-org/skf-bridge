@@ -26,6 +26,7 @@ import org.toxsoft.core.tslib.av.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.utils.errors.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.reports.gui.panels.*;
 import org.toxsoft.uskat.core.api.sysdescr.*;
 import org.toxsoft.uskat.core.connection.*;
@@ -179,7 +180,6 @@ public class GwidsForCfgM5Model
 
               @Override
               protected Gwid doAddItem() {
-
                 ISkConnection conn =
                     (ISkConnection)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_S5_CONNECTION );
                 if( conn != null ) {
@@ -189,7 +189,16 @@ public class GwidsForCfgM5Model
                   System.out.println( "Selecetd conn: " + "null" );
                 }
 
-                Gwid gwid = PanelGwidSelector.selectGwid( null, tsContext(), ESkClassPropKind.RTDATA );
+                ECfgUnitType type = ((GwidsForCfgM5Model)model()).getCfgUnitType();
+                ESkClassPropKind kind = ESkClassPropKind.RTDATA;
+                if( type == ECfgUnitType.COMMAND ) {
+                  kind = ESkClassPropKind.CMD;
+                }
+                else
+                  if( type == ECfgUnitType.EVENT ) {
+                    kind = ESkClassPropKind.EVENT;
+                  }
+                Gwid gwid = PanelGwidSelector.selectGwid( null, tsContext(), kind );
 
                 if( gwid == null ) {
                   return null;
@@ -213,7 +222,17 @@ public class GwidsForCfgM5Model
                   System.out.println( "Selecetd conn: " + "null" );
                 }
 
-                Gwid gwid = PanelGwidSelector.selectGwid( aItem, tsContext(), ESkClassPropKind.RTDATA );
+                ECfgUnitType type = ((GwidsForCfgM5Model)model()).getCfgUnitType();
+                ESkClassPropKind kind = ESkClassPropKind.RTDATA;
+                if( type == ECfgUnitType.COMMAND ) {
+                  kind = ESkClassPropKind.CMD;
+                }
+                else
+                  if( type == ECfgUnitType.EVENT ) {
+                    kind = ESkClassPropKind.EVENT;
+                  }
+
+                Gwid gwid = PanelGwidSelector.selectGwid( aItem, tsContext(), kind );
                 if( gwid == null ) {
                   return aItem;
                 }
@@ -246,5 +265,15 @@ public class GwidsForCfgM5Model
   @Override
   protected IM5LifecycleManager<Gwid> doCreateLifecycleManager( Object aMaster ) {
     return new GwidsForCfgM5LifecycleManager( this, ISkConnection.class.cast( aMaster ) );
+  }
+
+  private ECfgUnitType unitType = ECfgUnitType.DATA;
+
+  public void setCfgUnitType( ECfgUnitType aUnitType ) {
+    unitType = aUnitType;
+  }
+
+  public ECfgUnitType getCfgUnitType() {
+    return unitType;
   }
 }

@@ -224,6 +224,15 @@ public class OpcToS5DataCfgDocEditorPanel
    * Synchronizes loaded and existed in units nodes cfgs.
    */
   private void ensureNodesCfgs( ITsGuiContext aContext, OpcToS5DataCfgDoc aDoc ) {
+
+    // OpcUaServerConnCfg conConf =
+    // (OpcUaServerConnCfg)aContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
+    //
+    // if( conConf == null ) {
+    // TsDialogUtils.askYesNoCancel( getShell(),
+    // "Для корректного автоматического определения типа узлов OPC UA следует выбрать соединение с сервером OPC UA" );
+    // }
+
     IList<OpcToS5DataCfgUnit> dataCfgUnits = aDoc.dataUnits();
 
     IList<CfgOpcUaNode> nodesCfgsList = aDoc.getNodesCfgs();

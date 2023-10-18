@@ -377,6 +377,14 @@ public class OpcToS5DataCfgUnitM5Model
 
               ValedSingleLookupComboEditor<ICfgUnitRealizationType> lEditor =
                   getEditor( FID_REALIZATION_TYPE, ValedSingleLookupComboEditor.class );
+
+              // ValedMultiModownTableEditor<Gwid> gwidsEditor = getEditor( FID_GWIDS, ValedMultiModownTableEditor.class
+              // );
+
+              ((GwidsForCfgM5Model)GWIDS.itemModel()).setCfgUnitType( unitType );
+
+              // gwidsEditor.
+
               CfgUnitRealizationTypeRegister typeReg2 = m5().tsContext().get( CfgUnitRealizationTypeRegister.class );
               ICfgUnitRealizationType realizationType2 =
                   typeReg2.getTypesOfRealizationForCfgUnitType( unitType ).first();
