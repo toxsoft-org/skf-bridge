@@ -1,12 +1,12 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
 
 import static org.toxsoft.core.tsgui.bricks.actions.ITsStdActionDefs.*;
-import static org.toxsoft.core.tsgui.graphics.icons.ITsStdIconIds.*;
 import static org.toxsoft.core.tsgui.m5.IM5Constants.*;
 import static org.toxsoft.core.tsgui.valed.api.IValedControlConstants.*;
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IBridgeCfgOpcUaResources.*;
+import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
 import java.io.*;
@@ -45,8 +45,9 @@ public class CfgOpcUaNodeM5Model
 
   final static String ACTID_GENERATE_DEVCFG_FILE = SK_ID + "bridge.cfg.opcua.to.s5.generate.devcfg.file"; //$NON-NLS-1$
 
-  final static TsActionDef ACDEF_GENERATE_DEVCFG_FILE = TsActionDef.ofPush2( ACTID_GENERATE_DEVCFG_FILE,
-      "Сгенерировать файл конфигурации devcfg", "Сгенерировать файлы конфигурации devcfg", ICONID_DOCUMENT_NEW );
+  final static TsActionDef ACDEF_GENERATE_DEVCFG_FILE =
+      TsActionDef.ofPush2( ACTID_GENERATE_DEVCFG_FILE, "Сгенерировать файл конфигурации devcfg",
+          "Сгенерировать файлы конфигурации devcfg", ICONID_SHOW_GENERATE_DEVCFG );
 
   /**
    * string id of cfg node
@@ -202,6 +203,7 @@ public class CfgOpcUaNodeM5Model
 
                 } );
 
+                toolbar.setIconSize( EIconSize.IS_48X48 );
                 return toolbar;
               }
 

@@ -1,7 +1,6 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
 
 import static org.toxsoft.core.tsgui.bricks.actions.ITsStdActionDefs.*;
-import static org.toxsoft.core.tsgui.graphics.icons.ITsStdIconIds.*;
 import static org.toxsoft.core.tsgui.m5.IM5Constants.*;
 import static org.toxsoft.core.tsgui.valed.api.IValedControlConstants.*;
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
@@ -89,29 +88,29 @@ public class OpcToS5DataCfgUnitM5Model
   final static String ACTID_READ_FILE = SK_ID + "bridge.cfg.opcua.to.s5.read.file"; //$NON-NLS-1$
 
   final static TsActionDef ACDEF_SAVE_DOC = TsActionDef.ofPush2( ACTID_SAVE_DOC, "Сохранить конфигурацию",
-      "Сохранить конфигурацию в SKIDE", ICONID_DOCUMENT_SAVE );
+      "Сохранить конфигурацию в SKIDE", ICONID_SAVE_DOC );
 
   final static TsActionDef ACDEF_S5_SERVER_SELECT =
-      TsActionDef.ofPush2( ACTID_S5_SERVER_SELECT, "Выбрать S5 сервер", "Выбрать S5 сервер", ICONID_EDIT_FIND );
+      TsActionDef.ofPush2( ACTID_S5_SERVER_SELECT, "Выбрать S5 сервер", "Выбрать S5 сервер", ICONID_S5_SERVER_SELECT );
 
   final static TsActionDef ACDEF_OPC_SERVER_SELECT = TsActionDef.ofPush2( ACTID_OPC_SERVER_SELECT,
-      "Выбрать OPC UA сервер", "Выбрать OPC UA сервер", ICONID_EDIT_FIND );
+      "Выбрать OPC UA сервер", "Выбрать OPC UA сервер", ICONID_OPC_SERVER_SELECT );
 
   final static TsActionDef ACDEF_VALIDATE = TsActionDef.ofPush2( ACTID_VALIDATE, "Проверить конфигурацию",
-      "Проверить конфигурацию на несоответствие gwid и nodeId имеющимся на выбранных серверах", ICONID_VIEW_FILTER );
+      "Проверить конфигурацию на несоответствие gwid и nodeId имеющимся на выбранных серверах", ICONID_VALIDATE );
 
   final static TsActionDef ACDEF_AUTO_LINK = TsActionDef.ofPush2( ACTID_AUTO_LINK, "Автоматическое связывание",
-      "Автоматическое связывание", ICONID_DOCUMENT_REVERT );
+      "Автоматическое связывание", ICONID_AUTO_LINK );
 
   final static TsActionDef ACDEF_SHOW_NON_VALID =
       TsActionDef.ofPush2( ACTID_SHOW_NON_VALID, "Показать несоответствующие единицы конфигурации",
-          "Показать несоответствующие единицы конфигурации", ICONID_HIDE_FILTER_PANE );
+          "Показать несоответствующие единицы конфигурации", ICONID_SHOW_NON_VALID );
 
   final static TsActionDef ACDEF_GENERATE_FILE = TsActionDef.ofPush2( ACTID_GENERATE_FILE,
-      "Сгенерировать файлы конфигурации", "Сгенерировать файлы конфигурации", ICONID_DOCUMENT_NEW );
+      "Сгенерировать файлы конфигурации", "Сгенерировать файлы конфигурации", ICONID_SHOW_GENERATE_DLMCFG );
 
   final static TsActionDef ACDEF_READ_FILE = TsActionDef.ofPush2( ACTID_READ_FILE, "Прочитать файлы конфигурации",
-      "Прочитать файлы конфигурации", ICONID_DOCUMENT_OPEN );
+      "Прочитать файлы конфигурации", ICONID_READ_FILE );
 
   /**
    * string id of cfg nodes field
@@ -450,6 +449,7 @@ public class OpcToS5DataCfgUnitM5Model
 
                 } );
 
+                toolbar.setIconSize( EIconSize.IS_48X48 );
                 return toolbar;
               }
 

@@ -1,7 +1,7 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.panels;
 
 import static org.toxsoft.core.tsgui.bricks.actions.ITsStdActionDefs.*;
-import static org.toxsoft.skf.reports.gui.IReportsGuiConstants.*;
+import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
@@ -46,10 +46,10 @@ public class OpcToS5DataCfgDocEditorPanel
   final static String ACTID_EDIT_NODES = SK_ID + ".users.gui.EditNodes"; //$NON-NLS-1$
 
   final static TsActionDef ACDEF_EDIT_UNITS = TsActionDef.ofPush2( ACTID_EDIT_UNITS, "Редактировать состав",
-      "Редактировать состав единиц конфигурации", ICONID_RUN );
+      "Редактировать состав единиц конфигурации", ICONID_EDIT_UNITS );
 
   final static TsActionDef ACDEF_EDIT_NODES = TsActionDef.ofPush2( ACTID_EDIT_NODES, "Редактировать свойства узлов OPC",
-      "Редактировать конфигурационные свойства узлов OPC", ICONID_RUN );
+      "Редактировать конфигурационные свойства узлов OPC", ICONID_EDIT_NODES );
 
   final ISkConnection conn;
 
@@ -113,6 +113,7 @@ public class OpcToS5DataCfgDocEditorPanel
 
             } );
 
+            toolbar.setIconSize( EIconSize.IS_48X48 );
             return toolbar;
           }
 

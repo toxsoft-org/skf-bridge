@@ -29,7 +29,7 @@ public class SkideUnitBridgeCfgOpcUa
     super( UNIT_ID, OptionSetUtils.createOpSet( //
         TSID_NAME, STR_SKIDE_BRIDGE_CFG_OPC_UA_UNIT, //
         TSID_DESCRIPTION, STR_SKIDE_BRIDGE_CFG_OPC_UA_UNIT_D, //
-        TSID_ICON_ID, ICONID_SKIDE_PLUGIN //
+        TSID_ICON_ID, ICONID_CFG_SKIDE_PLUGIN //
     ), aContext, aCreator );
     unitActions().add( ACDEF_ABOUT );
   }

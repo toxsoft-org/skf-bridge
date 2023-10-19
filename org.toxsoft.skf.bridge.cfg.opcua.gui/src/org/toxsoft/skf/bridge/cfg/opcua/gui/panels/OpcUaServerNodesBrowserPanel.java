@@ -422,7 +422,7 @@ public class OpcUaServerNodesBrowserPanel
     Gwid gwid = OpcUaUtils.uaNode2rtdGwid( aContext, nodeId );
     String checkResult = String.format( "%s [%s] -> %s", selectedNode.getUaNode().getBrowseName().getName(),
         nodeId.toParseableString(), gwid == null ? TsLibUtils.EMPTY_STRING : gwid.asString() );
-    TsDialogUtils.info( getShell(), "Check link result: %s", checkResult );
+    TsDialogUtils.info( getShell(), "Check link result:\n %s", checkResult );
   }
 
   private static class UaNodesTreeMaker

@@ -27,11 +27,23 @@ public interface IOpcUaServerConnCfgConstants {
   String PREFIX_OF_ICON_FIELD_NAME = "ICONID_";  //$NON-NLS-1$
   String ICONID_APP_ICON           = "app-icon"; //$NON-NLS-1$
 
-  String ICONID_VARIABLE_NODE = "s5-datatype";   //$NON-NLS-1$
-  String ICONID_OBJECT_NODE   = "s5-obj";        //$NON-NLS-1$
-  String ICONID_NEW_CLASS     = "s5-class-new";  //$NON-NLS-1$
-  String ICONID_NEW_OBJECTS   = "s5-objs-class"; //$NON-NLS-1$
-  String ICONID_IMPORT        = "import";        //$NON-NLS-1$
+  String ICONID_VARIABLE_NODE        = "s5-datatype";          //$NON-NLS-1$
+  String ICONID_OBJECT_NODE          = "s5-obj";               //$NON-NLS-1$
+  String ICONID_NEW_CLASS            = "s5-class-new";         //$NON-NLS-1$
+  String ICONID_NEW_OBJECTS          = "s5-objs-class";        //$NON-NLS-1$
+  String ICONID_IMPORT               = "import";               //$NON-NLS-1$
+  String ICONID_SAVE_DOC             = "save_doc";             //$NON-NLS-1$
+  String ICONID_S5_SERVER_SELECT     = "s5_server_select";     //$NON-NLS-1$
+  String ICONID_OPC_SERVER_SELECT    = "opc_ua_server_select"; //$NON-NLS-1$
+  String ICONID_VALIDATE             = "validate";             //$NON-NLS-1$
+  String ICONID_AUTO_LINK            = "auto_link";            //$NON-NLS-1$
+  String ICONID_SHOW_NON_VALID       = "show_non_valid";       //$NON-NLS-1$
+  String ICONID_SHOW_GENERATE_DLMCFG = "generate_file";        //$NON-NLS-1$
+  String ICONID_SHOW_GENERATE_DEVCFG = "generate_devcfg_file"; //$NON-NLS-1$
+  String ICONID_READ_FILE            = "read_file";            //$NON-NLS-1$
+  String ICONID_EDIT_UNITS           = "edit_units";           //$NON-NLS-1$
+  String ICONID_EDIT_NODES           = "edit_nodes";           //$NON-NLS-1$
+
   //
   // -------------------------------------------------------------------------------------
   // Params of conn to opc ua server (constants)
