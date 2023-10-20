@@ -462,6 +462,9 @@ public class OpcToS5DataCfgUnitM5Model
                     break;
 
                   case ACTID_S5_SERVER_SELECT:
+                    // dima 20.10.23 FIXME использовать IdChain для передачи информации о соединении. Цитата от Гоги:
+                    // Кстати, напомню, что "класть соединение в контекст" нельзя,
+                    // можно только использовать ISkConnectionSupplier
                     ISkConnection selectedConnection = selectConnection( aContext );
                     if( selectedConnection != null ) {
                       aContext.put( OPCUA_BRIDGE_CFG_S5_CONNECTION, selectedConnection );

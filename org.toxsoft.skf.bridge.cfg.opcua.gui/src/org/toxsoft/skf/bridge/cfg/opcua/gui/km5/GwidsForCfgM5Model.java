@@ -23,11 +23,13 @@ import org.toxsoft.core.tsgui.m5.model.impl.*;
 import org.toxsoft.core.tsgui.panels.toolbar.*;
 import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.impl.*;
+import org.toxsoft.core.tslib.bricks.strid.more.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.reports.gui.panels.*;
+import org.toxsoft.skide.plugin.exconn.service.*;
 import org.toxsoft.uskat.core.api.sysdescr.*;
 import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.gui.conn.*;
@@ -198,7 +200,12 @@ public class GwidsForCfgM5Model
                   if( type == ECfgUnitType.EVENT ) {
                     kind = ESkClassPropKind.EVENT;
                   }
-                Gwid gwid = PanelGwidSelector.selectGwid( null, tsContext(), kind );
+                // 20.10.23 dima for testing
+//                ISkideExternalConnectionsService connService =
+//                    aContext.eclipseContext().get( ISkideExternalConnectionsService.class );
+//                IdChain idChain = connService.selectConfigAndOpenConnection( aContext );
+//              Gwid gwid = PanelGwidSelector.selectGwid( null, tsContext(), kind, idChain );
+              Gwid gwid = PanelGwidSelector.selectGwid( null, tsContext(), kind, null );
 
                 if( gwid == null ) {
                   return null;
@@ -231,8 +238,13 @@ public class GwidsForCfgM5Model
                   if( type == ECfgUnitType.EVENT ) {
                     kind = ESkClassPropKind.EVENT;
                   }
+                // dima 20.10.23 for testing
+//                ISkideExternalConnectionsService connService =
+//                    aContext.eclipseContext().get( ISkideExternalConnectionsService.class );
+//                IdChain idChain = connService.selectConfigAndOpenConnection( aContext );
+//                Gwid gwid = PanelGwidSelector.selectGwid( aItem, tsContext(), kind, idChain );
 
-                Gwid gwid = PanelGwidSelector.selectGwid( aItem, tsContext(), kind );
+                Gwid gwid = PanelGwidSelector.selectGwid( aItem, tsContext(), kind, null );
                 if( gwid == null ) {
                   return aItem;
                 }
