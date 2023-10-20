@@ -113,6 +113,11 @@ public interface IOpcUaServerConnCfgConstants {
    */
   String FILTER_WRITE_READ_ACT_ID = "filter_write_read_act_id"; //$NON-NLS-1$
 
+  /**
+   * id действия "на чтение для Poligon"
+   */
+  String FILTER_READ_ONLY_POLIGON_ACT_ID = "filter_read_only_poligon_act_id"; //$NON-NLS-1$
+
   TsActionDef ACTDEF_CREATE_CLASS_OPC_UA_ITEM = TsActionDef.ofPush2( CREATE_CINFO_FROM_OPC_UA_ACT_ID,
       STR_N_CREATE_CINFO_FROM_OPC_UA, STR_D_CREATE_CINFO_FROM_OPC_UA, ICONID_NEW_CLASS );
 
@@ -133,6 +138,9 @@ public interface IOpcUaServerConnCfgConstants {
 
   TsActionDef ACTDEF_FILTER_WRITE_READ = TsActionDef.ofRadio2( FILTER_WRITE_READ_ACT_ID, STR_N_FILTER_WRITE_READ,
       STR_D_FILTER_WRITE_READ, ITsStdIconIds.ICONID_VIEW_AS_TREE );
+
+  TsActionDef ACTDEF_FILTER_READ_ONLY_POLIGON = TsActionDef.ofCheck2( FILTER_READ_ONLY_POLIGON_ACT_ID,
+      STR_N_FILTER_READ_ONLY_POLIGON, STR_D_FILTER_READ_ONLY_POLIGON, ITsStdIconIds.ICONID_VIEW_AS_TREE );
 
   /**
    * Id of tree mode using origin nodes structure.

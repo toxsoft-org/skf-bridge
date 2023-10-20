@@ -9,6 +9,7 @@ import org.eclipse.milo.opcua.sdk.client.*;
 import org.eclipse.milo.opcua.sdk.core.*;
 import org.eclipse.milo.opcua.stack.core.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
+import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.*;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
 import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.tsgui.bricks.actions.*;
@@ -116,6 +117,8 @@ public class OpcUaNodesSelector
             aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_FILTER_READ_ONLY );
             aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_FILTER_WRITE_ONLY );
             aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_FILTER_WRITE_READ );
+            aActs.add( ITsStdActionDefs.ACDEF_SEPARATOR );
+            aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_FILTER_READ_ONLY_POLIGON );
 
             ITsToolbar toolBar = super.doCreateToolbar( aContext, aName, aIconSize, aActs );
 
@@ -129,6 +132,13 @@ public class OpcUaNodesSelector
               if( aActionId == FILTER_WRITE_READ_ACT_ID ) {
                 recreateTree( AccessLevel.READ_WRITE );
               }
+              if( aActionId == FILTER_READ_ONLY_POLIGON_ACT_ID ) {
+                UaNodesTreeMaker treeMaker = new UaNodesTreeMaker();
+                treeMaker.hideRonPoligon = toolBar.getAction( ACTDEF_FILTER_READ_ONLY_POLIGON.id() ).isChecked();
+                tree().setTreeMaker( treeMaker );
+                tree().refresh();
+                tree().console().expandAll();
+              }
             } );
             toolBar.setIconSize( EIconSize.IS_24X24 );
             return toolBar;
@@ -136,7 +146,6 @@ public class OpcUaNodesSelector
 
           private void recreateTree( ImmutableSet<AccessLevel> aAccessLevel ) {
             UaNodesTreeMaker treeMaker = new UaNodesTreeMaker();
-            treeMaker.hideVariableNodes = environ().hideVariableNodes;
             treeMaker.accessLevel = aAccessLevel;
             tree().setTreeMaker( treeMaker );
             tree().refresh();
@@ -171,7 +180,8 @@ public class OpcUaNodesSelector
         new TsNodeKind<>( "UaTreeNode", UaTreeNode.class, true, IOpcUaServerConnCfgConstants.ICONID_APP_ICON ); //$NON-NLS-1$
 
     private boolean                   hideVariableNodes;
-    private ImmutableSet<AccessLevel> accessLevel;
+    private ImmutableSet<AccessLevel> accessLevel = AccessLevel.NONE;
+    protected boolean                 hideRonPoligon;
 
     @Override
     public IList<ITsNode> makeRoots( ITsNode aRootNode, IList<UaTreeNode> aItems ) {
@@ -205,6 +215,13 @@ public class OpcUaNodesSelector
         if( hideVariableNodes && child.getNodeClass().equals( NodeClass.Variable ) ) {
           continue;
         }
+        if( hideRonPoligon && child.getNodeClass().equals( NodeClass.Variable ) ) {
+          NodeId nodeId = NodeId.parse( child.getNodeId() );
+          UShort ni = nodeId.getNamespaceIndex();
+          if( (ni.intValue() & 0x8000) > 0 ) {
+            continue;
+          }
+        }
         if( !hideVariableNodes && child.getNodeClass().equals( NodeClass.Variable ) ) {
           // отсекаем узлы у которых имя начинается с символа '/'
           String name = child.getBrowseName();
@@ -212,7 +229,7 @@ public class OpcUaNodesSelector
             continue;
           }
           // фильтруем узлы по уровню доступа
-          if( !child.accessLevel().equals( accessLevel ) ) {
+          if( !accessLevel.equals( AccessLevel.NONE ) && !child.accessLevel().equals( accessLevel ) ) {
             continue;
           }
         }

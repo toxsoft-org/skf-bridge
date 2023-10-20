@@ -30,5 +30,7 @@ interface ISkResources {
   String STR_D_FILTER_WRITE_ONLY        = "Узлы с доступом только на запись";
   String STR_N_FILTER_WRITE_READ        = "Read and Write only";
   String STR_D_FILTER_WRITE_READ        = "Узлы с доступом на чтение/запись";
+  String STR_N_FILTER_READ_ONLY_POLIGON = "Hide read only nodes (Poligon)";
+  String STR_D_FILTER_READ_ONLY_POLIGON = "Спртать узлы с доступом только на чтение для Poligon";
 
 }
