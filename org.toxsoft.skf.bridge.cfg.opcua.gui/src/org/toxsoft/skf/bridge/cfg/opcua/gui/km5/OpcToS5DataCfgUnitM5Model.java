@@ -431,9 +431,9 @@ public class OpcToS5DataCfgUnitM5Model
               protected ITsToolbar doCreateToolbar( ITsGuiContext aContext, String aName, EIconSize aIconSize,
                   IListEdit<ITsActionDef> aActs ) {
                 aActs.add( ACDEF_SEPARATOR );
-                aActs.add( ACDEF_SAVE_DOC );
-                aActs.add( ACDEF_S5_SERVER_SELECT );
-                aActs.add( ACDEF_OPC_SERVER_SELECT );
+                // aActs.add( ACDEF_SAVE_DOC );
+                // aActs.add( ACDEF_S5_SERVER_SELECT );
+                // aActs.add( ACDEF_OPC_SERVER_SELECT );
                 aActs.add( ACDEF_VALIDATE );
                 aActs.add( ACDEF_AUTO_LINK );
                 aActs.add( ACDEF_SHOW_NON_VALID );

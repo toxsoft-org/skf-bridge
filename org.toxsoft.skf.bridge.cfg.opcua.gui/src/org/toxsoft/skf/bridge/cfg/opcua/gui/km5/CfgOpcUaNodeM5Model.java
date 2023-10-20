@@ -209,7 +209,7 @@ public class CfgOpcUaNodeM5Model
             new MultiPaneComponentModown<>( aContext, model(), aItemsProvider, aLifecycleManager ) {
 
               @Override
-              protected ITsToolbar doCreateToolbar( ITsGuiContext aContext, String aName, EIconSize aIconSize,
+              protected ITsToolbar doCreateToolbar( ITsGuiContext aContext2, String aName, EIconSize aIconSize,
                   IListEdit<ITsActionDef> aActs ) {
 
                 // удалить всё
@@ -221,12 +221,12 @@ public class CfgOpcUaNodeM5Model
                 aActs.add( ACDEF_REMOVE_UNNECESSARY );
 
                 aActs.add( ACDEF_SEPARATOR );
-                aActs.add( OpcToS5DataCfgUnitM5Model.ACDEF_SAVE_DOC );
+                // aActs.add( OpcToS5DataCfgUnitM5Model.ACDEF_SAVE_DOC );
                 aActs.add( ACDEF_GENERATE_DEVCFG_FILE );
 
                 ITsToolbar toolbar =
 
-                    super.doCreateToolbar( aContext, aName, aIconSize, aActs );
+                    super.doCreateToolbar( aContext2, aName, aIconSize, aActs );
 
                 toolbar.addListener( aActionId -> {
                   // nop
