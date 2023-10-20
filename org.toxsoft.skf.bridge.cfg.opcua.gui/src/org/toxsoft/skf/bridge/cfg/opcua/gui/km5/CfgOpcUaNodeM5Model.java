@@ -11,8 +11,11 @@ import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
 import java.io.*;
 
+import org.eclipse.milo.opcua.stack.core.types.builtin.*;
+import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.tsgui.bricks.actions.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
+import org.toxsoft.core.tsgui.dialogs.*;
 import org.toxsoft.core.tsgui.graphics.icons.*;
 import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tsgui.m5.gui.mpc.impl.*;
@@ -25,9 +28,13 @@ import org.toxsoft.core.tsgui.valed.controls.av.*;
 import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.avtree.*;
 import org.toxsoft.core.tslib.coll.*;
+import org.toxsoft.core.tslib.coll.impl.*;
+import org.toxsoft.core.tslib.coll.primtypes.*;
+import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.filegen.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 
 /**
@@ -43,7 +50,22 @@ public class CfgOpcUaNodeM5Model
    */
   public static final String MODEL_ID = "bridge.cfg.opcua.m5.CfgOpcUaNode"; //$NON-NLS-1$
 
+  final static String ACTID_SYNCHRONIZE = SK_ID + "bridge.cfg.opcua.to.s5.synchronize.nodes"; //$NON-NLS-1$
+
+  final static String ACTID_REMOVE_ALL = SK_ID + "bridge.cfg.opcua.to.s5.remove.all"; //$NON-NLS-1$
+
+  final static String ACTID_REMOVE_UNNECESSARY = SK_ID + "bridge.cfg.opcua.to.s5.remove.unnecessary"; //$NON-NLS-1$
+
   final static String ACTID_GENERATE_DEVCFG_FILE = SK_ID + "bridge.cfg.opcua.to.s5.generate.devcfg.file"; //$NON-NLS-1$
+
+  final static TsActionDef ACDEF_SYNCHRONIZE = TsActionDef.ofPush2( ACTID_SYNCHRONIZE, "Добавить недостающие узлы",
+      "Добавить недостающие узлы из закладки связей", ICONID_LIST_ADD );
+
+  final static TsActionDef ACDEF_REMOVE_UNNECESSARY = TsActionDef.ofPush2( ACTID_REMOVE_UNNECESSARY,
+      "Удалить лишние узлы", "Удалить лишние узлы, отсутствующие в закладке связей", ICONID_LIST_REMOVE );
+
+  final static TsActionDef ACDEF_REMOVE_ALL =
+      TsActionDef.ofPush2( ACTID_REMOVE_ALL, "Удалить все узлы", "Удалить все узлы", ICONID_LIST_REMOVE );
 
   final static TsActionDef ACDEF_GENERATE_DEVCFG_FILE =
       TsActionDef.ofPush2( ACTID_GENERATE_DEVCFG_FILE, "Сгенерировать файл конфигурации devcfg",
@@ -188,10 +210,17 @@ public class CfgOpcUaNodeM5Model
               @Override
               protected ITsToolbar doCreateToolbar( ITsGuiContext aContext, String aName, EIconSize aIconSize,
                   IListEdit<ITsActionDef> aActs ) {
+
+                // удалить всё
+                aActs.add( ACDEF_REMOVE_ALL );
                 aActs.add( ACDEF_SEPARATOR );
-                aActs.add( OpcToS5DataCfgUnitM5Model.ACDEF_SAVE_DOC );
+
+                // добавить недостающие
+                aActs.add( ACDEF_SYNCHRONIZE );
+                aActs.add( ACDEF_REMOVE_UNNECESSARY );
 
                 aActs.add( ACDEF_SEPARATOR );
+                aActs.add( OpcToS5DataCfgUnitM5Model.ACDEF_SAVE_DOC );
                 aActs.add( ACDEF_GENERATE_DEVCFG_FILE );
 
                 ITsToolbar toolbar =
@@ -211,6 +240,16 @@ public class CfgOpcUaNodeM5Model
               protected void doProcessAction( String aActionId ) {
 
                 switch( aActionId ) {
+
+                  case ACTID_REMOVE_ALL:
+                    ((CfgOpcUaNodeLifecycleManager)lifecycleManager()).removeAll( aContext );
+                    doFillTree();
+                    break;
+
+                  case ACTID_SYNCHRONIZE:
+                    ((CfgOpcUaNodeLifecycleManager)lifecycleManager()).ensureNodesCfgs( aContext );
+                    doFillTree();
+                    break;
 
                   case OpcToS5DataCfgUnitM5Model.ACTID_SAVE_DOC:
                     ((CfgOpcUaNodeLifecycleManager)lifecycleManager()).saveCurrState( tsContext() );
@@ -255,7 +294,11 @@ public class CfgOpcUaNodeM5Model
      * @param aMaster ISkConnection - sk-connection
      */
     public CfgOpcUaNodeLifecycleManager( IM5Model<CfgOpcUaNode> aModel, OpcToS5DataCfgDoc aMaster ) {
-      super( aModel, false, true, false, true, aMaster );
+      super( aModel, false, true, true, true, aMaster );
+    }
+
+    public void removeAll( ITsGuiContext aContext ) {
+      master().setNodesCfgs( new ElemArrayList<>() );
     }
 
     @Override
@@ -272,6 +315,13 @@ public class CfgOpcUaNodeM5Model
       origin.setSynch( isSynch );
 
       return origin;
+    }
+
+    @Override
+    protected void doRemove( CfgOpcUaNode aEntity ) {
+      IListEdit<CfgOpcUaNode> nodesCfgsList = new ElemArrayList<>( master().getNodesCfgs() );
+      nodesCfgsList.remove( aEntity );
+      master().setNodesCfgs( nodesCfgsList );
     }
 
     @Override
@@ -309,6 +359,47 @@ public class CfgOpcUaNodeM5Model
         e.printStackTrace();
         // Ошибка создания писателя канала
         // throw new TsIllegalArgumentRtException( e );
+      }
+    }
+
+    void ensureNodesCfgs( ITsGuiContext aContext ) {
+
+      OpcUaServerConnCfg conConf =
+          (OpcUaServerConnCfg)aContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
+
+      if( conConf == null ) {
+        TsDialogUtils.askYesNoCancel( aContext.get( Shell.class ),
+            "Для корректного автоматического определения типа узлов OPC UA следует выбрать соединение с сервером OPC UA" );
+      }
+
+      IList<OpcToS5DataCfgUnit> dataCfgUnits = master().dataUnits();
+
+      IList<CfgOpcUaNode> nodesCfgsList = master().getNodesCfgs();
+      IStringMapEdit<CfgOpcUaNode> nodesCfgs = new StringMap<>();
+      for( CfgOpcUaNode node : nodesCfgsList ) {
+        nodesCfgs.put( node.getNodeId(), node );
+      }
+
+      for( OpcToS5DataCfgUnit unit : dataCfgUnits ) {
+        IList<NodeId> nodes = unit.getDataNodes();
+
+        String relizationTypeId = unit.getRelizationTypeId();
+        CfgUnitRealizationTypeRegister typeReg2 =
+            model().domain().tsContext().get( CfgUnitRealizationTypeRegister.class );
+
+        ICfgUnitRealizationType realType =
+            typeReg2.getTypeOfRealizationById( unit.getTypeOfCfgUnit(), relizationTypeId );
+
+        for( int i = 0; i < nodes.size(); i++ ) {
+          NodeId node = nodes.get( i );
+          if( !nodesCfgs.hasKey( node.toParseableString() ) ) {
+            nodesCfgs.put( node.toParseableString(),
+                realType.createInitCfg( aContext, node.toParseableString(), i, nodes.size() ) );
+            // new CfgOpcUaNode( node.toParseableString(), false, true, false, EAtomicType.INTEGER ) );
+          }
+        }
+
+        master().setNodesCfgs( nodesCfgs.values() );
       }
     }
 

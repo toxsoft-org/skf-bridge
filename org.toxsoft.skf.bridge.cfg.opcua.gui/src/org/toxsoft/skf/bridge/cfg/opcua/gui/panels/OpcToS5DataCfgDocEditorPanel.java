@@ -102,7 +102,7 @@ public class OpcToS5DataCfgDocEditorPanel
               IListEdit<ITsActionDef> aActs ) {
             aActs.add( ACDEF_SEPARATOR );
             aActs.add( ACDEF_EDIT_UNITS );
-            aActs.add( ACDEF_EDIT_NODES );
+            // aActs.add( ACDEF_EDIT_NODES );
 
             ITsToolbar toolbar =
 
@@ -150,9 +150,22 @@ public class OpcToS5DataCfgDocEditorPanel
 
   protected void editOpcCfgDoc( OpcToS5DataCfgDoc aSelDoc ) {
 
-    // создаем новую закладку
+    // создаем новую общую закладку закладку
     CTabItem tabItem = new CTabItem( tabFolder, SWT.CLOSE );
     tabItem.setText( aSelDoc.nmName() );
+
+    CTabFolder tabSubFolder = new CTabFolder( tabFolder, SWT.BORDER );
+
+    tabItem.setControl( tabSubFolder );
+    tabFolder.setSelection( tabItem );
+
+    // Создаём закладку для конфигурации связей opc-sk
+    CTabItem tabCfgUnitsItem = new CTabItem( tabSubFolder, SWT.NONE );
+    tabCfgUnitsItem.setText( "Связи" );
+
+    // Создаём закладку для конфигурации связей opc-sk
+    CTabItem tabCfgNodesItem = new CTabItem( tabSubFolder, SWT.NONE );
+    tabCfgNodesItem.setText( "Узлы" );
 
     IM5Domain m5 = conn.scope().get( IM5Domain.class );
     IM5Model<OpcToS5DataCfgUnit> model = m5.getModel( OpcToS5DataCfgUnitM5Model.MODEL_ID, OpcToS5DataCfgUnit.class );
@@ -177,9 +190,37 @@ public class OpcToS5DataCfgDocEditorPanel
     IM5CollectionPanel<OpcToS5DataCfgUnit> opcToS5DataCfgUnitPanel =
         model.panelCreator().createCollEditPanel( tsContext(), lm.itemsProvider(), lm );
 
-    tabItem.setControl( opcToS5DataCfgUnitPanel.createControl( tabFolder ) );
+    tabCfgUnitsItem.setControl( opcToS5DataCfgUnitPanel.createControl( tabSubFolder ) );
 
-    tabFolder.setSelection( tabItem );
+    // Узлы
+    IM5Model<CfgOpcUaNode> nodeModel = m5.getModel( CfgOpcUaNodeM5Model.MODEL_ID, CfgOpcUaNode.class );
+
+    // ITsGuiContext ctx = new TsGuiContext( tsContext() );
+    // ctx.params().addAll( tsContext().params() );
+
+    // IMultiPaneComponentConstants.OPDEF_IS_DETAILS_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
+    // IMultiPaneComponentConstants.OPDEF_DETAILS_PANE_PLACE.setValue( ctx.params(),
+    // avValobj( EBorderLayoutPlacement.SOUTH ) );
+    // IMultiPaneComponentConstants.OPDEF_IS_SUPPORTS_TREE.setValue( ctx.params(), AvUtils.AV_TRUE );
+    IMultiPaneComponentConstants.OPDEF_IS_ACTIONS_CRUD.setValue( tsContext().params(), AvUtils.AV_TRUE );
+    // добавляем в панель фильтр
+    IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( tsContext().params(), AvUtils.AV_TRUE );
+
+    // MultiPaneComponentModown<OpcToS5DataCfgUnit> componentModown2 =
+    // new MultiPaneComponentModown<>( ctx, model, lm.itemsProvider(), lm );
+    // IM5CollectionPanel<OpcToS5DataCfgUnit> opcToS5DataCfgUnitPanel =
+    // new M5CollectionPanelMpcModownWrapper<>( componentModown2, false );
+
+    ensureNodesCfgs( tsContext(), aSelDoc );
+
+    IM5LifecycleManager<CfgOpcUaNode> nodeLm = nodeModel.getLifecycleManager( aSelDoc );
+
+    IM5CollectionPanel<CfgOpcUaNode> cfgNodesPanel =
+        nodeModel.panelCreator().createCollEditPanel( tsContext(), nodeLm.itemsProvider(), nodeLm );
+
+    tabCfgNodesItem.setControl( cfgNodesPanel.createControl( tabSubFolder ) );
+
+    tabSubFolder.setSelection( tabCfgUnitsItem );
 
   }
 
