@@ -4,7 +4,6 @@ import static org.toxsoft.core.tsgui.bricks.actions.ITsStdActionDefs.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
-import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.swt.*;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.widgets.*;
@@ -23,12 +22,9 @@ import org.toxsoft.core.tsgui.panels.toolbar.*;
 import org.toxsoft.core.tsgui.utils.layout.*;
 import org.toxsoft.core.tslib.av.impl.*;
 import org.toxsoft.core.tslib.coll.*;
-import org.toxsoft.core.tslib.coll.primtypes.*;
-import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.filegen.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
-import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.gui.conn.*;
@@ -75,10 +71,6 @@ public class OpcToS5DataCfgDocEditorPanel
     IM5Domain m5 = conn.scope().get( IM5Domain.class );
     IM5Model<OpcToS5DataCfgDoc> model = m5.getModel( OpcToS5DataCfgDocM5Model.MODEL_ID, OpcToS5DataCfgDoc.class );
 
-    // ITsWorkroom workroom = aContext.eclipseContext().get( ITsWorkroom.class );
-    // TsInternalErrorRtException.checkNull( workroom );
-    // IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
-
     OpcToS5DataCfgDocService docService = new OpcToS5DataCfgDocService( aContext );
     aContext.put( OpcToS5DataCfgDocService.class, docService );
 
@@ -98,7 +90,7 @@ public class OpcToS5DataCfgDocEditorPanel
         new MultiPaneComponentModown<>( ctx, model, lm.itemsProvider(), lm ) {
 
           @Override
-          protected ITsToolbar doCreateToolbar( ITsGuiContext aContext, String aName, EIconSize aIconSize,
+          protected ITsToolbar doCreateToolbar( ITsGuiContext aContext2, String aName, EIconSize aIconSize,
               IListEdit<ITsActionDef> aActs ) {
             aActs.add( ACDEF_SEPARATOR );
             aActs.add( ACDEF_EDIT_UNITS );
@@ -106,7 +98,7 @@ public class OpcToS5DataCfgDocEditorPanel
 
             ITsToolbar toolbar =
 
-                super.doCreateToolbar( aContext, aName, aIconSize, aActs );
+                super.doCreateToolbar( aContext2, aName, aIconSize, aActs );
 
             toolbar.addListener( aActionId -> {
               // nop
@@ -128,7 +120,7 @@ public class OpcToS5DataCfgDocEditorPanel
                 break;
 
               case ACTID_EDIT_NODES:
-                editOpcCfgNodes( selDoc );
+                // editOpcCfgNodes( selDoc );
                 break;
 
               default:
@@ -168,140 +160,48 @@ public class OpcToS5DataCfgDocEditorPanel
     tabCfgNodesItem.setText( "Узлы" );
 
     IM5Domain m5 = conn.scope().get( IM5Domain.class );
+
+    // Связи
     IM5Model<OpcToS5DataCfgUnit> model = m5.getModel( OpcToS5DataCfgUnitM5Model.MODEL_ID, OpcToS5DataCfgUnit.class );
 
-    // ITsGuiContext ctx = new TsGuiContext( tsContext() );
-    // ctx.params().addAll( tsContext().params() );
+    ITsGuiContext ctx = new TsGuiContext( tsContext() );
+    ctx.params().addAll( tsContext().params() );
 
     // IMultiPaneComponentConstants.OPDEF_IS_DETAILS_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
     // IMultiPaneComponentConstants.OPDEF_DETAILS_PANE_PLACE.setValue( ctx.params(),
     // avValobj( EBorderLayoutPlacement.SOUTH ) );
     // IMultiPaneComponentConstants.OPDEF_IS_SUPPORTS_TREE.setValue( ctx.params(), AvUtils.AV_TRUE );
-    IMultiPaneComponentConstants.OPDEF_IS_ACTIONS_CRUD.setValue( tsContext().params(), AvUtils.AV_TRUE );
+    IMultiPaneComponentConstants.OPDEF_IS_ACTIONS_CRUD.setValue( ctx.params(), AvUtils.AV_TRUE );
     // добавляем в панель фильтр
-    IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( tsContext().params(), AvUtils.AV_TRUE );
-
-    // MultiPaneComponentModown<OpcToS5DataCfgUnit> componentModown2 =
-    // new MultiPaneComponentModown<>( ctx, model, lm.itemsProvider(), lm );
-    // IM5CollectionPanel<OpcToS5DataCfgUnit> opcToS5DataCfgUnitPanel =
-    // new M5CollectionPanelMpcModownWrapper<>( componentModown2, false );
+    IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
 
     IM5LifecycleManager<OpcToS5DataCfgUnit> lm = new OpcToS5DataCfgUnitM5LifecycleManager( model, aSelDoc );
     IM5CollectionPanel<OpcToS5DataCfgUnit> opcToS5DataCfgUnitPanel =
-        model.panelCreator().createCollEditPanel( tsContext(), lm.itemsProvider(), lm );
+        model.panelCreator().createCollEditPanel( ctx, lm.itemsProvider(), lm );
 
     tabCfgUnitsItem.setControl( opcToS5DataCfgUnitPanel.createControl( tabSubFolder ) );
 
     // Узлы
+    ITsGuiContext ctx2 = new TsGuiContext( ctx );
+    ctx2.params().addAll( ctx.params() );
     IM5Model<CfgOpcUaNode> nodeModel = m5.getModel( CfgOpcUaNodeM5Model.MODEL_ID, CfgOpcUaNode.class );
-
-    // ITsGuiContext ctx = new TsGuiContext( tsContext() );
-    // ctx.params().addAll( tsContext().params() );
 
     // IMultiPaneComponentConstants.OPDEF_IS_DETAILS_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
     // IMultiPaneComponentConstants.OPDEF_DETAILS_PANE_PLACE.setValue( ctx.params(),
     // avValobj( EBorderLayoutPlacement.SOUTH ) );
     // IMultiPaneComponentConstants.OPDEF_IS_SUPPORTS_TREE.setValue( ctx.params(), AvUtils.AV_TRUE );
-    IMultiPaneComponentConstants.OPDEF_IS_ACTIONS_CRUD.setValue( tsContext().params(), AvUtils.AV_TRUE );
+    IMultiPaneComponentConstants.OPDEF_IS_ACTIONS_CRUD.setValue( ctx2.params(), AvUtils.AV_TRUE );
     // добавляем в панель фильтр
-    IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( tsContext().params(), AvUtils.AV_TRUE );
-
-    // MultiPaneComponentModown<OpcToS5DataCfgUnit> componentModown2 =
-    // new MultiPaneComponentModown<>( ctx, model, lm.itemsProvider(), lm );
-    // IM5CollectionPanel<OpcToS5DataCfgUnit> opcToS5DataCfgUnitPanel =
-    // new M5CollectionPanelMpcModownWrapper<>( componentModown2, false );
-
-    ensureNodesCfgs( tsContext(), aSelDoc );
+    IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( ctx2.params(), AvUtils.AV_TRUE );
 
     IM5LifecycleManager<CfgOpcUaNode> nodeLm = nodeModel.getLifecycleManager( aSelDoc );
 
     IM5CollectionPanel<CfgOpcUaNode> cfgNodesPanel =
-        nodeModel.panelCreator().createCollEditPanel( tsContext(), nodeLm.itemsProvider(), nodeLm );
+        nodeModel.panelCreator().createCollEditPanel( ctx2, nodeLm.itemsProvider(), nodeLm );
 
     tabCfgNodesItem.setControl( cfgNodesPanel.createControl( tabSubFolder ) );
 
     tabSubFolder.setSelection( tabCfgUnitsItem );
-
-  }
-
-  protected void editOpcCfgNodes( OpcToS5DataCfgDoc aSelDoc ) {
-
-    // создаем новую закладку
-    CTabItem tabItem = new CTabItem( tabFolder, SWT.CLOSE );
-    tabItem.setText( "Узлы " + aSelDoc.nmName() );
-
-    IM5Domain m5 = conn.scope().get( IM5Domain.class );
-    IM5Model<CfgOpcUaNode> model = m5.getModel( CfgOpcUaNodeM5Model.MODEL_ID, CfgOpcUaNode.class );
-
-    // ITsGuiContext ctx = new TsGuiContext( tsContext() );
-    // ctx.params().addAll( tsContext().params() );
-
-    // IMultiPaneComponentConstants.OPDEF_IS_DETAILS_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
-    // IMultiPaneComponentConstants.OPDEF_DETAILS_PANE_PLACE.setValue( ctx.params(),
-    // avValobj( EBorderLayoutPlacement.SOUTH ) );
-    // IMultiPaneComponentConstants.OPDEF_IS_SUPPORTS_TREE.setValue( ctx.params(), AvUtils.AV_TRUE );
-    IMultiPaneComponentConstants.OPDEF_IS_ACTIONS_CRUD.setValue( tsContext().params(), AvUtils.AV_TRUE );
-    // добавляем в панель фильтр
-    IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( tsContext().params(), AvUtils.AV_TRUE );
-
-    // MultiPaneComponentModown<OpcToS5DataCfgUnit> componentModown2 =
-    // new MultiPaneComponentModown<>( ctx, model, lm.itemsProvider(), lm );
-    // IM5CollectionPanel<OpcToS5DataCfgUnit> opcToS5DataCfgUnitPanel =
-    // new M5CollectionPanelMpcModownWrapper<>( componentModown2, false );
-
-    ensureNodesCfgs( tsContext(), aSelDoc );
-
-    IM5LifecycleManager<CfgOpcUaNode> lm = model.getLifecycleManager( aSelDoc );
-
-    IM5CollectionPanel<CfgOpcUaNode> cfgNodesPanel =
-        model.panelCreator().createCollEditPanel( tsContext(), lm.itemsProvider(), lm );
-
-    tabItem.setControl( cfgNodesPanel.createControl( tabFolder ) );
-
-    tabFolder.setSelection( tabItem );
-
-  }
-
-  /**
-   * Synchronizes loaded and existed in units nodes cfgs.
-   */
-  private void ensureNodesCfgs( ITsGuiContext aContext, OpcToS5DataCfgDoc aDoc ) {
-
-    // OpcUaServerConnCfg conConf =
-    // (OpcUaServerConnCfg)aContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
-    //
-    // if( conConf == null ) {
-    // TsDialogUtils.askYesNoCancel( getShell(),
-    // "Для корректного автоматического определения типа узлов OPC UA следует выбрать соединение с сервером OPC UA" );
-    // }
-
-    IList<OpcToS5DataCfgUnit> dataCfgUnits = aDoc.dataUnits();
-
-    IList<CfgOpcUaNode> nodesCfgsList = aDoc.getNodesCfgs();
-    IStringMapEdit<CfgOpcUaNode> nodesCfgs = new StringMap<>();
-    // for( CfgOpcUaNode node : nodesCfgsList ) {
-    // nodesCfgs.put( node.getNodeId(), node );
-    // }
-
-    for( OpcToS5DataCfgUnit unit : dataCfgUnits ) {
-      IList<NodeId> nodes = unit.getDataNodes();
-
-      String relizationTypeId = unit.getRelizationTypeId();
-      CfgUnitRealizationTypeRegister typeReg2 = m5().tsContext().get( CfgUnitRealizationTypeRegister.class );
-
-      ICfgUnitRealizationType realType = typeReg2.getTypeOfRealizationById( unit.getTypeOfCfgUnit(), relizationTypeId );
-
-      for( int i = 0; i < nodes.size(); i++ ) {
-        NodeId node = nodes.get( i );
-        if( !nodesCfgs.hasKey( node.toParseableString() ) ) {
-          nodesCfgs.put( node.toParseableString(),
-              realType.createInitCfg( aContext, node.toParseableString(), i, nodes.size() ) );
-          // new CfgOpcUaNode( node.toParseableString(), false, true, false, EAtomicType.INTEGER ) );
-        }
-      }
-
-      aDoc.setNodesCfgs( nodesCfgs.values() );
-    }
   }
 
 }

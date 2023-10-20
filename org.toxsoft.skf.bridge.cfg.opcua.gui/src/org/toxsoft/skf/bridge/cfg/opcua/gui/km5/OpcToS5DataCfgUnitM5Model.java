@@ -465,9 +465,9 @@ public class OpcToS5DataCfgUnitM5Model
                     // dima 20.10.23 FIXME использовать IdChain для передачи информации о соединении. Цитата от Гоги:
                     // Кстати, напомню, что "класть соединение в контекст" нельзя,
                     // можно только использовать ISkConnectionSupplier
-                    ISkConnection selectedConnection = selectConnection( aContext );
-                    if( selectedConnection != null ) {
-                      aContext.put( OPCUA_BRIDGE_CFG_S5_CONNECTION, selectedConnection );
+                    IdChain connIdChain = selectConnection( aContext );
+                    if( connIdChain != null ) {
+                      aContext.put( OPCUA_BRIDGE_CFG_S5_CONNECTION, connIdChain );
                     }
 
                     break;
@@ -621,15 +621,12 @@ public class OpcToS5DataCfgUnitM5Model
     } );
   }
 
-  ISkConnection selectConnection( ITsGuiContext aContext ) {
+  IdChain selectConnection( ITsGuiContext aContext ) {
     ISkideExternalConnectionsService connService =
         aContext.eclipseContext().get( ISkideExternalConnectionsService.class );
     IdChain idChain = connService.selectConfigAndOpenConnection( aContext );
-    if( idChain == null ) {
-      return null;
-    }
-    ISkConnectionSupplier connSupp = aContext.eclipseContext().get( ISkConnectionSupplier.class );
-    return connSupp.allConns().getByKey( idChain );
+
+    return idChain;
   }
 
   public OpcUaClient selectOpcConfigAndOpenConnection( ITsGuiContext aContext ) {

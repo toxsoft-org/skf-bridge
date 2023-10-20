@@ -29,7 +29,6 @@ import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.reports.gui.panels.*;
-import org.toxsoft.skide.plugin.exconn.service.*;
 import org.toxsoft.uskat.core.api.sysdescr.*;
 import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.gui.conn.*;
@@ -182,10 +181,10 @@ public class GwidsForCfgM5Model
 
               @Override
               protected Gwid doAddItem() {
-                ISkConnection conn =
-                    (ISkConnection)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_S5_CONNECTION );
-                if( conn != null ) {
-                  System.out.println( "Selecetd conn: " + conn.toString() );
+                IdChain connIdChain =
+                    (IdChain)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_S5_CONNECTION );
+                if( connIdChain != null ) {
+                  System.out.println( "Selecetd conn: " + connIdChain.toString() );
                 }
                 else {
                   System.out.println( "Selecetd conn: " + "null" );
@@ -201,11 +200,11 @@ public class GwidsForCfgM5Model
                     kind = ESkClassPropKind.EVENT;
                   }
                 // 20.10.23 dima for testing
-//                ISkideExternalConnectionsService connService =
-//                    aContext.eclipseContext().get( ISkideExternalConnectionsService.class );
-//                IdChain idChain = connService.selectConfigAndOpenConnection( aContext );
-//              Gwid gwid = PanelGwidSelector.selectGwid( null, tsContext(), kind, idChain );
-              Gwid gwid = PanelGwidSelector.selectGwid( null, tsContext(), kind, null );
+                // ISkideExternalConnectionsService connService =
+                // aContext.eclipseContext().get( ISkideExternalConnectionsService.class );
+                // IdChain idChain = connService.selectConfigAndOpenConnection( aContext );
+                Gwid gwid = PanelGwidSelector.selectGwid( null, tsContext(), kind, connIdChain );
+                // Gwid gwid = PanelGwidSelector.selectGwid( null, tsContext(), kind, null );
 
                 if( gwid == null ) {
                   return null;
@@ -220,10 +219,10 @@ public class GwidsForCfgM5Model
               @Override
               protected Gwid doEditItem( Gwid aItem ) {
 
-                ISkConnection conn =
-                    (ISkConnection)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_S5_CONNECTION );
-                if( conn != null ) {
-                  System.out.println( "Selecetd conn: " + conn.toString() );
+                IdChain connIdChain =
+                    (IdChain)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_S5_CONNECTION );
+                if( connIdChain != null ) {
+                  System.out.println( "Selecetd conn: " + connIdChain.toString() );
                 }
                 else {
                   System.out.println( "Selecetd conn: " + "null" );
@@ -239,12 +238,12 @@ public class GwidsForCfgM5Model
                     kind = ESkClassPropKind.EVENT;
                   }
                 // dima 20.10.23 for testing
-//                ISkideExternalConnectionsService connService =
-//                    aContext.eclipseContext().get( ISkideExternalConnectionsService.class );
-//                IdChain idChain = connService.selectConfigAndOpenConnection( aContext );
-//                Gwid gwid = PanelGwidSelector.selectGwid( aItem, tsContext(), kind, idChain );
+                // ISkideExternalConnectionsService connService =
+                // aContext.eclipseContext().get( ISkideExternalConnectionsService.class );
+                // IdChain idChain = connService.selectConfigAndOpenConnection( aContext );
+                Gwid gwid = PanelGwidSelector.selectGwid( aItem, tsContext(), kind, connIdChain );
 
-                Gwid gwid = PanelGwidSelector.selectGwid( aItem, tsContext(), kind, null );
+                //Gwid gwid = PanelGwidSelector.selectGwid( aItem, tsContext(), kind, null );
                 if( gwid == null ) {
                   return aItem;
                 }
