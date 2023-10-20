@@ -98,6 +98,21 @@ public interface IOpcUaServerConnCfgConstants {
    */
   String LOAD_CMD_DESCR_ACT_ID = "load_cmd_descr_act_id"; //$NON-NLS-1$
 
+  /**
+   * id действия "только на чтение "
+   */
+  String FILTER_READ_ONLY_ACT_ID = "filter_read_only_act_id"; //$NON-NLS-1$
+
+  /**
+   * id действия "только на запись "
+   */
+  String FILTER_WRITE_ONLY_ACT_ID = "filter_write_only_act_id"; //$NON-NLS-1$
+
+  /**
+   * id действия "на запись и чтение"
+   */
+  String FILTER_WRITE_READ_ACT_ID = "filter_write_read_act_id"; //$NON-NLS-1$
+
   TsActionDef ACTDEF_CREATE_CLASS_OPC_UA_ITEM = TsActionDef.ofPush2( CREATE_CINFO_FROM_OPC_UA_ACT_ID,
       STR_N_CREATE_CINFO_FROM_OPC_UA, STR_D_CREATE_CINFO_FROM_OPC_UA, ICONID_NEW_CLASS );
 
@@ -109,6 +124,15 @@ public interface IOpcUaServerConnCfgConstants {
 
   TsActionDef ACTDEF_LOAD_CMD_DESCR =
       TsActionDef.ofPush2( LOAD_CMD_DESCR_ACT_ID, STR_N_LOAD_CMD_DESCR, STR_D_LOAD_CMD_DESCR, ICONID_IMPORT );
+
+  TsActionDef ACTDEF_FILTER_READ_ONLY = TsActionDef.ofRadio2( FILTER_READ_ONLY_ACT_ID, STR_N_FILTER_READ_ONLY,
+      STR_D_FILTER_READ_ONLY, ITsStdIconIds.ICONID_TREE_ADD_CHILD );
+
+  TsActionDef ACTDEF_FILTER_WRITE_ONLY = TsActionDef.ofRadio2( FILTER_WRITE_ONLY_ACT_ID, STR_N_FILTER_WRITE_ONLY,
+      STR_D_FILTER_WRITE_ONLY, ITsStdIconIds.ICONID_TREE_ADD_ROOT );
+
+  TsActionDef ACTDEF_FILTER_WRITE_READ = TsActionDef.ofRadio2( FILTER_WRITE_READ_ACT_ID, STR_N_FILTER_WRITE_READ,
+      STR_D_FILTER_WRITE_READ, ITsStdIconIds.ICONID_VIEW_AS_TREE );
 
   /**
    * Id of tree mode using origin nodes structure.

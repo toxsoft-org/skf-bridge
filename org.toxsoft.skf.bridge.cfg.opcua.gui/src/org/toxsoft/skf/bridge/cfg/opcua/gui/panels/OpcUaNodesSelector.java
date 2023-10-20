@@ -6,21 +6,25 @@ import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.*;
 
 import org.eclipse.milo.opcua.sdk.client.*;
+import org.eclipse.milo.opcua.sdk.core.*;
 import org.eclipse.milo.opcua.stack.core.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
 import org.eclipse.swt.widgets.*;
+import org.toxsoft.core.tsgui.bricks.actions.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tsgui.bricks.ctx.impl.*;
 import org.toxsoft.core.tsgui.bricks.tsnodes.*;
 import org.toxsoft.core.tsgui.bricks.tstree.tmm.*;
 import org.toxsoft.core.tsgui.dialogs.datarec.*;
+import org.toxsoft.core.tsgui.graphics.icons.*;
 import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tsgui.m5.gui.mpc.*;
 import org.toxsoft.core.tsgui.m5.gui.mpc.impl.*;
 import org.toxsoft.core.tsgui.m5.gui.panels.*;
 import org.toxsoft.core.tsgui.m5.gui.panels.impl.*;
 import org.toxsoft.core.tsgui.m5.model.*;
+import org.toxsoft.core.tsgui.panels.toolbar.*;
 import org.toxsoft.core.tsgui.utils.layout.*;
 import org.toxsoft.core.tslib.av.impl.*;
 import org.toxsoft.core.tslib.bricks.geometry.impl.*;
@@ -32,6 +36,8 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.panels.OpcUaNodesSelector.*;
 import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.gui.conn.*;
 
+import com.google.common.collect.*;
+
 /**
  * Panel to browser sub tree of opc ua server nodes and select list of UaVariableNode .
  *
@@ -42,19 +48,21 @@ public class OpcUaNodesSelector
 
   static class OpcUaNodesSelectorContext {
 
-    private final NodeId              topNode;
-    private final OpcUaClient         client;
-    private final boolean             hideVariableNodes;
-    private final boolean             checkable;
-    private final IOpcUaServerConnCfg serverConnCfg;
+    private final NodeId                    topNode;
+    private final OpcUaClient               client;
+    private final boolean                   hideVariableNodes;
+    private final boolean                   checkable;
+    private final IOpcUaServerConnCfg       serverConnCfg;
+    private final ImmutableSet<AccessLevel> accessLevel;
 
     public OpcUaNodesSelectorContext( NodeId aTopNode, OpcUaClient aClient, boolean isHideVariableNodes,
-        boolean isCheckable, IOpcUaServerConnCfg aServerConnCfg ) {
+        boolean isCheckable, IOpcUaServerConnCfg aServerConnCfg, ImmutableSet<AccessLevel> aAccessLevel ) {
       topNode = aTopNode;
       client = aClient;
       hideVariableNodes = isHideVariableNodes;
       checkable = isCheckable;
       serverConnCfg = aServerConnCfg;
+      accessLevel = aAccessLevel;
     }
 
   }
@@ -98,9 +106,48 @@ public class OpcUaNodesSelector
     IMultiPaneComponentConstants.OPDEF_DBLCLICK_ACTION_ID.setValue( ctx.params(), AvUtils.AV_STR_EMPTY );
 
     MultiPaneComponentModown<UaTreeNode> componentModown =
-        new MultiPaneComponentModown<>( ctx, model, lm.itemsProvider(), lm );
+        new MultiPaneComponentModown<>( ctx, model, lm.itemsProvider(), lm ) {
+
+          // добавляем tool bar
+          @Override
+          protected ITsToolbar doCreateToolbar( ITsGuiContext aContext, String aName, EIconSize aIconSize,
+              IListEdit<ITsActionDef> aActs ) {
+            aActs.add( ITsStdActionDefs.ACDEF_SEPARATOR );
+            aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_FILTER_READ_ONLY );
+            aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_FILTER_WRITE_ONLY );
+            aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_FILTER_WRITE_READ );
+
+            ITsToolbar toolBar = super.doCreateToolbar( aContext, aName, aIconSize, aActs );
+
+            toolBar.addListener( aActionId -> {
+              if( aActionId == FILTER_READ_ONLY_ACT_ID ) {
+                recreateTree( AccessLevel.READ_ONLY );
+              }
+              if( aActionId == FILTER_WRITE_ONLY_ACT_ID ) {
+                recreateTree( AccessLevel.WRITE_ONLY );
+              }
+              if( aActionId == FILTER_WRITE_READ_ACT_ID ) {
+                recreateTree( AccessLevel.READ_WRITE );
+              }
+            } );
+            toolBar.setIconSize( EIconSize.IS_24X24 );
+            return toolBar;
+          }
+
+          private void recreateTree( ImmutableSet<AccessLevel> aAccessLevel ) {
+            UaNodesTreeMaker treeMaker = new UaNodesTreeMaker();
+            treeMaker.hideVariableNodes = environ().hideVariableNodes;
+            treeMaker.accessLevel = aAccessLevel;
+            tree().setTreeMaker( treeMaker );
+            tree().refresh();
+            tree().console().expandAll();
+          }
+
+        };
+
     UaNodesTreeMaker treeMaker = new UaNodesTreeMaker();
     treeMaker.hideVariableNodes = environ().hideVariableNodes;
+    treeMaker.accessLevel = environ().accessLevel;
 
     componentModown.tree().setTreeMaker( treeMaker );
 
@@ -123,7 +170,8 @@ public class OpcUaNodesSelector
     private final ITsNodeKind<UaTreeNode> kind =
         new TsNodeKind<>( "UaTreeNode", UaTreeNode.class, true, IOpcUaServerConnCfgConstants.ICONID_APP_ICON ); //$NON-NLS-1$
 
-    private boolean hideVariableNodes;
+    private boolean                   hideVariableNodes;
+    private ImmutableSet<AccessLevel> accessLevel;
 
     @Override
     public IList<ITsNode> makeRoots( ITsNode aRootNode, IList<UaTreeNode> aItems ) {
@@ -161,6 +209,10 @@ public class OpcUaNodesSelector
           // отсекаем узлы у которых имя начинается с символа '/'
           String name = child.getBrowseName();
           if( name.startsWith( IGNORE_REFIX ) ) {
+            continue;
+          }
+          // фильтруем узлы по уровню доступа
+          if( !child.accessLevel().equals( accessLevel ) ) {
             continue;
           }
         }
@@ -228,8 +280,8 @@ public class OpcUaNodesSelector
   public static IList<UaTreeNode> selectUaNode( ITsGuiContext aTsContext, OpcUaClient aClient,
       IList<UaTreeNode> aCheckedNodes, IOpcUaServerConnCfg aServerConnCfg ) {
     ITsDialogInfo cdi = new TsDialogInfo( aTsContext, STR_MSG_SELECT_NODE, STR_DESCR_SELECT_NODE );
-    OpcUaNodesSelectorContext ctx =
-        new OpcUaNodesSelectorContext( Identifiers.RootFolder, aClient, false, false, aServerConnCfg );
+    OpcUaNodesSelectorContext ctx = new OpcUaNodesSelectorContext( Identifiers.RootFolder, aClient, false, false,
+        aServerConnCfg, AccessLevel.READ_WRITE );
 
     IDialogPanelCreator<IList<UaTreeNode>, OpcUaNodesSelectorContext> creator = OpcUaNodesSelector::new;
     TsDialog<IList<UaTreeNode>, OpcUaNodesSelectorContext> d = new TsDialog<>( cdi, aCheckedNodes, ctx, creator );
@@ -250,7 +302,8 @@ public class OpcUaNodesSelector
     TsDialogInfo cdi = new TsDialogInfo( aTsContext, STR_MSG_SELECT_NODE_4_CLASS, STR_DESCR_SELECT_NODE );
     // установим нормальный размер диалога
     cdi.setMinSize( new TsPoint( -30, -60 ) );
-    OpcUaNodesSelectorContext ctx = new OpcUaNodesSelectorContext( aTopNode, aClient, false, true, aServerConnCfg );
+    OpcUaNodesSelectorContext ctx =
+        new OpcUaNodesSelectorContext( aTopNode, aClient, false, true, aServerConnCfg, AccessLevel.READ_WRITE );
 
     IDialogPanelCreator<IList<UaTreeNode>, OpcUaNodesSelectorContext> creator = OpcUaNodesSelector::new;
     TsDialog<IList<UaTreeNode>, OpcUaNodesSelectorContext> d = new TsDialog<>( cdi, null, ctx, creator );
@@ -269,7 +322,8 @@ public class OpcUaNodesSelector
   public static IList<UaTreeNode> selectUaNodes4Objects( ITsGuiContext aTsContext, NodeId aTopNode, OpcUaClient aClient,
       IOpcUaServerConnCfg aServerConnCfg ) {
     ITsDialogInfo cdi = new TsDialogInfo( aTsContext, STR_MSG_SELECT_NODE_4_OBJS, STR_DESCR_SELECT_NODE );
-    OpcUaNodesSelectorContext ctx = new OpcUaNodesSelectorContext( aTopNode, aClient, true, true, aServerConnCfg );
+    OpcUaNodesSelectorContext ctx =
+        new OpcUaNodesSelectorContext( aTopNode, aClient, true, true, aServerConnCfg, AccessLevel.READ_WRITE );
 
     IDialogPanelCreator<IList<UaTreeNode>, OpcUaNodesSelectorContext> creator = OpcUaNodesSelector::new;
     TsDialog<IList<UaTreeNode>, OpcUaNodesSelectorContext> d = new TsDialog<>( cdi, null, ctx, creator );

@@ -2,10 +2,14 @@ package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
 
 import static org.toxsoft.core.tslib.bricks.strio.IStrioHardConstants.*;
 
+import java.util.*;
+
 import org.eclipse.milo.opcua.sdk.client.*;
 import org.eclipse.milo.opcua.sdk.client.nodes.*;
+import org.eclipse.milo.opcua.sdk.core.*;
 import org.eclipse.milo.opcua.stack.core.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
+import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.*;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
 import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.bricks.keeper.*;
@@ -17,6 +21,8 @@ import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
+
+import com.google.common.collect.*;
 
 /**
  * Tree node, aggragating UaNode, and forming tree structure.
@@ -30,14 +36,15 @@ public class UaTreeNode {
 
   private UaTreeNode parent = null;
 
-  private UaNode      uaNode       = null;
-  private String      parentNodeId = null;
-  private String      nodeId       = null;
-  private String      browseName   = null;
-  private String      displayName  = null;
-  private String      description  = null;
-  private NodeClass   nodeClass    = null;
-  private EAtomicType type         = EAtomicType.NONE;
+  private UaNode                    uaNode       = null;
+  private String                    parentNodeId = null;
+  private String                    nodeId       = null;
+  private String                    browseName   = null;
+  private String                    displayName  = null;
+  private String                    description  = null;
+  private NodeClass                 nodeClass    = null;
+  private ImmutableSet<AccessLevel> accessLevel  = AccessLevel.NONE;
+  private EAtomicType               type         = EAtomicType.NONE;
 
   private OpcUaClient        client;
   /**
@@ -84,6 +91,10 @@ public class UaTreeNode {
           aSw.writeChar( CHAR_ITEM_SEPARATOR );
           // type
           EAtomicType.KEEPER.write( aSw, aEntity.type );
+          aSw.writeChar( CHAR_ITEM_SEPARATOR );
+          // access
+          UByte access = AccessLevel.toValue( aEntity.accessLevel );
+          aSw.writeInt( access.intValue() );
           aSw.writeEol();
         }
 
@@ -102,8 +113,11 @@ public class UaTreeNode {
           int nodeClassVal = aSr.readInt();
           aSr.ensureChar( CHAR_ITEM_SEPARATOR );
           EAtomicType type = EAtomicType.KEEPER.read( aSr );
+          aSr.ensureChar( CHAR_ITEM_SEPARATOR );
+          int accessVal = aSr.readInt();
+          EnumSet<AccessLevel> accessLevel = AccessLevel.fromValue( accessVal );
           return new UaTreeNode( parentNodeId, nodeId, browseName, displayName, description,
-              NodeClass.from( nodeClassVal ), type );
+              NodeClass.from( nodeClassVal ), type, accessLevel );
         }
       };
 
@@ -121,6 +135,7 @@ public class UaTreeNode {
     if( uaNode instanceof UaVariableNode variableNode ) {
       Class<?> clazz = OpcUaUtils.getNodeDataTypeClass( variableNode );
       type = OpcUaUtils.getAtomicType( clazz );
+      accessLevel = ImmutableSet.copyOf( AccessLevel.fromValue( variableNode.getAccessLevel() ) );
     }
     if( aParent != null ) {
       aParent.children.add( this );
@@ -137,9 +152,10 @@ public class UaTreeNode {
    * @param aDescription - node description
    * @param aNodeClass - node class
    * @param aType - тип данного для node типа Variable
+   * @param aAccessLevel - уровень доступа {@link AccessLevel } к узлу для node типа Variable
    */
   public UaTreeNode( String aParentNodeId, String aNodeId, String aBrowseName, String aDisplayName, String aDescription,
-      NodeClass aNodeClass, EAtomicType aType ) {
+      NodeClass aNodeClass, EAtomicType aType, EnumSet<AccessLevel> aAccessLevel ) {
     super();
     parentNodeId = aParentNodeId;
     nodeId = aNodeId;
@@ -148,6 +164,7 @@ public class UaTreeNode {
     description = aDescription;
     nodeClass = aNodeClass;
     type = aType;
+    accessLevel = ImmutableSet.copyOf( aAccessLevel );
   }
 
   /**
@@ -231,6 +248,13 @@ public class UaTreeNode {
    */
   public NodeClass getNodeClass() {
     return nodeClass == null ? uaNode.getNodeClass() : nodeClass;
+  }
+
+  /**
+   * @return OPC UA node class
+   */
+  public ImmutableSet<AccessLevel> accessLevel() {
+    return accessLevel;
   }
 
   /**

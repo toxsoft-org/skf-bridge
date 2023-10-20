@@ -24,5 +24,11 @@ interface ISkResources {
   String STR_D_SHOW_OPC_UA_NODE_2_GWID  = "Отобразить наличие связи между UaNode и Gwid";
   String STR_N_LOAD_CMD_DESCR           = "Загрузить описание команд";
   String STR_D_LOAD_CMD_DESCR           = "Загрузить описание команд из файла электронных таблиц";
+  String STR_N_FILTER_READ_ONLY         = "Read only";
+  String STR_D_FILTER_READ_ONLY         = "Узлы с доступом только на чтение";
+  String STR_N_FILTER_WRITE_ONLY        = "Write only";
+  String STR_D_FILTER_WRITE_ONLY        = "Узлы с доступом только на запись";
+  String STR_N_FILTER_WRITE_READ        = "Read and Write only";
+  String STR_D_FILTER_WRITE_READ        = "Узлы с доступом на чтение/запись";
 
 }
