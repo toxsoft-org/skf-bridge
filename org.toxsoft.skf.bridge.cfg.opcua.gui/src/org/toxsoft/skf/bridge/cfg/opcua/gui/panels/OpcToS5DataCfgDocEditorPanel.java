@@ -31,6 +31,7 @@ import org.toxsoft.core.tsgui.widgets.*;
 import org.toxsoft.core.tslib.av.impl.*;
 import org.toxsoft.core.tslib.bricks.apprefs.*;
 import org.toxsoft.core.tslib.bricks.apprefs.impl.*;
+import org.toxsoft.core.tslib.bricks.geometry.impl.TsPoint;
 import org.toxsoft.core.tslib.bricks.strid.more.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.utils.errors.*;
@@ -248,7 +249,8 @@ public class OpcToS5DataCfgDocEditorPanel
         IM5LifecycleManager<IOpcUaServerConnCfg> lm = new OpcUaServerConnCfgM5LifecycleManager( model, cfgService );
 
         TsDialogInfo di = new TsDialogInfo( ctx, DLG_SELECT_CFG_AND_OPEN, DLG_SELECT_CFG_AND_OPEN_D );
-
+        // установим нормальный размер диалога
+        di.setMinSize( new TsPoint( -30, -30 ) );
         IOpcUaServerConnCfg conConf = M5GuiUtils.askSelectItem( di, model, null, lm.itemsProvider(), lm );
         // dima 13.10.23 сохраним в контекст
         ctx.put( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG, conConf );
