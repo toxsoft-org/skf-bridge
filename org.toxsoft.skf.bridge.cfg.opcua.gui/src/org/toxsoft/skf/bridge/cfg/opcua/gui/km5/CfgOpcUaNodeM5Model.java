@@ -13,6 +13,7 @@ import static org.toxsoft.uskat.core.ISkHardConstants.*;
 import java.io.*;
 
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
+import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.tsgui.bricks.actions.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
@@ -34,6 +35,7 @@ import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
+import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.filegen.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
@@ -258,8 +260,12 @@ public class CfgOpcUaNodeM5Model
                     break;
 
                   case ACTID_GENERATE_DEVCFG_FILE:
-                    ((CfgOpcUaNodeLifecycleManager)lifecycleManager()).generateFileFromCurrState();
+                    ((CfgOpcUaNodeLifecycleManager)lifecycleManager()).generateFileFromCurrState( tsContext() );
+                    break;
 
+                  case ACTID_REMOVE_UNNECESSARY:
+                    ((CfgOpcUaNodeLifecycleManager)lifecycleManager()).removeUnnecessary( aContext );
+                    doFillTree();
                     break;
 
                   default:
@@ -296,6 +302,31 @@ public class CfgOpcUaNodeM5Model
      */
     public CfgOpcUaNodeLifecycleManager( IM5Model<CfgOpcUaNode> aModel, OpcToS5DataCfgDoc aMaster ) {
       super( aModel, false, true, true, true, aMaster );
+    }
+
+    public void removeUnnecessary( ITsGuiContext aContext ) {
+      IList<OpcToS5DataCfgUnit> dataCfgUnits = master().dataUnits();
+
+      IList<CfgOpcUaNode> nodesCfgsList = master().getNodesCfgs();
+      IStringMapEdit<CfgOpcUaNode> nodesCfgs = new StringMap<>();
+      for( CfgOpcUaNode node : nodesCfgsList ) {
+        nodesCfgs.put( node.getNodeId(), node );
+      }
+
+      IStringMapEdit<CfgOpcUaNode> actualNodesCfgs = new StringMap<>();
+
+      for( OpcToS5DataCfgUnit unit : dataCfgUnits ) {
+        IList<NodeId> nodes = unit.getDataNodes();
+
+        for( int i = 0; i < nodes.size(); i++ ) {
+          NodeId node = nodes.get( i );
+          if( nodesCfgs.hasKey( node.toParseableString() ) ) {
+            actualNodesCfgs.put( node.toParseableString(), nodesCfgs.getByKey( node.toParseableString() ) );
+          }
+        }
+
+        master().setNodesCfgs( actualNodesCfgs.values() );
+      }
     }
 
     public void removeAll( ITsGuiContext aContext ) {
@@ -335,31 +366,32 @@ public class CfgOpcUaNodeM5Model
       service.saveCfgDoc( master() );
     }
 
-    void generateFileFromCurrState() {
+    void generateFileFromCurrState( ITsGuiContext aContext ) {
+      Shell shell = aContext.find( Shell.class );
+      FileDialog fd = new FileDialog( shell, SWT.SAVE );
+      fd.setText( "Выбор файла сохранения конфигурации драйвера" );
+      fd.setFilterPath( "" );
+      String[] filterExt = { ".devcfg" };
+      fd.setFilterExtensions( filterExt );
+      String selected = fd.open();
+      if( selected == null ) {
+        return;
+      }
+
       try {
-
-        // FileWriter fw = new FileWriter( "C://tmp//333.txt" );
-        // CharOutputStreamWriter chOut = new CharOutputStreamWriter( fw );
-        // StrioWriter strioWriter = new StrioWriter( chOut );
-
         IAvTree avTree = OpcToS5DataCfgConverter.convertToDevCfgTree( master() );
-        // OpcToS5DataCfgDoc.KEEPER.write( strioWriter, cfgDoc );
-        String TMP_DEST_FILE = "destDlmFile.tmp";
 
+        String TMP_DEST_FILE = "destDlmFile.tmp";
         AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
 
         String DLM_CONFIG_STR = "DeviceConfig = ";
+        PinsConfigFileFormatter.format( TMP_DEST_FILE, selected, DLM_CONFIG_STR );
 
-        PinsConfigFileFormatter.format( TMP_DEST_FILE, "C://tmp//222.txt", DLM_CONFIG_STR );
-
-        // fw.flush();
-        // fw.close();
-
+        TsDialogUtils.info( shell, "Создан файл драйвера opc ua: %s", selected );
       }
       catch( Exception e ) {
-        e.printStackTrace();
-        // Ошибка создания писателя канала
-        // throw new TsIllegalArgumentRtException( e );
+        LoggerUtils.errorLogger().error( e );
+        TsDialogUtils.error( shell, e );
       }
     }
 
@@ -369,8 +401,16 @@ public class CfgOpcUaNodeM5Model
           (OpcUaServerConnCfg)aContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
 
       if( conConf == null ) {
-        TsDialogUtils.askYesNoCancel( aContext.get( Shell.class ),
-            "Для корректного автоматического определения типа узлов OPC UA следует выбрать соединение с сервером OPC UA" );
+        ETsDialogCode retCode = TsDialogUtils.askYesNoCancel( aContext.get( Shell.class ),
+            "Для корректного автоматического определения типа узлов OPC UA необходимо соединение с сервером OPC UA\nПродолжить без соединения?" );
+
+        if( retCode == ETsDialogCode.CANCEL || retCode == ETsDialogCode.CLOSE || retCode == ETsDialogCode.NO ) {
+          return;
+        }
+
+        // if( retCode == ETsDialogCode.YES ) {
+        //
+        // }
       }
 
       IList<OpcToS5DataCfgUnit> dataCfgUnits = master().dataUnits();

@@ -3,8 +3,11 @@ package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
 import java.io.*;
 
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
+import org.eclipse.swt.*;
+import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.log4j.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
+import org.toxsoft.core.tsgui.dialogs.*;
 import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tsgui.m5.model.impl.*;
 import org.toxsoft.core.tslib.av.avtree.*;
@@ -12,6 +15,7 @@ import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.utils.logs.*;
+import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 
@@ -116,31 +120,28 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
     service.saveCfgDoc( master() );
   }
 
-  void generateFileFromCurrState() {
+  void generateFileFromCurrState( ITsGuiContext aContext ) {
+    Shell shell = aContext.find( Shell.class );
+    FileDialog fd = new FileDialog( shell, SWT.SAVE );
+    fd.setText( "Выбор файла сохранения конфигурации моста" );
+    fd.setFilterPath( "" );
+    String[] filterExt = { ".dlmcfg" };
+    fd.setFilterExtensions( filterExt );
+    String selected = fd.open();
+    if( selected == null ) {
+      return;
+    }
     try {
-
-      // FileWriter fw = new FileWriter( "C://tmp//333.txt" );
-      // CharOutputStreamWriter chOut = new CharOutputStreamWriter( fw );
-      // StrioWriter strioWriter = new StrioWriter( chOut );
-
       IAvTree avTree = OpcToS5DataCfgConverter.convertToDlmCfgTree( master() );
-      // OpcToS5DataCfgDoc.KEEPER.write( strioWriter, cfgDoc );
       String TMP_DEST_FILE = "destDlmFile.tmp";
-
       AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
 
       String DLM_CONFIG_STR = "DlmConfig = ";
-
-      PinsConfigFileFormatter.format( TMP_DEST_FILE, "C://tmp//333.txt", DLM_CONFIG_STR );
-
-      // fw.flush();
-      // fw.close();
-
+      PinsConfigFileFormatter.format( TMP_DEST_FILE, selected, DLM_CONFIG_STR );
     }
     catch( Exception e ) {
-      e.printStackTrace();
-      // Ошибка создания писателя канала
-      // throw new TsIllegalArgumentRtException( e );
+      LoggerUtils.errorLogger().error( e );
+      TsDialogUtils.error( shell, e );
     }
   }
 
