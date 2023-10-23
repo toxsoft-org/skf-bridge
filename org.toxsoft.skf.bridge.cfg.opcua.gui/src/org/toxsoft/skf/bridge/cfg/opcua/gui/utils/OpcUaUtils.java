@@ -41,6 +41,7 @@ import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.OptionSet;
 import org.toxsoft.core.tslib.bricks.apprefs.*;
 import org.toxsoft.core.tslib.bricks.apprefs.impl.*;
+import org.toxsoft.core.tslib.bricks.geometry.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
@@ -649,6 +650,8 @@ public class OpcUaUtils {
     IM5LifecycleManager<IOpcUaServerConnCfg> lm = new OpcUaServerConnCfgM5LifecycleManager( model, cfgService );
 
     TsDialogInfo di = new TsDialogInfo( aContext, DLG_SELECT_CFG_AND_OPEN, DLG_SELECT_CFG_AND_OPEN_D );
+    // установим нормальный размер диалога
+    di.setMinSize( new TsPoint( -30, -30 ) );
 
     return M5GuiUtils.askSelectItem( di, model, null, lm.itemsProvider(), lm );
   }
