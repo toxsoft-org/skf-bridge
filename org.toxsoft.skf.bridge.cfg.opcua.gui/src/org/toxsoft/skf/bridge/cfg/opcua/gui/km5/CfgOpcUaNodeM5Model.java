@@ -1,7 +1,6 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
 
 import static org.toxsoft.core.tsgui.bricks.actions.ITsStdActionDefs.*;
-import static org.toxsoft.core.tsgui.graphics.icons.ITsStdIconIds.*;
 import static org.toxsoft.core.tsgui.m5.IM5Constants.*;
 import static org.toxsoft.core.tsgui.valed.api.IValedControlConstants.*;
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
@@ -62,13 +61,13 @@ public class CfgOpcUaNodeM5Model
   final static String ACTID_GENERATE_DEVCFG_FILE = SK_ID + "bridge.cfg.opcua.to.s5.generate.devcfg.file"; //$NON-NLS-1$
 
   final static TsActionDef ACDEF_SYNCHRONIZE = TsActionDef.ofPush2( ACTID_SYNCHRONIZE, "Добавить недостающие узлы",
-      "Добавить недостающие узлы из закладки связей", ICONID_LIST_ADD );
+      "Добавить недостающие узлы из закладки связей", ICONID_ADD_NODE );
 
   final static TsActionDef ACDEF_REMOVE_UNNECESSARY = TsActionDef.ofPush2( ACTID_REMOVE_UNNECESSARY,
-      "Удалить лишние узлы", "Удалить лишние узлы, отсутствующие в закладке связей", ICONID_LIST_REMOVE );
+      "Удалить лишние узлы", "Удалить лишние узлы, отсутствующие в закладке связей", ICONID_REMOVE_NODE );
 
   final static TsActionDef ACDEF_REMOVE_ALL =
-      TsActionDef.ofPush2( ACTID_REMOVE_ALL, "Удалить все узлы", "Удалить все узлы", ICONID_LIST_REMOVE );
+      TsActionDef.ofPush2( ACTID_REMOVE_ALL, "Удалить все узлы", "Удалить все узлы", ICONID_CLEAR_ALL );
 
   final static TsActionDef ACDEF_GENERATE_DEVCFG_FILE =
       TsActionDef.ofPush2( ACTID_GENERATE_DEVCFG_FILE, "Сгенерировать файл конфигурации devcfg",

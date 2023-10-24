@@ -47,6 +47,9 @@ public interface IOpcUaServerConnCfgConstants {
   String ICONID_READ_ONLY            = "tag_R";                //$NON-NLS-1$
   String ICONID_WRITE_ONLY           = "tag_W";                //$NON-NLS-1$
   String ICONID_RW                   = "tag_RW";               //$NON-NLS-1$
+  String ICONID_CLEAR_ALL            = "clear_all";            //$NON-NLS-1$
+  String ICONID_ADD_NODE             = "add_node";             //$NON-NLS-1$
+  String ICONID_REMOVE_NODE          = "remove_node";          //$NON-NLS-1$
 
   //
   // -------------------------------------------------------------------------------------
