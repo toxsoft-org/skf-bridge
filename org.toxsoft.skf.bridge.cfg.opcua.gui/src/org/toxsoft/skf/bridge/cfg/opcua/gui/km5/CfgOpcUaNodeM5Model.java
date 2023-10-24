@@ -233,7 +233,7 @@ public class CfgOpcUaNodeM5Model
 
                 } );
 
-                toolbar.setIconSize( EIconSize.IS_48X48 );
+                toolbar.setIconSize( EIconSize.IS_24X24 );
                 return toolbar;
               }
 

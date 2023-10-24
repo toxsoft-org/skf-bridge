@@ -43,6 +43,10 @@ public interface IOpcUaServerConnCfgConstants {
   String ICONID_READ_FILE            = "read_file";            //$NON-NLS-1$
   String ICONID_EDIT_UNITS           = "edit_units";           //$NON-NLS-1$
   String ICONID_EDIT_NODES           = "edit_nodes";           //$NON-NLS-1$
+  String ICONID_POLIGON_READ_ONLY    = "tag_R_polygon";        //$NON-NLS-1$
+  String ICONID_READ_ONLY            = "tag_R";                //$NON-NLS-1$
+  String ICONID_WRITE_ONLY           = "tag_W";                //$NON-NLS-1$
+  String ICONID_RW                   = "tag_RW";               //$NON-NLS-1$
 
   //
   // -------------------------------------------------------------------------------------
@@ -130,17 +134,17 @@ public interface IOpcUaServerConnCfgConstants {
   TsActionDef ACTDEF_LOAD_CMD_DESCR =
       TsActionDef.ofPush2( LOAD_CMD_DESCR_ACT_ID, STR_N_LOAD_CMD_DESCR, STR_D_LOAD_CMD_DESCR, ICONID_IMPORT );
 
-  TsActionDef ACTDEF_FILTER_READ_ONLY = TsActionDef.ofRadio2( FILTER_READ_ONLY_ACT_ID, STR_N_FILTER_READ_ONLY,
-      STR_D_FILTER_READ_ONLY, ITsStdIconIds.ICONID_TREE_ADD_CHILD );
+  TsActionDef ACTDEF_FILTER_READ_ONLY =
+      TsActionDef.ofRadio2( FILTER_READ_ONLY_ACT_ID, STR_N_FILTER_READ_ONLY, STR_D_FILTER_READ_ONLY, ICONID_READ_ONLY );
 
   TsActionDef ACTDEF_FILTER_WRITE_ONLY = TsActionDef.ofRadio2( FILTER_WRITE_ONLY_ACT_ID, STR_N_FILTER_WRITE_ONLY,
-      STR_D_FILTER_WRITE_ONLY, ITsStdIconIds.ICONID_TREE_ADD_ROOT );
+      STR_D_FILTER_WRITE_ONLY, ICONID_WRITE_ONLY );
 
-  TsActionDef ACTDEF_FILTER_WRITE_READ = TsActionDef.ofRadio2( FILTER_WRITE_READ_ACT_ID, STR_N_FILTER_WRITE_READ,
-      STR_D_FILTER_WRITE_READ, ITsStdIconIds.ICONID_VIEW_AS_TREE );
+  TsActionDef ACTDEF_FILTER_WRITE_READ =
+      TsActionDef.ofRadio2( FILTER_WRITE_READ_ACT_ID, STR_N_FILTER_WRITE_READ, STR_D_FILTER_WRITE_READ, ICONID_RW );
 
   TsActionDef ACTDEF_FILTER_READ_ONLY_POLIGON = TsActionDef.ofCheck2( FILTER_READ_ONLY_POLIGON_ACT_ID,
-      STR_N_FILTER_READ_ONLY_POLIGON, STR_D_FILTER_READ_ONLY_POLIGON, ITsStdIconIds.ICONID_VIEW_AS_TREE );
+      STR_N_FILTER_READ_ONLY_POLIGON, STR_D_FILTER_READ_ONLY_POLIGON, ICONID_POLIGON_READ_ONLY );
 
   /**
    * Id of tree mode using origin nodes structure.

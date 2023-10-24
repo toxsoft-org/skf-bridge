@@ -31,7 +31,7 @@ import org.toxsoft.core.tsgui.widgets.*;
 import org.toxsoft.core.tslib.av.impl.*;
 import org.toxsoft.core.tslib.bricks.apprefs.*;
 import org.toxsoft.core.tslib.bricks.apprefs.impl.*;
-import org.toxsoft.core.tslib.bricks.geometry.impl.TsPoint;
+import org.toxsoft.core.tslib.bricks.geometry.impl.*;
 import org.toxsoft.core.tslib.bricks.strid.more.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.utils.errors.*;
@@ -138,7 +138,7 @@ public class OpcToS5DataCfgDocEditorPanel
 
             } );
 
-            toolbar.setIconSize( EIconSize.IS_48X48 );
+            toolbar.setIconSize( EIconSize.IS_24X24 );
             return toolbar;
           }
 
@@ -200,7 +200,7 @@ public class OpcToS5DataCfgDocEditorPanel
     ctx.params().addAll( tsContext().params() );
 
     TsToolbar toolBar = new TsToolbar( ctx );
-    toolBar.setIconSize( EIconSize.IS_48X48 );
+    toolBar.setIconSize( EIconSize.IS_24X24 );
     toolBar.addActionDef( ACDEF_SAVE_DOC );
     toolBar.addActionDef( ACDEF_S5_SERVER_SELECT );
     toolBar.addActionDef( ACDEF_OPC_SERVER_SELECT );
@@ -250,7 +250,10 @@ public class OpcToS5DataCfgDocEditorPanel
 
         TsDialogInfo di = new TsDialogInfo( ctx, DLG_SELECT_CFG_AND_OPEN, DLG_SELECT_CFG_AND_OPEN_D );
         // установим нормальный размер диалога
-        di.setMinSize( new TsPoint( -30, -30 ) );
+        di.setMinSize( new TsPoint( -30, -40 ) );
+        // убираем поле фильтра
+        IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( di.tsContext().params(), AvUtils.AV_FALSE );
+
         IOpcUaServerConnCfg conConf = M5GuiUtils.askSelectItem( di, model, null, lm.itemsProvider(), lm );
         // dima 13.10.23 сохраним в контекст
         ctx.put( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG, conConf );
