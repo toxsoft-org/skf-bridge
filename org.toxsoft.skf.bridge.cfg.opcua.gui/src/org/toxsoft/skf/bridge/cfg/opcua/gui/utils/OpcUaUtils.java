@@ -34,8 +34,10 @@ import org.toxsoft.core.tsgui.dialogs.*;
 import org.toxsoft.core.tsgui.dialogs.datarec.*;
 import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tsgui.m5.gui.*;
+import org.toxsoft.core.tsgui.m5.gui.mpc.*;
 import org.toxsoft.core.tsgui.m5.model.*;
 import org.toxsoft.core.tslib.av.*;
+import org.toxsoft.core.tslib.av.impl.*;
 import org.toxsoft.core.tslib.av.metainfo.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.OptionSet;
@@ -743,7 +745,9 @@ public class OpcUaUtils {
 
     TsDialogInfo di = new TsDialogInfo( aContext, DLG_SELECT_CFG_AND_OPEN, DLG_SELECT_CFG_AND_OPEN_D );
     // установим нормальный размер диалога
-    di.setMinSize( new TsPoint( -30, -30 ) );
+    di.setMinSize( new TsPoint( -30, -40 ) );
+    // убираем поле фильтра
+    IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( di.tsContext().params(), AvUtils.AV_FALSE );
 
     return M5GuiUtils.askSelectItem( di, model, null, lm.itemsProvider(), lm );
   }

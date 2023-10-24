@@ -2,23 +2,20 @@ package org.toxsoft.skf.bridge.cfg.opcua.gui.panels;
 
 import static org.toxsoft.core.tsgui.bricks.actions.ITsStdActionDefs.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
-import static org.toxsoft.skide.plugin.exconn.ISkidePluginExconnSharedResources.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
-
-import java.io.*;
 
 import org.eclipse.jface.action.*;
 import org.eclipse.milo.opcua.sdk.client.*;
+import org.eclipse.milo.opcua.stack.core.*;
 import org.eclipse.swt.*;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.tsgui.bricks.actions.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tsgui.bricks.ctx.impl.*;
-import org.toxsoft.core.tsgui.dialogs.datarec.*;
+import org.toxsoft.core.tsgui.dialogs.*;
 import org.toxsoft.core.tsgui.graphics.icons.*;
 import org.toxsoft.core.tsgui.m5.*;
-import org.toxsoft.core.tsgui.m5.gui.*;
 import org.toxsoft.core.tsgui.m5.gui.mpc.*;
 import org.toxsoft.core.tsgui.m5.gui.mpc.impl.*;
 import org.toxsoft.core.tsgui.m5.gui.panels.*;
@@ -29,9 +26,6 @@ import org.toxsoft.core.tsgui.panels.toolbar.*;
 import org.toxsoft.core.tsgui.utils.layout.*;
 import org.toxsoft.core.tsgui.widgets.*;
 import org.toxsoft.core.tslib.av.impl.*;
-import org.toxsoft.core.tslib.bricks.apprefs.*;
-import org.toxsoft.core.tslib.bricks.apprefs.impl.*;
-import org.toxsoft.core.tslib.bricks.geometry.impl.*;
 import org.toxsoft.core.tslib.bricks.strid.more.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.utils.errors.*;
@@ -39,7 +33,6 @@ import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.filegen.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
-import org.toxsoft.skf.bridge.cfg.opcua.service.impl.*;
 import org.toxsoft.skide.plugin.exconn.service.*;
 import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.gui.conn.*;
@@ -213,7 +206,7 @@ public class OpcToS5DataCfgDocEditorPanel
     textContr1 = new TextControlContribution( "Label", 200, "Sk Connection: workroom", SWT.NONE );
     toolBar.addContributionItem( textContr1 );
     toolBar.addSeparator();
-    textContr2 = new TextControlContribution( "Label2", 200, "Opc ua Connection:", SWT.NONE );
+    textContr2 = new TextControlContribution( "Label2", 200, "Opc ua:", SWT.NONE );
     toolBar.addContributionItem( textContr2 );
 
     IM5Domain m5 = conn.scope().get( IM5Domain.class );
@@ -236,43 +229,76 @@ public class OpcToS5DataCfgDocEditorPanel
         return;
       }
       if( aActionId.equals( ACDEF_OPC_SERVER_SELECT.id() ) ) {
-
-        // занесем параметры из файла в контекст
-        AbstractAppPreferencesStorage apStorage =
-            new AppPreferencesConfigIniStorage( new File( OPC_UA_SERVER_CONN_CFG_STORE_FILE ) );
-        IAppPreferences appPreferences = new AppPreferences( apStorage );
-        OpcUaServerConnCfgService cfgService = new OpcUaServerConnCfgService( appPreferences );
-
-        IM5Model<IOpcUaServerConnCfg> model =
-            m5.getModel( OpcUaServerConnCfgModel.MODEL_ID, IOpcUaServerConnCfg.class );
-
-        IM5LifecycleManager<IOpcUaServerConnCfg> lm = new OpcUaServerConnCfgM5LifecycleManager( model, cfgService );
-
-        TsDialogInfo di = new TsDialogInfo( ctx, DLG_SELECT_CFG_AND_OPEN, DLG_SELECT_CFG_AND_OPEN_D );
-        // установим нормальный размер диалога
-        di.setMinSize( new TsPoint( -30, -40 ) );
-        // убираем поле фильтра
-        IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( di.tsContext().params(), AvUtils.AV_FALSE );
-
-        IOpcUaServerConnCfg conConf = M5GuiUtils.askSelectItem( di, model, null, lm.itemsProvider(), lm );
+        IOpcUaServerConnCfg conConf = OpcUaUtils.selectOpcServerConfig( ctx );
         // dima 13.10.23 сохраним в контекст
         ctx.put( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG, conConf );
-        if( conConf == null ) {
-          textContr2.setText( "Opc ua Connection: " );
-          return;
-        }
-        textContr2.setText( "Opc ua Connection: " + conConf.nmName() );
 
-        try {
-          OpcUaClient client = OpcUaUtils.createClient( conConf );
-          client.connect().get();
-          ctx.put( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_OPC_CONNECTION, client );
-          textContr2.setText( "Opc ua Connection: connected: " + conConf.nmName() );
-        }
-        catch( Exception ex ) {
-          LoggerUtils.errorLogger().error( ex );
+        Display.getDefault()
+            .asyncExec( () -> textContr2.setText( "Opc ua: " + (conConf == null ? "" : conConf.nmName()) ) );
+
+        if( conConf == null ) {
           return;
         }
+
+        OpcUaUtils.runInWaitingDialog( ctx, "Создание и подключение к OPC UA", monitor -> {
+          try {
+
+            monitor.subTask( "Проверка наличия кэша киента opc ua" );
+            boolean hasCach = OpcUaUtils.hasCachedOpcUaNodesTreeFor( ctx, conConf );
+            // если есть кэш - не пытаться соединится
+            if( hasCach ) {
+              Display.getDefault().asyncExec( () -> {
+                textContr2.setText( "Opc ua: Cach: " + conConf.nmName() );
+                TsDialogUtils.info( getShell(), "Кэш соединения обнаружен и будет использоваться в редакторе" );
+              } );
+              return;
+            }
+          }
+          catch( Exception ex ) {
+            // Display.getDefault().asyncExec( () -> TsDialogUtils.error( getShell(), ex ) );
+            LoggerUtils.errorLogger().error( ex );
+            // return;
+          }
+
+          OpcUaClient client = null;
+
+          try {
+            monitor.subTask( "Создание киента opc ua" );
+            client = OpcUaUtils.createClient( conConf );
+
+            monitor.subTask( "Попытка соединения киента opc ua с сервером" );
+            // В диалоге ожидания попытаться соединится
+            client.connect().get();
+            ctx.put( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_OPC_CONNECTION, client );
+
+            Display.getDefault().asyncExec( () -> textContr2.setText( "Opc ua: connected: " + conConf.nmName() ) );
+          }
+          catch( Exception ex ) {
+            Display.getDefault()
+                .asyncExec( () -> TsDialogUtils.error( getShell(), "Ошибка создания соединения с OPC UA сервером" ) );
+            LoggerUtils.errorLogger().error( ex );
+            return;
+          }
+
+          try {
+            monitor.subTask( "Создание кэша киента opc ua" );
+            // при успешном соединении - записать кэш
+            IM5Model<UaTreeNode> model = m5.getModel( OpcUaNodeModel.MODEL_ID, UaTreeNode.class );
+            IM5LifecycleManager<UaTreeNode> lm =
+                new OpcUaNodeM5LifecycleManager( model, client, Identifiers.RootFolder, ctx, conConf );
+            lm.itemsProvider().listItems();
+            Display.getDefault().asyncExec( () -> {
+              textContr2.setText( "Opc ua: Cach: " + conConf.nmName() );
+              TsDialogUtils.info( getShell(), "Кэш соединения создан и будет использоваться в редакторе" );
+            } );
+          }
+          catch( Exception ex ) {
+            Display.getDefault().asyncExec(
+                () -> TsDialogUtils.error( getShell(), "Ошибка создания кэша соединения с OPC UA сервером" ) );
+            LoggerUtils.errorLogger().error( ex );
+            return;
+          }
+        } );
 
         return;
       }
