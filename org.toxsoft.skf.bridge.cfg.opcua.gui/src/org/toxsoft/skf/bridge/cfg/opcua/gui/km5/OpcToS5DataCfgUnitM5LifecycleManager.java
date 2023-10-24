@@ -138,6 +138,8 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
 
       String DLM_CONFIG_STR = "DlmConfig = ";
       PinsConfigFileFormatter.format( TMP_DEST_FILE, selected, DLM_CONFIG_STR );
+
+      TsDialogUtils.info( shell, "Создан файл конфигурации моста opc ua: %s", selected );
     }
     catch( Exception e ) {
       LoggerUtils.errorLogger().error( e );

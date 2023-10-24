@@ -457,6 +457,38 @@ public class OpcUaUtils {
       TSID_NAME, "ИД команды в OPC", //
       TSID_DESCRIPTION, "Идентификатор команды в OPC сервера" ); //
 
+  public static final IDataDef OP_DATA_JAVA_CLASS = create( "java.class", STRING, //$NON-NLS-1$
+      TSID_NAME, "data java класс", //
+      TSID_DESCRIPTION, "data java class of realization", //
+      TSID_IS_READ_ONLY, AV_TRUE );
+
+  public static final IDataDef OP_EVENT_SENDER_JAVA_CLASS = create( "event.sender.java.class", STRING, //$NON-NLS-1$
+      TSID_NAME, "event sender java класс", //
+      TSID_DESCRIPTION, "java class of realization of event sender", //
+      TSID_IS_READ_ONLY, AV_TRUE );
+
+  public static final IDataDef OP_CONDITION_JAVA_CLASS = create( "condition.java.class", STRING, //$NON-NLS-1$
+      TSID_NAME, "condition java класс", //
+      TSID_DESCRIPTION, "java class of realization of condition", //
+      TSID_IS_READ_ONLY, AV_TRUE );
+
+  public static final IDataDef OP_PARAM_FORMER_JAVA_CLASS = create( "param.former.java.class", STRING, //$NON-NLS-1$
+      TSID_NAME, "param former java класс", //
+      TSID_DESCRIPTION, "java class of realization of param former", //
+      TSID_IS_READ_ONLY, AV_TRUE );
+
+  public static final IDataDef OP_FORMER_EVENT_PARAM = create( "former.event.params", STRING, //$NON-NLS-1$
+      TSID_NAME, "former event params", //
+      TSID_DESCRIPTION, "former event params" );
+
+  public static final IDataDef OP_CONDITION_SWITCH_ON = create( "condition.switch.on", BOOLEAN, //$NON-NLS-1$
+      TSID_NAME, "Передний фронт", //
+      TSID_DESCRIPTION, "Срабатывние события по переднему фронту" );
+
+  public static final IDataDef OP_CONDITION_SWITCH_OFF = create( "condition.switch.off", BOOLEAN, //$NON-NLS-1$
+      TSID_NAME, "Задний фронт", //
+      TSID_DESCRIPTION, "Срабатывние события по заднему фронту" );
+
   /**
    * Registers cfg unit realization types in holder and adds it into context.
    *
@@ -524,10 +556,10 @@ public class OpcUaUtils {
 
     paramDefenitions = new ElemArrayList<>();
 
-    paramDefenitions.add( OP_CMD_JAVA_CLASS );
+    paramDefenitions.add( OP_DATA_JAVA_CLASS );
 
     defaultParams = new OptionSet();
-    OP_CMD_JAVA_CLASS.setValue( defaultParams,
+    OP_DATA_JAVA_CLASS.setValue( defaultParams,
         avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.OneToOneDataTransmitterFactory" ) );
 
     ICfgUnitRealizationType dataOneToOne = new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_ONT_TO_ONE_DATA,
@@ -540,16 +572,76 @@ public class OpcUaUtils {
 
     paramDefenitions = new ElemArrayList<>();
 
-    paramDefenitions.add( OP_CMD_JAVA_CLASS );
+    paramDefenitions.add( OP_EVENT_SENDER_JAVA_CLASS );
+    paramDefenitions.add( OP_CONDITION_JAVA_CLASS );
+    paramDefenitions.add( OP_PARAM_FORMER_JAVA_CLASS );
+    paramDefenitions.add( OP_FORMER_EVENT_PARAM );
 
     defaultParams = new OptionSet();
-    OP_CMD_JAVA_CLASS.setValue( defaultParams,
+    OP_EVENT_SENDER_JAVA_CLASS.setValue( defaultParams,
         avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OpcTagsEventSender" ) );
+    OP_CONDITION_JAVA_CLASS.setValue( defaultParams,
+        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneFloatTagChangedEventCondition" ) );
+    OP_PARAM_FORMER_JAVA_CLASS.setValue( defaultParams,
+        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagToChangedParamFormer" ) );
+    OP_FORMER_EVENT_PARAM.setValue( defaultParams, avStr( "oldVal;newVal" ) );
 
-    ICfgUnitRealizationType opcTagsEventSender = new CfgUnitRealizationType( "opc.tags.event.sender", "Простое событие",
-        ECfgUnitType.EVENT, paramDefenitions, defaultParams );
+    ICfgUnitRealizationType opcTagsEventSender = new CfgUnitRealizationType( "opc.tags.event.sender.float.changed",
+        "Событие изменения float", ECfgUnitType.EVENT, paramDefenitions, defaultParams );
 
     realizationTypeRegister.registerType( opcTagsEventSender );
+
+    // ----------------------------------------------------
+    // Определение второй реализации события
+
+    paramDefenitions = new ElemArrayList<>();
+
+    paramDefenitions.add( OP_EVENT_SENDER_JAVA_CLASS );
+    paramDefenitions.add( OP_CONDITION_JAVA_CLASS );
+    paramDefenitions.add( OP_PARAM_FORMER_JAVA_CLASS );
+    paramDefenitions.add( OP_FORMER_EVENT_PARAM );
+
+    defaultParams = new OptionSet();
+    OP_EVENT_SENDER_JAVA_CLASS.setValue( defaultParams,
+        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OpcTagsEventSender" ) );
+    OP_CONDITION_JAVA_CLASS.setValue( defaultParams,
+        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneIntTagChangedEventCondition" ) );
+    OP_PARAM_FORMER_JAVA_CLASS.setValue( defaultParams,
+        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagToChangedParamFormer" ) );
+    OP_FORMER_EVENT_PARAM.setValue( defaultParams, avStr( "oldVal;newVal" ) );
+
+    ICfgUnitRealizationType opcTagsEventSender2 = new CfgUnitRealizationType( "opc.tags.event.sender.int.changed",
+        "Событие изменения int", ECfgUnitType.EVENT, paramDefenitions, defaultParams );
+
+    realizationTypeRegister.registerType( opcTagsEventSender2 );
+
+    // ----------------------------------------------------
+    // Определение третей реализации события
+
+    paramDefenitions = new ElemArrayList<>();
+
+    paramDefenitions.add( OP_EVENT_SENDER_JAVA_CLASS );
+    paramDefenitions.add( OP_CONDITION_JAVA_CLASS );
+    paramDefenitions.add( OP_PARAM_FORMER_JAVA_CLASS );
+    paramDefenitions.add( OP_FORMER_EVENT_PARAM );
+    paramDefenitions.add( OP_CONDITION_SWITCH_ON );
+    paramDefenitions.add( OP_CONDITION_SWITCH_OFF );
+
+    defaultParams = new OptionSet();
+    OP_EVENT_SENDER_JAVA_CLASS.setValue( defaultParams,
+        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OpcTagsEventSender" ) );
+    OP_CONDITION_JAVA_CLASS.setValue( defaultParams,
+        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagSwitchEventCondition" ) );
+    OP_CONDITION_SWITCH_ON.setValue( defaultParams, avBool( true ) );
+    OP_CONDITION_SWITCH_OFF.setValue( defaultParams, avBool( false ) );
+    OP_PARAM_FORMER_JAVA_CLASS.setValue( defaultParams,
+        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagToOneParamFormer" ) );
+    OP_FORMER_EVENT_PARAM.setValue( defaultParams, avStr( "on" ) );
+
+    ICfgUnitRealizationType opcTagsEventSender3 = new CfgUnitRealizationType( "opc.tags.event.sender.switch",
+        "Событие переключения битового тега", ECfgUnitType.EVENT, paramDefenitions, defaultParams );
+
+    realizationTypeRegister.registerType( opcTagsEventSender3 );
   }
 
   /**

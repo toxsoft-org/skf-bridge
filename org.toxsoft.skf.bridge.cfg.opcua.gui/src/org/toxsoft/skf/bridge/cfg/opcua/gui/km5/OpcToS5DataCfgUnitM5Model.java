@@ -346,6 +346,7 @@ public class OpcToS5DataCfgUnitM5Model
           prepareRealizationsComboEditor( unitType );
           ICfgUnitRealizationType realizationType = (ICfgUnitRealizationType)aValues.get( FID_REALIZATION_TYPE );
           prepareValusEditor( realizationType );
+          ((GwidsForCfgM5Model)GWIDS.itemModel()).setCfgUnitType( unitType );
         }
 
         @Override

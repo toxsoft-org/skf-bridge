@@ -150,6 +150,11 @@ public class OpcToS5DataCfgConverter {
   private static final String IS_HIST = "is.hist";
 
   /**
+   * Имя параметра - идентификатор события.
+   */
+  private static final String EVENT_ID = "event.id";
+
+  /**
    * Имя параметра - идентификатор тега входного данного
    */
   private static final String TAG_ID = "tag.id";
@@ -502,7 +507,7 @@ public class OpcToS5DataCfgConverter {
       OpcToS5DataCfgUnit unit = cfgUnits.get( i );
 
       if( unit.getTypeOfCfgUnit() == ECfgUnitType.EVENT ) {
-        // eventsMassivTree.addElement( createEvent( unit ) );
+        eventsMassivTree.addElement( createEvent( unit ) );
       }
     }
 
@@ -516,8 +521,32 @@ public class OpcToS5DataCfgConverter {
    */
   @SuppressWarnings( "unchecked" )
   private static IAvTree createEvent( OpcToS5DataCfgUnit aUnit ) {
+    IOptionSetEdit pinOpSet1 = new OptionSet();
+
+    IList<Gwid> gwids = aUnit.getDataGwids();
+    Gwid gwid = gwids.first();
+
+    // класс
+    String classId = gwid.classId();
+    String objName = gwid.strid();
+    String evntId = gwid.propId();
+
+    // класс-объект-данное - остаётся как есть
+    pinOpSet1.setStr( CLASS_ID, classId );
+    pinOpSet1.setStr( OBJ_NAME, objName );
+    pinOpSet1.setStr( EVENT_ID, evntId );
+
+    IList<NodeId> nodes = aUnit.getDataNodes();
+    NodeId node = nodes.first();
+
+    pinOpSet1.setStr( TAG_DEVICE_ID, OPC_TAG_DEVICE );
+    pinOpSet1.setStr( TAG_ID, node.toParseableString() );
+
+    IOptionSet opts = aUnit.getRealizationOpts();
+    pinOpSet1.addAll( opts );
+
     IAvTree triggerTree =
-        AvTree.createSingleAvTree( String.format( EVENT_TRIGGER_DEF_FORMAT, "" ), IOptionSet.NULL, IStringMap.EMPTY );
+        AvTree.createSingleAvTree( String.format( EVENT_TRIGGER_DEF_FORMAT, aUnit.id() ), pinOpSet1, IStringMap.EMPTY );
 
     return triggerTree;
   }
