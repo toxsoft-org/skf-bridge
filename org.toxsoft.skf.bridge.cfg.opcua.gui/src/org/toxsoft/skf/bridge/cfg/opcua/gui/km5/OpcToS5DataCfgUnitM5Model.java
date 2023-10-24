@@ -7,7 +7,6 @@ import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IBridgeCfgOpcUaResources.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
-import static org.toxsoft.skide.plugin.exconn.ISkidePluginExconnSharedResources.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
 //import static org.toxsoft.uskat.core.gui.conn.cfg.m5.IConnectionConfigM5Constants.*;
 
@@ -19,10 +18,8 @@ import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.tsgui.bricks.actions.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
-import org.toxsoft.core.tsgui.dialogs.datarec.*;
 import org.toxsoft.core.tsgui.graphics.icons.*;
 import org.toxsoft.core.tsgui.m5.*;
-import org.toxsoft.core.tsgui.m5.gui.*;
 import org.toxsoft.core.tsgui.m5.gui.mpc.impl.*;
 import org.toxsoft.core.tsgui.m5.gui.panels.*;
 import org.toxsoft.core.tsgui.m5.gui.panels.impl.*;
@@ -36,8 +33,6 @@ import org.toxsoft.core.tsgui.valed.controls.basic.*;
 import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.*;
-import org.toxsoft.core.tslib.bricks.apprefs.*;
-import org.toxsoft.core.tslib.bricks.apprefs.impl.*;
 import org.toxsoft.core.tslib.bricks.strid.more.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
@@ -48,10 +43,7 @@ import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
-import org.toxsoft.skf.bridge.cfg.opcua.service.impl.*;
 import org.toxsoft.skide.plugin.exconn.service.*;
-import org.toxsoft.uskat.core.connection.*;
-import org.toxsoft.uskat.core.gui.conn.*;
 
 /**
  * M5 model realization for {@link OpcToS5DataCfgUnit} entities.
@@ -481,7 +473,7 @@ public class OpcToS5DataCfgUnitM5Model
                     break;
 
                   case ACTID_GENERATE_FILE:
-                    ((OpcToS5DataCfgUnitM5LifecycleManager)lifecycleManager()).generateFileFromCurrState();
+                    ((OpcToS5DataCfgUnitM5LifecycleManager)lifecycleManager()).generateFileFromCurrState( aContext );
                     break;
 
                   case ACTID_AUTO_LINK:
@@ -630,25 +622,7 @@ public class OpcToS5DataCfgUnitM5Model
   }
 
   public OpcUaClient selectOpcConfigAndOpenConnection( ITsGuiContext aContext ) {
-    TsNullArgumentRtException.checkNull( aContext );
-
-    ISkConnectionSupplier connSup = aContext.get( ISkConnectionSupplier.class );
-    ISkConnection conn = connSup.defConn();
-
-    IM5Domain m5 = conn.scope().get( IM5Domain.class );
-    // занесем параметры из файла в контекст
-    AbstractAppPreferencesStorage apStorage =
-        new AppPreferencesConfigIniStorage( new File( OPC_UA_SERVER_CONN_CFG_STORE_FILE ) );
-    IAppPreferences appPreferences = new AppPreferences( apStorage );
-    OpcUaServerConnCfgService cfgService = new OpcUaServerConnCfgService( appPreferences );
-
-    IM5Model<IOpcUaServerConnCfg> model = m5.getModel( OpcUaServerConnCfgModel.MODEL_ID, IOpcUaServerConnCfg.class );
-
-    IM5LifecycleManager<IOpcUaServerConnCfg> lm = new OpcUaServerConnCfgM5LifecycleManager( model, cfgService );
-
-    TsDialogInfo di = new TsDialogInfo( aContext, DLG_SELECT_CFG_AND_OPEN, DLG_SELECT_CFG_AND_OPEN_D );
-
-    IOpcUaServerConnCfg conConf = M5GuiUtils.askSelectItem( di, model, null, lm.itemsProvider(), lm );
+    IOpcUaServerConnCfg conConf = OpcUaUtils.selectOpcServerConfig( aContext );
     // dima 13.10.23 сохраним в контекст
     aContext.put( OPCUA_OPC_CONNECTION_CFG, conConf );
     if( conConf == null ) {

@@ -4,12 +4,19 @@ import static org.toxsoft.core.tslib.av.EAtomicType.*;
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.impl.DataDef.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
+import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
+import static org.toxsoft.skide.plugin.exconn.ISkidePluginExconnSharedResources.*;
 
+import java.io.*;
+import java.lang.reflect.*;
 import java.nio.file.*;
 import java.util.*;
+import java.util.List;
 import java.util.function.*;
 import java.util.regex.*;
 
+import org.eclipse.jface.dialogs.*;
+import org.eclipse.jface.operation.*;
 import org.eclipse.milo.opcua.sdk.client.*;
 import org.eclipse.milo.opcua.sdk.client.api.config.*;
 import org.eclipse.milo.opcua.sdk.client.api.identity.*;
@@ -20,12 +27,21 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.*;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
 import org.eclipse.milo.opcua.stack.core.types.structured.*;
 import org.eclipse.milo.opcua.stack.core.util.*;
+import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.log4j.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
+import org.toxsoft.core.tsgui.dialogs.*;
+import org.toxsoft.core.tsgui.dialogs.datarec.*;
+import org.toxsoft.core.tsgui.m5.*;
+import org.toxsoft.core.tsgui.m5.gui.*;
+import org.toxsoft.core.tsgui.m5.model.*;
 import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.metainfo.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.OptionSet;
+import org.toxsoft.core.tslib.bricks.apprefs.*;
+import org.toxsoft.core.tslib.bricks.apprefs.impl.*;
+import org.toxsoft.core.tslib.bricks.geometry.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
@@ -38,6 +54,9 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.filegen.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
+import org.toxsoft.skf.bridge.cfg.opcua.service.impl.*;
+import org.toxsoft.uskat.core.connection.*;
+import org.toxsoft.uskat.core.gui.conn.*;
 
 /**
  * Utils of OPC UA server connections.
@@ -555,6 +574,21 @@ public class OpcUaUtils {
     return SECTID_OPC_UA_NODES_PREFIX + ".IP_Address_" + ipAddress + ".UserName_" + aSelConfig.login();
   }
 
+  /**
+   * Determines existance of cach for configuration.
+   *
+   * @param aContext ITsGuiContext - context
+   * @param aSelConfig IOpcUaServerConnCfg - opc ua server cfg
+   * @return boolean - true - cach exists
+   */
+  public static boolean hasCachedOpcUaNodesTreeFor( ITsGuiContext aContext, IOpcUaServerConnCfg aSelConfig ) {
+    ITsWorkroom workroom = aContext.eclipseContext().get( ITsWorkroom.class );
+    TsInternalErrorRtException.checkNull( workroom );
+    IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
+    String sectionName = OpcUaUtils.getCachedTreeSectionName( aSelConfig );
+    return !storage.readColl( sectionName, UaTreeNode.KEEPER ).isEmpty();
+  }
+
   private static IList<UaTreeNode> loadUaTreeNodes( ITsGuiContext aContext, IOpcUaServerConnCfg aConnCfg ) {
     ITsWorkroom workroom = aContext.eclipseContext().get( ITsWorkroom.class );
     TsInternalErrorRtException.checkNull( workroom );
@@ -590,5 +624,66 @@ public class OpcUaUtils {
       }
     }
     return null;
+  }
+
+  /**
+   * Lets one to select opc serve config from the list of availables.
+   *
+   * @param aContext ITsGuiContext - context.
+   * @return IOpcUaServerConnCfg - selected config or null.
+   */
+  public static IOpcUaServerConnCfg selectOpcServerConfig( ITsGuiContext aContext ) {
+    TsNullArgumentRtException.checkNull( aContext );
+
+    ISkConnectionSupplier connSup = aContext.get( ISkConnectionSupplier.class );
+    ISkConnection conn = connSup.defConn();
+
+    IM5Domain m5 = conn.scope().get( IM5Domain.class );
+    // занесем параметры из файла в контекст
+    AbstractAppPreferencesStorage apStorage =
+        new AppPreferencesConfigIniStorage( new File( OPC_UA_SERVER_CONN_CFG_STORE_FILE ) );
+    IAppPreferences appPreferences = new AppPreferences( apStorage );
+    OpcUaServerConnCfgService cfgService = new OpcUaServerConnCfgService( appPreferences );
+
+    IM5Model<IOpcUaServerConnCfg> model = m5.getModel( OpcUaServerConnCfgModel.MODEL_ID, IOpcUaServerConnCfg.class );
+
+    IM5LifecycleManager<IOpcUaServerConnCfg> lm = new OpcUaServerConnCfgM5LifecycleManager( model, cfgService );
+
+    TsDialogInfo di = new TsDialogInfo( aContext, DLG_SELECT_CFG_AND_OPEN, DLG_SELECT_CFG_AND_OPEN_D );
+    // установим нормальный размер диалога
+    di.setMinSize( new TsPoint( -30, -30 ) );
+
+    return M5GuiUtils.askSelectItem( di, model, null, lm.itemsProvider(), lm );
+  }
+
+  /**
+   * Выполняет работы в отдельном потоке при открытом диалоге ожидания.
+   *
+   * @param aContext ITsGuiContext - контекст
+   * @param aDialogName String - имя диалога ожидания.
+   * @param aRunnable IRunnableWithProgress - реализация потока выполнения работы.
+   */
+  public static void runInWaitingDialog( final ITsGuiContext aContext, final String aDialogName,
+      final IRunnableWithProgress aRunnable ) {
+
+    final ProgressMonitorDialog dialog = new ProgressMonitorDialog( aContext.get( Shell.class ) ) {
+
+      @Override
+      protected Control createDialogArea( Composite aParent ) {
+        Control c = super.createDialogArea( aParent );
+        c.getShell().setText( aDialogName );
+        return c;
+      }
+    };
+
+    try {
+      dialog.run( true, true, aRunnable );
+    }
+    catch( InvocationTargetException | InterruptedException e ) {
+      Display.getDefault().asyncExec(
+          () -> TsDialogUtils.error( aContext.get( Shell.class ), e.getCause() != null ? e.getCause() : e ) );
+
+    }
+
   }
 }
