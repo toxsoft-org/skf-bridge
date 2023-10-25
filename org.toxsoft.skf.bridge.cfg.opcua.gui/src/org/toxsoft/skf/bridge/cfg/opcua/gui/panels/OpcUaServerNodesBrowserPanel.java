@@ -75,18 +75,20 @@ import org.toxsoft.uskat.core.impl.dto.*;
 public class OpcUaServerNodesBrowserPanel
     extends TsPanel {
 
-  private static final String           nodeCmdIdBrowseName       = "CmdId";       //$NON-NLS-1$
-  private static final String           nodeCmdArgIntdBrowseName  = "CmdArgInt";   //$NON-NLS-1$
-  private static final String           nodeCmdArgFltBrowseName   = "CmdArgFlt";   //$NON-NLS-1$
-  private static final String           nodeCmdFeedbackBrowseName = "CmdFeedback"; //$NON-NLS-1$
-  private StringMap<IList<IDtoCmdInfo>> clsId2CmdInfoes           = null;
-  private final IOpcUaServerConnCfg     opcUaServerConnCfg;
+  private static final String                           nodeCmdIdBrowseName       = "CmdId";       //$NON-NLS-1$
+  private static final String                           nodeCmdArgIntdBrowseName  = "CmdArgInt";   //$NON-NLS-1$
+  private static final String                           nodeCmdArgFltBrowseName   = "CmdArgFlt";   //$NON-NLS-1$
+  private static final String                           nodeCmdFeedbackBrowseName = "CmdFeedback"; //$NON-NLS-1$
+  private StringMap<IList<IDtoCmdInfo>>                 clsId2CmdInfoes           = null;
+  private StringMap<StringMap<IList<BitIdx2DtoRtData>>> clsId2RtDataInfoes        = null;
+
+  private final IOpcUaServerConnCfg opcUaServerConnCfg;
   /**
    * Аргумент команды: значение.
    * <p>
    * Аргумент имеет тип {@link EAtomicType#FLOATING}.
    */
-  static String                         CMDARGID_VALUE            = "value";       //$NON-NLS-1$
+  static String                     CMDARGID_VALUE = "value"; //$NON-NLS-1$
 
   /**
    * id параметра события: старое значение.
@@ -283,6 +285,7 @@ public class OpcUaServerNodesBrowserPanel
             aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_SHOW_OPC_UA_NODE_2_GWID );
             aActs.add( ITsStdActionDefs.ACDEF_SEPARATOR );
             aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_LOAD_CMD_DESCR );
+            aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_LOAD_BIT_RTDATA_DESCR );
 
             ITsToolbar toolBar = super.doCreateToolbar( aContext, aName, aIconSize, aActs );
 
@@ -302,8 +305,22 @@ public class OpcUaServerNodesBrowserPanel
                 // LoggerUtils.defaultLogger().debug( ret.toString() );
                 checkNode2Gwid( aContext );
               }
+
+              if( aActionId == ACT_ID_LOAD_BIT_RTDATA ) {
+                String bitRtdataFileDescr = getDescrFile( SELECT_FILE_4_IMPORT_BIT_RTDATA );
+                if( bitRtdataFileDescr != null ) {
+                  File file = new File( bitRtdataFileDescr );
+                  try {
+                    clsId2RtDataInfoes = Ods2DtoRtDataInfoParser.parse( file );
+                    TsDialogUtils.info( getShell(), "Loaded bit rtData description from file: %s", bitRtdataFileDescr );
+                  }
+                  catch( IOException ex ) {
+                    LoggerUtils.errorLogger().error( ex );
+                  }
+                }
+              }
               if( aActionId == LOAD_CMD_DESCR_ACT_ID ) {
-                String cmdFileDescr = getCmdDescrFile();
+                String cmdFileDescr = getDescrFile( SELECT_FILE_4_IMPORT_CMD );
                 if( cmdFileDescr != null ) {
                   File file = new File( cmdFileDescr );
                   try {
@@ -317,7 +334,7 @@ public class OpcUaServerNodesBrowserPanel
               }
 
             } );
-            toolBar.setIconSize( EIconSize.IS_16X16 );
+            toolBar.setIconSize( EIconSize.IS_24X24 );
             return toolBar;
           }
 
@@ -376,9 +393,9 @@ public class OpcUaServerNodesBrowserPanel
     return enable;
   }
 
-  private String getCmdDescrFile() {
+  private String getDescrFile( String aTitle ) {
     FileDialog fd = new FileDialog( getShell(), SWT.OPEN );
-    fd.setText( SELECT_FILE_4_IMPORT_CMD );
+    fd.setText( aTitle );// SELECT_FILE_4_IMPORT_CMD
     fd.setFilterPath( DEFAULT_PATH_STR );
     String[] filterExt = { ODS_EXT };
     fd.setFilterExtensions( filterExt );
@@ -586,7 +603,18 @@ public class OpcUaServerNodesBrowserPanel
         cinf.cmdInfos().addAll( cmdInfioes );
       }
     }
-    // createCmdTemplates( cinf, aNodes );
+    // добавим битовые rtData, если они описаны
+    if( clsId2RtDataInfoes != null ) {
+      if( clsId2RtDataInfoes.hasKey( id ) ) {
+        StringMap<IList<BitIdx2DtoRtData>> rtDataInfioesMap = clsId2RtDataInfoes.getByKey( id );
+        for( String key : rtDataInfioesMap.keys() ) {
+          IList<BitIdx2DtoRtData> list = rtDataInfioesMap.getByKey( key );
+          for( BitIdx2DtoRtData dto : list ) {
+            cinf.rtdataInfos().add( dto.dtoRtdataInfo() );
+          }
+        }
+      }
+    }
 
     return cinf;
   }

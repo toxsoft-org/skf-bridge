@@ -106,6 +106,11 @@ public interface IOpcUaServerConnCfgConstants {
   String LOAD_CMD_DESCR_ACT_ID = "load_cmd_descr_act_id"; //$NON-NLS-1$
 
   /**
+   * id действия "загрузить описание битовых данных "
+   */
+  String ACT_ID_LOAD_BIT_RTDATA = "load_bit_rtdata_act_id"; //$NON-NLS-1$
+
+  /**
    * id действия "только на чтение "
    */
   String FILTER_READ_ONLY_ACT_ID = "filter_read_only_act_id"; //$NON-NLS-1$
@@ -136,6 +141,9 @@ public interface IOpcUaServerConnCfgConstants {
 
   TsActionDef ACTDEF_LOAD_CMD_DESCR =
       TsActionDef.ofPush2( LOAD_CMD_DESCR_ACT_ID, STR_N_LOAD_CMD_DESCR, STR_D_LOAD_CMD_DESCR, ICONID_IMPORT );
+
+  TsActionDef ACTDEF_LOAD_BIT_RTDATA_DESCR =
+      TsActionDef.ofPush2( ACT_ID_LOAD_BIT_RTDATA, STR_N_LOAD_BIT_RTDATA, STR_D_LOAD_BIT_RTDATA, ICONID_IMPORT );
 
   TsActionDef ACTDEF_FILTER_READ_ONLY =
       TsActionDef.ofRadio2( FILTER_READ_ONLY_ACT_ID, STR_N_FILTER_READ_ONLY, STR_D_FILTER_READ_ONLY, ICONID_READ_ONLY );
