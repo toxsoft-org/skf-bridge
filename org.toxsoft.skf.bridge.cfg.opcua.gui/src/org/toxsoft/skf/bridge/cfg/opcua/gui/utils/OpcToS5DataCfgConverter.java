@@ -251,7 +251,10 @@ public class OpcToS5DataCfgConverter {
 
     IOptionSetEdit pinOpSet1 = new OptionSet();
     pinOpSet1.setStr( PIN_ID, pinId );
-    pinOpSet1.setStr( JAVA_CLASS, ONE_TO_ONE_DATA_TRANSMITTER_FACTORY_CLASS );
+    // .setStr( JAVA_CLASS, ONE_TO_ONE_DATA_TRANSMITTER_FACTORY_CLASS );
+
+    IOptionSet opts = aUnit.getRealizationOpts();
+    pinOpSet1.addAll( opts );
 
     // синхронный
     boolean isSynch = true; // TODO - завести поле

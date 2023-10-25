@@ -71,10 +71,16 @@ public class OpcUaUtils {
   private static StringMap<IList<UaTreeNode>> section2NodesList = new StringMap<>();
 
   public static final String CFG_UNIT_REALIZATION_TYPE_ONT_TO_ONE_DATA = "ont.to.one.data";
+
+  public static final String CFG_UNIT_REALIZATION_TYPE_ONE_INT_TO_ONE_BIT_DATA = "int.to.byte.data";
+
+  private static final String ONE_INT_TO_ONE_BIT_DATA_TRANSMITTER_FACTORY_CLASS =
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.SingleIntToSingleBoolDataTransmitterFactory";
+
   /**
    * id secton for cached OPC UA nodes
    */
-  public static final String SECTID_OPC_UA_NODES_PREFIX                = "cached.opc.ua.nodes"; //$NON-NLS-1$
+  public static final String SECTID_OPC_UA_NODES_PREFIX = "cached.opc.ua.nodes"; //$NON-NLS-1$
 
   /**
    * id secton for store links UaNode->Gwid
@@ -464,6 +470,13 @@ public class OpcUaUtils {
       TSID_DESCRIPTION, "data java class of realization", //
       TSID_IS_READ_ONLY, AV_TRUE );
 
+  /**
+   * Имя параметра - номер бита (начиная от младшего с нулевого)
+   */
+  public static final IDataDef OP_DATA_BIT_INDEX = create( "bit.index", INTEGER, //$NON-NLS-1$
+      TSID_NAME, "номер бита", //
+      TSID_DESCRIPTION, "номер бита (начиная от младшего с нулевого)" );
+
   public static final IDataDef OP_EVENT_SENDER_JAVA_CLASS = create( "event.sender.java.class", STRING, //$NON-NLS-1$
       TSID_NAME, "event sender java класс", //
       TSID_DESCRIPTION, "java class of realization of event sender", //
@@ -568,6 +581,24 @@ public class OpcUaUtils {
         "Один к одному", ECfgUnitType.DATA, paramDefenitions, defaultParams );
 
     realizationTypeRegister.registerType( dataOneToOne );
+
+    // ----------------------------------------------------
+    // Определение второй реализации данных (битовое данное из интового тега)
+
+    paramDefenitions = new ElemArrayList<>();
+
+    paramDefenitions.add( OP_DATA_JAVA_CLASS );
+    paramDefenitions.add( OP_DATA_BIT_INDEX );
+
+    defaultParams = new OptionSet();
+    OP_DATA_JAVA_CLASS.setValue( defaultParams, avStr( ONE_INT_TO_ONE_BIT_DATA_TRANSMITTER_FACTORY_CLASS ) );
+    OP_DATA_BIT_INDEX.setValue( defaultParams, avInt( 0 ) );
+
+    ICfgUnitRealizationType dataIntToOne =
+        new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_ONE_INT_TO_ONE_BIT_DATA,
+            "Битовое данное из интового тега", ECfgUnitType.DATA, paramDefenitions, defaultParams );
+
+    realizationTypeRegister.registerType( dataIntToOne );
 
     // ----------------------------------------------------
     // Определение первой реализации события
