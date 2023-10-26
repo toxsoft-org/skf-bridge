@@ -144,7 +144,7 @@ public class Ods2DtoRtDataInfoParser {
 
     if( !empty ) {
       String rtdId = cell.getTextValue();
-      // проверяем что это команда
+      // проверяем что это rtData
       if( !rtdId.startsWith( RTD_PREFIX ) ) {
         return null;
       }

@@ -531,17 +531,89 @@ public class OpcUaServerNodesBrowserPanel
       TsDialogInfo cdi = new TsDialogInfo( tsContext(), null, DLG_C_NEW_CLASS, DLG_T_NEW_CLASS, 0 );
       // установим нормальный размер диалога
       cdi.setMinSize( new TsPoint( -30, -60 ) );
-      // создаем пучок из модели
-      IM5Bunch<IDtoClassInfo> bunchOfFieldVals = modelDto.valuesOf( dtoClassInfo );
-      // просим прользователя верифицировать/редактировать описание класса и нажать Ok
-      dtoClassInfo =
-          M5GuiUtils.askCreate( tsContext(), modelDto, bunchOfFieldVals, cdi, modelDto.getLifecycleManager( conn ) );
-
-      if( dtoClassInfo != null ) {
-        // подтверждаем успешное создание класса
-        TsDialogUtils.info( getShell(), STR_SUCCESS_CLASS_UPDATED, dtoClassInfo.id() );
+      // проверяем наличие класса
+      ISkClassInfo existClsInfo = conn.coreApi().sysdescr().getClassInfo( dtoClassInfo.id() );
+      // если он уже существует, то обновляем все существующие поля
+      if( existClsInfo != null ) {
+        IDtoClassInfo currDtoClassInfo = DtoClassInfo.createFromSk( existClsInfo, false );
+        dtoClassInfo = updateDtoClassInfo( dtoClassInfo, currDtoClassInfo );
+        // просим редактировать описание класса и нажать Ok
+        dtoClassInfo =
+            M5GuiUtils.askEdit( tsContext(), modelDto, dtoClassInfo, cdi, modelDto.getLifecycleManager( conn ) );
+        if( dtoClassInfo != null ) {
+          // запросим подтверждение на удаление
+          if( TsDialogUtils.askYesNoCancel( getShell(), STR_WARN_RECREATE_OBJS,
+              dtoClassInfo.id() ) == ETsDialogCode.YES ) {
+            ISkidList skids2Remove = conn.coreApi().objService().listSkids( dtoClassInfo.id(), false );
+            conn.coreApi().objService().removeObjects( skids2Remove );
+          }
+        }
+      }
+      else {
+        // создаем пучок из модели
+        IM5Bunch<IDtoClassInfo> bunchOfFieldVals = modelDto.valuesOf( dtoClassInfo );
+        // просим прользователя верифицировать/редактировать описание класса и нажать Ok
+        dtoClassInfo =
+            M5GuiUtils.askCreate( tsContext(), modelDto, bunchOfFieldVals, cdi, modelDto.getLifecycleManager( conn ) );
+        if( dtoClassInfo != null ) {
+          // подтверждаем успешное создание класса
+          TsDialogUtils.info( getShell(), STR_SUCCESS_CLASS_UPDATED, dtoClassInfo.id() );
+        }
       }
     }
+  }
+
+  private static DtoClassInfo updateDtoClassInfo( IDtoClassInfo aDtoClassInfo, IDtoClassInfo aCurrDtoClassInfo ) {
+    DtoClassInfo dtoClass;
+    if( aDtoClassInfo.id().equals( IGwHardConstants.GW_ROOT_CLASS_ID ) ) {
+      dtoClass = new DtoClassInfo( aDtoClassInfo.params() );
+    }
+    else {
+      dtoClass = new DtoClassInfo( aDtoClassInfo.id(), aDtoClassInfo.parentId(), aDtoClassInfo.params() );
+    }
+    // копируем свойства исходного
+    dtoClass.attrInfos().setAll( aDtoClassInfo.attrInfos() );
+    dtoClass.rtdataInfos().setAll( aDtoClassInfo.rtdataInfos() );
+    dtoClass.cmdInfos().setAll( aDtoClassInfo.cmdInfos() );
+    dtoClass.eventInfos().setAll( aDtoClassInfo.eventInfos() );
+
+    // обновляем атрибуты
+    for( IDtoAttrInfo attrInfo : aDtoClassInfo.attrInfos() ) {
+      if( aCurrDtoClassInfo.attrInfos().hasKey( attrInfo.id() ) ) {
+        // если такой атрибут есть в существующем классе, то заменяем его в результирующем
+        IDtoAttrInfo removeAttr = aDtoClassInfo.attrInfos().getByKey( attrInfo.id() );
+        dtoClass.attrInfos().remove( removeAttr );
+        dtoClass.attrInfos().add( aCurrDtoClassInfo.attrInfos().getByKey( attrInfo.id() ) );
+      }
+    }
+    // обновляем rtData
+    for( IDtoRtdataInfo rtDataInfo : aDtoClassInfo.rtdataInfos() ) {
+      if( aCurrDtoClassInfo.rtdataInfos().hasKey( rtDataInfo.id() ) ) {
+        // если такой rtData есть в существующем классе, то заменяем его в результирующем
+        IDtoRtdataInfo removeRtData = aDtoClassInfo.rtdataInfos().getByKey( rtDataInfo.id() );
+        dtoClass.rtdataInfos().remove( removeRtData );
+        dtoClass.rtdataInfos().add( aCurrDtoClassInfo.rtdataInfos().getByKey( rtDataInfo.id() ) );
+      }
+    }
+    // обновляем cmds
+    for( IDtoCmdInfo cmdInfo : aDtoClassInfo.cmdInfos() ) {
+      if( aCurrDtoClassInfo.cmdInfos().hasKey( cmdInfo.id() ) ) {
+        // если такой cmd есть в существующем классе, то заменяем его в результирующем
+        IDtoCmdInfo removeCmd = aDtoClassInfo.cmdInfos().getByKey( cmdInfo.id() );
+        dtoClass.cmdInfos().remove( removeCmd );
+        dtoClass.cmdInfos().add( aCurrDtoClassInfo.cmdInfos().getByKey( cmdInfo.id() ) );
+      }
+    }
+    // обновляем events
+    for( IDtoEventInfo evtInfo : aDtoClassInfo.eventInfos() ) {
+      if( aCurrDtoClassInfo.eventInfos().hasKey( evtInfo.id() ) ) {
+        // если такой event есть в существующем классе, то заменяем его в результирующем
+        IDtoEventInfo removeEvent = aDtoClassInfo.eventInfos().getByKey( evtInfo.id() );
+        dtoClass.eventInfos().remove( removeEvent );
+        dtoClass.eventInfos().add( aCurrDtoClassInfo.eventInfos().getByKey( evtInfo.id() ) );
+      }
+    }
+    return dtoClass;
   }
 
   /**

@@ -32,6 +32,7 @@ interface ISkResources {
   String STR_N_ARG_VALUE                 = "значение";
   String STR_D_ARG_VALUE                 = "значение аргумента команды";
   String STR_SUCCESS_CLASS_UPDATED       = "Операция завершена успешно, создан/обновлен class: %s";
+  String STR_WARN_RECREATE_OBJS          = "Внимание class: %s обновлен, желательно удалить его объекты.\n Удалить?";
   String STR_ENTER_NAME                  = "<введите название>";
   String STR_N_OPC_UA_MARKER             = "маркер OPC UA";
   String STR_D_OPC_UA_MARKER             = "маркер класса сгенерированного из OPC UA";
