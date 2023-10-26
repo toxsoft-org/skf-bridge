@@ -5,7 +5,7 @@ package org.toxsoft.skf.bridge.cfg.opcua.gui.panels;
  *
  * @author dima
  */
-interface ISkResources {
+public interface ISkResources {
 
   /**
    * {@link OpcUaServerNodesBrowserPanel}
