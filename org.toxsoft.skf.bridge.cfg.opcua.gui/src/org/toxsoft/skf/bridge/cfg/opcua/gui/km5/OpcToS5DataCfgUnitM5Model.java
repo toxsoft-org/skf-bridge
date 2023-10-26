@@ -7,6 +7,7 @@ import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IBridgeCfgOpcUaResources.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
+import static org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
 //import static org.toxsoft.uskat.core.gui.conn.cfg.m5.IConnectionConfigM5Constants.*;
 
@@ -18,6 +19,7 @@ import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.tsgui.bricks.actions.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
+import org.toxsoft.core.tsgui.dialogs.*;
 import org.toxsoft.core.tsgui.graphics.icons.*;
 import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tsgui.m5.gui.mpc.impl.*;
@@ -52,6 +54,9 @@ import org.toxsoft.skide.plugin.exconn.service.*;
  */
 public class OpcToS5DataCfgUnitM5Model
     extends M5Model<OpcToS5DataCfgUnit> {
+
+  private String ODS_EXT          = "*.ods"; //$NON-NLS-1$
+  private String DEFAULT_PATH_STR = "";
 
   public static final String OPCUA_BRIDGE_CFG_S5_CONNECTION = "opcua.bridge.cfg.s5.connection";
 
@@ -481,12 +486,27 @@ public class OpcToS5DataCfgUnitM5Model
 
                     IStringMap<IStringMap<Integer>> cmdOpcCodes = new StringMap<>();
 
-                    String cmdFileDescr = getCmdDescrFile();
+                    String cmdFileDescr = getDescrFile( SELECT_FILE_4_IMPORT_CMD );
                     if( cmdFileDescr != null ) {
                       File file = new File( cmdFileDescr );
                       try {
                         cmdOpcCodes = Ods2DtoCmdInfoParser.parseOpcCmdCodes( file );
-                        // TsDialogUtils.info( getShell(), "Loaded command description from file: %s", cmdFileDescr );
+                        TsDialogUtils.info( getShell(), "Loaded command description from file: %s", cmdFileDescr );
+                      }
+                      catch( IOException ex ) {
+                        LoggerUtils.errorLogger().error( ex );
+                      }
+                    }
+
+                    StringMap<StringMap<IList<BitIdx2DtoRtData>>> clsId2RtDataInfoes = new StringMap<>();
+
+                    String bitRtdataFileDescr = getDescrFile( SELECT_FILE_4_IMPORT_BIT_RTDATA );
+                    if( bitRtdataFileDescr != null ) {
+                      File file = new File( bitRtdataFileDescr );
+                      try {
+                        clsId2RtDataInfoes = Ods2DtoRtDataInfoParser.parse( file );
+                        TsDialogUtils.info( getShell(), "Loaded bit rtData description from file: %s",
+                            bitRtdataFileDescr );
                       }
                       catch( IOException ex ) {
                         LoggerUtils.errorLogger().error( ex );
@@ -556,34 +576,60 @@ public class OpcToS5DataCfgUnitM5Model
                     IList<UaNode2RtdGwid> nodes2Gwids = OpcUaUtils.loadNodes2Gwids( aContext );
                     for( UaNode2RtdGwid dataNode : nodes2Gwids ) {
 
-                      IList<Gwid> gwids = new ElemArrayList<>( dataNode.gwid() );
+                      // битовый индекс для данного
+                      // Integer bitIndex = OpcUaUtils.getBitIndexForGwid( dataNode.gwid(), clsId2RtDataInfoes );
 
-                      IListEdit<NodeId> nodes = new ElemArrayList<>( dataNode.getNodeId() );
+                      IList<BitIdx2DtoRtData> indexes = IList.EMPTY;
 
-                      String strid = "opctos5.bridge.cfg.data.unit.id" + System.currentTimeMillis() + "."
-                          + dataNode.gwid().strid();// OpcToS5DataCfgUnitM5Model.STRID.getFieldValue(
-                      ECfgUnitType type = ECfgUnitType.DATA;
+                      if( clsId2RtDataInfoes.hasKey( dataNode.gwid().classId() ) ) {
+                        StringMap<IList<BitIdx2DtoRtData>> classIndexes =
+                            clsId2RtDataInfoes.getByKey( dataNode.gwid().classId() );
 
-                      CfgUnitRealizationTypeRegister typeReg2 =
-                          m5().tsContext().get( CfgUnitRealizationTypeRegister.class );
+                        if( classIndexes.hasKey( dataNode.gwid().propId() ) ) {
+                          indexes = classIndexes.getByKey( dataNode.gwid().propId() );
+                        }
+                      }
 
-                      ICfgUnitRealizationType realType = typeReg2.getTypeOfRealizationById( type,
-                          OpcUaUtils.CFG_UNIT_REALIZATION_TYPE_ONT_TO_ONE_DATA );
-                      OptionSet realization = new OptionSet();
-                      OpcUaUtils.OP_CMD_JAVA_CLASS.setValue( realization,
-                          avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.OneToOneDataTransmitterFactory" ) );
+                      for( int i = 0; i < indexes.size() + 1; i++ ) {
+                        Integer bitIndex =
+                            (i == indexes.size()) ? null : Integer.valueOf( indexes.get( i ).bitIndex() );
 
-                      String name = "generated for " + dataNode.gwid().asString();
+                        Gwid gwid = (i == indexes.size()) ? dataNode.gwid()
+                            : Gwid.createRtdata( dataNode.gwid().classId(), dataNode.gwid().strid(),
+                                indexes.get( i ).dtoRtdataInfo().id() );
 
-                      OpcToS5DataCfgUnit result = new OpcToS5DataCfgUnit( strid, name );
-                      result.setDataNodes( nodes );
-                      result.setDataGwids( gwids );
-                      result.setTypeOfCfgUnit( type );
-                      result.setRelizationTypeId( realType.id() );
-                      result.setRealizationOpts( realization );
+                        IList<Gwid> gwids = new ElemArrayList<>( gwid );
 
-                      ((OpcToS5DataCfgUnitM5LifecycleManager)lifecycleManager()).addCfgUnit( result );
-                      // master().addDataUnit( result );
+                        IListEdit<NodeId> nodes = new ElemArrayList<>( dataNode.getNodeId() );
+
+                        String strid = "opctos5.bridge.cfg.data.unit.id" + System.currentTimeMillis() + "."
+                            + gwid.strid() + "." + gwid.propId();// OpcToS5DataCfgUnitM5Model.STRID.getFieldValue(
+                        ECfgUnitType type = ECfgUnitType.DATA;
+
+                        CfgUnitRealizationTypeRegister typeReg2 =
+                            m5().tsContext().get( CfgUnitRealizationTypeRegister.class );
+
+                        ICfgUnitRealizationType realType = typeReg2.getTypeOfRealizationById( type,
+                            bitIndex == null ? OpcUaUtils.CFG_UNIT_REALIZATION_TYPE_ONT_TO_ONE_DATA
+                                : OpcUaUtils.CFG_UNIT_REALIZATION_TYPE_ONE_INT_TO_ONE_BIT_DATA );
+
+                        OptionSet realization = new OptionSet( realType.getDefaultValues() );
+                        if( bitIndex != null ) {
+                          OpcUaUtils.OP_DATA_BIT_INDEX.setValue( realization, avInt( bitIndex.intValue() ) );
+                        }
+
+                        String name = "generated for " + gwid.asString();
+
+                        OpcToS5DataCfgUnit result = new OpcToS5DataCfgUnit( strid, name );
+                        result.setDataNodes( nodes );
+                        result.setDataGwids( gwids );
+                        result.setTypeOfCfgUnit( type );
+                        result.setRelizationTypeId( realType.id() );
+                        result.setRealizationOpts( realization );
+
+                        ((OpcToS5DataCfgUnitM5LifecycleManager)lifecycleManager()).addCfgUnit( result );
+                        // master().addDataUnit( result );
+                      }
                     }
                     doFillTree();
                     break;
@@ -642,13 +688,9 @@ public class OpcToS5DataCfgUnitM5Model
 
   }
 
-  String         SELECT_FILE_4_IMPORT_CMD = "Выберите файл с описанием команд";
-  private String ODS_EXT                  = "*.ods";                           //$NON-NLS-1$
-  private String DEFAULT_PATH_STR         = "";
-
-  private String getCmdDescrFile() {
+  private String getDescrFile( String aTitle ) {
     FileDialog fd = new FileDialog( getShell(), SWT.OPEN );
-    fd.setText( SELECT_FILE_4_IMPORT_CMD );
+    fd.setText( aTitle );// SELECT_FILE_4_IMPORT_CMD
     fd.setFilterPath( DEFAULT_PATH_STR );
     String[] filterExt = { ODS_EXT };
     fd.setFilterExtensions( filterExt );

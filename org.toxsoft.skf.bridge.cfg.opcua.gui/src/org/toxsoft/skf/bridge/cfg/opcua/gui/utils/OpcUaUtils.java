@@ -46,6 +46,7 @@ import org.toxsoft.core.tslib.bricks.apprefs.impl.*;
 import org.toxsoft.core.tslib.bricks.geometry.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
+import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.utils.errors.*;
@@ -813,4 +814,37 @@ public class OpcUaUtils {
     }
 
   }
+
+  /**
+   * Возвращает битовый индекс в интовом теге, с помощью которого следует формировать булевое данное, заданное в gwid.
+   *
+   * @param aGwid - булевое данное, для которого идёёт поиск индекса.
+   * @param aClsId2RtDataInfoes - карта classId-wordId-boolDataId-index
+   * @return Integer - битовый индекс или null;
+   */
+  public static Integer getBitIndexForGwid( Gwid aGwid,
+      IStringMap<StringMap<IList<BitIdx2DtoRtData>>> aClsId2RtDataInfoes ) {
+    if( !aClsId2RtDataInfoes.hasKey( aGwid.classId() ) ) {
+      return null;
+    }
+
+    StringMap<IList<BitIdx2DtoRtData>> classIndexes = aClsId2RtDataInfoes.getByKey( aGwid.classId() );
+
+    // перебор всех наборов для данного класса
+
+    IStringList keys = classIndexes.keys();
+
+    for( String key : keys ) {
+      IList<BitIdx2DtoRtData> indexes = classIndexes.getByKey( key );
+
+      for( BitIdx2DtoRtData indexData : indexes ) {
+        if( indexData.dtoRtdataInfo().id().equals( aGwid.propId() ) ) {
+          return Integer.valueOf( indexData.bitIndex() );
+        }
+      }
+    }
+
+    return null;
+  }
+
 }
