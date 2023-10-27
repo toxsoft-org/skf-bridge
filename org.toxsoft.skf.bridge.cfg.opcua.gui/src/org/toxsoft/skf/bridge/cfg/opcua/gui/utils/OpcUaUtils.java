@@ -84,9 +84,14 @@ public class OpcUaUtils {
   public static final String SECTID_OPC_UA_NODES_PREFIX = "cached.opc.ua.nodes"; //$NON-NLS-1$
 
   /**
-   * id secton for store links UaNode->Gwid
+   * id secton for store links UaNode->RtdGwid
    */
   public static final String SECTID_OPC_UA_NODES_2_RTD_GWIDS = "opc.ua.nodes2rtd.gwids"; //$NON-NLS-1$
+
+  /**
+   * id secton for store links UaNode->EvtGwid
+   */
+  public static final String SECTID_OPC_UA_NODES_2_EVT_GWIDS = "opc.ua.nodes2evt.gwids"; //$NON-NLS-1$
 
   /**
    * id secton for store links CmdGwid->UaNodes
@@ -282,28 +287,30 @@ public class OpcUaUtils {
   }
 
   /**
-   * Update list of links UaNode->Gwid {@link UaNode2RtdGwid} to store in inner storage
+   * Update list of links UaNode->RtdGwid {@link UaNode2Gwid} to store in inner storage
    *
    * @param aContext app context
    * @param aNodes2Gwids list of links UaNode->Gwid
+   * @param aSectId section id to store data
    */
-  public static void updateNodes2GwidsInStore( ITsGuiContext aContext, IList<UaNode2RtdGwid> aNodes2Gwids ) {
+  public static void updateNodes2GwidsInStore( ITsGuiContext aContext, IList<UaNode2Gwid> aNodes2Gwids,
+      String aSectId ) {
     ITsWorkroom workroom = aContext.eclipseContext().get( ITsWorkroom.class );
     TsInternalErrorRtException.checkNull( workroom );
-    IList<UaNode2RtdGwid> oldList = loadNodes2Gwids( aContext );
-    IListEdit<UaNode2RtdGwid> newList = new ElemArrayList<>();
-    for( UaNode2RtdGwid oldItem : oldList ) {
+    IList<UaNode2Gwid> oldList = loadNodes2Gwids( aContext, aSectId );
+    IListEdit<UaNode2Gwid> newList = new ElemArrayList<>();
+    for( UaNode2Gwid oldItem : oldList ) {
       if( !containsNodeIn( aNodes2Gwids, oldItem ) ) {
         newList.add( oldItem );
       }
     }
     newList.addAll( aNodes2Gwids );
     IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
-    storage.writeColl( SECTID_OPC_UA_NODES_2_RTD_GWIDS, newList, UaNode2RtdGwid.KEEPER );
+    storage.writeColl( aSectId, newList, UaNode2Gwid.KEEPER );
   }
 
-  private static boolean containsNodeIn( IList<UaNode2RtdGwid> aNodes2Gwids, UaNode2RtdGwid aOldItem ) {
-    for( UaNode2RtdGwid node : aNodes2Gwids ) {
+  private static boolean containsNodeIn( IList<UaNode2Gwid> aNodes2Gwids, UaNode2Gwid aOldItem ) {
+    for( UaNode2Gwid node : aNodes2Gwids ) {
       if( node.getNodeId().equals( aOldItem.getNodeId() ) ) {
         return true;
       }
@@ -312,28 +319,31 @@ public class OpcUaUtils {
   }
 
   /**
-   * Store in inner storage list of links UaNode->Gwid
-   *
    * @param aContext app context
-   * @param aNodes2Gwids list of links UaNode->Gwid
+   * @return list of links {@link UaNode2Gwid } UaNode->Gwid
    */
-  private static void storeNodes2Gwids( ITsGuiContext aContext, IList<UaNode2RtdGwid> aNodes2Gwids ) {
-    ITsWorkroom workroom = aContext.eclipseContext().get( ITsWorkroom.class );
-    TsInternalErrorRtException.checkNull( workroom );
-    IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
-    storage.writeColl( SECTID_OPC_UA_NODES_2_RTD_GWIDS, aNodes2Gwids, UaNode2RtdGwid.KEEPER );
+  public static IList<UaNode2Gwid> loadNodes2RtdGwids( ITsGuiContext aContext ) {
+    return loadNodes2Gwids( aContext, SECTID_OPC_UA_NODES_2_RTD_GWIDS );
   }
 
   /**
    * @param aContext app context
-   * @return list of links {@link UaNode2RtdGwid } UaNode->Gwid
+   * @return list of links {@link UaNode2Gwid } UaNode->Gwid
    */
-  public static IList<UaNode2RtdGwid> loadNodes2Gwids( ITsGuiContext aContext ) {
+  public static IList<UaNode2Gwid> loadNodes2EvtGwids( ITsGuiContext aContext ) {
+    return loadNodes2Gwids( aContext, SECTID_OPC_UA_NODES_2_EVT_GWIDS );
+  }
+
+  /**
+   * @param aContext app context
+   * @param aSectId id of section where data stored
+   * @return list of links {@link UaNode2Gwid } UaNode->Gwid
+   */
+  static IList<UaNode2Gwid> loadNodes2Gwids( ITsGuiContext aContext, String aSectId ) {
     ITsWorkroom workroom = aContext.eclipseContext().get( ITsWorkroom.class );
     TsInternalErrorRtException.checkNull( workroom );
     IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
-    IList<UaNode2RtdGwid> retVal =
-        new ElemArrayList<>( storage.readColl( SECTID_OPC_UA_NODES_2_RTD_GWIDS, UaNode2RtdGwid.KEEPER ) );
+    IList<UaNode2Gwid> retVal = new ElemArrayList<>( storage.readColl( aSectId, UaNode2Gwid.KEEPER ) );
     return retVal;
   }
 
@@ -348,8 +358,8 @@ public class OpcUaUtils {
     Gwid retVal = null;
     if( nodeId2GwidMap.isEmpty() ) {
       // пустая карта кеша, загружаем
-      IList<UaNode2RtdGwid> nodes2Gwids = loadNodes2Gwids( aContext );
-      for( UaNode2RtdGwid node2Gwid : nodes2Gwids ) {
+      IList<UaNode2Gwid> nodes2Gwids = loadNodes2Gwids( aContext, SECTID_OPC_UA_NODES_2_RTD_GWIDS );
+      for( UaNode2Gwid node2Gwid : nodes2Gwids ) {
         String key = node2Gwid.getNodeId().toParseableString();
         nodeId2GwidMap.put( key, node2Gwid.gwid() );
       }
@@ -372,8 +382,8 @@ public class OpcUaUtils {
     NodeId retVal = null;
     if( gwid2NodeIdMap.isEmpty() ) {
       // пустая карта кеша, загружаем
-      IList<UaNode2RtdGwid> nodes2Gwids = loadNodes2Gwids( aContext );
-      for( UaNode2RtdGwid node2Gwid : nodes2Gwids ) {
+      IList<UaNode2Gwid> nodes2Gwids = loadNodes2Gwids( aContext, SECTID_OPC_UA_NODES_2_RTD_GWIDS );
+      for( UaNode2Gwid node2Gwid : nodes2Gwids ) {
         String key = node2Gwid.gwid().asString();
         gwid2NodeIdMap.put( key, node2Gwid.getNodeId() );
       }

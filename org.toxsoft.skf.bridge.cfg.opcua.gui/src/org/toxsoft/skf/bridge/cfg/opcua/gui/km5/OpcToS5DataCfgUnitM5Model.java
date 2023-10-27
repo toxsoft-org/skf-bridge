@@ -573,8 +573,8 @@ public class OpcToS5DataCfgUnitM5Model
                       // master().addDataUnit( result );
                     }
                     // Data
-                    IList<UaNode2RtdGwid> nodes2Gwids = OpcUaUtils.loadNodes2Gwids( aContext );
-                    for( UaNode2RtdGwid dataNode : nodes2Gwids ) {
+                    IList<UaNode2Gwid> nodes2Gwids = OpcUaUtils.loadNodes2RtdGwids( aContext );
+                    for( UaNode2Gwid dataNode : nodes2Gwids ) {
 
                       // битовый индекс для данного
                       // Integer bitIndex = OpcUaUtils.getBitIndexForGwid( dataNode.gwid(), clsId2RtDataInfoes );

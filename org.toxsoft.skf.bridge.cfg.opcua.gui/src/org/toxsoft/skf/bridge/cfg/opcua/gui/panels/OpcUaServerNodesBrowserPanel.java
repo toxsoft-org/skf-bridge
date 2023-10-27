@@ -879,50 +879,76 @@ public class OpcUaServerNodesBrowserPanel
         TsDialogInfo di = new TsDialogInfo( aContext, getShell(), DLG_C_NEW_OBJS, DLG_T_NEW_OBJS, 0 );
         di.setMinSizeShellRelative( 10, 50 );
         if( M5GuiUtils.showCollPanel( di, skObjsPanel ) != null ) {
-          StringBuilder sb = new StringBuilder();
-          // создаем выбранные объекты
-          for( IDtoObject obj : localLM.itemsProvider().listItems() ) {
-            conn.coreApi().objService().defineObject( obj );
-            sb.append( "\n" + obj.skid() + " - " + obj.nmName() ); //$NON-NLS-1$ //$NON-NLS-2$
-          }
-          // подтверждаем успешное создание объектов
-          TsDialogUtils.info( getShell(), STR_SUCCESS_OBJS_UPDATED, sb.toString() );
-          // for debug пробуем автоматическую привязку NodeId -> Gwid
-          // идем по списку объектов
-          IListEdit<UaNode2RtdGwid> node2GwidList = new ElemArrayList<>();
-          IListEdit<CmdGwid2UaNodes> cmdGwid2UaNodesList = new ElemArrayList<>();
-          for( IDtoObject obj : localLM.itemsProvider().listItems() ) {
-            // находим родительский UaNode
-            UaTreeNode itsNode = itemProvider.nodeById( obj.id() );
-            // привязываем команды
-            for( IDtoCmdInfo cmdInfo : selectedClassInfo.cmds().list() ) {
-              CmdGwid2UaNodes cmdGwid2UaNodes = findCmdNodes( obj, cmdInfo, itsNode );
-              cmdGwid2UaNodesList.add( cmdGwid2UaNodes );
-            }
-            // идем по списку его rtdProperties
-            for( IDtoRtdataInfo rtdInfo : selectedClassInfo.rtdata().list() ) {
-              // находим свой UaNode
-              UaTreeNode uaNode = findVarNode( rtdInfo, itsNode.getChildren() );
-              Gwid gwid = Gwid.createRtdata( obj.classId(), obj.id(), rtdInfo.id() );
-              if( uaNode != null ) {
-                LoggerUtils.defaultLogger().debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
-                    gwid.asString() );
-                String nodeDescr = itsNode.getBrowseName() + "::" + uaNode.getBrowseName(); //$NON-NLS-1$
-                UaNode2RtdGwid node2Gwid = new UaNode2RtdGwid( uaNode.getNodeId(), nodeDescr, gwid );
-                node2GwidList.add( node2Gwid );
-              }
-              else {
-                LoggerUtils.errorLogger().error( "Can't match: ? -> %s", gwid.asString() ); //$NON-NLS-1$
-
-              }
-            }
-          }
-          // заливаем в хранилище
-          OpcUaUtils.updateNodes2GwidsInStore( aContext, node2GwidList );
-          OpcUaUtils.updateCmdGwid2NodesInStore( aContext, cmdGwid2UaNodesList );
+          createSelObjs( localLM );
+          // пробуем автоматическую привязку NodeId -> Gwid
+          generateNode2GwidLinks( aContext, selectedClassInfo, itemProvider, localLM );
         }
       }
     }
+  }
+
+  private static void generateNode2GwidLinks( ITsGuiContext aContext, ISkClassInfo aClassInfo,
+      OpcUANode2SkObjectItemsProvider aItemProvider, IM5LifecycleManager<IDtoObject> aLocalLM ) {
+    IListEdit<UaNode2Gwid> node2RtdGwidList = new ElemArrayList<>();
+    IListEdit<UaNode2Gwid> node2EvtGwidList = new ElemArrayList<>();
+    IListEdit<CmdGwid2UaNodes> cmdGwid2UaNodesList = new ElemArrayList<>();
+    // идем по списку объектов
+    for( IDtoObject obj : aLocalLM.itemsProvider().listItems() ) {
+      // находим родительский UaNode
+      UaTreeNode itsNode = aItemProvider.nodeById( obj.id() );
+      // привязываем команды
+      for( IDtoCmdInfo cmdInfo : aClassInfo.cmds().list() ) {
+        CmdGwid2UaNodes cmdGwid2UaNodes = findCmdNodes( obj, cmdInfo, itsNode );
+        cmdGwid2UaNodesList.add( cmdGwid2UaNodes );
+      }
+      // идем по списку его rtdProperties
+      for( IDtoRtdataInfo rtdInfo : aClassInfo.rtdata().list() ) {
+        // находим свой UaNode
+        UaTreeNode uaNode = findVarNode( rtdInfo, itsNode.getChildren() );
+        Gwid gwid = Gwid.createRtdata( obj.classId(), obj.id(), rtdInfo.id() );
+        if( uaNode != null ) {
+          LoggerUtils.defaultLogger().debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
+              gwid.asString() );
+          String nodeDescr = itsNode.getBrowseName() + "::" + uaNode.getBrowseName(); //$NON-NLS-1$
+          UaNode2Gwid node2Gwid = new UaNode2Gwid( uaNode.getNodeId(), nodeDescr, gwid );
+          node2RtdGwidList.add( node2Gwid );
+        }
+        else {
+          LoggerUtils.errorLogger().error( "Can't match: ? -> %s", gwid.asString() ); //$NON-NLS-1$
+        }
+      }
+      // идем по списку его events
+      for( IDtoEventInfo evtInfo : aClassInfo.events().list() ) {
+        // находим свой UaNode
+        UaTreeNode uaNode = findVarNode( evtInfo, itsNode.getChildren() );
+        Gwid gwid = Gwid.createEvent( obj.classId(), obj.id(), evtInfo.id() );
+        if( uaNode != null ) {
+          LoggerUtils.defaultLogger().debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
+              gwid.asString() );
+          String nodeDescr = itsNode.getBrowseName() + "::" + uaNode.getBrowseName(); //$NON-NLS-1$
+          UaNode2Gwid node2Gwid = new UaNode2Gwid( uaNode.getNodeId(), nodeDescr, gwid );
+          node2EvtGwidList.add( node2Gwid );
+        }
+        else {
+          LoggerUtils.errorLogger().error( "Can't match: ? -> %s", gwid.asString() ); //$NON-NLS-1$
+        }
+      }
+    }
+    // заливаем в хранилище
+    OpcUaUtils.updateNodes2GwidsInStore( aContext, node2RtdGwidList, OpcUaUtils.SECTID_OPC_UA_NODES_2_RTD_GWIDS );
+    OpcUaUtils.updateNodes2GwidsInStore( aContext, node2EvtGwidList, OpcUaUtils.SECTID_OPC_UA_NODES_2_EVT_GWIDS );
+    OpcUaUtils.updateCmdGwid2NodesInStore( aContext, cmdGwid2UaNodesList );
+  }
+
+  private void createSelObjs( IM5LifecycleManager<IDtoObject> localLM ) {
+    StringBuilder sb = new StringBuilder();
+    // создаем выбранные объекты
+    for( IDtoObject obj : localLM.itemsProvider().listItems() ) {
+      conn.coreApi().objService().defineObject( obj );
+      sb.append( "\n" + obj.skid() + " - " + obj.nmName() ); //$NON-NLS-1$ //$NON-NLS-2$
+    }
+    // подтверждаем успешное создание объектов
+    TsDialogUtils.info( getShell(), STR_SUCCESS_OBJS_UPDATED, sb.toString() );
   }
 
   /**
@@ -994,16 +1020,16 @@ public class OpcUaServerNodesBrowserPanel
   /**
    * По описанию параметра ищем подходящий UaNode
    *
-   * @param aRtdInfo описание RtData
+   * @param aPropInfo описание свойства класса
    * @param aVarNodes список узлов типа Variable
    * @return подходящий узел или null
    */
-  private static UaTreeNode findVarNode( IDtoRtdataInfo aRtdInfo, IList<UaTreeNode> aVarNodes ) {
+  private static UaTreeNode findVarNode( IDtoClassPropInfoBase aPropInfo, IList<UaTreeNode> aVarNodes ) {
     UaTreeNode retVal = null;
     for( UaTreeNode varNode : aVarNodes ) {
       if( varNode.getNodeClass().equals( NodeClass.Variable ) ) {
         String name4Search = varNode.getBrowseName();
-        if( aRtdInfo.id().indexOf( name4Search ) >= 0 ) {
+        if( aPropInfo.id().indexOf( name4Search ) >= 0 ) {
           retVal = varNode;
           break;
         }

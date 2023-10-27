@@ -13,25 +13,25 @@ import org.toxsoft.core.tslib.gw.gwid.*;
  *
  * @author dima
  */
-public class UaNode2RtdGwid {
+public class UaNode2Gwid {
 
   private final String nodeId;    // uaNode.getNodeId().toParseableString()
   private final String nodeDescr; // parent.browseName()::this.browseName();
-  private final Gwid   rtdGwid;   // пример работы с кипером VtGraphParam::IEntityKeeper
+  private final Gwid   gwid;      // пример работы с кипером VtGraphParam::IEntityKeeper
 
   /**
    * Value-object keeper identifier.
    */
-  public static final String KEEPER_ID = "UaNode2rtdGwid"; //$NON-NLS-1$
+  public static final String KEEPER_ID = "UaNode2Gwid"; //$NON-NLS-1$
 
   /**
    * Keeper singleton.
    */
-  public final static IEntityKeeper<UaNode2RtdGwid> KEEPER =
-      new AbstractEntityKeeper<>( UaNode2RtdGwid.class, EEncloseMode.NOT_IN_PARENTHESES, null ) {
+  public final static IEntityKeeper<UaNode2Gwid> KEEPER =
+      new AbstractEntityKeeper<>( UaNode2Gwid.class, EEncloseMode.NOT_IN_PARENTHESES, null ) {
 
         @Override
-        protected void doWrite( IStrioWriter aSw, UaNode2RtdGwid aEntity ) {
+        protected void doWrite( IStrioWriter aSw, UaNode2Gwid aEntity ) {
           // nodeDescr
           aSw.writeQuotedString( aEntity.nodeDescr() );
           aSw.writeChar( CHAR_ITEM_SEPARATOR );
@@ -44,13 +44,13 @@ public class UaNode2RtdGwid {
         }
 
         @Override
-        protected UaNode2RtdGwid doRead( IStrioReader aSr ) {
+        protected UaNode2Gwid doRead( IStrioReader aSr ) {
           String nodeDescr = aSr.readQuotedString();
           aSr.ensureChar( CHAR_ITEM_SEPARATOR );
           String nodeId = aSr.readQuotedString();
           aSr.ensureChar( CHAR_ITEM_SEPARATOR );
           Gwid gwid = Gwid.KEEPER.read( aSr );
-          return new UaNode2RtdGwid( nodeId, nodeDescr, gwid );
+          return new UaNode2Gwid( nodeId, nodeDescr, gwid );
         }
       };
 
@@ -59,13 +59,13 @@ public class UaNode2RtdGwid {
    *
    * @param aNodeId - node id
    * @param aNodeDescr - description parent.browseName()::this.browseName()
-   * @param aRtdGwid - rtData Gwid
+   * @param aGwid - rtData Gwid
    */
-  public UaNode2RtdGwid( String aNodeId, String aNodeDescr, Gwid aRtdGwid ) {
+  public UaNode2Gwid( String aNodeId, String aNodeDescr, Gwid aGwid ) {
     super();
     nodeId = aNodeId;
     nodeDescr = aNodeDescr;
-    rtdGwid = aRtdGwid;
+    gwid = aGwid;
   }
 
   /**
@@ -83,10 +83,10 @@ public class UaNode2RtdGwid {
   }
 
   /**
-   * @return {@link Gwid } rtData Gwid;
+   * @return {@link Gwid } Gwid;
    */
   public Gwid gwid() {
-    return rtdGwid;
+    return gwid;
   }
 
 }
