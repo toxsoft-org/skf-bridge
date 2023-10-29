@@ -69,6 +69,10 @@ import org.toxsoft.uskat.core.gui.conn.*;
  */
 public class OpcUaUtils {
 
+  public static final String CFG_UNIT_REALIZATION_TYPE_BIT_SWITCH_EVENT = "opc.tags.event.sender.bit.switch";
+
+  public static final String CFG_UNIT_REALIZATION_TYPE_SWITCH_EVENT = "opc.tags.event.sender.switch";
+
   private static StringMap<IList<UaTreeNode>> section2NodesList = new StringMap<>();
 
   public static final String CFG_UNIT_REALIZATION_TYPE_ONT_TO_ONE_DATA = "ont.to.one.data";
@@ -484,7 +488,7 @@ public class OpcUaUtils {
   /**
    * Имя параметра - номер бита (начиная от младшего с нулевого)
    */
-  public static final IDataDef OP_DATA_BIT_INDEX = create( "bit.index", INTEGER, //$NON-NLS-1$
+  public static final IDataDef OP_BIT_INDEX = create( "bit.index", INTEGER, //$NON-NLS-1$
       TSID_NAME, "номер бита", //
       TSID_DESCRIPTION, "номер бита (начиная от младшего с нулевого)" );
 
@@ -599,11 +603,11 @@ public class OpcUaUtils {
     paramDefenitions = new ElemArrayList<>();
 
     paramDefenitions.add( OP_DATA_JAVA_CLASS );
-    paramDefenitions.add( OP_DATA_BIT_INDEX );
+    paramDefenitions.add( OP_BIT_INDEX );
 
     defaultParams = new OptionSet();
     OP_DATA_JAVA_CLASS.setValue( defaultParams, avStr( ONE_INT_TO_ONE_BIT_DATA_TRANSMITTER_FACTORY_CLASS ) );
-    OP_DATA_BIT_INDEX.setValue( defaultParams, avInt( 0 ) );
+    OP_BIT_INDEX.setValue( defaultParams, avInt( 0 ) );
 
     ICfgUnitRealizationType dataIntToOne =
         new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_ONE_INT_TO_ONE_BIT_DATA,
@@ -682,10 +686,41 @@ public class OpcUaUtils {
         avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagToOneParamFormer" ) );
     OP_FORMER_EVENT_PARAM.setValue( defaultParams, avStr( "on" ) );
 
-    ICfgUnitRealizationType opcTagsEventSender3 = new CfgUnitRealizationType( "opc.tags.event.sender.switch",
+    ICfgUnitRealizationType opcTagsEventSender3 = new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_SWITCH_EVENT,
         "Событие переключения битового тега", ECfgUnitType.EVENT, paramDefenitions, defaultParams );
 
     realizationTypeRegister.registerType( opcTagsEventSender3 );
+
+    // ----------------------------------------------------
+    // Определение четвертой реализации события
+
+    paramDefenitions = new ElemArrayList<>();
+
+    paramDefenitions.add( OP_EVENT_SENDER_JAVA_CLASS );
+    paramDefenitions.add( OP_CONDITION_JAVA_CLASS );
+    paramDefenitions.add( OP_PARAM_FORMER_JAVA_CLASS );
+    paramDefenitions.add( OP_FORMER_EVENT_PARAM );
+    paramDefenitions.add( OP_CONDITION_SWITCH_ON );
+    paramDefenitions.add( OP_CONDITION_SWITCH_OFF );
+    paramDefenitions.add( OP_BIT_INDEX );
+
+    defaultParams = new OptionSet();
+    OP_EVENT_SENDER_JAVA_CLASS.setValue( defaultParams,
+        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OpcTagsEventSender" ) );
+    OP_CONDITION_JAVA_CLASS.setValue( defaultParams,
+        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagSwitchEventCondition" ) );
+    OP_CONDITION_SWITCH_ON.setValue( defaultParams, avBool( true ) );
+    OP_CONDITION_SWITCH_OFF.setValue( defaultParams, avBool( false ) );
+    OP_PARAM_FORMER_JAVA_CLASS.setValue( defaultParams,
+        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagToOneParamFormer" ) );
+    OP_FORMER_EVENT_PARAM.setValue( defaultParams, avStr( "on" ) );
+    OP_BIT_INDEX.setValue( defaultParams, avInt( 0 ) );
+
+    ICfgUnitRealizationType opcTagsEventSender4 =
+        new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_BIT_SWITCH_EVENT,
+            "Событие переключения бита интового тега", ECfgUnitType.EVENT, paramDefenitions, defaultParams );
+
+    realizationTypeRegister.registerType( opcTagsEventSender4 );
   }
 
   /**

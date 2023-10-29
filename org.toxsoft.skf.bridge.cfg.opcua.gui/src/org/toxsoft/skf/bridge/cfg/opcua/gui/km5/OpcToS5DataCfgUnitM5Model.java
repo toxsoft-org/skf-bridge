@@ -615,7 +615,70 @@ public class OpcToS5DataCfgUnitM5Model
 
                         OptionSet realization = new OptionSet( realType.getDefaultValues() );
                         if( bitIndex != null ) {
-                          OpcUaUtils.OP_DATA_BIT_INDEX.setValue( realization, avInt( bitIndex.intValue() ) );
+                          OpcUaUtils.OP_BIT_INDEX.setValue( realization, avInt( bitIndex.intValue() ) );
+                        }
+
+                        String name = "generated for " + gwid.asString();
+
+                        OpcToS5DataCfgUnit result = new OpcToS5DataCfgUnit( strid, name );
+                        result.setDataNodes( nodes );
+                        result.setDataGwids( gwids );
+                        result.setTypeOfCfgUnit( type );
+                        result.setRelizationTypeId( realType.id() );
+                        result.setRealizationOpts( realization );
+
+                        ((OpcToS5DataCfgUnitM5LifecycleManager)lifecycleManager()).addCfgUnit( result );
+                        // master().addDataUnit( result );
+                      }
+                    }
+
+                    // events
+                    // тут должно быть BitIdx2DtoEvData, но пока BitIdx2DtoRtData
+                    StringMap<StringMap<IList<BitIdx2DtoRtData>>> clsId2EventInfoes = new StringMap<>();
+
+                    // Заплатка - массив нулевой длины, чтобы не было попытки зайти в функционал генерации конигурации
+                    // событий
+                    IList<UaNode2Gwid> autoEvents = new ElemArrayList<>();// OpcUaUtils.loadNodes2EvtGwids( aContext );
+
+                    for( UaNode2Gwid evtNode : autoEvents ) {
+
+                      IList<BitIdx2DtoRtData> indexes = IList.EMPTY;
+
+                      if( clsId2EventInfoes.hasKey( evtNode.gwid().classId() ) ) {
+                        StringMap<IList<BitIdx2DtoRtData>> classIndexes =
+                            clsId2RtDataInfoes.getByKey( evtNode.gwid().classId() );
+
+                        if( classIndexes.hasKey( evtNode.gwid().propId() ) ) {
+                          indexes = classIndexes.getByKey( evtNode.gwid().propId() );
+                        }
+                      }
+
+                      for( int i = 0; i < indexes.size() + 1; i++ ) {
+                        Integer bitIndex =
+                            (i == indexes.size()) ? null : Integer.valueOf( indexes.get( i ).bitIndex() );
+
+                        Gwid gwid = (i == indexes.size()) ? evtNode.gwid()
+                            : Gwid.createEvent( evtNode.gwid().classId(), evtNode.gwid().strid(),
+                                indexes.get( i ).dtoRtdataInfo().id() );
+
+                        IList<Gwid> gwids = new ElemArrayList<>( gwid );
+
+                        IListEdit<NodeId> nodes = new ElemArrayList<>( evtNode.getNodeId() );
+
+                        String strid = "opctos5.bridge.cfg.event.unit.id" + System.currentTimeMillis() + "."
+                            + gwid.strid() + "." + gwid.propId();// OpcToS5DataCfgUnitM5Model.STRID.getFieldValue(
+                        ECfgUnitType type = ECfgUnitType.EVENT;
+
+                        CfgUnitRealizationTypeRegister typeReg2 =
+                            m5().tsContext().get( CfgUnitRealizationTypeRegister.class );
+
+                        ICfgUnitRealizationType realType = typeReg2.getTypeOfRealizationById( type,
+                            bitIndex == null ? OpcUaUtils.CFG_UNIT_REALIZATION_TYPE_SWITCH_EVENT
+                                : OpcUaUtils.CFG_UNIT_REALIZATION_TYPE_BIT_SWITCH_EVENT );
+
+                        OptionSet realization = new OptionSet( realType.getDefaultValues() );
+                        if( bitIndex != null ) {
+                          OpcUaUtils.OP_BIT_INDEX.setValue( realization, avInt( bitIndex.intValue() ) );
                         }
 
                         String name = "generated for " + gwid.asString();
