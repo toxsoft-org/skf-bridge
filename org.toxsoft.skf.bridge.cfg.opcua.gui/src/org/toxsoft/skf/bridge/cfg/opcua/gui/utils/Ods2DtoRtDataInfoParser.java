@@ -1,17 +1,21 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.utils;
 
+import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
+import static org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.*;
 
 import java.io.*;
 
 import org.jopendocument.dom.spreadsheet.*;
 import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.impl.*;
+import org.toxsoft.core.tslib.av.metainfo.*;
 import org.toxsoft.core.tslib.av.opset.impl.*;
+import org.toxsoft.core.tslib.bricks.strid.coll.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
-import org.toxsoft.core.tslib.utils.logs.impl.*;
+import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.uskat.core.api.sysdescr.dto.*;
 import org.toxsoft.uskat.core.impl.dto.*;
 
@@ -23,11 +27,24 @@ import org.toxsoft.uskat.core.impl.dto.*;
 public class Ods2DtoRtDataInfoParser {
 
   /**
-   * карта id класса - > его DtoCmdInfo
+   * Параметр события: включен.
+   * <p>
+   * Параметр имеет тип {@link EAtomicType#BOOLEAN}.
+   */
+  static String EVPID_ON = "on"; //$NON-NLS-1$
+
+  /**
+   * карта id класса - > его BitIdx2DtoRtData
    */
   static private final StringMap<StringMap<IList<BitIdx2DtoRtData>>> dtoRtdataInfoesMap = new StringMap<>();
 
-  static private String RTD_PREFIX = "rtd"; //$NON-NLS-1$
+  /**
+   * карта id класса - > его BitIdx2DtoEvent
+   */
+  static private final StringMap<StringMap<IList<BitIdx2DtoEvent>>> dtoEventInfoesMap = new StringMap<>();
+
+  static private final String RTD_PREFIX = "rtd"; //$NON-NLS-1$
+  private static final String EVT_PREFIX = "evt"; //$NON-NLS-1$
 
   /**
    * Колонка описания материнского rtDataId
@@ -55,6 +72,16 @@ public class Ods2DtoRtDataInfoParser {
   private static final String RTDATA_DESCR_COL = "E"; //$NON-NLS-1$ ;
 
   /**
+   * Колонка generate 0->1
+   */
+  private static final String UP_COL = "F"; //$NON-NLS-1$ ;
+
+  /**
+   * Колонка generate 1->0
+   */
+  private static final String DN_COL = "G"; //$NON-NLS-1$ ;
+
+  /**
    * Начальная строка для сканирования
    */
   private static final int START_ROW = 3;
@@ -72,7 +99,7 @@ public class Ods2DtoRtDataInfoParser {
    * @throws IOException исключение при работе с файлом
    */
   @SuppressWarnings( "javadoc" )
-  public static StringMap<StringMap<IList<BitIdx2DtoRtData>>> parse( File aOdsFile )
+  public static void parse( File aOdsFile )
       throws IOException {
 
     // Читаем подряд пока не закончатся закладки с описанием данных
@@ -82,8 +109,9 @@ public class Ods2DtoRtDataInfoParser {
       String classId = sheet.getName();
       StringMap<IList<BitIdx2DtoRtData>> rtDataMap = readRtDataInfoes( sheet );
       dtoRtdataInfoesMap.put( classId, rtDataMap );
+      StringMap<IList<BitIdx2DtoEvent>> evtMap = readEventInfoes( sheet );
+      dtoEventInfoesMap.put( classId, evtMap );
     }
-    return dtoRtdataInfoesMap;
   }
 
   private static StringMap<IList<BitIdx2DtoRtData>> readRtDataInfoes( Sheet aSheet ) {
@@ -112,19 +140,30 @@ public class Ods2DtoRtDataInfoParser {
     return retVal;
   }
 
-  private static boolean isNumber( MutableCell<?> aCell ) {
-    if( aCell.isEmpty() ) {
-      return false;
+  private static StringMap<IList<BitIdx2DtoEvent>> readEventInfoes( Sheet aSheet ) {
+    StringMap<IList<BitIdx2DtoEvent>> retVal = new StringMap<>();
+    // сканируем закладку от 3 ряда
+    for( int currRow = START_ROW; currRow <= aSheet.getRowCount(); currRow++ ) {
+      MutableCell<?> cell = aSheet.getCellAt( cellRef( BIT_ARRAY_DATAID_COL, currRow ) );
+      // если ячейка пустая, то пропускаем
+      if( cell.isEmpty() ) {
+        continue;
+      }
+      // читаем материнский rtDataId
+      cell = aSheet.getCellAt( cellRef( BIT_ARRAY_DATAID_COL, currRow ) );
+      String bitArrayRtDataId = cell.getTextValue();
+      // проверяем и создаем, если надо, его список bitEvent
+      if( !retVal.hasKey( bitArrayRtDataId ) ) {
+        retVal.put( bitArrayRtDataId, new ElemArrayList<>() );
+      }
+
+      BitIdx2DtoEvent evtInfo = readBitIdx2DtoEvent( aSheet, currRow );
+      if( evtInfo != null ) {
+        IListEdit<BitIdx2DtoEvent> bitList = (IListEdit<BitIdx2DtoEvent>)retVal.getByKey( bitArrayRtDataId );
+        bitList.add( evtInfo );
+      }
     }
-    String cellVal = aCell.getTextValue();
-    try {
-      Integer.parseInt( cellVal );
-    }
-    catch( Exception ex ) {
-      LoggerUtils.errorLogger().error( ex );
-      return false;
-    }
-    return true;
+    return retVal;
   }
 
   /**
@@ -175,5 +214,93 @@ public class Ods2DtoRtDataInfoParser {
       return new BitIdx2DtoRtData( bitIndex, dataInfo );
     }
     return null;
+  }
+
+  /**
+   * Читает описание BitIdx2DtoEvent
+   *
+   * @param aSheet таблица с описанием
+   * @param aRowIndex текущий ряд парсинга
+   * @return {@link BitIdx2DtoEvent} описание события
+   */
+  private static BitIdx2DtoEvent readBitIdx2DtoEvent( Sheet aSheet, int aRowIndex ) {
+    // id события
+    MutableCell<?> cell = aSheet.getCellAt( cellRef( RTDATA_ID_COL, aRowIndex ) );
+    String evtId = cell.getTextValue();
+
+    // если нет id - пропустить эту строчку вообще
+    boolean empty = cell.isEmpty();
+
+    if( !empty ) {
+      // соблюдаем соглашения о наименовании
+      if( !evtId.startsWith( EVT_PREFIX ) ) {
+        // отрезаем префикс rtd
+        if( evtId.startsWith( RTD_PREFIX ) ) {
+          evtId = evtId.substring( RTD_PREFIX.length() );
+        }
+        evtId = EVT_PREFIX + evtId;
+      }
+      // bit index
+      cell = aSheet.getCellAt( cellRef( BIT_INDEX_COL, aRowIndex ) );
+      String idxStr = cell.getTextValue();
+      int bitIndex = Integer.parseInt( idxStr );
+      // название
+      cell = aSheet.getCellAt( cellRef( RTDATA_NAME_COL, aRowIndex ) );
+      String name = cell.getTextValue();
+      // описание
+      cell = aSheet.getCellAt( cellRef( RTDATA_DESCR_COL, aRowIndex ) );
+      String descr = cell.getTextValue();
+      // 0->1
+      cell = aSheet.getCellAt( cellRef( UP_COL, aRowIndex ) );
+      boolean up = false;
+      String upText = TsLibUtils.EMPTY_STRING;
+      if( !cell.isEmpty() ) {
+        up = true;
+        upText = cell.getTextValue();
+      }
+      // 1->0
+      cell = aSheet.getCellAt( cellRef( DN_COL, aRowIndex ) );
+      boolean dn = false;
+      String dnText = TsLibUtils.EMPTY_STRING;
+      if( !cell.isEmpty() ) {
+        dn = true;
+        dnText = cell.getTextValue();
+      }
+      if( up || dn ) {
+        // for example FMT_BOOL_CHECK = "%Б[-|✔]"
+        String FMT_ON = "%Б[" + upText + "|" + dnText + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        // создаем описание параметра
+        DataDef EVPDD_ON = DataDef.create( EVPID_ON, EAtomicType.BOOLEAN, TSID_NAME, STR_N_EV_PARAM_ON, //
+            TSID_DESCRIPTION, STR_D_EV_PARAM_ON, //
+            TSID_IS_NULL_ALLOWED, AV_FALSE, //
+            TSID_FORMAT_STRING, FMT_ON, //
+            TSID_DEFAULT_VALUE, AV_FALSE );
+        StridablesList<IDataDef> evParams = new StridablesList<>( EVPDD_ON );
+
+        IDtoEventInfo evtInfo = DtoEventInfo.create1( evtId, true, //
+            evParams, //
+            OptionSetUtils.createOpSet( //
+                IAvMetaConstants.TSID_NAME, name, //
+                IAvMetaConstants.TSID_DESCRIPTION, descr //
+            ) ); //
+
+        return new BitIdx2DtoEvent( bitIndex, evtInfo, up, dn );
+      }
+    }
+    return null;
+  }
+
+  /**
+   * @return карта id класса - > его {@link BitIdx2DtoRtData}
+   */
+  public static StringMap<StringMap<IList<BitIdx2DtoRtData>>> getRtdataInfoesMap() {
+    return dtoRtdataInfoesMap;
+  }
+
+  /**
+   * @return карта id класса - > его BitIdx2DtoEvent
+   */
+  public static StringMap<StringMap<IList<BitIdx2DtoEvent>>> getEventInfoesMap() {
+    return dtoEventInfoesMap;
   }
 }

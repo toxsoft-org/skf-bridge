@@ -69,7 +69,7 @@ public class BitIdx2DtoRtData {
   }
 
   /**
-   * @return {@link IDtoRtdataInfo } parent.browseName()::this.browseName();
+   * @return {@link IDtoRtdataInfo }
    */
   public IDtoRtdataInfo dtoRtdataInfo() {
     return rtdataInfo;

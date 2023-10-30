@@ -81,6 +81,10 @@ public class OpcUaServerNodesBrowserPanel
   private static final String                           nodeCmdFeedbackBrowseName = "CmdFeedback"; //$NON-NLS-1$
   private StringMap<IList<IDtoCmdInfo>>                 clsId2CmdInfoes           = null;
   private StringMap<StringMap<IList<BitIdx2DtoRtData>>> clsId2RtDataInfoes        = null;
+  /**
+   * карта id класса - > его BitIdx2DtoEvent
+   */
+  private StringMap<StringMap<IList<BitIdx2DtoEvent>>>  clsId2EventInfoes         = null;
 
   private final IOpcUaServerConnCfg opcUaServerConnCfg;
   /**
@@ -157,7 +161,7 @@ public class OpcUaServerNodesBrowserPanel
    * <p>
    * Параметр имеет тип {@link EAtomicType#BOOLEAN}.
    */
-  static DataDef EVPDD_ON = DataDef.create( EVPID_ON, EAtomicType.BOOLEAN, TSID_NAME, STR_N_EV_PARAM_ON, //
+  public static DataDef EVPDD_ON = DataDef.create( EVPID_ON, EAtomicType.BOOLEAN, TSID_NAME, STR_N_EV_PARAM_ON, //
       TSID_DESCRIPTION, STR_D_EV_PARAM_ON, //
       TSID_IS_NULL_ALLOWED, AV_FALSE, //
       TSID_DEFAULT_VALUE, AV_FALSE );
@@ -311,7 +315,9 @@ public class OpcUaServerNodesBrowserPanel
                 if( bitRtdataFileDescr != null ) {
                   File file = new File( bitRtdataFileDescr );
                   try {
-                    clsId2RtDataInfoes = Ods2DtoRtDataInfoParser.parse( file );
+                    Ods2DtoRtDataInfoParser.parse( file );
+                    clsId2RtDataInfoes = Ods2DtoRtDataInfoParser.getRtdataInfoesMap();
+                    clsId2EventInfoes = Ods2DtoRtDataInfoParser.getEventInfoesMap();
                     TsDialogUtils.info( getShell(), "Loaded bit rtData description from file: %s", bitRtdataFileDescr );
                   }
                   catch( IOException ex ) {
@@ -687,6 +693,18 @@ public class OpcUaServerNodesBrowserPanel
         }
       }
     }
+    // добавим битовые события, если они описаны
+    if( clsId2EventInfoes != null ) {
+      if( clsId2EventInfoes.hasKey( id ) ) {
+        StringMap<IList<BitIdx2DtoEvent>> evtInfioesMap = clsId2EventInfoes.getByKey( id );
+        for( String key : evtInfioesMap.keys() ) {
+          IList<BitIdx2DtoEvent> list = evtInfioesMap.getByKey( key );
+          for( BitIdx2DtoEvent dte : list ) {
+            cinf.eventInfos().add( dte.dtoEventInfo() );
+          }
+        }
+      }
+    }
 
     return cinf;
   }
@@ -777,7 +795,7 @@ public class OpcUaServerNodesBrowserPanel
   }
 
   /**
-   * Читает описание данного и добавляет его в описание класса {@link IDtoClassInfo}
+   * Читает описание события и добавляет его в описание класса {@link IDtoClassInfo}
    *
    * @param aDtoClass текущее описание класса
    * @param aVariableNode описание узла типа переменная

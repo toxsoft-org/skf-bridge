@@ -504,7 +504,8 @@ public class OpcToS5DataCfgUnitM5Model
                     if( bitRtdataFileDescr != null ) {
                       File file = new File( bitRtdataFileDescr );
                       try {
-                        clsId2RtDataInfoes = Ods2DtoRtDataInfoParser.parse( file );
+                        Ods2DtoRtDataInfoParser.parse( file );
+                        clsId2RtDataInfoes = Ods2DtoRtDataInfoParser.getRtdataInfoesMap();
                         TsDialogUtils.info( getShell(), "Loaded bit rtData description from file: %s",
                             bitRtdataFileDescr );
                       }
