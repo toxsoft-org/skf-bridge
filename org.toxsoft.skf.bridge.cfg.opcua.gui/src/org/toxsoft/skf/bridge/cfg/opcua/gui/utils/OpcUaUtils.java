@@ -49,6 +49,7 @@ import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
+import org.toxsoft.core.tslib.gw.skid.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.*;
 import org.toxsoft.core.txtproj.lib.storage.*;
@@ -88,6 +89,11 @@ public class OpcUaUtils {
   public static final String SECTID_OPC_UA_NODES_PREFIX = "cached.opc.ua.nodes"; //$NON-NLS-1$
 
   /**
+   * id secton for store links UaNode->Skid meta info
+   */
+  public static final String SECTID_OPC_UA_NODES_2_SKIDS = "opc.ua.nodes2skids"; //$NON-NLS-1$
+
+  /**
    * id secton for store links UaNode->RtdGwid
    */
   public static final String SECTID_OPC_UA_NODES_2_RTD_GWIDS = "opc.ua.nodes2rtd.gwids"; //$NON-NLS-1$
@@ -112,6 +118,7 @@ public class OpcUaUtils {
   private static final String                       SYS_PROP_JAVA_IO_TMPDIR                    = "java.io.tmpdir";
   private static final Map<String, Gwid>            nodeId2GwidMap                             = new HashMap<>();
   private static final Map<String, NodeId>          gwid2NodeIdMap                             = new HashMap<>();
+  private static final Map<Skid, NodeId>            skid2NodeIdMap                             = new HashMap<>();
   private static final Map<String, CmdGwid2UaNodes> cmdGwid2NodeIdsMap                         = new HashMap<>();
 
   /**
@@ -291,6 +298,34 @@ public class OpcUaUtils {
   }
 
   /**
+   * Update list of links UaNode->Skid {@link UaNode2Skid} to store in inner storage
+   *
+   * @param aContext app context
+   * @param aNodes2Skids list of links UaNode->Skid
+   * @param aSectId section id to store data
+   */
+  public static void updateNodes2SkidsInStore( ITsGuiContext aContext, IList<UaNode2Skid> aNodes2Skids,
+      String aSectId ) {
+    ITsWorkroom workroom = aContext.eclipseContext().get( ITsWorkroom.class );
+    TsInternalErrorRtException.checkNull( workroom );
+    IList<UaNode2Skid> oldList = loadNodes2Skids( aContext, aSectId );
+    IListEdit<UaNode2Skid> newList = new ElemArrayList<>();
+    // тут приходится перекладывать из одного списка в другой
+    IListEdit<IContainNodeId> tmpList = new ElemArrayList<>();
+    for( UaNode2Skid node : aNodes2Skids ) {
+      tmpList.add( node );
+    }
+    for( UaNode2Skid oldItem : oldList ) {
+      if( !containsNodeIn( tmpList, oldItem ) ) {
+        newList.add( oldItem );
+      }
+    }
+    newList.addAll( aNodes2Skids );
+    IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
+    storage.writeColl( aSectId, newList, UaNode2Skid.KEEPER );
+  }
+
+  /**
    * Update list of links UaNode->RtdGwid {@link UaNode2Gwid} to store in inner storage
    *
    * @param aContext app context
@@ -303,8 +338,13 @@ public class OpcUaUtils {
     TsInternalErrorRtException.checkNull( workroom );
     IList<UaNode2Gwid> oldList = loadNodes2Gwids( aContext, aSectId );
     IListEdit<UaNode2Gwid> newList = new ElemArrayList<>();
+    // тут приходится перекладывать из одного списка в другой
+    IListEdit<IContainNodeId> tmpList = new ElemArrayList<>();
+    for( UaNode2Gwid node : aNodes2Gwids ) {
+      tmpList.add( node );
+    }
     for( UaNode2Gwid oldItem : oldList ) {
-      if( !containsNodeIn( aNodes2Gwids, oldItem ) ) {
+      if( !containsNodeIn( tmpList, oldItem ) ) {
         newList.add( oldItem );
       }
     }
@@ -313,8 +353,8 @@ public class OpcUaUtils {
     storage.writeColl( aSectId, newList, UaNode2Gwid.KEEPER );
   }
 
-  private static boolean containsNodeIn( IList<UaNode2Gwid> aNodes2Gwids, UaNode2Gwid aOldItem ) {
-    for( UaNode2Gwid node : aNodes2Gwids ) {
+  private static boolean containsNodeIn( IList<IContainNodeId> aNodes2Gwids, IContainNodeId aOldItem ) {
+    for( IContainNodeId node : aNodes2Gwids ) {
       if( node.getNodeId().equals( aOldItem.getNodeId() ) ) {
         return true;
       }
@@ -348,6 +388,41 @@ public class OpcUaUtils {
     TsInternalErrorRtException.checkNull( workroom );
     IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
     IList<UaNode2Gwid> retVal = new ElemArrayList<>( storage.readColl( aSectId, UaNode2Gwid.KEEPER ) );
+    return retVal;
+  }
+
+  /**
+   * @param aContext app context
+   * @param aSectId id of section where data stored
+   * @return list of links {@link UaNode2Gwid } UaNode->Skid
+   */
+  static IList<UaNode2Skid> loadNodes2Skids( ITsGuiContext aContext, String aSectId ) {
+    ITsWorkroom workroom = aContext.eclipseContext().get( ITsWorkroom.class );
+    TsInternalErrorRtException.checkNull( workroom );
+    IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
+    IList<UaNode2Skid> retVal = new ElemArrayList<>( storage.readColl( aSectId, UaNode2Skid.KEEPER ) );
+    return retVal;
+  }
+
+  /**
+   * Get NodeId By Skid
+   *
+   * @param aContext app context
+   * @param aSkid OPC UA nodeId
+   * @return NodeId linked to Skid or null
+   */
+  public static NodeId nodeBySkid( ITsGuiContext aContext, Skid aSkid ) {
+    NodeId retVal = null;
+    if( skid2NodeIdMap.isEmpty() ) {
+      // пустая карта кеша, загружаем
+      IList<UaNode2Skid> nodes2Skids = loadNodes2Skids( aContext, SECTID_OPC_UA_NODES_2_SKIDS );
+      for( UaNode2Skid node2Skid : nodes2Skids ) {
+        skid2NodeIdMap.put( node2Skid.skid(), node2Skid.getNodeId() );
+      }
+    }
+    if( skid2NodeIdMap.containsKey( aSkid ) ) {
+      retVal = skid2NodeIdMap.get( aSkid );
+    }
     return retVal;
   }
 
@@ -664,7 +739,7 @@ public class OpcUaUtils {
     realizationTypeRegister.registerType( opcTagsEventSender2 );
 
     // ----------------------------------------------------
-    // Определение третей реализации события
+    // Определение третьей реализации события
 
     paramDefenitions = new ElemArrayList<>();
 

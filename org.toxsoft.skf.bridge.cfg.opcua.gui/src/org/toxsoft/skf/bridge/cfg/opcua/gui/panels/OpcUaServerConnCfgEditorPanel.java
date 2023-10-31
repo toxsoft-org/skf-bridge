@@ -59,7 +59,7 @@ public class OpcUaServerConnCfgEditorPanel
 
   private CTabFolder tabFolder;
 
-  private OpcUaServerNodesBrowserPanel nodesBrowser;
+  private OpcUaTreeBrowserPanel nodesBrowser;
 
   final static String ACTID_BROWSE_CONN = SK_ID + ".bridge.cfg.opcua.BrowseConn"; //$NON-NLS-1$
 
@@ -208,7 +208,7 @@ public class OpcUaServerConnCfgEditorPanel
           tabItem.setText( aSelCfg.nmName() );
           // create vertical sash
           SashForm verticalSashForm = new SashForm( tabFolder, SWT.VERTICAL );
-          nodesBrowser = new OpcUaServerNodesBrowserPanel( verticalSashForm, browserContext, aSelCfg );
+          nodesBrowser = new OpcUaTreeBrowserPanel( verticalSashForm, browserContext, aSelCfg );
           UaVariableNodeListPanel nodesInspector =
               new UaVariableNodeListPanel( verticalSashForm, browserContext, nodesBrowser.getOpcUaClient() );
           nodesBrowser.setInspector( nodesInspector );

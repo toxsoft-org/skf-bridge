@@ -8,7 +8,7 @@ package org.toxsoft.skf.bridge.cfg.opcua.gui.panels;
 public interface ISkResources {
 
   /**
-   * {@link OpcUaServerNodesBrowserPanel}
+   * {@link OpcUaTreeBrowserPanel}
    */
   String DLG_C_NEW_CLASS                 = "Создание описания класса";
   String DLG_T_NEW_CLASS                 = "Проверьте и отредактируйте описание и нажмите Ok";
@@ -31,12 +31,14 @@ public interface ISkResources {
   String STR_D_EV_ON                     = "Команда включения от регулятора";
   String STR_N_ARG_VALUE                 = "значение";
   String STR_D_ARG_VALUE                 = "значение аргумента команды";
-  String STR_SUCCESS_CLASS_UPDATED       = "Операция завершена успешно, создан/обновлен class: %s";
+  String STR_SUCCESS_CLASS_CREATED       = "Операция завершена успешно, создан class: %s";
+  String STR_SUCCESS_CLASS_UPDATED       =
+      "Операция завершена успешно, обновлен class: %s \n Также обновлены Node->Gwid объектов этого класса";
   String STR_WARN_RECREATE_OBJS          = "Внимание class: %s обновлен, желательно удалить его объекты.\n Удалить?";
   String STR_ENTER_NAME                  = "<введите название>";
   String STR_N_OPC_UA_MARKER             = "маркер OPC UA";
   String STR_D_OPC_UA_MARKER             = "маркер класса сгенерированного из OPC UA";
-  String STR_SUCCESS_OBJS_UPDATED        = "Операция завершена успешно, создан/обновлены объекты: %s";
+  String STR_SUCCESS_OBJS_UPDATED        = "Операция завершена успешно, обновлены объекты: %s";
   String SELECT_FILE_4_IMPORT_CMD        = "Выберите файл с описанием команд";
   String SELECT_FILE_4_IMPORT_BIT_RTDATA = "Выберите файл с описанием битовых RtData";
 

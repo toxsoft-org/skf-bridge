@@ -33,6 +33,13 @@ public class OpcUaNodeM5LifecycleManager
 
   private IList<UaTreeNode> cached;
 
+  /**
+   * @return cache elements
+   */
+  public IList<UaTreeNode> getCached() {
+    return cached;
+  }
+
   private NodeId                    topNodeId = Identifiers.RootFolder;
   private UaTreeNode                topNode   = null;
   private final ITsGuiContext       context;

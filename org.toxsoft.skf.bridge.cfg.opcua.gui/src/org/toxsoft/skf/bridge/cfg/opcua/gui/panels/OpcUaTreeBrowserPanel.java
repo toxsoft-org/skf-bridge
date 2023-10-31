@@ -9,7 +9,6 @@ import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.*;
 
 import java.io.*;
-import java.util.*;
 
 import org.eclipse.milo.opcua.sdk.client.*;
 import org.eclipse.milo.opcua.sdk.client.nodes.*;
@@ -68,11 +67,12 @@ import org.toxsoft.uskat.core.gui.km5.sded.*;
 import org.toxsoft.uskat.core.impl.dto.*;
 
 /**
- * Browser of opc ua server nodes.
+ * Browser of OPC UA tree.
  *
  * @author max
+ * @author dima
  */
-public class OpcUaServerNodesBrowserPanel
+public class OpcUaTreeBrowserPanel
     extends TsPanel {
 
   private static final String                           nodeCmdIdBrowseName       = "CmdId";       //$NON-NLS-1$
@@ -171,18 +171,23 @@ public class OpcUaServerNodesBrowserPanel
   static private String       EVT_PREFIX = "evt"; //$NON-NLS-1$
 
   private IM5CollectionPanel<UaTreeNode> opcUaNodePanel;
+
   /**
    * Панель подробного просмотра
    */
-  private UaVariableNodeListPanel        inspectorPanel;
+  private UaVariableNodeListPanel inspectorPanel;
 
+  /**
+   * Собсно сама панель
+   */
+  private MultiPaneComponentModown<UaTreeNode> componentModown;
   /**
    * Собственно клиент OPC UA сервера
    */
-  private OpcUaClient client;
-  private UaTreeNode  selectedNode     = null;
-  private String      ODS_EXT          = "*.ods"; //$NON-NLS-1$
-  private String      DEFAULT_PATH_STR = "";
+  private OpcUaClient                          client;
+  private UaTreeNode                           selectedNode     = null;
+  private String                               ODS_EXT          = "*.ods"; //$NON-NLS-1$
+  private String                               DEFAULT_PATH_STR = "";
 
   /**
    * Items provider for ISkObject created on OPC UA node.
@@ -192,9 +197,10 @@ public class OpcUaServerNodesBrowserPanel
   static class OpcUANode2SkObjectItemsProvider
       implements IM5ItemsProvider<IDtoObject> {
 
-    private IListEdit<IDtoObject>   items   = new ElemArrayList<>();
-    private final ISkCoreApi        coreApi;
-    private Map<String, UaTreeNode> id2Node = new HashMap<>();
+    private IListEdit<IDtoObject> items = new ElemArrayList<>();
+    private final ISkCoreApi      coreApi;
+    // private Map<String, UaTreeNode> id2Node = new HashMap<>();
+    IListEdit<UaNode2Skid> node2SkidList = new ElemArrayList<>();
 
     // Создаем IDpuObject и инициализируем его значениями из узла
     private IDtoObject makeObjDto( String aClassId, UaTreeNode aObjNode ) {
@@ -212,7 +218,10 @@ public class OpcUaServerNodesBrowserPanel
       for( UaTreeNode objNode : aSelectedNodes ) {
         IDtoObject dtoObj = makeObjDto( aSelectedClassInfo.id(), objNode );
         items.add( dtoObj );
-        id2Node.put( dtoObj.id(), objNode );
+        // запоминаем привязку узла к Skid
+        // id2Node.put( dtoObj.id(), objNode );
+        Skid skid = new Skid( aSelectedClassInfo.id(), dtoObj.id() );
+        node2SkidList.add( new UaNode2Skid( objNode.getNodeId(), objNode.getDisplayName(), skid ) );
       }
     }
 
@@ -226,9 +235,9 @@ public class OpcUaServerNodesBrowserPanel
       return items;
     }
 
-    public UaTreeNode nodeById( String aObjId ) {
-      return id2Node.get( aObjId );
-    }
+    // public UaTreeNode nodeById( String aObjId ) {
+    // return id2Node.get( aObjId );
+    // }
 
   }
 
@@ -239,8 +248,7 @@ public class OpcUaServerNodesBrowserPanel
    * @param aContext ITsGuiContext - context.
    * @param aOpcUaServerConnCfg IOpcUaServerConnCfg - opc ua server connection configuration.
    */
-  public OpcUaServerNodesBrowserPanel( Composite aParent, ITsGuiContext aContext,
-      IOpcUaServerConnCfg aOpcUaServerConnCfg ) {
+  public OpcUaTreeBrowserPanel( Composite aParent, ITsGuiContext aContext, IOpcUaServerConnCfg aOpcUaServerConnCfg ) {
     super( aParent, aContext );
     opcUaServerConnCfg = aOpcUaServerConnCfg;
     this.setLayout( new BorderLayout() );
@@ -275,76 +283,76 @@ public class OpcUaServerNodesBrowserPanel
     // обнуляем действие по умолчанию на dbl click
     IMultiPaneComponentConstants.OPDEF_DBLCLICK_ACTION_ID.setValue( ctx.params(), AvUtils.AV_STR_EMPTY );
 
-    MultiPaneComponentModown<UaTreeNode> componentModown =
-        new MultiPaneComponentModown<>( ctx, model, lm.itemsProvider(), lm ) {
+    componentModown = new MultiPaneComponentModown<>( ctx, model, lm.itemsProvider(), lm ) {
 
-          // добавляем tool bar
-          @Override
-          protected ITsToolbar doCreateToolbar( @SuppressWarnings( "hiding" ) ITsGuiContext aContext, String aName,
-              EIconSize aIconSize, IListEdit<ITsActionDef> aActs ) {
-            aActs.add( ITsStdActionDefs.ACDEF_SEPARATOR );
-            aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_CREATE_CLASS_OPC_UA_ITEM );
-            aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_CREATE_OBJS_OPC_UA_ITEM );
-            aActs.add( ITsStdActionDefs.ACDEF_SEPARATOR );
-            aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_SHOW_OPC_UA_NODE_2_GWID );
-            aActs.add( ITsStdActionDefs.ACDEF_SEPARATOR );
-            aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_LOAD_CMD_DESCR );
-            aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_LOAD_BIT_RTDATA_DESCR );
+      // добавляем tool bar
+      @Override
+      protected ITsToolbar doCreateToolbar( @SuppressWarnings( "hiding" ) ITsGuiContext aContext, String aName,
+          EIconSize aIconSize, IListEdit<ITsActionDef> aActs ) {
+        aActs.add( ITsStdActionDefs.ACDEF_SEPARATOR );
+        aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_CREATE_CLASS_OPC_UA_ITEM );
+        aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_CREATE_OBJS_OPC_UA_ITEM );
+        aActs.add( ITsStdActionDefs.ACDEF_SEPARATOR );
+        aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_SHOW_OPC_UA_NODE_2_GWID );
+        aActs.add( ITsStdActionDefs.ACDEF_SEPARATOR );
+        aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_LOAD_CMD_DESCR );
+        aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_LOAD_BIT_RTDATA_DESCR );
 
-            ITsToolbar toolBar = super.doCreateToolbar( aContext, aName, aIconSize, aActs );
+        ITsToolbar toolBar = super.doCreateToolbar( aContext, aName, aIconSize, aActs );
 
-            toolBar.addListener( aActionId -> {
-              if( aActionId == CREATE_CINFO_FROM_OPC_UA_ACT_ID ) {
-                createClassFromNodes( aContext );
-              }
-
-              if( aActionId == CREATE_OBJS_FROM_OPC_UA_ACT_ID ) {
-                createObjsFromNodes( aContext );
-              }
-
-              if( aActionId == SHOW_OPC_UA_NODE_2_GWID_ACT_ID ) {
-                // for debug
-                // EAtomicType ret = OpcUaUtils.getValueTypeOfNode( aContext, aOpcUaServerConnCfg,
-                // selectedNode.getUaNode().getNodeId().toParseableString() );
-                // LoggerUtils.defaultLogger().debug( ret.toString() );
-                checkNode2Gwid( aContext );
-              }
-
-              if( aActionId == ACT_ID_LOAD_BIT_RTDATA ) {
-                String bitRtdataFileDescr = getDescrFile( SELECT_FILE_4_IMPORT_BIT_RTDATA );
-                if( bitRtdataFileDescr != null ) {
-                  File file = new File( bitRtdataFileDescr );
-                  try {
-                    Ods2DtoRtDataInfoParser.parse( file );
-                    clsId2RtDataInfoes = Ods2DtoRtDataInfoParser.getRtdataInfoesMap();
-                    clsId2EventInfoes = Ods2DtoRtDataInfoParser.getEventInfoesMap();
-                    TsDialogUtils.info( getShell(), "Loaded bit rtData description from file: %s", bitRtdataFileDescr );
-                  }
-                  catch( IOException ex ) {
-                    LoggerUtils.errorLogger().error( ex );
-                  }
-                }
-              }
-              if( aActionId == LOAD_CMD_DESCR_ACT_ID ) {
-                String cmdFileDescr = getDescrFile( SELECT_FILE_4_IMPORT_CMD );
-                if( cmdFileDescr != null ) {
-                  File file = new File( cmdFileDescr );
-                  try {
-                    clsId2CmdInfoes = Ods2DtoCmdInfoParser.parse( file );
-                    TsDialogUtils.info( getShell(), "Loaded command description from file: %s", cmdFileDescr );
-                  }
-                  catch( IOException ex ) {
-                    LoggerUtils.errorLogger().error( ex );
-                  }
-                }
-              }
-
-            } );
-            toolBar.setIconSize( EIconSize.IS_24X24 );
-            return toolBar;
+        toolBar.addListener( aActionId -> {
+          if( aActionId == CREATE_CINFO_FROM_OPC_UA_ACT_ID ) {
+            createClassFromNodes( aContext );
           }
 
-        };
+          if( aActionId == CREATE_OBJS_FROM_OPC_UA_ACT_ID ) {
+            createObjsFromNodes( aContext );
+          }
+
+          if( aActionId == SHOW_OPC_UA_NODE_2_GWID_ACT_ID ) {
+            // for debug
+            // EAtomicType ret = OpcUaUtils.getValueTypeOfNode( aContext, aOpcUaServerConnCfg,
+            // selectedNode.getUaNode().getNodeId().toParseableString() );
+            // LoggerUtils.defaultLogger().debug( ret.toString() );
+            checkNode2Gwid( aContext );
+          }
+
+          if( aActionId == ACT_ID_LOAD_BIT_RTDATA ) {
+            String bitRtdataFileDescr = getDescrFile( SELECT_FILE_4_IMPORT_BIT_RTDATA );
+            if( bitRtdataFileDescr != null ) {
+              File file = new File( bitRtdataFileDescr );
+              try {
+                Ods2DtoRtDataInfoParser.parse( file );
+                clsId2RtDataInfoes = Ods2DtoRtDataInfoParser.getRtdataInfoesMap();
+                clsId2EventInfoes = Ods2DtoRtDataInfoParser.getEventInfoesMap();
+                TsDialogUtils.info( getShell(), "Loaded bit rtData and bit events description from file: %s",
+                    bitRtdataFileDescr );
+              }
+              catch( IOException ex ) {
+                LoggerUtils.errorLogger().error( ex );
+              }
+            }
+          }
+          if( aActionId == LOAD_CMD_DESCR_ACT_ID ) {
+            String cmdFileDescr = getDescrFile( SELECT_FILE_4_IMPORT_CMD );
+            if( cmdFileDescr != null ) {
+              File file = new File( cmdFileDescr );
+              try {
+                clsId2CmdInfoes = Ods2DtoCmdInfoParser.parse( file );
+                TsDialogUtils.info( getShell(), "Loaded command description from file: %s", cmdFileDescr );
+              }
+              catch( IOException ex ) {
+                LoggerUtils.errorLogger().error( ex );
+              }
+            }
+          }
+
+        } );
+        toolBar.setIconSize( EIconSize.IS_24X24 );
+        return toolBar;
+      }
+
+    };
     UaNodesTreeMaker treeMaker = new UaNodesTreeMaker();
 
     componentModown.tree().setTreeMaker( treeMaker );
@@ -538,7 +546,7 @@ public class OpcUaServerNodesBrowserPanel
       // установим нормальный размер диалога
       cdi.setMinSize( new TsPoint( -30, -60 ) );
       // проверяем наличие класса
-      ISkClassInfo existClsInfo = conn.coreApi().sysdescr().getClassInfo( dtoClassInfo.id() );
+      ISkClassInfo existClsInfo = conn.coreApi().sysdescr().findClassInfo( dtoClassInfo.id() );
       // если он уже существует, то обновляем все существующие поля
       if( existClsInfo != null ) {
         IDtoClassInfo currDtoClassInfo = DtoClassInfo.createFromSk( existClsInfo, false );
@@ -547,12 +555,16 @@ public class OpcUaServerNodesBrowserPanel
         dtoClassInfo =
             M5GuiUtils.askEdit( tsContext(), modelDto, dtoClassInfo, cdi, modelDto.getLifecycleManager( conn ) );
         if( dtoClassInfo != null ) {
-          // запросим подтверждение на удаление
-          if( TsDialogUtils.askYesNoCancel( getShell(), STR_WARN_RECREATE_OBJS,
-              dtoClassInfo.id() ) == ETsDialogCode.YES ) {
-            ISkidList skids2Remove = conn.coreApi().objService().listSkids( dtoClassInfo.id(), false );
-            conn.coreApi().objService().removeObjects( skids2Remove );
+          ISkidList skids2Remove = conn.coreApi().objService().listSkids( dtoClassInfo.id(), false );
+          // перепривязываем объекты
+          ISkClassInfo updatedClassInfo = conn.coreApi().sysdescr().getClassInfo( dtoClassInfo.id() );
+          IListEdit<IDtoObject> listObj2Update = new ElemArrayList<>();
+          for( Skid skid : skids2Remove ) {
+            ISkObject obj2Update = conn.coreApi().objService().find( skid );
+            listObj2Update.add( DtoObject.createFromSk( obj2Update, conn.coreApi() ) );
           }
+          generateNode2GwidLinks( aContext, updatedClassInfo, listObj2Update );
+          TsDialogUtils.info( getShell(), STR_SUCCESS_CLASS_UPDATED, dtoClassInfo.id() );
         }
       }
       else {
@@ -563,7 +575,7 @@ public class OpcUaServerNodesBrowserPanel
             M5GuiUtils.askCreate( tsContext(), modelDto, bunchOfFieldVals, cdi, modelDto.getLifecycleManager( conn ) );
         if( dtoClassInfo != null ) {
           // подтверждаем успешное создание класса
-          TsDialogUtils.info( getShell(), STR_SUCCESS_CLASS_UPDATED, dtoClassInfo.id() );
+          TsDialogUtils.info( getShell(), STR_SUCCESS_CLASS_CREATED, dtoClassInfo.id() );
         }
       }
     }
@@ -897,37 +909,46 @@ public class OpcUaServerNodesBrowserPanel
         TsDialogInfo di = new TsDialogInfo( aContext, getShell(), DLG_C_NEW_OBJS, DLG_T_NEW_OBJS, 0 );
         di.setMinSizeShellRelative( 10, 50 );
         if( M5GuiUtils.showCollPanel( di, skObjsPanel ) != null ) {
-          createSelObjs( localLM );
+          // сохраним привязки node -> Skid
+          OpcUaUtils.updateNodes2SkidsInStore( aContext, itemProvider.node2SkidList,
+              OpcUaUtils.SECTID_OPC_UA_NODES_2_SKIDS );
+          String userMsg = createSelObjs( localLM );
           // пробуем автоматическую привязку NodeId -> Gwid
-          generateNode2GwidLinks( aContext, selectedClassInfo, itemProvider, localLM );
+          generateNode2GwidLinks( aContext, selectedClassInfo, localLM.itemsProvider().listItems() );
+          // подтверждаем успешное создание объектов
+          TsDialogUtils.info( getShell(), STR_SUCCESS_OBJS_UPDATED, userMsg );
         }
       }
     }
   }
 
-  private static void generateNode2GwidLinks( ITsGuiContext aContext, ISkClassInfo aClassInfo,
-      OpcUANode2SkObjectItemsProvider aItemProvider, IM5LifecycleManager<IDtoObject> aLocalLM ) {
+  // TODO
+  private void generateNode2GwidLinks( ITsGuiContext aContext, ISkClassInfo aClassInfo, IList<IDtoObject> aObjList ) {
     IListEdit<UaNode2Gwid> node2RtdGwidList = new ElemArrayList<>();
     IListEdit<UaNode2Gwid> node2EvtGwidList = new ElemArrayList<>();
     IListEdit<CmdGwid2UaNodes> cmdGwid2UaNodesList = new ElemArrayList<>();
+    // в это месте у нас 100% уже загружено дерево узлов OPC UA
+    IList<UaTreeNode> treeNodes = ((OpcUaNodeM5LifecycleManager)componentModown.lifecycleManager()).getCached();
     // идем по списку объектов
-    for( IDtoObject obj : aLocalLM.itemsProvider().listItems() ) {
+    for( IDtoObject obj : aObjList ) {
       // находим родительский UaNode
-      UaTreeNode itsNode = aItemProvider.nodeById( obj.id() );
+      // UaTreeNode parentNode = aItemProvider.nodeById( obj.id() );
+      NodeId parentNodeId = OpcUaUtils.nodeBySkid( aContext, new Skid( aClassInfo.id(), obj.id() ) );
+      UaTreeNode parentNode = findParentNode( treeNodes, parentNodeId );
       // привязываем команды
       for( IDtoCmdInfo cmdInfo : aClassInfo.cmds().list() ) {
-        CmdGwid2UaNodes cmdGwid2UaNodes = findCmdNodes( obj, cmdInfo, itsNode );
+        CmdGwid2UaNodes cmdGwid2UaNodes = findCmdNodes( obj, cmdInfo, parentNode );
         cmdGwid2UaNodesList.add( cmdGwid2UaNodes );
       }
       // идем по списку его rtdProperties
       for( IDtoRtdataInfo rtdInfo : aClassInfo.rtdata().list() ) {
         // находим свой UaNode
-        UaTreeNode uaNode = findVarNode( rtdInfo, itsNode.getChildren() );
+        UaTreeNode uaNode = findVarNode( rtdInfo, parentNode.getChildren() );
         Gwid gwid = Gwid.createRtdata( obj.classId(), obj.id(), rtdInfo.id() );
         if( uaNode != null ) {
           LoggerUtils.defaultLogger().debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
               gwid.asString() );
-          String nodeDescr = itsNode.getBrowseName() + "::" + uaNode.getBrowseName(); //$NON-NLS-1$
+          String nodeDescr = parentNode.getBrowseName() + "::" + uaNode.getBrowseName(); //$NON-NLS-1$
           UaNode2Gwid node2Gwid = new UaNode2Gwid( uaNode.getNodeId(), nodeDescr, gwid );
           node2RtdGwidList.add( node2Gwid );
         }
@@ -938,12 +959,12 @@ public class OpcUaServerNodesBrowserPanel
       // идем по списку его events
       for( IDtoEventInfo evtInfo : aClassInfo.events().list() ) {
         // находим свой UaNode
-        UaTreeNode uaNode = findVarNode( evtInfo, itsNode.getChildren() );
+        UaTreeNode uaNode = findVarNode( evtInfo, parentNode.getChildren() );
         Gwid gwid = Gwid.createEvent( obj.classId(), obj.id(), evtInfo.id() );
         if( uaNode != null ) {
           LoggerUtils.defaultLogger().debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
               gwid.asString() );
-          String nodeDescr = itsNode.getBrowseName() + "::" + uaNode.getBrowseName(); //$NON-NLS-1$
+          String nodeDescr = parentNode.getBrowseName() + "::" + uaNode.getBrowseName(); //$NON-NLS-1$
           UaNode2Gwid node2Gwid = new UaNode2Gwid( uaNode.getNodeId(), nodeDescr, gwid );
           node2EvtGwidList.add( node2Gwid );
         }
@@ -958,15 +979,23 @@ public class OpcUaServerNodesBrowserPanel
     OpcUaUtils.updateCmdGwid2NodesInStore( aContext, cmdGwid2UaNodesList );
   }
 
-  private void createSelObjs( IM5LifecycleManager<IDtoObject> localLM ) {
+  private static UaTreeNode findParentNode( IList<UaTreeNode> aListItems, NodeId aParentNodeId ) {
+    for( UaTreeNode node : aListItems ) {
+      if( node.getNodeId().equals( aParentNodeId.toParseableString() ) ) {
+        return node;
+      }
+    }
+    return null;
+  }
+
+  private String createSelObjs( IM5LifecycleManager<IDtoObject> localLM ) {
     StringBuilder sb = new StringBuilder();
     // создаем выбранные объекты
     for( IDtoObject obj : localLM.itemsProvider().listItems() ) {
       conn.coreApi().objService().defineObject( obj );
       sb.append( "\n" + obj.skid() + " - " + obj.nmName() ); //$NON-NLS-1$ //$NON-NLS-2$
     }
-    // подтверждаем успешное создание объектов
-    TsDialogUtils.info( getShell(), STR_SUCCESS_OBJS_UPDATED, sb.toString() );
+    return sb.toString();
   }
 
   /**
@@ -1082,10 +1111,10 @@ public class OpcUaServerNodesBrowserPanel
       protected IDtoObject doEdit( IM5Bunch<IDtoObject> aValues ) {
         IDtoObject edited = makeDtoObject( aValues );
         int index = aListObjs.indexOf( aValues.originalEntity() );
-        // обновим кеш провайдера
-        UaTreeNode treeNode = aItemProvider.id2Node.remove( aValues.originalEntity().id() );
+        // обновим кеш провайдера FIXME
+        // UaTreeNode treeNode = aItemProvider.id2Node.remove( aValues.originalEntity().id() );
         aListObjs.set( index, edited );
-        aItemProvider.id2Node.put( edited.id(), treeNode );
+        // aItemProvider.id2Node.put( edited.id(), treeNode );
         return edited;
       }
 

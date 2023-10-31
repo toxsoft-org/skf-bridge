@@ -6,19 +6,19 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.toxsoft.core.tslib.bricks.keeper.*;
 import org.toxsoft.core.tslib.bricks.keeper.AbstractEntityKeeper.*;
 import org.toxsoft.core.tslib.bricks.strio.*;
-import org.toxsoft.core.tslib.gw.gwid.*;
+import org.toxsoft.core.tslib.gw.skid.*;
 
 /**
- * Simple container to store link UaNode → Gwid.
+ * Simple container to store link UaNode → Skid.
  *
  * @author dima
  */
-public class UaNode2Gwid
+public class UaNode2Skid
     implements IContainNodeId {
 
   private final String nodeId;    // uaNode.getNodeId().toParseableString()
   private final String nodeDescr; // parent.browseName()::this.browseName();
-  private final Gwid   gwid;      // пример работы с кипером VtGraphParam::IEntityKeeper
+  private final Skid   skid;      // пример работы с кипером VtGraphParam::IEntityKeeper
 
   /**
    * Value-object keeper identifier.
@@ -28,30 +28,30 @@ public class UaNode2Gwid
   /**
    * Keeper singleton.
    */
-  public final static IEntityKeeper<UaNode2Gwid> KEEPER =
-      new AbstractEntityKeeper<>( UaNode2Gwid.class, EEncloseMode.NOT_IN_PARENTHESES, null ) {
+  public final static IEntityKeeper<UaNode2Skid> KEEPER =
+      new AbstractEntityKeeper<>( UaNode2Skid.class, EEncloseMode.NOT_IN_PARENTHESES, null ) {
 
         @Override
-        protected void doWrite( IStrioWriter aSw, UaNode2Gwid aEntity ) {
+        protected void doWrite( IStrioWriter aSw, UaNode2Skid aEntity ) {
           // nodeDescr
           aSw.writeQuotedString( aEntity.nodeDescr() );
           aSw.writeChar( CHAR_ITEM_SEPARATOR );
           // пишем NodeId
           aSw.writeQuotedString( aEntity.getNodeId().toParseableString() );
           aSw.writeChar( CHAR_ITEM_SEPARATOR );
-          // пишем Gwid
-          Gwid.KEEPER.write( aSw, aEntity.gwid() );
+          // пишем Skid
+          Skid.KEEPER.write( aSw, aEntity.skid() );
           aSw.writeEol();
         }
 
         @Override
-        protected UaNode2Gwid doRead( IStrioReader aSr ) {
+        protected UaNode2Skid doRead( IStrioReader aSr ) {
           String nodeDescr = aSr.readQuotedString();
           aSr.ensureChar( CHAR_ITEM_SEPARATOR );
           String nodeId = aSr.readQuotedString();
           aSr.ensureChar( CHAR_ITEM_SEPARATOR );
-          Gwid gwid = Gwid.KEEPER.read( aSr );
-          return new UaNode2Gwid( nodeId, nodeDescr, gwid );
+          Skid skid = Skid.KEEPER.read( aSr );
+          return new UaNode2Skid( nodeId, nodeDescr, skid );
         }
       };
 
@@ -60,13 +60,13 @@ public class UaNode2Gwid
    *
    * @param aNodeId - node id
    * @param aNodeDescr - description parent.browseName()::this.browseName()
-   * @param aGwid - rtData Gwid
+   * @param aSkid - object {@link Skid }
    */
-  public UaNode2Gwid( String aNodeId, String aNodeDescr, Gwid aGwid ) {
+  public UaNode2Skid( String aNodeId, String aNodeDescr, Skid aSkid ) {
     super();
     nodeId = aNodeId;
     nodeDescr = aNodeDescr;
-    gwid = aGwid;
+    skid = aSkid;
   }
 
   /**
@@ -85,10 +85,10 @@ public class UaNode2Gwid
   }
 
   /**
-   * @return {@link Gwid } Gwid;
+   * @return {@link Skid } Skid;
    */
-  public Gwid gwid() {
-    return gwid;
+  public Skid skid() {
+    return skid;
   }
 
 }
