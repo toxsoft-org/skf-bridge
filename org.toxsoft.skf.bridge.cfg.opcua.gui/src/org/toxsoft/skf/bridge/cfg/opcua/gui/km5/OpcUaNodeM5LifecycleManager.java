@@ -102,6 +102,7 @@ public class OpcUaNodeM5LifecycleManager
     long endTime = System.currentTimeMillis();
 
     // сохраним загруженное дерево, чтобы в дальнейшем не ждать годами :)
+    cached = result;
     saveUaTreeNodes( result );
     long delta = endTime - startTime;
     LoggerUtils.defaultLogger().debug( "Browse took %d[ms]", delta ); //$NON-NLS-1$
