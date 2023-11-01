@@ -638,7 +638,7 @@ public class OpcToS5DataCfgUnitM5Model
 
                     // events
 
-                    IList<UaNode2Gwid> autoEvents = OpcUaUtils.loadNodes2EvtGwids( aContext );
+                    IList<UaNode2EventGwid> autoEvents = OpcUaUtils.loadNodes2EvtGwids( aContext );
 
                     for( UaNode2Gwid evtNode : autoEvents ) {
                       Gwid gwid = evtNode.gwid();
