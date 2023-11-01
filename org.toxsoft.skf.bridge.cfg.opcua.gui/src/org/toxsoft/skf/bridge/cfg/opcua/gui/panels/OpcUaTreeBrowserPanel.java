@@ -312,6 +312,11 @@ public class OpcUaTreeBrowserPanel
 
           if( aActionId == SHOW_OPC_UA_NODE_2_GWID_ACT_ID ) {
             // for debug
+            // IList<UaNode2EventGwid> evList = OpcUaUtils.loadNodes2EvtGwids( aContext );
+            // for( UaNode2EventGwid node2Evt : evList ) {
+            // LoggerUtils.defaultLogger()
+            // .debug( node2Evt.nodeDescr() + "->" + node2Evt.gwid() + ":" + node2Evt.paramIds() );
+            // }
             // EAtomicType ret = OpcUaUtils.getValueTypeOfNode( aContext, aOpcUaServerConnCfg,
             // selectedNode.getUaNode().getNodeId().toParseableString() );
             // LoggerUtils.defaultLogger().debug( ret.toString() );

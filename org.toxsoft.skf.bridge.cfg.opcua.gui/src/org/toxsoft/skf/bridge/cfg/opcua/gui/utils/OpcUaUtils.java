@@ -376,13 +376,15 @@ public class OpcUaUtils {
    * @param aContext app context
    * @return list of links {@link UaNode2Gwid } UaNode->Gwid
    */
-  public static IList<UaNode2Gwid> loadNodes2EvtGwids( ITsGuiContext aContext ) {
-    return loadNodes2Gwids( aContext, SECTID_OPC_UA_NODES_2_EVT_GWIDS, UaNode2Gwid.KEEPER );
+  public static IList<UaNode2EventGwid> loadNodes2EvtGwids( ITsGuiContext aContext ) {
+    return loadNodes2Gwids( aContext, SECTID_OPC_UA_NODES_2_EVT_GWIDS, UaNode2EventGwid.KEEPER );
   }
 
   /**
+   * @param <T> расширение класса {@link UaNode2Gwid}
    * @param aContext app context
    * @param aSectId id of section where data stored
+   * @param aKeeper хранитель сущностей типа {@link UaNode2Gwid} и его наследников
    * @return list of links {@link UaNode2Gwid } UaNode->Gwid
    */
   static <T extends UaNode2Gwid> IList<T> loadNodes2Gwids( ITsGuiContext aContext, String aSectId,

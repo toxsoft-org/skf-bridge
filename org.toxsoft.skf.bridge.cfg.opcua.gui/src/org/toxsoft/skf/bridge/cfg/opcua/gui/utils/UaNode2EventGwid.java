@@ -66,4 +66,10 @@ public class UaNode2EventGwid
     paramIds = aParamIds;
   }
 
+  /**
+   * @return list of event param ids
+   */
+  public IStringList paramIds() {
+    return paramIds;
+  }
 }
