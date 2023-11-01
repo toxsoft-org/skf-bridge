@@ -47,6 +47,7 @@ import org.toxsoft.core.tslib.bricks.geometry.impl.*;
 import org.toxsoft.core.tslib.bricks.strid.coll.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
+import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.gw.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
@@ -925,7 +926,7 @@ public class OpcUaTreeBrowserPanel
   // TODO
   private void generateNode2GwidLinks( ITsGuiContext aContext, ISkClassInfo aClassInfo, IList<IDtoObject> aObjList ) {
     IListEdit<UaNode2Gwid> node2RtdGwidList = new ElemArrayList<>();
-    IListEdit<UaNode2Gwid> node2EvtGwidList = new ElemArrayList<>();
+    IListEdit<UaNode2EventGwid> node2EvtGwidList = new ElemArrayList<>();
     IListEdit<CmdGwid2UaNodes> cmdGwid2UaNodesList = new ElemArrayList<>();
     // в это месте у нас 100% уже загружено дерево узлов OPC UA
     IList<UaTreeNode> treeNodes = ((OpcUaNodeM5LifecycleManager)componentModown.lifecycleManager()).getCached();
@@ -965,8 +966,12 @@ public class OpcUaTreeBrowserPanel
           LoggerUtils.defaultLogger().debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
               gwid.asString() );
           String nodeDescr = parentNode.getBrowseName() + "::" + uaNode.getBrowseName(); //$NON-NLS-1$
-          UaNode2Gwid node2Gwid = new UaNode2Gwid( uaNode.getNodeId(), nodeDescr, gwid );
-          node2EvtGwidList.add( node2Gwid );
+          IStringListEdit paramIds = new StringArrayList();
+          for( String paramId : evtInfo.paramDefs().keys() ) {
+            paramIds.add( paramId );
+          }
+          UaNode2EventGwid node2EventGwid = new UaNode2EventGwid( uaNode.getNodeId(), nodeDescr, gwid, paramIds );
+          node2EvtGwidList.add( node2EventGwid );
         }
         else {
           LoggerUtils.errorLogger().error( "Can't match: ? -> %s", gwid.asString() ); //$NON-NLS-1$
@@ -974,8 +979,10 @@ public class OpcUaTreeBrowserPanel
       }
     }
     // заливаем в хранилище
-    OpcUaUtils.updateNodes2GwidsInStore( aContext, node2RtdGwidList, OpcUaUtils.SECTID_OPC_UA_NODES_2_RTD_GWIDS );
-    OpcUaUtils.updateNodes2GwidsInStore( aContext, node2EvtGwidList, OpcUaUtils.SECTID_OPC_UA_NODES_2_EVT_GWIDS );
+    OpcUaUtils.updateNodes2GwidsInStore( aContext, node2RtdGwidList, OpcUaUtils.SECTID_OPC_UA_NODES_2_RTD_GWIDS,
+        UaNode2Gwid.KEEPER );
+    OpcUaUtils.updateNodes2GwidsInStore( aContext, node2EvtGwidList, OpcUaUtils.SECTID_OPC_UA_NODES_2_EVT_GWIDS,
+        UaNode2EventGwid.KEEPER );
     OpcUaUtils.updateCmdGwid2NodesInStore( aContext, cmdGwid2UaNodesList );
   }
 
