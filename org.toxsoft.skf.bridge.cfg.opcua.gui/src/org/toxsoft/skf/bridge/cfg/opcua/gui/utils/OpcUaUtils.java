@@ -47,7 +47,6 @@ import org.toxsoft.core.tslib.bricks.geometry.impl.*;
 import org.toxsoft.core.tslib.bricks.keeper.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
-import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.gw.skid.*;
@@ -71,6 +70,36 @@ import org.toxsoft.uskat.core.gui.conn.*;
  */
 public class OpcUaUtils {
 
+  private static final String COMMANDS_JAVA_CLASS_VALUE_COMMAND_BY_ONE_TAG_EXEC =
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.commands.ValCommandByOneTagWithParamExec";
+
+  public static final String CFG_UNIT_REALIZATION_TYPE_VALUE_COMMAND_BY_ONE_TAG = "val.command.one.tag";
+
+  public static final String CFG_UNIT_REALIZATION_TYPE_VALUE_COMMAND = "value.command";
+
+  private static final String COMMANDS_JAVA_CLASS_VALUE_COMMAND_EXEC =
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.commands.ValueCommandExec";
+
+  private static final String DATA_JAVA_CLASS_ONE_TO_ONE_DATA_TRANSMITTER_FACTORY =
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.OneToOneDataTransmitterFactory";
+
+  private static final String EVENTS_ONE_TAG_CHANGED_PARAM_FORMER =
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagToChangedParamFormer";
+
+  private static final String EVENTS_ONE_TAG_TO_ONE_PARAM_FORMER =
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagToOneParamFormer";
+
+  private static final String EVENTS_JAVA_CLASS_TAG_SWITCH_CONDITION =
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagSwitchEventCondition";
+
+  private static final String EVENTS_JAVA_CLASS_TAG_VALUE_CHANGED_CONDITION =
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagChangedEventCondition";
+
+  private static final String EVENTS_JAVA_CLASS_OPC_TAGS_EVENT_SENDER =
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OpcTagsEventSender";
+
+  public static final String CFG_UNIT_REALIZATION_TYPE_TAG_VALUE_CHANGED = "opc.tags.event.sender.tag.value.changed";
+
   public static final String CFG_UNIT_REALIZATION_TYPE_BIT_SWITCH_EVENT = "opc.tags.event.sender.bit.switch";
 
   public static final String CFG_UNIT_REALIZATION_TYPE_SWITCH_EVENT = "opc.tags.event.sender.switch";
@@ -81,7 +110,7 @@ public class OpcUaUtils {
 
   public static final String CFG_UNIT_REALIZATION_TYPE_ONE_INT_TO_ONE_BIT_DATA = "int.to.byte.data";
 
-  private static final String ONE_INT_TO_ONE_BIT_DATA_TRANSMITTER_FACTORY_CLASS =
+  private static final String DATA_JAVA_CLASS_ONE_INT_TO_ONE_BIT_DATA_TRANSMITTER_FACTORY =
       "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.SingleIntToSingleBoolDataTransmitterFactory";
 
   /**
@@ -622,25 +651,25 @@ public class OpcUaUtils {
     paramDefenitions.add( OP_CMD_OPC_ID );
 
     IOptionSetEdit defaultParams = new OptionSet();
-    OP_CMD_JAVA_CLASS.setValue( defaultParams,
-        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.commands.ValCommandByOneTagWithParamExec" ) );
+    OP_CMD_JAVA_CLASS.setValue( defaultParams, avStr( COMMANDS_JAVA_CLASS_VALUE_COMMAND_BY_ONE_TAG_EXEC ) );
 
-    ICfgUnitRealizationType cmdRealValCommandByOneTagWithParamExec = new CfgUnitRealizationType( "val.command.one.tag",
-        "Установка значения через командный узел", ECfgUnitType.COMMAND, paramDefenitions, defaultParams ) {
+    ICfgUnitRealizationType cmdRealValCommandByOneTagWithParamExec =
+        new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_VALUE_COMMAND_BY_ONE_TAG,
+            "Установка значения через командный узел", ECfgUnitType.COMMAND, paramDefenitions, defaultParams ) {
 
-      @Override
-      public CfgOpcUaNode createInitCfg( ITsGuiContext aaContext, String aNodeId, int aNodeIndex, int aNodeCount ) {
-        OpcUaServerConnCfg conConf =
-            (OpcUaServerConnCfg)aaContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
+          @Override
+          public CfgOpcUaNode createInitCfg( ITsGuiContext aaContext, String aNodeId, int aNodeIndex, int aNodeCount ) {
+            OpcUaServerConnCfg conConf =
+                (OpcUaServerConnCfg)aaContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
 
-        EAtomicType type = EAtomicType.NONE;
-        if( conConf != null ) {
-          type = OpcUaUtils.getValueTypeOfNode( aaContext, conConf, aNodeId );
-        }
-        return new CfgOpcUaNode( aNodeId, false, true, aNodeIndex < aNodeCount - 1, type );
-      }
+            EAtomicType type = EAtomicType.NONE;
+            if( conConf != null ) {
+              type = OpcUaUtils.getValueTypeOfNode( aaContext, conConf, aNodeId );
+            }
+            return new CfgOpcUaNode( aNodeId, false, true, aNodeIndex < aNodeCount - 1, type );
+          }
 
-    };
+        };
 
     realizationTypeRegister.registerType( cmdRealValCommandByOneTagWithParamExec );
 
@@ -653,12 +682,12 @@ public class OpcUaUtils {
     paramDefenitions.add( OP_CMD_VALUE_PARAM_ID );
 
     defaultParams = new OptionSet();
-    OP_CMD_JAVA_CLASS.setValue( defaultParams,
-        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.commands.ValueCommandExec" ) );
+    OP_CMD_JAVA_CLASS.setValue( defaultParams, avStr( COMMANDS_JAVA_CLASS_VALUE_COMMAND_EXEC ) );
     OP_CMD_VALUE_PARAM_ID.setValue( defaultParams, avStr( "value" ) );
 
-    ICfgUnitRealizationType cmdRealValueCommandExec = new CfgUnitRealizationType( "value.command",
-        "Установка значения в узел", ECfgUnitType.COMMAND, paramDefenitions, defaultParams );
+    ICfgUnitRealizationType cmdRealValueCommandExec =
+        new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_VALUE_COMMAND, "Установка значения в узел",
+            ECfgUnitType.COMMAND, paramDefenitions, defaultParams );
 
     realizationTypeRegister.registerType( cmdRealValueCommandExec );
 
@@ -670,8 +699,7 @@ public class OpcUaUtils {
     paramDefenitions.add( OP_DATA_JAVA_CLASS );
 
     defaultParams = new OptionSet();
-    OP_DATA_JAVA_CLASS.setValue( defaultParams,
-        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.OneToOneDataTransmitterFactory" ) );
+    OP_DATA_JAVA_CLASS.setValue( defaultParams, avStr( DATA_JAVA_CLASS_ONE_TO_ONE_DATA_TRANSMITTER_FACTORY ) );
 
     ICfgUnitRealizationType dataOneToOne = new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_ONT_TO_ONE_DATA,
         "Один к одному", ECfgUnitType.DATA, paramDefenitions, defaultParams );
@@ -687,7 +715,7 @@ public class OpcUaUtils {
     paramDefenitions.add( OP_BIT_INDEX );
 
     defaultParams = new OptionSet();
-    OP_DATA_JAVA_CLASS.setValue( defaultParams, avStr( ONE_INT_TO_ONE_BIT_DATA_TRANSMITTER_FACTORY_CLASS ) );
+    OP_DATA_JAVA_CLASS.setValue( defaultParams, avStr( DATA_JAVA_CLASS_ONE_INT_TO_ONE_BIT_DATA_TRANSMITTER_FACTORY ) );
     OP_BIT_INDEX.setValue( defaultParams, avInt( 0 ) );
 
     ICfgUnitRealizationType dataIntToOne =
@@ -698,27 +726,6 @@ public class OpcUaUtils {
 
     // ----------------------------------------------------
     // Определение первой реализации события
-
-    paramDefenitions = new ElemArrayList<>();
-
-    paramDefenitions.add( OP_EVENT_SENDER_JAVA_CLASS );
-    paramDefenitions.add( OP_CONDITION_JAVA_CLASS );
-    paramDefenitions.add( OP_PARAM_FORMER_JAVA_CLASS );
-    paramDefenitions.add( OP_FORMER_EVENT_PARAM );
-
-    defaultParams = new OptionSet();
-    OP_EVENT_SENDER_JAVA_CLASS.setValue( defaultParams,
-        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OpcTagsEventSender" ) );
-    OP_CONDITION_JAVA_CLASS.setValue( defaultParams,
-        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneFloatTagChangedEventCondition" ) );
-    OP_PARAM_FORMER_JAVA_CLASS.setValue( defaultParams,
-        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagToChangedParamFormer" ) );
-    OP_FORMER_EVENT_PARAM.setValue( defaultParams, avStr( "oldVal;newVal" ) );
-
-    ICfgUnitRealizationType opcTagsEventSender = new CfgUnitRealizationType( "opc.tags.event.sender.float.changed",
-        "Событие изменения float", ECfgUnitType.EVENT, paramDefenitions, defaultParams );
-
-    realizationTypeRegister.registerType( opcTagsEventSender );
 
     // ----------------------------------------------------
     // Определение второй реализации события
@@ -731,16 +738,14 @@ public class OpcUaUtils {
     paramDefenitions.add( OP_FORMER_EVENT_PARAM );
 
     defaultParams = new OptionSet();
-    OP_EVENT_SENDER_JAVA_CLASS.setValue( defaultParams,
-        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OpcTagsEventSender" ) );
-    OP_CONDITION_JAVA_CLASS.setValue( defaultParams,
-        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneIntTagChangedEventCondition" ) );
-    OP_PARAM_FORMER_JAVA_CLASS.setValue( defaultParams,
-        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagToChangedParamFormer" ) );
+    OP_EVENT_SENDER_JAVA_CLASS.setValue( defaultParams, avStr( EVENTS_JAVA_CLASS_OPC_TAGS_EVENT_SENDER ) );
+    OP_CONDITION_JAVA_CLASS.setValue( defaultParams, avStr( EVENTS_JAVA_CLASS_TAG_VALUE_CHANGED_CONDITION ) );
+    OP_PARAM_FORMER_JAVA_CLASS.setValue( defaultParams, avStr( EVENTS_ONE_TAG_CHANGED_PARAM_FORMER ) );
     OP_FORMER_EVENT_PARAM.setValue( defaultParams, avStr( "oldVal;newVal" ) );
 
-    ICfgUnitRealizationType opcTagsEventSender2 = new CfgUnitRealizationType( "opc.tags.event.sender.int.changed",
-        "Событие изменения int", ECfgUnitType.EVENT, paramDefenitions, defaultParams );
+    ICfgUnitRealizationType opcTagsEventSender2 =
+        new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_TAG_VALUE_CHANGED, "Событие изменения значения тега",
+            ECfgUnitType.EVENT, paramDefenitions, defaultParams );
 
     realizationTypeRegister.registerType( opcTagsEventSender2 );
 
@@ -757,14 +762,11 @@ public class OpcUaUtils {
     paramDefenitions.add( OP_CONDITION_SWITCH_OFF );
 
     defaultParams = new OptionSet();
-    OP_EVENT_SENDER_JAVA_CLASS.setValue( defaultParams,
-        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OpcTagsEventSender" ) );
-    OP_CONDITION_JAVA_CLASS.setValue( defaultParams,
-        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagSwitchEventCondition" ) );
+    OP_EVENT_SENDER_JAVA_CLASS.setValue( defaultParams, avStr( EVENTS_JAVA_CLASS_OPC_TAGS_EVENT_SENDER ) );
+    OP_CONDITION_JAVA_CLASS.setValue( defaultParams, avStr( EVENTS_JAVA_CLASS_TAG_SWITCH_CONDITION ) );
     OP_CONDITION_SWITCH_ON.setValue( defaultParams, avBool( true ) );
     OP_CONDITION_SWITCH_OFF.setValue( defaultParams, avBool( false ) );
-    OP_PARAM_FORMER_JAVA_CLASS.setValue( defaultParams,
-        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagToOneParamFormer" ) );
+    OP_PARAM_FORMER_JAVA_CLASS.setValue( defaultParams, avStr( EVENTS_ONE_TAG_TO_ONE_PARAM_FORMER ) );
     OP_FORMER_EVENT_PARAM.setValue( defaultParams, avStr( "on" ) );
 
     ICfgUnitRealizationType opcTagsEventSender3 = new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_SWITCH_EVENT,
@@ -786,14 +788,11 @@ public class OpcUaUtils {
     paramDefenitions.add( OP_BIT_INDEX );
 
     defaultParams = new OptionSet();
-    OP_EVENT_SENDER_JAVA_CLASS.setValue( defaultParams,
-        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OpcTagsEventSender" ) );
-    OP_CONDITION_JAVA_CLASS.setValue( defaultParams,
-        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagSwitchEventCondition" ) );
+    OP_EVENT_SENDER_JAVA_CLASS.setValue( defaultParams, avStr( EVENTS_JAVA_CLASS_OPC_TAGS_EVENT_SENDER ) );
+    OP_CONDITION_JAVA_CLASS.setValue( defaultParams, avStr( EVENTS_JAVA_CLASS_TAG_SWITCH_CONDITION ) );
     OP_CONDITION_SWITCH_ON.setValue( defaultParams, avBool( true ) );
     OP_CONDITION_SWITCH_OFF.setValue( defaultParams, avBool( false ) );
-    OP_PARAM_FORMER_JAVA_CLASS.setValue( defaultParams,
-        avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagToOneParamFormer" ) );
+    OP_PARAM_FORMER_JAVA_CLASS.setValue( defaultParams, avStr( EVENTS_ONE_TAG_TO_ONE_PARAM_FORMER ) );
     OP_FORMER_EVENT_PARAM.setValue( defaultParams, avStr( "on" ) );
     OP_BIT_INDEX.setValue( defaultParams, avInt( 0 ) );
 
@@ -939,38 +938,6 @@ public class OpcUaUtils {
 
     }
 
-  }
-
-  /**
-   * Возвращает битовый индекс в интовом теге, с помощью которого следует формировать булевое данное, заданное в gwid.
-   *
-   * @param aGwid - булевое данное, для которого идёёт поиск индекса.
-   * @param aClsId2RtDataInfoes - карта classId-wordId-boolDataId-index
-   * @return Integer - битовый индекс или null;
-   */
-  public static Integer getBitIndexForGwid( Gwid aGwid,
-      IStringMap<StringMap<IList<BitIdx2DtoRtData>>> aClsId2RtDataInfoes ) {
-    if( !aClsId2RtDataInfoes.hasKey( aGwid.classId() ) ) {
-      return null;
-    }
-
-    StringMap<IList<BitIdx2DtoRtData>> classIndexes = aClsId2RtDataInfoes.getByKey( aGwid.classId() );
-
-    // перебор всех наборов для данного класса
-
-    IStringList keys = classIndexes.keys();
-
-    for( String key : keys ) {
-      IList<BitIdx2DtoRtData> indexes = classIndexes.getByKey( key );
-
-      for( BitIdx2DtoRtData indexData : indexes ) {
-        if( indexData.dtoRtdataInfo().id().equals( aGwid.propId() ) ) {
-          return Integer.valueOf( indexData.bitIndex() );
-        }
-      }
-    }
-
-    return null;
   }
 
 }
