@@ -353,6 +353,8 @@ public class OpcUaUtils {
     newList.addAll( aNodes2Skids );
     IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
     storage.writeColl( aSectId, newList, UaNode2Skid.KEEPER );
+    // чистим кеш
+    skid2NodeIdMap.clear();
   }
 
   /**
