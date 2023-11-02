@@ -268,7 +268,7 @@ public class Ods2DtoRtDataInfoParser {
       }
       if( up || dn ) {
         // for example FMT_BOOL_CHECK = "%Б[-|✔]"
-        String FMT_ON = "%Б[" + upText + "|" + dnText + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        String FMT_ON = "%Б[" + dnText + "|" + upText + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         // создаем описание параметра
         DataDef EVPDD_ON = DataDef.create( EVPID_ON, EAtomicType.BOOLEAN, TSID_NAME, STR_N_EV_PARAM_ON, //
             TSID_DESCRIPTION, STR_D_EV_PARAM_ON, //
