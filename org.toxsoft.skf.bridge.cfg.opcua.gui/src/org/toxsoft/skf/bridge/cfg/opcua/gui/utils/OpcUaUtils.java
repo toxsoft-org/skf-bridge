@@ -487,30 +487,6 @@ public class OpcUaUtils {
   }
 
   /**
-   * Get NodeId by Gwid
-   *
-   * @param aContext app context
-   * @param aGwid rtData Gwid
-   * @return NodeId linked to aGwid or null
-   */
-  public static NodeId rtdGwid2uaNode( ITsGuiContext aContext, Gwid aGwid ) {
-    NodeId retVal = null;
-    if( gwid2NodeIdMap.isEmpty() ) {
-      // пустая карта кеша, загружаем
-      IList<UaNode2Gwid> nodes2Gwids = loadNodes2Gwids( aContext, SECTID_OPC_UA_NODES_2_RTD_GWIDS, UaNode2Gwid.KEEPER );
-      for( UaNode2Gwid node2Gwid : nodes2Gwids ) {
-        String key = node2Gwid.gwid().asString();
-        gwid2NodeIdMap.put( key, node2Gwid.getNodeId() );
-      }
-    }
-    String gwidKey = aGwid.asString();
-    if( gwid2NodeIdMap.containsKey( gwidKey ) ) {
-      retVal = gwid2NodeIdMap.get( gwidKey );
-    }
-    return retVal;
-  }
-
-  /**
    * Get NodeId by Class Gwid
    *
    * @param aContext app context
