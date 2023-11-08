@@ -118,20 +118,19 @@ public class Ods2DtoRtDataInfoParser {
     StringMap<IList<BitIdx2DtoRtData>> retVal = new StringMap<>();
     // сканируем закладку от 3 ряда
     for( int currRow = START_ROW; currRow <= aSheet.getRowCount(); currRow++ ) {
+      // читаем материнский rtDataId
       MutableCell<?> cell = aSheet.getCellAt( cellRef( BIT_ARRAY_DATAID_COL, currRow ) );
       // если ячейка пустая, то пропускаем
       if( cell.isEmpty() ) {
         continue;
       }
-      // читаем материнский rtDataId
-      cell = aSheet.getCellAt( cellRef( BIT_ARRAY_DATAID_COL, currRow ) );
       String bitArrayRtDataId = cell.getTextValue();
       // проверяем и создаем, если надо, его список bitRtData
       if( !retVal.hasKey( bitArrayRtDataId ) ) {
         retVal.put( bitArrayRtDataId, new ElemArrayList<>() );
       }
 
-      BitIdx2DtoRtData dataInfo = readBitIdx2DtoRtData( aSheet, currRow );
+      BitIdx2DtoRtData dataInfo = readBitIdx2DtoRtData( bitArrayRtDataId, aSheet, currRow );
       if( dataInfo != null ) {
         IListEdit<BitIdx2DtoRtData> bitList = (IListEdit<BitIdx2DtoRtData>)retVal.getByKey( bitArrayRtDataId );
         bitList.add( dataInfo );
@@ -144,20 +143,19 @@ public class Ods2DtoRtDataInfoParser {
     StringMap<IList<BitIdx2DtoEvent>> retVal = new StringMap<>();
     // сканируем закладку от 3 ряда
     for( int currRow = START_ROW; currRow <= aSheet.getRowCount(); currRow++ ) {
+      // читаем материнский rtDataId
       MutableCell<?> cell = aSheet.getCellAt( cellRef( BIT_ARRAY_DATAID_COL, currRow ) );
       // если ячейка пустая, то пропускаем
       if( cell.isEmpty() ) {
         continue;
       }
-      // читаем материнский rtDataId
-      cell = aSheet.getCellAt( cellRef( BIT_ARRAY_DATAID_COL, currRow ) );
       String bitArrayRtDataId = cell.getTextValue();
       // проверяем и создаем, если надо, его список bitEvent
       if( !retVal.hasKey( bitArrayRtDataId ) ) {
         retVal.put( bitArrayRtDataId, new ElemArrayList<>() );
       }
 
-      BitIdx2DtoEvent evtInfo = readBitIdx2DtoEvent( aSheet, currRow );
+      BitIdx2DtoEvent evtInfo = readBitIdx2DtoEvent( bitArrayRtDataId, aSheet, currRow );
       if( evtInfo != null ) {
         IListEdit<BitIdx2DtoEvent> bitList = (IListEdit<BitIdx2DtoEvent>)retVal.getByKey( bitArrayRtDataId );
         bitList.add( evtInfo );
@@ -169,11 +167,12 @@ public class Ods2DtoRtDataInfoParser {
   /**
    * Читает описание BitIdx2DtoRtData
    *
+   * @param aBitArrayRtDataId - id переменной битоваого массива
    * @param aSheet таблица с описанием
    * @param aRowIndex текущий ряд парсинга
    * @return {@link BitIdx2DtoRtData} описание данного
    */
-  private static BitIdx2DtoRtData readBitIdx2DtoRtData( Sheet aSheet, int aRowIndex ) {
+  private static BitIdx2DtoRtData readBitIdx2DtoRtData( String aBitArrayRtDataId, Sheet aSheet, int aRowIndex ) {
     // id данного
     MutableCell<?> cell = aSheet.getCellAt( cellRef( RTDATA_ID_COL, aRowIndex ) );
     String dataId = cell.getTextValue();
@@ -211,7 +210,7 @@ public class Ods2DtoRtDataInfoParser {
               TSID_DESCRIPTION, descr //
           ) );
 
-      return new BitIdx2DtoRtData( bitIndex, dataInfo );
+      return new BitIdx2DtoRtData( aBitArrayRtDataId, bitIndex, dataInfo );
     }
     return null;
   }
@@ -219,11 +218,12 @@ public class Ods2DtoRtDataInfoParser {
   /**
    * Читает описание BitIdx2DtoEvent
    *
+   * @param aBitArrayRtDataId - id переменной битоваого массива
    * @param aSheet таблица с описанием
    * @param aRowIndex текущий ряд парсинга
    * @return {@link BitIdx2DtoEvent} описание события
    */
-  private static BitIdx2DtoEvent readBitIdx2DtoEvent( Sheet aSheet, int aRowIndex ) {
+  private static BitIdx2DtoEvent readBitIdx2DtoEvent( String aBitArrayRtDataId, Sheet aSheet, int aRowIndex ) {
     // id события
     MutableCell<?> cell = aSheet.getCellAt( cellRef( RTDATA_ID_COL, aRowIndex ) );
     String evtId = cell.getTextValue();
@@ -267,6 +267,7 @@ public class Ods2DtoRtDataInfoParser {
         dnText = cell.getTextValue();
       }
       if( up || dn ) {
+
         // for example FMT_BOOL_CHECK = "%Б[-|✔]"
         String FMT_ON = "%Б[" + dnText + "|" + upText + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         // создаем описание параметра
@@ -284,7 +285,7 @@ public class Ods2DtoRtDataInfoParser {
                 IAvMetaConstants.TSID_DESCRIPTION, descr //
             ) ); //
 
-        return new BitIdx2DtoEvent( bitIndex, evtInfo, up, dn );
+        return new BitIdx2DtoEvent( aBitArrayRtDataId, bitIndex, evtInfo, up, dn );
       }
     }
     return null;

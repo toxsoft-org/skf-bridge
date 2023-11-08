@@ -47,6 +47,7 @@ import org.toxsoft.core.tslib.bricks.geometry.impl.*;
 import org.toxsoft.core.tslib.bricks.keeper.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
+import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.gw.skid.*;
@@ -129,6 +130,11 @@ public class OpcUaUtils {
   public static final String SECTID_OPC_UA_NODES_2_RTD_GWIDS = "opc.ua.nodes2rtd.gwids"; //$NON-NLS-1$
 
   /**
+   * id secton for store links UaNode->ClassGwid
+   */
+  public static final String SECTID_OPC_UA_NODES_2_CLS_GWIDS = "opc.ua.nodes2class.gwids"; //$NON-NLS-1$
+
+  /**
    * id secton for store links UaNode->EvtGwid
    */
   public static final String SECTID_OPC_UA_NODES_2_EVT_GWIDS = "opc.ua.nodes2evt.gwids"; //$NON-NLS-1$
@@ -148,6 +154,7 @@ public class OpcUaUtils {
   private static final String                       SYS_PROP_JAVA_IO_TMPDIR                    = "java.io.tmpdir";
   private static final Map<String, Gwid>            nodeId2GwidMap                             = new HashMap<>();
   private static final Map<String, NodeId>          gwid2NodeIdMap                             = new HashMap<>();
+  private static final Map<String, NodeId>          classGwid2NodeIdMap                        = new HashMap<>();
   private static final Map<Skid, NodeId>            skid2NodeIdMap                             = new HashMap<>();
   private static final Map<String, CmdGwid2UaNodes> cmdGwid2NodeIdsMap                         = new HashMap<>();
 
@@ -340,13 +347,13 @@ public class OpcUaUtils {
     TsInternalErrorRtException.checkNull( workroom );
     IList<UaNode2Skid> oldList = loadNodes2Skids( aContext, aSectId );
     IListEdit<UaNode2Skid> newList = new ElemArrayList<>();
-    // тут приходится перекладывать из одного списка в другой
-    IListEdit<IContainNodeId> tmpList = new ElemArrayList<>();
+    // для ускорения переложим в карту
+    IStringMapEdit<UaNode2Skid> tmpCach = new StringMap<>();
     for( UaNode2Skid node : aNodes2Skids ) {
-      tmpList.add( node );
+      tmpCach.put( node.getNodeId().toParseableString(), node );
     }
     for( UaNode2Skid oldItem : oldList ) {
-      if( !containsNodeIn( tmpList, oldItem ) ) {
+      if( !tmpCach.hasKey( oldItem.getNodeId().toParseableString() ) ) {
         newList.add( oldItem );
       }
     }
@@ -360,9 +367,11 @@ public class OpcUaUtils {
   /**
    * Update list of links UaNode->RtdGwid {@link UaNode2Gwid} to store in inner storage
    *
+   * @param <T> - шаблон для описания привязки {@link UaNode2Gwid}
    * @param aContext app context
    * @param aNodes2Gwids list of links UaNode->Gwid
    * @param aSectId section id to store data
+   * @param aKeeper хранитель шаблона
    */
   public static <T extends UaNode2Gwid> void updateNodes2GwidsInStore( ITsGuiContext aContext, IList<T> aNodes2Gwids,
       String aSectId, IEntityKeeper<T> aKeeper ) {
@@ -370,29 +379,19 @@ public class OpcUaUtils {
     TsInternalErrorRtException.checkNull( workroom );
     IList<T> oldList = loadNodes2Gwids( aContext, aSectId, aKeeper );
     IListEdit<T> newList = new ElemArrayList<>();
-    // тут приходится перекладывать из одного списка в другой
-    IListEdit<IContainNodeId> tmpList = new ElemArrayList<>();
+    // для ускорения переложим в карту
+    IStringMapEdit<IContainNodeId> tmpCach = new StringMap<>();
     for( T node : aNodes2Gwids ) {
-      tmpList.add( node );
+      tmpCach.put( node.getNodeId().toParseableString(), node );
     }
     for( T oldItem : oldList ) {
-      if( !containsNodeIn( tmpList, oldItem ) ) {
+      if( !tmpCach.hasKey( oldItem.getNodeId().toParseableString() ) ) {
         newList.add( oldItem );
       }
     }
     newList.addAll( aNodes2Gwids );
     IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
-    // storage.writeColl( aSectId, newList, UaNode2Gwid.KEEPER ); IEntityKeeper<T> aKeeper
     storage.writeColl( aSectId, newList, aKeeper );
-  }
-
-  private static boolean containsNodeIn( IList<IContainNodeId> aNodes2Gwids, IContainNodeId aOldItem ) {
-    for( IContainNodeId node : aNodes2Gwids ) {
-      if( node.getNodeId().equals( aOldItem.getNodeId() ) ) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**
@@ -507,6 +506,30 @@ public class OpcUaUtils {
     String gwidKey = aGwid.asString();
     if( gwid2NodeIdMap.containsKey( gwidKey ) ) {
       retVal = gwid2NodeIdMap.get( gwidKey );
+    }
+    return retVal;
+  }
+
+  /**
+   * Get NodeId by Class Gwid
+   *
+   * @param aContext app context
+   * @param aGwid Class Gwid
+   * @return NodeId linked to aGwid or null
+   */
+  public static NodeId classGwid2uaNode( ITsGuiContext aContext, Gwid aGwid ) {
+    NodeId retVal = null;
+    if( classGwid2NodeIdMap.isEmpty() ) {
+      // пустая карта кеша, загружаем
+      IList<UaNode2Gwid> nodes2Gwids = loadNodes2Gwids( aContext, SECTID_OPC_UA_NODES_2_CLS_GWIDS, UaNode2Gwid.KEEPER );
+      for( UaNode2Gwid node2Gwid : nodes2Gwids ) {
+        String key = node2Gwid.gwid().asString();
+        classGwid2NodeIdMap.put( key, node2Gwid.getNodeId() );
+      }
+    }
+    String gwidKey = aGwid.asString();
+    if( classGwid2NodeIdMap.containsKey( gwidKey ) ) {
+      retVal = classGwid2NodeIdMap.get( gwidKey );
     }
     return retVal;
   }
