@@ -941,4 +941,68 @@ public class OpcUaUtils {
 
   }
 
+  /**
+   * Возвращает битовый индекс в интовом теге, с помощью которого следует формировать булевое данное, заданное в gwid.
+   *
+   * @param aGwid - булевое данное, для которого идёёт поиск индекса.
+   * @param aClsId2EvtInfoes - карта classId-wordId-boolDataId-index
+   * @return BitIdx2DtoEvent - битовый индекс или null;
+   */
+  public static BitIdx2DtoRtData getDataBitIndexForGwid( Gwid aGwid,
+      IStringMap<StringMap<IList<BitIdx2DtoRtData>>> aClsId2EvtInfoes ) {
+    if( !aClsId2EvtInfoes.hasKey( aGwid.classId() ) ) {
+      return null;
+    }
+
+    StringMap<IList<BitIdx2DtoRtData>> classIndexes = aClsId2EvtInfoes.getByKey( aGwid.classId() );
+
+    // перебор всех наборов для данного класса
+
+    IStringList keys = classIndexes.keys();
+
+    for( String key : keys ) {
+      IList<BitIdx2DtoRtData> indexes = classIndexes.getByKey( key );
+
+      for( BitIdx2DtoRtData indexData : indexes ) {
+        if( indexData.dtoRtdataInfo().id().equals( aGwid.propId() ) ) {
+          return indexData;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Возвращает битовый индекс в интовом теге, с помощью которого следует формировать булевое данное, заданное в gwid.
+   *
+   * @param aGwid - булевое данное, для которого идёёт поиск индекса.
+   * @param aClsId2EvtInfoes - карта classId-wordId-boolDataId-index
+   * @return BitIdx2DtoEvent - битовый индекс или null;
+   */
+  public static BitIdx2DtoEvent getBitIndexForGwid( Gwid aGwid,
+      IStringMap<StringMap<IList<BitIdx2DtoEvent>>> aClsId2EvtInfoes ) {
+    if( !aClsId2EvtInfoes.hasKey( aGwid.classId() ) ) {
+      return null;
+    }
+
+    StringMap<IList<BitIdx2DtoEvent>> classIndexes = aClsId2EvtInfoes.getByKey( aGwid.classId() );
+
+    // перебор всех наборов для данного класса
+
+    IStringList keys = classIndexes.keys();
+
+    for( String key : keys ) {
+      IList<BitIdx2DtoEvent> indexes = classIndexes.getByKey( key );
+
+      for( BitIdx2DtoEvent indexData : indexes ) {
+        if( indexData.dtoEventInfo().id().equals( aGwid.propId() ) ) {
+          return indexData;
+        }
+      }
+    }
+
+    return null;
+  }
+
 }
