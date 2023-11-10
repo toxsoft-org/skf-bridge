@@ -40,7 +40,7 @@ public interface ISkResources {
   String STR_D_OPC_UA_MARKER             = "маркер класса сгенерированного из OPC UA";
   String STR_SUCCESS_OBJS_UPDATED        = "Операция завершена успешно, обновлены объекты: %s";
   String SELECT_FILE_4_IMPORT_CMD        = "Выберите файл с описанием команд";
-  String SELECT_FILE_4_IMPORT_BIT_RTDATA = "Выберите файл с описанием битовых RtData";
+  String SELECT_FILE_4_IMPORT_BIT_RTDATA = "Выберите файл с описанием битовых масок для RtData и Events";
 
   /**
    * {@link PanelClassInfoSelector}

@@ -153,7 +153,6 @@ public class OpcUaUtils {
   private static final String                       SYS_PROP_JAVA_IO_TMPDIR_DEF_VAL            = "security";
   private static final String                       SYS_PROP_JAVA_IO_TMPDIR                    = "java.io.tmpdir";
   private static final Map<String, Gwid>            nodeId2GwidMap                             = new HashMap<>();
-  private static final Map<String, NodeId>          gwid2NodeIdMap                             = new HashMap<>();
   private static final Map<String, NodeId>          classGwid2NodeIdMap                        = new HashMap<>();
   private static final Map<Skid, NodeId>            skid2NodeIdMap                             = new HashMap<>();
   private static final Map<String, CmdGwid2UaNodes> cmdGwid2NodeIdsMap                         = new HashMap<>();
@@ -1001,8 +1000,18 @@ public class OpcUaUtils {
         }
       }
     }
-
     return null;
+  }
+
+  /**
+   * Clear all cached meta info
+   */
+  public static void clearCache() {
+    nodeId2GwidMap.clear();
+    classGwid2NodeIdMap.clear();
+    skid2NodeIdMap.clear();
+    cmdGwid2NodeIdsMap.clear();
+
   }
 
 }

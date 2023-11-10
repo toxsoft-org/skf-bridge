@@ -303,10 +303,15 @@ public class OpcUaTreeBrowserPanel
 
         toolBar.addListener( aActionId -> {
           if( aActionId == CREATE_CINFO_FROM_OPC_UA_ACT_ID ) {
+            // first of all ensure all needed files are loaded
+            ensureCmdDescription();
+            ensureBitMaskDescription();
             createClassFromNodes( aContext );
           }
 
           if( aActionId == CREATE_OBJS_FROM_OPC_UA_ACT_ID ) {
+            // first of all ensure file bitMask loaded
+            ensureBitMaskDescription();
             createObjsFromNodes( aContext );
           }
 
@@ -324,33 +329,10 @@ public class OpcUaTreeBrowserPanel
           }
 
           if( aActionId == ACT_ID_LOAD_BIT_RTDATA ) {
-            String bitRtdataFileDescr = getDescrFile( SELECT_FILE_4_IMPORT_BIT_RTDATA );
-            if( bitRtdataFileDescr != null ) {
-              File file = new File( bitRtdataFileDescr );
-              try {
-                Ods2DtoRtDataInfoParser.parse( file );
-                clsId2RtDataInfoes = Ods2DtoRtDataInfoParser.getRtdataInfoesMap();
-                clsId2EventInfoes = Ods2DtoRtDataInfoParser.getEventInfoesMap();
-                TsDialogUtils.info( getShell(), "Loaded bit rtData and bit events description from file: %s",
-                    bitRtdataFileDescr );
-              }
-              catch( IOException ex ) {
-                LoggerUtils.errorLogger().error( ex );
-              }
-            }
+            loadBitMaskDescrFile();
           }
           if( aActionId == LOAD_CMD_DESCR_ACT_ID ) {
-            String cmdFileDescr = getDescrFile( SELECT_FILE_4_IMPORT_CMD );
-            if( cmdFileDescr != null ) {
-              File file = new File( cmdFileDescr );
-              try {
-                clsId2CmdInfoes = Ods2DtoCmdInfoParser.parse( file );
-                TsDialogUtils.info( getShell(), "Loaded command description from file: %s", cmdFileDescr );
-              }
-              catch( IOException ex ) {
-                LoggerUtils.errorLogger().error( ex );
-              }
-            }
+            loadCmdDescrFile();
           }
 
         } );
@@ -400,6 +382,38 @@ public class OpcUaTreeBrowserPanel
 
     } );
 
+  }
+
+  protected void ensureCmdDescription() {
+    if( clsId2CmdInfoes == null ) {
+      loadCmdDescrFile();
+    }
+  }
+
+  protected void ensureBitMaskDescription() {
+    if( clsId2RtDataInfoes == null || clsId2EventInfoes == null ) {
+      loadBitMaskDescrFile();
+    }
+  }
+
+  /**
+   * Load ask user and load file with mask descriptions
+   */
+  private void loadBitMaskDescrFile() {
+    String bitRtdataFileDescr = getDescrFile( SELECT_FILE_4_IMPORT_BIT_RTDATA );
+    if( bitRtdataFileDescr != null ) {
+      File file = new File( bitRtdataFileDescr );
+      try {
+        Ods2DtoRtDataInfoParser.parse( file );
+        clsId2RtDataInfoes = Ods2DtoRtDataInfoParser.getRtdataInfoesMap();
+        clsId2EventInfoes = Ods2DtoRtDataInfoParser.getEventInfoesMap();
+        TsDialogUtils.info( getShell(), "Loaded bit rtData and bit events description from file: %s",
+            bitRtdataFileDescr );
+      }
+      catch( IOException ex ) {
+        LoggerUtils.errorLogger().error( ex );
+      }
+    }
   }
 
   private static boolean isCheckLinkEnable( UaTreeNode aSelectedItem ) {
@@ -575,6 +589,7 @@ public class OpcUaTreeBrowserPanel
             ISkObject obj2Update = conn.coreApi().objService().find( skid );
             listObj2Update.add( DtoObject.createFromSk( obj2Update, conn.coreApi() ) );
           }
+          OpcUaUtils.clearCache();
           generateNode2GwidLinks( aContext, updatedClassInfo, listObj2Update );
           TsDialogUtils.info( getShell(), STR_SUCCESS_CLASS_UPDATED, dtoClassInfo.id() );
         }
@@ -591,6 +606,7 @@ public class OpcUaTreeBrowserPanel
           // заливаем в хранилище
           OpcUaUtils.updateNodes2GwidsInStore( aContext, node2ClassGwidList, OpcUaUtils.SECTID_OPC_UA_NODES_2_CLS_GWIDS,
               UaNode2Gwid.KEEPER );
+          OpcUaUtils.clearCache();
           // подтверждаем успешное создание класса
           TsDialogUtils.info( getShell(), STR_SUCCESS_CLASS_CREATED, dtoClassInfo.id() );
         }
@@ -1070,11 +1086,11 @@ public class OpcUaTreeBrowserPanel
         for( BitIdx2DtoRtData bit2rtData : rtDataBits ) {
           if( bit2rtData.dtoRtdataInfo().id().equals( aRtDataInfo.id() ) ) {
             // нашли свое данное, значит у него 100пудово должен быть его узел
-            UaTreeNode retVal = findNodeByBrowseName( bit2rtData.bitArrayWordStrid().substring( RTD_PREFIX.length() ),
-                aParentNode.getChildren() );
+            String bitArrayNode = bit2rtData.bitArrayWordStrid().substring( RTD_PREFIX.length() );
+            UaTreeNode retVal = findNodeByBrowseName( bitArrayNode, aParentNode.getChildren() );
             TsIllegalStateRtException.checkNull( retVal,
-                "Subtree %s, can't find node for class: %s, bit mask rtData: %s", aParentNode.getBrowseName(), //$NON-NLS-1$
-                aClassInfo.id(), aRtDataInfo.id() );
+                "Subtree %s, can't find node %s for class: %s, bit mask rtData: %s", bitArrayNode, //$NON-NLS-1$
+                aParentNode.getBrowseName(), aClassInfo.id(), aRtDataInfo.id() );
             return retVal;
           }
         }
@@ -1298,6 +1314,20 @@ public class OpcUaTreeBrowserPanel
       }
     };
     return retVal;
+  }
+
+  private void loadCmdDescrFile() {
+    String cmdFileDescr = getDescrFile( SELECT_FILE_4_IMPORT_CMD );
+    if( cmdFileDescr != null ) {
+      File file = new File( cmdFileDescr );
+      try {
+        clsId2CmdInfoes = Ods2DtoCmdInfoParser.parse( file );
+        TsDialogUtils.info( getShell(), "Loaded command description from file: %s", cmdFileDescr );
+      }
+      catch( IOException ex ) {
+        LoggerUtils.errorLogger().error( ex );
+      }
+    }
   }
 
 }
