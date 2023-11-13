@@ -104,7 +104,7 @@ public class OpcToS5DataCfgUnitM5Model
           "Показать несоответствующие единицы конфигурации", ICONID_SHOW_NON_VALID );
 
   final static TsActionDef ACDEF_GENERATE_FILE = TsActionDef.ofPush2( ACTID_GENERATE_FILE,
-      "Сгенерировать файлы конфигурации", "Сгенерировать файлы конфигурации", ICONID_SHOW_GENERATE_DLMCFG );
+      "Сгенерировать файл конфигурации dlmcfg", "Сгенерировать файл конфигурации dlmcfg", ICONID_SHOW_GENERATE_DLMCFG );
 
   final static TsActionDef ACDEF_READ_FILE = TsActionDef.ofPush2( ACTID_READ_FILE, "Прочитать файлы конфигурации",
       "Прочитать файлы конфигурации", ICONID_READ_FILE );
@@ -432,11 +432,11 @@ public class OpcToS5DataCfgUnitM5Model
                 // aActs.add( ACDEF_SAVE_DOC );
                 // aActs.add( ACDEF_S5_SERVER_SELECT );
                 // aActs.add( ACDEF_OPC_SERVER_SELECT );
-                aActs.add( ACDEF_VALIDATE );
+                // aActs.add( ACDEF_VALIDATE );
                 aActs.add( ACDEF_AUTO_LINK );
-                aActs.add( ACDEF_SHOW_NON_VALID );
+                // aActs.add( ACDEF_SHOW_NON_VALID );
                 aActs.add( ACDEF_GENERATE_FILE );
-                aActs.add( ACDEF_READ_FILE );
+                // aActs.add( ACDEF_READ_FILE );
 
                 ITsToolbar toolbar =
 

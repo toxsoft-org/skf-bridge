@@ -42,14 +42,14 @@ public class OpcToS5DataCfgDocM5Model
    * Attribute {@link OpcToS5DataCfgDoc#id() } string id
    */
   static M5AttributeFieldDef<OpcToS5DataCfgDoc> STRID = new M5AttributeFieldDef<>( FID_STRID, EAtomicType.STRING, //
-      TSID_NAME, STR_N_PARAM_STRID, //
+      TSID_NAME, "ид", //
       TSID_DESCRIPTION, STR_D_PARAM_STRID, //
       OPID_EDITOR_FACTORY_NAME, ValedAvStringText.FACTORY_NAME //
   ) {
 
     @Override
     protected void doInit() {
-      setFlags( M5FF_COLUMN | M5FF_READ_ONLY );
+      setFlags( M5FF_READ_ONLY );
     }
 
     protected IAtomicValue doGetFieldValue( OpcToS5DataCfgDoc aEntity ) {
