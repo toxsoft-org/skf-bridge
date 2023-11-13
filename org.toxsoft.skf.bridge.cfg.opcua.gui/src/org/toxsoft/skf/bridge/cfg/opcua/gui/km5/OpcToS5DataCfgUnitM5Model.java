@@ -7,9 +7,8 @@ import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IBridgeCfgOpcUaResources.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
-import static org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.*;
+import static org.toxsoft.skf.bridge.cfg.opcua.gui.km5.ISkResources.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
-//import static org.toxsoft.uskat.core.gui.conn.cfg.m5.IConnectionConfigM5Constants.*;
 
 import java.io.*;
 
@@ -84,30 +83,29 @@ public class OpcToS5DataCfgUnitM5Model
 
   final static String ACTID_READ_FILE = SK_ID + "bridge.cfg.opcua.to.s5.read.file"; //$NON-NLS-1$
 
-  final static TsActionDef ACDEF_SAVE_DOC = TsActionDef.ofPush2( ACTID_SAVE_DOC, "Сохранить конфигурацию",
-      "Сохранить конфигурацию в SKIDE", ICONID_SAVE_DOC );
+  final static TsActionDef ACDEF_SAVE_DOC =
+      TsActionDef.ofPush2( ACTID_SAVE_DOC, STR_N_SAVE_CONFIG, STR_D_SAVE_CONFIG, ICONID_SAVE_DOC );
 
-  final static TsActionDef ACDEF_S5_SERVER_SELECT =
-      TsActionDef.ofPush2( ACTID_S5_SERVER_SELECT, "Выбрать S5 сервер", "Выбрать S5 сервер", ICONID_S5_SERVER_SELECT );
+  final static TsActionDef ACDEF_S5_SERVER_SELECT = TsActionDef.ofPush2( ACTID_S5_SERVER_SELECT, STR_N_SELECT_S5_SERVER,
+      STR_D_SELECT_S5_SERVER, ICONID_S5_SERVER_SELECT );
 
   final static TsActionDef ACDEF_OPC_SERVER_SELECT = TsActionDef.ofPush2( ACTID_OPC_SERVER_SELECT,
-      "Выбрать OPC UA сервер", "Выбрать OPC UA сервер", ICONID_OPC_SERVER_SELECT );
+      STR_N_SELECT_OPC_UA_SERVER, STR_D_SELECT_OPC_UA_SERVER, ICONID_OPC_SERVER_SELECT );
 
-  final static TsActionDef ACDEF_VALIDATE = TsActionDef.ofPush2( ACTID_VALIDATE, "Проверить конфигурацию",
-      "Проверить конфигурацию на несоответствие gwid и nodeId имеющимся на выбранных серверах", ICONID_VALIDATE );
+  final static TsActionDef ACDEF_VALIDATE =
+      TsActionDef.ofPush2( ACTID_VALIDATE, STR_N_VALIDATE_CONFIG, STR_D_VALIDATE_CONFIG, ICONID_VALIDATE );
 
-  final static TsActionDef ACDEF_AUTO_LINK = TsActionDef.ofPush2( ACTID_AUTO_LINK, "Автоматическое связывание",
-      "Автоматическое связывание", ICONID_AUTO_LINK );
+  final static TsActionDef ACDEF_AUTO_LINK =
+      TsActionDef.ofPush2( ACTID_AUTO_LINK, STR_N_AUTO_LINK, STR_D_AUTO_LINK, ICONID_AUTO_LINK );
 
-  final static TsActionDef ACDEF_SHOW_NON_VALID =
-      TsActionDef.ofPush2( ACTID_SHOW_NON_VALID, "Показать несоответствующие единицы конфигурации",
-          "Показать несоответствующие единицы конфигурации", ICONID_SHOW_NON_VALID );
+  final static TsActionDef ACDEF_SHOW_NON_VALID = TsActionDef.ofPush2( ACTID_SHOW_NON_VALID, STR_N_SHOW_UNMATCHED_UNITS,
+      STR_D_SHOW_UNMATCHED_UNITS, ICONID_SHOW_NON_VALID );
 
-  final static TsActionDef ACDEF_GENERATE_FILE = TsActionDef.ofPush2( ACTID_GENERATE_FILE,
-      "Сгенерировать файл конфигурации dlmcfg", "Сгенерировать файл конфигурации dlmcfg", ICONID_SHOW_GENERATE_DLMCFG );
+  final static TsActionDef ACDEF_GENERATE_FILE = TsActionDef.ofPush2( ACTID_GENERATE_FILE, STR_N_GENERATE_DLMCFG,
+      STR_D_GENERATE_DLMCFG, ICONID_SHOW_GENERATE_DLMCFG );
 
-  final static TsActionDef ACDEF_READ_FILE = TsActionDef.ofPush2( ACTID_READ_FILE, "Прочитать файлы конфигурации",
-      "Прочитать файлы конфигурации", ICONID_READ_FILE );
+  final static TsActionDef ACDEF_READ_FILE =
+      TsActionDef.ofPush2( ACTID_READ_FILE, STR_N_READ_CONFIG_FILES, STR_D_READ_CONFIG_FILES, ICONID_READ_FILE );
 
   /**
    * string id of cfg nodes field
@@ -192,7 +190,7 @@ public class OpcToS5DataCfgUnitM5Model
 
         @Override
         protected void doInit() {
-          setNameAndDescription( "Gwids", "Gwids" );
+          setNameAndDescription( "Gwids", "Gwids" ); //$NON-NLS-1$ //$NON-NLS-2$
           setFlags( M5FF_COLUMN | M5FF_DETAIL );
           // задаем нормальный размер!
           params().setInt( IValedControlConstants.OPDEF_VERTICAL_SPAN, 5 );
@@ -224,8 +222,8 @@ public class OpcToS5DataCfgUnitM5Model
    * Attribute {@link OpcToS5DataCfgUnit#getTypeOfCfgUnit() } type
    */
   static M5AttributeFieldDef<OpcToS5DataCfgUnit> TYPE = new M5AttributeFieldDef<>( FID_TYPE, EAtomicType.VALOBJ, //
-      TSID_NAME, "Тип", //
-      TSID_DESCRIPTION, "Тип", //
+      TSID_NAME, STR_N_NODE_VALUE_TYPE, //
+      TSID_DESCRIPTION, STR_D_NODE_VALUE_TYPE, //
       TSID_KEEPER_ID, ECfgUnitType.KEEPER_ID //
   ) {
 
@@ -248,7 +246,7 @@ public class OpcToS5DataCfgUnitM5Model
 
         @Override
         protected void doInit() {
-          setNameAndDescription( "Nodes", "Nodes" );
+          setNameAndDescription( "Nodes", "Nodes" ); //$NON-NLS-1$ //$NON-NLS-2$
           setFlags( M5FF_COLUMN | M5FF_DETAIL );
           // задаем нормальный размер!
           params().setInt( IValedControlConstants.OPDEF_VERTICAL_SPAN, 8 );
@@ -283,7 +281,7 @@ public class OpcToS5DataCfgUnitM5Model
 
         @Override
         protected void doInit() {
-          setNameAndDescription( "Тип реализации", "Тип реализации" );
+          setNameAndDescription( STR_N_TYPE_REALIZ, STR_D_TYPE_REALIZ );
           setFlags( M5FF_COLUMN );
           CfgUnitRealizationTypeRegister typeReg2 = m5().tsContext().get( CfgUnitRealizationTypeRegister.class );
           setDefaultValue( typeReg2.getTypesOfRealizationForCfgUnitType( ECfgUnitType.DATA ).first() );
@@ -312,7 +310,7 @@ public class OpcToS5DataCfgUnitM5Model
 
         @Override
         protected void doInit() {
-          setNameAndDescription( "Реализация", "Реализация" );
+          setNameAndDescription( STR_N_REALIZ, STR_D_REALIZ );
           setFlags( M5FF_COLUMN );
           setValedEditor( ValedOptionSet.FACTORY_NAME );
           CfgUnitRealizationTypeRegister typeReg2 = m5().tsContext().get( CfgUnitRealizationTypeRegister.class );
@@ -486,12 +484,13 @@ public class OpcToS5DataCfgUnitM5Model
 
                     IStringMap<IStringMap<Integer>> cmdOpcCodes = new StringMap<>();
 
-                    String cmdFileDescr = getDescrFile( SELECT_FILE_4_IMPORT_CMD );
+                    String cmdFileDescr = getDescrFile(
+                        org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.SELECT_FILE_4_IMPORT_CMD );
                     if( cmdFileDescr != null ) {
                       File file = new File( cmdFileDescr );
                       try {
                         cmdOpcCodes = Ods2DtoCmdInfoParser.parseOpcCmdCodes( file );
-                        TsDialogUtils.info( getShell(), "Loaded command description from file: %s", cmdFileDescr );
+                        TsDialogUtils.info( getShell(), MSG_LOADED_CMDS_DESCR, cmdFileDescr );
                       }
                       catch( IOException ex ) {
                         LoggerUtils.errorLogger().error( ex );
@@ -501,15 +500,15 @@ public class OpcToS5DataCfgUnitM5Model
                     StringMap<StringMap<IList<BitIdx2DtoRtData>>> clsId2RtDataInfoes = new StringMap<>();
                     StringMap<StringMap<IList<BitIdx2DtoEvent>>> clsId2EventInfoes = new StringMap<>();
 
-                    String bitRtdataFileDescr = getDescrFile( SELECT_FILE_4_IMPORT_BIT_RTDATA );
+                    String bitRtdataFileDescr = getDescrFile(
+                        org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.SELECT_FILE_4_IMPORT_BIT_RTDATA );
                     if( bitRtdataFileDescr != null ) {
                       File file = new File( bitRtdataFileDescr );
                       try {
                         Ods2DtoRtDataInfoParser.parse( file );
                         clsId2RtDataInfoes = Ods2DtoRtDataInfoParser.getRtdataInfoesMap();
                         clsId2EventInfoes = Ods2DtoRtDataInfoParser.getEventInfoesMap();
-                        TsDialogUtils.info( getShell(), "Loaded bit rtData description from file: %s",
-                            bitRtdataFileDescr );
+                        TsDialogUtils.info( getShell(), MSG_LOADED_BIT_MASKS_DESCR, bitRtdataFileDescr );
                       }
                       catch( IOException ex ) {
                         LoggerUtils.errorLogger().error( ex );
@@ -527,16 +526,16 @@ public class OpcToS5DataCfgUnitM5Model
                       nodes.add( cmd2Nodes.getNodeCmdId() );
                       if( cmd2Nodes.getNodeCmdArgInt() != null ) {
                         nodes.add( cmd2Nodes.getNodeCmdArgInt() );
-                        cmdArgParam = "argInt";
+                        cmdArgParam = Ods2DtoCmdInfoParser.CMD_ARG_INT_ID;
                       }
                       else
                         if( cmd2Nodes.getNodeCmdArgFlt() != null ) {
                           nodes.add( cmd2Nodes.getNodeCmdArgFlt() );
-                          cmdArgParam = "argFlt";
+                          cmdArgParam = Ods2DtoCmdInfoParser.CMD_ARG_FLT_ID;
                         }
                       nodes.add( cmd2Nodes.getNodeCmdFeedback() );
 
-                      String strid = "opctos5.bridge.cfg.cmd.unit.id" + System.currentTimeMillis() + "."
+                      String strid = "opctos5.bridge.cfg.cmd.unit.id" + System.currentTimeMillis() + "." //$NON-NLS-1$
                           + cmd2Nodes.gwid().strid();// OpcToS5DataCfgUnitM5Model.STRID.getFieldValue(
                       ECfgUnitType type = ECfgUnitType.COMMAND;
 
@@ -544,10 +543,10 @@ public class OpcToS5DataCfgUnitM5Model
                           m5().tsContext().get( CfgUnitRealizationTypeRegister.class );
 
                       ICfgUnitRealizationType realType =
-                          typeReg2.getTypeOfRealizationById( type, "val.command.one.tag" );
+                          typeReg2.getTypeOfRealizationById( type, "val.command.one.tag" ); //$NON-NLS-1$
                       OptionSet realization = new OptionSet();
                       OpcUaUtils.OP_CMD_JAVA_CLASS.setValue( realization,
-                          avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.commands.ValCommandByOneTagWithParamExec" ) );
+                          avStr( "ru.toxsoft.l2.dlm.opc_bridge.submodules.commands.ValCommandByOneTagWithParamExec" ) ); //$NON-NLS-1$
                       if( cmdArgParam != null ) {
                         OpcUaUtils.OP_CMD_VALUE_PARAM_ID.setValue( realization, avStr( cmdArgParam ) );
                       }
@@ -563,7 +562,7 @@ public class OpcToS5DataCfgUnitM5Model
 
                       OpcUaUtils.OP_CMD_OPC_ID.setValue( realization, avInt( cmdOpcCode ) );
 
-                      String name = "generated for " + cmd2Nodes.gwid().asString();
+                      String name = STR_LINK_PREFIX + cmd2Nodes.gwid().asString();
 
                       OpcToS5DataCfgUnit result = new OpcToS5DataCfgUnit( strid, name );
                       result.setDataNodes( nodes );
@@ -623,7 +622,7 @@ public class OpcToS5DataCfgUnitM5Model
                         OpcUaUtils.OP_BIT_INDEX.setValue( realization, avInt( bitIndex.bitIndex() ) );
                       }
 
-                      String name = "generated for " + gwid.asString();
+                      String name = STR_LINK_PREFIX + gwid.asString();
 
                       OpcToS5DataCfgUnit result = new OpcToS5DataCfgUnit( strid, name );
                       result.setDataNodes( nodes );
@@ -673,7 +672,7 @@ public class OpcToS5DataCfgUnitM5Model
                         OpcUaUtils.OP_CONDITION_SWITCH_OFF.setValue( realization, avBool( genDn ) );
                       }
 
-                      String name = "generated for " + gwid.asString();
+                      String name = STR_LINK_PREFIX + gwid.asString();
 
                       OpcToS5DataCfgUnit result = new OpcToS5DataCfgUnit( strid, name );
                       result.setDataNodes( nodes );

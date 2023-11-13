@@ -9,7 +9,7 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 public class OpcToS5DataCfgDocM5LifecycleManager
     extends M5LifecycleManager<OpcToS5DataCfgDoc, OpcToS5DataCfgDocService> {
 
-  private static final String SECTID_OPC_CFG_DOCS = "opc.bridge.cfg.doc";
+  private static final String SECTID_OPC_CFG_DOCS = "opc.bridge.cfg.doc"; //$NON-NLS-1$
 
   // private IListEdit<OpcToS5DataCfgDoc> docs = new ElemArrayList<>();
 
@@ -23,7 +23,7 @@ public class OpcToS5DataCfgDocM5LifecycleManager
   protected OpcToS5DataCfgDoc doCreate( IM5Bunch<OpcToS5DataCfgDoc> aValues ) {
     IAtomicValue nameVal = aValues.get( OpcToS5DataCfgDocM5Model.FID_NAME );
     IAtomicValue descrVal = aValues.get( OpcToS5DataCfgDocM5Model.FID_DESCR );
-    String strid = "opctos5.bridge.cfg.doc.id" + System.currentTimeMillis();
+    String strid = "opctos5.bridge.cfg.doc.id" + System.currentTimeMillis(); //$NON-NLS-1$
     OpcToS5DataCfgDoc newDoc = new OpcToS5DataCfgDoc( strid, nameVal.asString(), descrVal.asString() );
 
     // docs.add( newDoc );

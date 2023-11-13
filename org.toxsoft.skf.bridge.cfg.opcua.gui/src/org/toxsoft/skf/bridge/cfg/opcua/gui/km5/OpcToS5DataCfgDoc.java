@@ -21,6 +21,8 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.filegen.*;
 public class OpcToS5DataCfgDoc
     extends Stridable {
 
+  private static final String CHECK_DOC = "CheckDoc"; //$NON-NLS-1$
+
   /**
    * The keeper singleton.
    */
@@ -70,7 +72,7 @@ public class OpcToS5DataCfgDoc
             aSw.writeEol();
           }
 
-          aSw.writeQuotedString( "CheckDoc" );
+          aSw.writeQuotedString( CHECK_DOC );
           aSw.decNewLine();
         }
 
@@ -112,7 +114,7 @@ public class OpcToS5DataCfgDoc
 
           System.out.println( "Loaded nodes count = " + nodes.size() );
 
-          if( !aSr.readQuotedString().equals( "CheckDoc" ) ) {
+          if( !aSr.readQuotedString().equals( CHECK_DOC ) ) {
             System.out.println( "Error Doc Read" );
           }
 

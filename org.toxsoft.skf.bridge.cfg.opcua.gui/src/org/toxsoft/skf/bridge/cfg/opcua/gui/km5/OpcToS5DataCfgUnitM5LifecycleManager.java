@@ -1,11 +1,12 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
 
+import static org.toxsoft.skf.bridge.cfg.opcua.gui.km5.ISkResources.*;
+
 import java.io.*;
 
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
-import org.toxsoft.core.log4j.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tsgui.dialogs.*;
 import org.toxsoft.core.tsgui.m5.*;
@@ -14,7 +15,7 @@ import org.toxsoft.core.tslib.av.avtree.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
-import org.toxsoft.core.tslib.utils.logs.*;
+import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
@@ -26,11 +27,6 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
  */
 public class OpcToS5DataCfgUnitM5LifecycleManager
     extends M5LifecycleManager<OpcToS5DataCfgUnit, OpcToS5DataCfgDoc> {
-
-  /**
-   * Журнал работы
-   */
-  private ILogger logger = LoggerWrapper.getLogger( this.getClass().getName() );
 
   /**
    * тестовый список конфигураций
@@ -48,19 +44,6 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
 
   }
 
-  /**
-   * Constructor by M5 model and service
-   *
-   * @param aModel IM5Model - model
-   * @param aContext ITsGuiContext - context
-   * @param aCfgDoc OpcToS5DataCfgDoc - cfg doc
-   */
-  // public OpcToS5DataCfgUnitM5LifecycleManager( IM5Model<OpcToS5DataCfgUnit> aModel, ITsGuiContext aContext,
-  // OpcToS5DataCfgDoc aCfgDoc ) {
-  // super( aModel, true, true, true, true, aContext );
-  // cfgDoc = aCfgDoc;
-  // }
-
   @Override
   protected IList<OpcToS5DataCfgUnit> doListEntities() {
     return master().dataUnits();
@@ -69,7 +52,7 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
   @Override
   protected OpcToS5DataCfgUnit doCreate( IM5Bunch<OpcToS5DataCfgUnit> aValues ) {
     String name = OpcToS5DataCfgUnitM5Model.DISPLAY_NAME.getFieldValue( aValues ).asString();
-    String strid = "opctos5.bridge.cfg.unit.id" + System.currentTimeMillis();// OpcToS5DataCfgUnitM5Model.STRID.getFieldValue(
+    String strid = "opctos5.bridge.cfg.unit.id" + System.currentTimeMillis();// OpcToS5DataCfgUnitM5Model.STRID.getFieldValue( //$NON-NLS-1$
     ECfgUnitType type = OpcToS5DataCfgUnitM5Model.TYPE.getFieldValue( aValues ).asValobj();
     // aValues ).asString();
     IList<Gwid> gwids = OpcToS5DataCfgUnitM5Model.GWIDS.getFieldValue( aValues );
@@ -123,9 +106,9 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
   void generateFileFromCurrState( ITsGuiContext aContext ) {
     Shell shell = aContext.find( Shell.class );
     FileDialog fd = new FileDialog( shell, SWT.SAVE );
-    fd.setText( "Выбор файла сохранения конфигурации моста" );
-    fd.setFilterPath( "" );
-    String[] filterExt = { ".dlmcfg" };
+    fd.setText( STR_SELECT_FILE_SAVE_DLMCFG );
+    fd.setFilterPath( TsLibUtils.EMPTY_STRING );
+    String[] filterExt = { ".dlmcfg" }; //$NON-NLS-1$
     fd.setFilterExtensions( filterExt );
     String selected = fd.open();
     if( selected == null ) {
@@ -133,13 +116,13 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
     }
     try {
       IAvTree avTree = OpcToS5DataCfgConverter.convertToDlmCfgTree( master() );
-      String TMP_DEST_FILE = "destDlmFile.tmp";
+      String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
       AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
 
-      String DLM_CONFIG_STR = "DlmConfig = ";
+      String DLM_CONFIG_STR = "DlmConfig = "; //$NON-NLS-1$
       PinsConfigFileFormatter.format( TMP_DEST_FILE, selected, DLM_CONFIG_STR );
 
-      TsDialogUtils.info( shell, "Создан файл конфигурации моста opc ua: %s", selected );
+      TsDialogUtils.info( shell, MSG_CONFIG_FILE_DLMCFG_CREATED, selected );
     }
     catch( Exception e ) {
       LoggerUtils.errorLogger().error( e );
@@ -147,6 +130,9 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
     }
   }
 
+  /**
+   * @param aResult config unit
+   */
   public void addCfgUnit( OpcToS5DataCfgUnit aResult ) {
     master().addDataUnit( aResult );
   }

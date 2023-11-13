@@ -45,7 +45,7 @@ public class Ods2DtoCmdInfoParser {
    * <p>
    * аргумент имеет тип {@link EAtomicType#INTEGER}.
    */
-  static String CMD_ARG_INT_ID = "argInt"; //$NON-NLS-1$
+  public static String CMD_ARG_INT_ID = "argInt"; //$NON-NLS-1$
 
   /**
    * /** Аргумент команды.
@@ -61,7 +61,7 @@ public class Ods2DtoCmdInfoParser {
    * <p>
    * аргумент имеет тип {@link EAtomicType#FLOATING}.
    */
-  static String CMD_ARG_FLT_ID = "argFlt"; //$NON-NLS-1$
+  public static String CMD_ARG_FLT_ID = "argFlt"; //$NON-NLS-1$
 
   /**
    * /** Аргумент команды.

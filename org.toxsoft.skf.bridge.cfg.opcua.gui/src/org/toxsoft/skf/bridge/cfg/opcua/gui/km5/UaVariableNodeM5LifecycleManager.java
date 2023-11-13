@@ -66,7 +66,7 @@ public class UaVariableNodeM5LifecycleManager
     boolean needWarn = !isWritable( nodeIds );
     // получаем тип доступа к узлу
     EnumSet<AccessLevel> accessLevel = AccessLevel.fromValue( aValues.originalEntity().getAccessLevel() );
-    if( accessLevel.equals( AccessLevel.READ_ONLY ) ) {
+    if( accessLevel.retainAll( AccessLevel.READ_ONLY ) ) {
       needWarn = true;
     }
     if( needWarn ) {

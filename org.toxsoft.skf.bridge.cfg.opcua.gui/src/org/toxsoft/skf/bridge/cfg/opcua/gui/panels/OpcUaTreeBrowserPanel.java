@@ -187,8 +187,8 @@ public class OpcUaTreeBrowserPanel
    */
   private OpcUaClient                          client;
   private UaTreeNode                           selectedNode     = null;
-  private String                               ODS_EXT          = "*.ods"; //$NON-NLS-1$
-  private String                               DEFAULT_PATH_STR = "";
+  private String                               ODS_EXT          = "*.ods";                //$NON-NLS-1$
+  private String                               DEFAULT_PATH_STR = TsLibUtils.EMPTY_STRING;
 
   /**
    * Items provider for ISkObject created on OPC UA node.
@@ -407,8 +407,7 @@ public class OpcUaTreeBrowserPanel
         Ods2DtoRtDataInfoParser.parse( file );
         clsId2RtDataInfoes = Ods2DtoRtDataInfoParser.getRtdataInfoesMap();
         clsId2EventInfoes = Ods2DtoRtDataInfoParser.getEventInfoesMap();
-        TsDialogUtils.info( getShell(), "Loaded bit rtData and bit events description from file: %s",
-            bitRtdataFileDescr );
+        TsDialogUtils.info( getShell(), STR_BITMASK_FILE_LOADED, bitRtdataFileDescr );
       }
       catch( IOException ex ) {
         LoggerUtils.errorLogger().error( ex );
@@ -743,7 +742,7 @@ public class OpcUaTreeBrowserPanel
         }
         catch( UaRuntimeException | UaException ex ) {
           LoggerUtils.errorLogger().error( ex );
-          TsDialogUtils.error( getShell(), "It's looks like OPC UA tree cache is outdated." );
+          TsDialogUtils.error( getShell(), ERR_MSG_CACHE_OUTDATED );
         }
       }
     }
@@ -1322,7 +1321,7 @@ public class OpcUaTreeBrowserPanel
       File file = new File( cmdFileDescr );
       try {
         clsId2CmdInfoes = Ods2DtoCmdInfoParser.parse( file );
-        TsDialogUtils.info( getShell(), "Loaded command description from file: %s", cmdFileDescr );
+        TsDialogUtils.info( getShell(), MSG_CMDS_DESCR_LOADED, cmdFileDescr );
       }
       catch( IOException ex ) {
         LoggerUtils.errorLogger().error( ex );

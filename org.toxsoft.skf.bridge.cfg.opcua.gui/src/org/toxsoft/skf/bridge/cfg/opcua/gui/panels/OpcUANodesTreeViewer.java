@@ -155,7 +155,7 @@ public class OpcUANodesTreeViewer
     TreeViewerColumn tvCol = new TreeViewerColumn( treeViewer, SWT.CENTER, 0 );
     treeViewer.setLabelProvider( labelProvider ); // refresh column cells label provider
 
-    tvCol.getColumn().setText( "" ); //$NON-NLS-1$
+    tvCol.getColumn().setText( TsLibUtils.EMPTY_STRING );
     tvCol.getColumn().setAlignment( SWT.CENTER );
     tvCol.getColumn().setWidth( 150 );
 

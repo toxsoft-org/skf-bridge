@@ -2,6 +2,7 @@ package org.toxsoft.skf.bridge.cfg.opcua.gui.panels;
 
 import static org.toxsoft.core.tsgui.bricks.actions.ITsStdActionDefs.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
+import static org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
 import org.eclipse.jface.action.*;
@@ -28,6 +29,7 @@ import org.toxsoft.core.tsgui.widgets.*;
 import org.toxsoft.core.tslib.av.impl.*;
 import org.toxsoft.core.tslib.bricks.strid.more.*;
 import org.toxsoft.core.tslib.coll.*;
+import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.filegen.*;
@@ -49,26 +51,26 @@ public class OpcToS5DataCfgDocEditorPanel
 
   final static String ACTID_EDIT_NODES = SK_ID + ".users.gui.EditNodes"; //$NON-NLS-1$
 
-  final static TsActionDef ACDEF_EDIT_UNITS = TsActionDef.ofPush2( ACTID_EDIT_UNITS, "Редактировать состав",
-      "Редактировать состав единиц конфигурации", ICONID_EDIT_UNITS );
+  final static TsActionDef ACDEF_EDIT_UNITS =
+      TsActionDef.ofPush2( ACTID_EDIT_UNITS, STR_N_EDIT_CONFIG_SET, STR_D_EDIT_CONFIG_SET, ICONID_EDIT_UNITS );
 
-  final static TsActionDef ACDEF_EDIT_NODES = TsActionDef.ofPush2( ACTID_EDIT_NODES, "Редактировать свойства узлов OPC",
-      "Редактировать конфигурационные свойства узлов OPC", ICONID_EDIT_NODES );
+  final static TsActionDef ACDEF_EDIT_NODES =
+      TsActionDef.ofPush2( ACTID_EDIT_NODES, STR_N_EDIT_OPC_UA_NODES, STR_D_EDIT_OPC_UA_NODES, ICONID_EDIT_NODES );
 
   final static String ACTID_SAVE_DOC = SK_ID + "bridge.cfg.opcua.to.s5.save.doc"; //$NON-NLS-1$
 
-  final static TsActionDef ACDEF_SAVE_DOC = TsActionDef.ofPush2( ACTID_SAVE_DOC, "Сохранить конфигурацию",
-      "Сохранить конфигурацию в SKIDE", ICONID_SAVE_DOC );
+  final static TsActionDef ACDEF_SAVE_DOC =
+      TsActionDef.ofPush2( ACTID_SAVE_DOC, STR_N_SAVE_CONFIG, STR_D_SAVE_CONFIG, ICONID_SAVE_DOC );
 
   final static String ACTID_S5_SERVER_SELECT = SK_ID + "bridge.cfg.opcua.to.s5.s5.server.select"; //$NON-NLS-1$
 
   final static String ACTID_OPC_SERVER_SELECT = SK_ID + "bridge.cfg.opcua.to.s5.opc.server.select"; //$NON-NLS-1$
 
-  final static TsActionDef ACDEF_S5_SERVER_SELECT =
-      TsActionDef.ofPush2( ACTID_S5_SERVER_SELECT, "Выбрать S5 сервер", "Выбрать S5 сервер", ICONID_S5_SERVER_SELECT );
+  final static TsActionDef ACDEF_S5_SERVER_SELECT = TsActionDef.ofPush2( ACTID_S5_SERVER_SELECT, STR_N_SELECT_S5_SERVER,
+      STR_D_SELECT_S5_SERVER, ICONID_S5_SERVER_SELECT );
 
   final static TsActionDef ACDEF_OPC_SERVER_SELECT = TsActionDef.ofPush2( ACTID_OPC_SERVER_SELECT,
-      "Выбрать OPC UA сервер", "Выбрать OPC UA сервер", ICONID_OPC_SERVER_SELECT );
+      STR_N_SELECT_OPC_UA_SERVER, STR_D_SELECT_OPC_UA_SERVER, ICONID_OPC_SERVER_SELECT );
 
   final ISkConnection conn;
 
@@ -183,11 +185,11 @@ public class OpcToS5DataCfgDocEditorPanel
 
     // Создаём закладку для конфигурации связей opc-sk
     CTabItem tabCfgUnitsItem = new CTabItem( tabSubFolder, SWT.NONE );
-    tabCfgUnitsItem.setText( "Связи" );
+    tabCfgUnitsItem.setText( STR_LINKS );
 
     // Создаём закладку для конфигурации связей opc-sk
     CTabItem tabCfgNodesItem = new CTabItem( tabSubFolder, SWT.NONE );
-    tabCfgNodesItem.setText( "Узлы" );
+    tabCfgNodesItem.setText( STR_NODES );
 
     ITsGuiContext ctx = new TsGuiContext( tsContext() );
     ctx.params().addAll( tsContext().params() );
@@ -203,10 +205,10 @@ public class OpcToS5DataCfgDocEditorPanel
     Control toolbarCtrl = toolBar.createControl( frame );
     toolbarCtrl.setLayoutData( BorderLayout.NORTH );
 
-    textContr1 = new TextControlContribution( "Label", 200, "Sk Connection: workroom", SWT.NONE );
+    textContr1 = new TextControlContribution( "Label", 200, STR_SK_CONN_DESCR, SWT.NONE ); //$NON-NLS-1$
     toolBar.addContributionItem( textContr1 );
     toolBar.addSeparator();
-    textContr2 = new TextControlContribution( "Label2", 200, "Opc ua:", SWT.NONE );
+    textContr2 = new TextControlContribution( "Label2", 200, STR_SK_CONN_DESCR, SWT.NONE ); //$NON-NLS-1$
     toolBar.addContributionItem( textContr2 );
 
     IM5Domain m5 = conn.scope().get( IM5Domain.class );
@@ -223,7 +225,7 @@ public class OpcToS5DataCfgDocEditorPanel
         IdChain idChain = connService.selectConfigAndOpenConnection( ctx );
         if( idChain != null ) {
           ctx.put( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_S5_CONNECTION, idChain );
-          textContr1.setText( "Sk Connection: " + idChain.first() );
+          textContr1.setText( STR_SK_CONN_DESCR + idChain.first() );
         }
 
         return;
@@ -233,23 +235,23 @@ public class OpcToS5DataCfgDocEditorPanel
         // dima 13.10.23 сохраним в контекст
         ctx.put( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG, conConf );
 
-        Display.getDefault()
-            .asyncExec( () -> textContr2.setText( "Opc ua: " + (conConf == null ? "" : conConf.nmName()) ) );
+        Display.getDefault().asyncExec( () -> textContr2
+            .setText( STR_SK_CONN_DESCR + (conConf == null ? TsLibUtils.EMPTY_STRING : conConf.nmName()) ) );
 
         if( conConf == null ) {
           return;
         }
 
-        OpcUaUtils.runInWaitingDialog( ctx, "Создание и подключение к OPC UA", monitor -> {
+        OpcUaUtils.runInWaitingDialog( ctx, STR_OPC_UA_CONNECTING_PROCESS, monitor -> {
           try {
 
-            monitor.subTask( "Проверка наличия кэша киента opc ua" );
+            monitor.subTask( STR_CHECK_OPC_UA_CACHE );
             boolean hasCach = OpcUaUtils.hasCachedOpcUaNodesTreeFor( ctx, conConf );
             // если есть кэш - не пытаться соединится
             if( hasCach ) {
               Display.getDefault().asyncExec( () -> {
-                textContr2.setText( "Opc ua: Cach: " + conConf.nmName() );
-                TsDialogUtils.info( getShell(), "Кэш соединения обнаружен и будет использоваться в редакторе" );
+                textContr2.setText( STR_OPC_UA_CACHE + conConf.nmName() );
+                TsDialogUtils.info( getShell(), STR_USE_OPC_UA_CACHE );
               } );
               return;
             }
@@ -263,38 +265,38 @@ public class OpcToS5DataCfgDocEditorPanel
           OpcUaClient client = null;
 
           try {
-            monitor.subTask( "Создание киента opc ua" );
+            monitor.subTask( STR_OPC_UA_CLIENT_CREATE );
             client = OpcUaUtils.createClient( conConf );
 
-            monitor.subTask( "Попытка соединения киента opc ua с сервером" );
+            monitor.subTask( STR_OPC_UA_CLIENT_CONNECTING );
             // В диалоге ожидания попытаться соединится
             client.connect().get();
             ctx.put( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_OPC_CONNECTION, client );
 
-            Display.getDefault().asyncExec( () -> textContr2.setText( "Opc ua: connected: " + conConf.nmName() ) );
+            Display.getDefault().asyncExec( () -> textContr2.setText( STR_OPC_UA_CONNECTED + conConf.nmName() ) );
           }
           catch( Exception ex ) {
             Display.getDefault()
-                .asyncExec( () -> TsDialogUtils.error( getShell(), "Ошибка создания соединения с OPC UA сервером" ) );
+                .asyncExec( () -> TsDialogUtils.error( getShell(), STR_OPC_UA_CONNECTING_PROCESS_FAIL ) );
             LoggerUtils.errorLogger().error( ex );
             return;
           }
 
           try {
-            monitor.subTask( "Создание кэша киента opc ua" );
+            monitor.subTask( STR_USE_OPC_UA_CACHE_CREATING );
             // при успешном соединении - записать кэш
             IM5Model<UaTreeNode> model = m5.getModel( OpcUaNodeModel.MODEL_ID, UaTreeNode.class );
             IM5LifecycleManager<UaTreeNode> lm =
                 new OpcUaNodeM5LifecycleManager( model, client, Identifiers.RootFolder, ctx, conConf );
             lm.itemsProvider().listItems();
             Display.getDefault().asyncExec( () -> {
-              textContr2.setText( "Opc ua: Cach: " + conConf.nmName() );
-              TsDialogUtils.info( getShell(), "Кэш соединения создан и будет использоваться в редакторе" );
+              textContr2.setText( STR_OPC_UA_CACHE + conConf.nmName() );
+              TsDialogUtils.info( getShell(), STR_USE_OPC_UA_CACHE_CREATED );
             } );
           }
           catch( Exception ex ) {
-            Display.getDefault().asyncExec(
-                () -> TsDialogUtils.error( getShell(), "Ошибка создания кэша соединения с OPC UA сервером" ) );
+            Display.getDefault()
+                .asyncExec( () -> TsDialogUtils.error( getShell(), STR_USE_OPC_UA_CACHE_CREATION_FAIL ) );
             LoggerUtils.errorLogger().error( ex );
             return;
           }

@@ -22,6 +22,8 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 public class OpcToS5DataCfgUnit
     extends Stridable {
 
+  private static final String CHECK_UNIT = "CheckUnit"; //$NON-NLS-1$
+
   /**
    * The keeper singleton.
    */
@@ -80,7 +82,7 @@ public class OpcToS5DataCfgUnit
           // realization options
           OptionSetKeeper.KEEPER.write( aSw, aEntity.getRealizationOpts() );
 
-          aSw.writeQuotedString( "CheckUnit" );
+          aSw.writeQuotedString( CHECK_UNIT );
 
           aSw.decNewLine();
         }
@@ -131,7 +133,7 @@ public class OpcToS5DataCfgUnit
 
           IOptionSet realizationOpts = OptionSetKeeper.KEEPER.read( aSr );
 
-          if( !aSr.readQuotedString().equals( "CheckUnit" ) ) {
+          if( !aSr.readQuotedString().equals( CHECK_UNIT ) ) {
             System.out.println( "Error Unit Read" );
           }
 

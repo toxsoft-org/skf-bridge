@@ -1,5 +1,6 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui;
 
+import org.toxsoft.skf.bridge.cfg.opcua.gui.Messages;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 
 /**
@@ -10,38 +11,39 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 @SuppressWarnings( value = { "javadoc" } ) // "nls",
 public interface IBridgeCfgOpcUaResources {
 
-  String MSG_ERR_INV_GWID_FORMAT = Messages.getString( "MSG_ERR_INV_GWID_FORMAT" );
-  String MSG_ERR_INV_SKID_FORMAT = Messages.getString( "MSG_ERR_INV_SkID_FORMAT" );
+  String MSG_ERR_INV_GWID_FORMAT = Messages.getString( "MSG_ERR_INV_GWID_FORMAT" ); //$NON-NLS-1$
+  String MSG_ERR_INV_SKID_FORMAT = Messages.getString( "MSG_ERR_INV_SkID_FORMAT" ); //$NON-NLS-1$
 
-  String STR_N_PARAM_STRID         = "NodeId";
-  String STR_D_PARAM_STRID         = "Строковый идентификатор";
-  String STR_D_BY_OPC_NODES_STRUCT = "В соответствии со структурой узлов OPC UA";
-  String STR_N_BY_OPC_NODES_STRUCT = "По OPC структуре";
+  String STR_N_PARAM_NODEID        = Messages.getString("STR_N_PARAM_NODEID"); //$NON-NLS-1$
+  String STR_N_PARAM_STRID         = Messages.getString("STR_N_PARAM_STRID"); //$NON-NLS-1$
+  String STR_D_PARAM_STRID         = Messages.getString("STR_D_PARAM_STRID"); //$NON-NLS-1$
+  String STR_D_BY_OPC_NODES_STRUCT = Messages.getString("STR_D_BY_OPC_NODES_STRUCT"); //$NON-NLS-1$
+  String STR_N_BY_OPC_NODES_STRUCT = Messages.getString("STR_N_BY_OPC_NODES_STRUCT"); //$NON-NLS-1$
 
-  String STR_N_BROWSE_CONN                = "Просмотр структуры узлов OPC UA сервера";
-  String STR_D_BROWSE_CONN                = "Подключение к серверу OPC UF и просмотр структуры узлов этого сервера";
-  String STR_N_REMOVE_CACHED_NODES_OPC_UA = "Очистить кеш дерева узлов OPC UA";
-  String STR_D_REMOVE_CACHED_NODES_OPC_UA = "Очистить кеш и построить заново дерево узлов OPC UA";
-  String MSG_ASK_REMOVE_CACHE_CONFIRM     = "Очистить кеш дерева узлов OPC UA?";
+  String STR_N_BROWSE_CONN                = Messages.getString("STR_N_BROWSE_CONN"); //$NON-NLS-1$
+  String STR_D_BROWSE_CONN                = Messages.getString("STR_D_BROWSE_CONN"); //$NON-NLS-1$
+  String STR_N_REMOVE_CACHED_NODES_OPC_UA = Messages.getString("STR_N_REMOVE_CACHED_NODES_OPC_UA"); //$NON-NLS-1$
+  String STR_D_REMOVE_CACHED_NODES_OPC_UA = Messages.getString("STR_D_REMOVE_CACHED_NODES_OPC_UA"); //$NON-NLS-1$
+  String MSG_ASK_REMOVE_CACHE_CONFIRM     = Messages.getString("MSG_ASK_REMOVE_CACHE_CONFIRM"); //$NON-NLS-1$
 
-  String STR_LOADING_OPC_UA_NODES_STRUCT = "Загрузка структуры узлов OPC UA";
+  String STR_LOADING_OPC_UA_NODES_STRUCT = Messages.getString("STR_LOADING_OPC_UA_NODES_STRUCT"); //$NON-NLS-1$
 
-  String STR_N_PARAM_BROWSE_NAME = "BrowseName";
-  String STR_D_PARAM_BROWSE_NAME = "Имя для просмотра в дерева";
+  String STR_N_PARAM_BROWSE_NAME = Messages.getString("STR_N_PARAM_BROWSE_NAME"); //$NON-NLS-1$
+  String STR_D_PARAM_BROWSE_NAME = Messages.getString("STR_D_PARAM_BROWSE_NAME"); //$NON-NLS-1$
 
-  String STR_N_PARAM_DISPLAY_NAME = "DisplayName";
-  String STR_D_PARAM_DISPLAY_NAME = "Отображаемое название";
+  String STR_N_PARAM_DISPLAY_NAME = Messages.getString("STR_N_PARAM_DISPLAY_NAME"); //$NON-NLS-1$
+  String STR_D_PARAM_DISPLAY_NAME = Messages.getString("STR_D_PARAM_DISPLAY_NAME"); //$NON-NLS-1$
 
-  String STR_N_PARAM_DESCRIPTION = "Description";
-  String STR_D_PARAM_DESCRIPTION = "Описание узла";
+  String STR_N_PARAM_DESCRIPTION = Messages.getString("STR_N_PARAM_DESCRIPTION"); //$NON-NLS-1$
+  String STR_D_PARAM_DESCRIPTION = Messages.getString("STR_D_PARAM_DESCRIPTION"); //$NON-NLS-1$
 
   /**
    * {@link DtoObjectM5Model}
    */
-  String STR_N_CLASS_ID = "Class id";
-  String STR_D_CLASS_ID = "Идентификатор класса";
-  String STR_N_NAME     = "Название";
-  String STR_D_NAME     = "Название объекта";
-  String STR_N_DESCR    = "Описание";
-  String STR_D_DESCR    = "Описание объекта";
+  String STR_N_CLASS_ID = Messages.getString("STR_N_CLASS_ID"); //$NON-NLS-1$
+  String STR_D_CLASS_ID = Messages.getString("STR_D_CLASS_ID"); //$NON-NLS-1$
+  String STR_N_NAME     = Messages.getString("STR_N_NAME"); //$NON-NLS-1$
+  String STR_D_NAME     = Messages.getString("STR_D_NAME"); //$NON-NLS-1$
+  String STR_N_DESCR    = Messages.getString("STR_N_DESCR"); //$NON-NLS-1$
+  String STR_D_DESCR    = Messages.getString("STR_D_DESCR"); //$NON-NLS-1$
 }

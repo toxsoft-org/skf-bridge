@@ -7,6 +7,7 @@ import static org.toxsoft.core.tsgui.m5.gui.mpc.IMultiPaneComponentConstants.*;
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IBridgeCfgOpcUaResources.*;
+import static org.toxsoft.skf.bridge.cfg.opcua.gui.km5.ISkResources.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
 import org.eclipse.milo.opcua.sdk.core.nodes.*;
@@ -51,10 +52,10 @@ public class GwidsForCfgM5Model
   final static String ACTID_EDIT_AS_STR = SK_ID + ".opcua.to.s5.edit.gwid.as.str"; //$NON-NLS-1$
 
   final static TsActionDef ACDEF_ADD_AS_STR =
-      TsActionDef.ofPush2( ACTID_ADD_AS_STR, "Добавить как строку", "Добавить как строку", ICONID_LIST_ADD );
+      TsActionDef.ofPush2( ACTID_ADD_AS_STR, STR_N_ADD_AS_STRING, STR_D_ADD_AS_STRING, ICONID_LIST_ADD );
 
-  final static TsActionDef ACDEF_EDIT_AS_STR = TsActionDef.ofPush2( ACTID_EDIT_AS_STR, "Редактировать как строку",
-      "Редактировать как строку", ICONID_DOCUMENT_EDIT );
+  final static TsActionDef ACDEF_EDIT_AS_STR =
+      TsActionDef.ofPush2( ACTID_EDIT_AS_STR, STR_N_EDIT_AS_STRING, STR_N_EDIT_AS_STRING, ICONID_DOCUMENT_EDIT );
 
   /**
    * string id of cfg unit
@@ -137,8 +138,8 @@ public class GwidsForCfgM5Model
             new MultiPaneComponentModown<>( aContext, model(), aItemsProvider, aLifecycleManager ) {
 
               @Override
-              protected ITsToolbar doCreateToolbar( ITsGuiContext aContext, String aName, EIconSize aIconSize,
-                  IListEdit<ITsActionDef> aActs ) {
+              protected ITsToolbar doCreateToolbar( @SuppressWarnings( "hiding" ) ITsGuiContext aContext, String aName,
+                  EIconSize aIconSize, IListEdit<ITsActionDef> aActs ) {
                 aActs.add( ACDEF_SEPARATOR );
                 aActs.add( ACDEF_ADD_AS_STR );
 
@@ -184,10 +185,10 @@ public class GwidsForCfgM5Model
                 IdChain connIdChain =
                     (IdChain)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_S5_CONNECTION );
                 if( connIdChain != null ) {
-                  System.out.println( "Selecetd conn: " + connIdChain.toString() );
+                  System.out.println( "Selected conn: " + connIdChain.toString() );
                 }
                 else {
-                  System.out.println( "Selecetd conn: " + "null" );
+                  System.out.println( "Selected conn: " + "null" );
                 }
 
                 ECfgUnitType type = ((GwidsForCfgM5Model)model()).getCfgUnitType();
@@ -222,10 +223,10 @@ public class GwidsForCfgM5Model
                 IdChain connIdChain =
                     (IdChain)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_S5_CONNECTION );
                 if( connIdChain != null ) {
-                  System.out.println( "Selecetd conn: " + connIdChain.toString() );
+                  System.out.println( "Selected conn: " + connIdChain.toString() );
                 }
                 else {
-                  System.out.println( "Selecetd conn: " + "null" );
+                  System.out.println( "Selected conn: " + "null" );
                 }
 
                 ECfgUnitType type = ((GwidsForCfgM5Model)model()).getCfgUnitType();
@@ -243,7 +244,7 @@ public class GwidsForCfgM5Model
                 // IdChain idChain = connService.selectConfigAndOpenConnection( aContext );
                 Gwid gwid = PanelGwidSelector.selectGwid( aItem, tsContext(), kind, connIdChain );
 
-                //Gwid gwid = PanelGwidSelector.selectGwid( aItem, tsContext(), kind, null );
+                // Gwid gwid = PanelGwidSelector.selectGwid( aItem, tsContext(), kind, null );
                 if( gwid == null ) {
                   return aItem;
                 }

@@ -7,6 +7,7 @@ import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IBridgeCfgOpcUaResources.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
+import static org.toxsoft.skf.bridge.cfg.opcua.gui.km5.ISkResources.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
 import java.io.*;
@@ -60,18 +61,17 @@ public class CfgOpcUaNodeM5Model
 
   final static String ACTID_GENERATE_DEVCFG_FILE = SK_ID + "bridge.cfg.opcua.to.s5.generate.devcfg.file"; //$NON-NLS-1$
 
-  final static TsActionDef ACDEF_SYNCHRONIZE = TsActionDef.ofPush2( ACTID_SYNCHRONIZE, "Добавить недостающие узлы",
-      "Добавить недостающие узлы из закладки связей", ICONID_ADD_NODE );
+  final static TsActionDef ACDEF_SYNCHRONIZE =
+      TsActionDef.ofPush2( ACTID_SYNCHRONIZE, STR_N_ADD_MISSED_NODES, STR_D_ADD_MISSED_NODES, ICONID_ADD_NODE );
 
   final static TsActionDef ACDEF_REMOVE_UNNECESSARY = TsActionDef.ofPush2( ACTID_REMOVE_UNNECESSARY,
-      "Удалить лишние узлы", "Удалить лишние узлы, отсутствующие в закладке связей", ICONID_REMOVE_NODE );
+      STR_N_REMOVE_MISSED_NODES, STR_D_REMOVE_MISSED_NODES, ICONID_REMOVE_NODE );
 
   final static TsActionDef ACDEF_REMOVE_ALL =
-      TsActionDef.ofPush2( ACTID_REMOVE_ALL, "Удалить все узлы", "Удалить все узлы", ICONID_CLEAR_ALL );
+      TsActionDef.ofPush2( ACTID_REMOVE_ALL, STR_N_REMOVE_ALL_NODES, STR_D_REMOVE_ALL_NODES, ICONID_CLEAR_ALL );
 
-  final static TsActionDef ACDEF_GENERATE_DEVCFG_FILE =
-      TsActionDef.ofPush2( ACTID_GENERATE_DEVCFG_FILE, "Сгенерировать файл конфигурации devcfg",
-          "Сгенерировать файлы конфигурации devcfg", ICONID_SHOW_GENERATE_DEVCFG );
+  final static TsActionDef ACDEF_GENERATE_DEVCFG_FILE = TsActionDef.ofPush2( ACTID_GENERATE_DEVCFG_FILE,
+      STR_N_GENERATE_DEVCFG, STR_D_GENERATE_DEVCFG, ICONID_SHOW_GENERATE_DEVCFG );
 
   /**
    * string id of cfg node
@@ -122,8 +122,8 @@ public class CfgOpcUaNodeM5Model
    * Attribute {@link CfgOpcUaNode#getType() } type
    */
   static M5AttributeFieldDef<CfgOpcUaNode> TYPE = new M5AttributeFieldDef<>( FID_TYPE, EAtomicType.VALOBJ, //
-      TSID_NAME, "Тип", //
-      TSID_DESCRIPTION, "Тип", //
+      TSID_NAME, STR_N_NODE_VALUE_TYPE, //
+      TSID_DESCRIPTION, STR_D_NODE_VALUE_TYPE, //
       TSID_KEEPER_ID, EAtomicType.KEEPER_ID //
   ) {
 
@@ -142,8 +142,8 @@ public class CfgOpcUaNodeM5Model
    * Attribute {@link CfgOpcUaNode#isRead() } boolean
    */
   static M5AttributeFieldDef<CfgOpcUaNode> IS_READ = new M5AttributeFieldDef<>( FID_IS_READ, EAtomicType.BOOLEAN, //
-      TSID_NAME, "Чтение", //
-      TSID_DESCRIPTION, "Узел на чтение" //
+      TSID_NAME, STR_N_NODE_2READ, //
+      TSID_DESCRIPTION, STR_D_NODE_2READ //
   ) {
 
     @Override
@@ -161,8 +161,8 @@ public class CfgOpcUaNodeM5Model
    * Attribute {@link CfgOpcUaNode#isWrite() } boolean
    */
   static M5AttributeFieldDef<CfgOpcUaNode> IS_WRITE = new M5AttributeFieldDef<>( FID_IS_WRITE, EAtomicType.BOOLEAN, //
-      TSID_NAME, "Запись", //
-      TSID_DESCRIPTION, "Узел на запись" //
+      TSID_NAME, STR_N_NODE_2WRITE, //
+      TSID_DESCRIPTION, STR_D_NODE_2WRITE //
   ) {
 
     @Override
@@ -180,8 +180,8 @@ public class CfgOpcUaNodeM5Model
    * Attribute {@link CfgOpcUaNode#isSynch() } boolean
    */
   static M5AttributeFieldDef<CfgOpcUaNode> IS_SYNCH = new M5AttributeFieldDef<>( FID_IS_SYNCH, EAtomicType.BOOLEAN, //
-      TSID_NAME, "Синхронное", //
-      TSID_DESCRIPTION, "Синхронное данное" //
+      TSID_NAME, STR_N_NODE_SYNC, //
+      TSID_DESCRIPTION, STR_D_NODE_SYNC//
   ) {
 
     @Override
@@ -303,7 +303,7 @@ public class CfgOpcUaNodeM5Model
       super( aModel, false, true, true, true, aMaster );
     }
 
-    public void removeUnnecessary( ITsGuiContext aContext ) {
+    public void removeUnnecessary( @SuppressWarnings( "unused" ) ITsGuiContext aContext ) {
       IList<OpcToS5DataCfgUnit> dataCfgUnits = master().dataUnits();
 
       IList<CfgOpcUaNode> nodesCfgsList = master().getNodesCfgs();
@@ -328,7 +328,7 @@ public class CfgOpcUaNodeM5Model
       }
     }
 
-    public void removeAll( ITsGuiContext aContext ) {
+    public void removeAll( @SuppressWarnings( "unused" ) ITsGuiContext aContext ) {
       master().setNodesCfgs( new ElemArrayList<>() );
     }
 
@@ -368,9 +368,9 @@ public class CfgOpcUaNodeM5Model
     void generateFileFromCurrState( ITsGuiContext aContext ) {
       Shell shell = aContext.find( Shell.class );
       FileDialog fd = new FileDialog( shell, SWT.SAVE );
-      fd.setText( "Выбор файла сохранения конфигурации драйвера" );
-      fd.setFilterPath( "" );
-      String[] filterExt = { ".devcfg" };
+      fd.setText( STR_SELECT_FILE_SAVE_DEVCFG );
+      fd.setFilterPath( TsLibUtils.EMPTY_STRING );
+      String[] filterExt = { ".devcfg" }; //$NON-NLS-1$
       fd.setFilterExtensions( filterExt );
       String selected = fd.open();
       if( selected == null ) {
@@ -380,13 +380,13 @@ public class CfgOpcUaNodeM5Model
       try {
         IAvTree avTree = OpcToS5DataCfgConverter.convertToDevCfgTree( master() );
 
-        String TMP_DEST_FILE = "destDlmFile.tmp";
+        String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
         AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
 
-        String DLM_CONFIG_STR = "DeviceConfig = ";
+        String DLM_CONFIG_STR = "DeviceConfig = "; //$NON-NLS-1$
         PinsConfigFileFormatter.format( TMP_DEST_FILE, selected, DLM_CONFIG_STR );
 
-        TsDialogUtils.info( shell, "Создан файл драйвера opc ua: %s", selected );
+        TsDialogUtils.info( shell, MSG_CONFIG_FILE_DEVCFG_CREATED, selected );
       }
       catch( Exception e ) {
         LoggerUtils.errorLogger().error( e );
@@ -400,8 +400,7 @@ public class CfgOpcUaNodeM5Model
           (OpcUaServerConnCfg)aContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
 
       if( conConf == null ) {
-        ETsDialogCode retCode = TsDialogUtils.askYesNoCancel( aContext.get( Shell.class ),
-            "Для корректного автоматического определения типа узлов OPC UA необходимо соединение с сервером OPC UA\nПродолжить без соединения?" );
+        ETsDialogCode retCode = TsDialogUtils.askYesNoCancel( aContext.get( Shell.class ), MSG_SELECT_OPC_UA_SERVER );
 
         if( retCode == ETsDialogCode.CANCEL || retCode == ETsDialogCode.CLOSE || retCode == ETsDialogCode.NO ) {
           return;

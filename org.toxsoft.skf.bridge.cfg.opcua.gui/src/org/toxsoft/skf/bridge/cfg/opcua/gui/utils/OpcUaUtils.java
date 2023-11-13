@@ -5,6 +5,7 @@ import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.impl.DataDef.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
+import static org.toxsoft.skf.bridge.cfg.opcua.gui.utils.ISkResources.*;
 import static org.toxsoft.skide.plugin.exconn.ISkidePluginExconnSharedResources.*;
 
 import java.io.*;
@@ -578,56 +579,56 @@ public class OpcUaUtils {
   }
 
   public static final IDataDef OP_CMD_JAVA_CLASS = create( "command.exec.java.class", STRING, //$NON-NLS-1$
-      TSID_NAME, "java класс", //
-      TSID_DESCRIPTION, "java class of realization", //
+      TSID_NAME, STR_N_JAVA_CLASS, //
+      TSID_DESCRIPTION, STR_D_JAVA_CLASS, //
       TSID_IS_READ_ONLY, AV_TRUE );
 
   public static final IDataDef OP_CMD_VALUE_PARAM_ID = create( "value.param.id", STRING, //$NON-NLS-1$
-      TSID_NAME, "ИД параметра", //
-      TSID_DESCRIPTION, "Идентификатор параметра" ); //
+      TSID_NAME, STR_N_PARAM_ID, //
+      TSID_DESCRIPTION, STR_D_PARAM_ID ); //
 
   public static final IDataDef OP_CMD_OPC_ID = create( "cmd.opc.id", INTEGER, //$NON-NLS-1$
-      TSID_NAME, "ИД команды в OPC", //
-      TSID_DESCRIPTION, "Идентификатор команды в OPC сервера" ); //
+      TSID_NAME, STR_N_OPC_CMD_ID, //
+      TSID_DESCRIPTION, STR_D_OPC_CMD_ID ); //
 
   public static final IDataDef OP_DATA_JAVA_CLASS = create( "java.class", STRING, //$NON-NLS-1$
-      TSID_NAME, "data java класс", //
-      TSID_DESCRIPTION, "data java class of realization", //
+      TSID_NAME, STR_N_DATA_JAVA_CLASS, //
+      TSID_DESCRIPTION, STR_D_DATA_JAVA_CLASS, //
       TSID_IS_READ_ONLY, AV_TRUE );
 
   /**
    * Имя параметра - номер бита (начиная от младшего с нулевого)
    */
   public static final IDataDef OP_BIT_INDEX = create( "bit.index", INTEGER, //$NON-NLS-1$
-      TSID_NAME, "номер бита", //
-      TSID_DESCRIPTION, "номер бита (начиная от младшего с нулевого)" );
+      TSID_NAME, STR_N_BIT_NUMBER, //
+      TSID_DESCRIPTION, STR_D_BIT_NUMBER );
 
   public static final IDataDef OP_EVENT_SENDER_JAVA_CLASS = create( "event.sender.java.class", STRING, //$NON-NLS-1$
-      TSID_NAME, "event sender java класс", //
-      TSID_DESCRIPTION, "java class of realization of event sender", //
+      TSID_NAME, STR_N_EVENT_SENDER_JAVA_CLASS, //
+      TSID_DESCRIPTION, STR_D_EVENT_SENDER_JAVA_CLASS, //
       TSID_IS_READ_ONLY, AV_TRUE );
 
   public static final IDataDef OP_CONDITION_JAVA_CLASS = create( "condition.java.class", STRING, //$NON-NLS-1$
-      TSID_NAME, "condition java класс", //
-      TSID_DESCRIPTION, "java class of realization of condition", //
+      TSID_NAME, STR_N_CONDITION_JAVA_CLASS, //
+      TSID_DESCRIPTION, STR_D_CONDITION_JAVA_CLASS, //
       TSID_IS_READ_ONLY, AV_TRUE );
 
   public static final IDataDef OP_PARAM_FORMER_JAVA_CLASS = create( "param.former.java.class", STRING, //$NON-NLS-1$
-      TSID_NAME, "param former java класс", //
-      TSID_DESCRIPTION, "java class of realization of param former", //
+      TSID_NAME, STR_N_PARAM_FORMER_JAVA_CLASS, //
+      TSID_DESCRIPTION, STR_D_PARAM_FORMER_JAVA_CLASS, //
       TSID_IS_READ_ONLY, AV_TRUE );
 
   public static final IDataDef OP_FORMER_EVENT_PARAM = create( "former.event.params", STRING, //$NON-NLS-1$
-      TSID_NAME, "former event params", //
-      TSID_DESCRIPTION, "former event params" );
+      TSID_NAME, STR_N_FORMER_EVENT_PARAM, //
+      TSID_DESCRIPTION, STR_D_FORMER_EVENT_PARAM );
 
   public static final IDataDef OP_CONDITION_SWITCH_ON = create( "condition.switch.on", BOOLEAN, //$NON-NLS-1$
-      TSID_NAME, "Передний фронт", //
-      TSID_DESCRIPTION, "Срабатывние события по переднему фронту" );
+      TSID_NAME, STR_N_FRONT, //
+      TSID_DESCRIPTION, STR_D_FRONT );
 
   public static final IDataDef OP_CONDITION_SWITCH_OFF = create( "condition.switch.off", BOOLEAN, //$NON-NLS-1$
-      TSID_NAME, "Задний фронт", //
-      TSID_DESCRIPTION, "Срабатывние события по заднему фронту" );
+      TSID_NAME, STR_N_DOWN, //
+      TSID_DESCRIPTION, STR_D_DOWN );
 
   /**
    * Registers cfg unit realization types in holder and adds it into context.
@@ -654,8 +655,8 @@ public class OpcUaUtils {
     OP_CMD_JAVA_CLASS.setValue( defaultParams, avStr( COMMANDS_JAVA_CLASS_VALUE_COMMAND_BY_ONE_TAG_EXEC ) );
 
     ICfgUnitRealizationType cmdRealValCommandByOneTagWithParamExec =
-        new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_VALUE_COMMAND_BY_ONE_TAG,
-            "Установка значения через командный узел", ECfgUnitType.COMMAND, paramDefenitions, defaultParams ) {
+        new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_VALUE_COMMAND_BY_ONE_TAG, STR_SET_VALUE_CMD,
+            ECfgUnitType.COMMAND, paramDefenitions, defaultParams ) {
 
           @Override
           public CfgOpcUaNode createInitCfg( ITsGuiContext aaContext, String aNodeId, int aNodeIndex, int aNodeCount ) {
@@ -683,11 +684,11 @@ public class OpcUaUtils {
 
     defaultParams = new OptionSet();
     OP_CMD_JAVA_CLASS.setValue( defaultParams, avStr( COMMANDS_JAVA_CLASS_VALUE_COMMAND_EXEC ) );
-    OP_CMD_VALUE_PARAM_ID.setValue( defaultParams, avStr( "value" ) );
+    OP_CMD_VALUE_PARAM_ID.setValue( defaultParams, avStr( STR_VALUE ) );
 
     ICfgUnitRealizationType cmdRealValueCommandExec =
-        new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_VALUE_COMMAND, "Установка значения в узел",
-            ECfgUnitType.COMMAND, paramDefenitions, defaultParams );
+        new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_VALUE_COMMAND, STR_SET_NODE_VALUE, ECfgUnitType.COMMAND,
+            paramDefenitions, defaultParams );
 
     realizationTypeRegister.registerType( cmdRealValueCommandExec );
 
@@ -702,7 +703,7 @@ public class OpcUaUtils {
     OP_DATA_JAVA_CLASS.setValue( defaultParams, avStr( DATA_JAVA_CLASS_ONE_TO_ONE_DATA_TRANSMITTER_FACTORY ) );
 
     ICfgUnitRealizationType dataOneToOne = new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_ONT_TO_ONE_DATA,
-        "Один к одному", ECfgUnitType.DATA, paramDefenitions, defaultParams );
+        STR_ONE_2_ONE, ECfgUnitType.DATA, paramDefenitions, defaultParams );
 
     realizationTypeRegister.registerType( dataOneToOne );
 
@@ -719,8 +720,8 @@ public class OpcUaUtils {
     OP_BIT_INDEX.setValue( defaultParams, avInt( 0 ) );
 
     ICfgUnitRealizationType dataIntToOne =
-        new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_ONE_INT_TO_ONE_BIT_DATA,
-            "Битовое данное из интового тега", ECfgUnitType.DATA, paramDefenitions, defaultParams );
+        new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_ONE_INT_TO_ONE_BIT_DATA, STR_BIT_FROM_WORD,
+            ECfgUnitType.DATA, paramDefenitions, defaultParams );
 
     realizationTypeRegister.registerType( dataIntToOne );
 
@@ -744,7 +745,7 @@ public class OpcUaUtils {
     OP_FORMER_EVENT_PARAM.setValue( defaultParams, avStr( "oldVal;newVal" ) );
 
     ICfgUnitRealizationType opcTagsEventSender2 =
-        new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_TAG_VALUE_CHANGED, "Событие изменения значения тега",
+        new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_TAG_VALUE_CHANGED, STR_TAG_VAL_CHANGED_EVENT,
             ECfgUnitType.EVENT, paramDefenitions, defaultParams );
 
     realizationTypeRegister.registerType( opcTagsEventSender2 );
@@ -767,10 +768,10 @@ public class OpcUaUtils {
     OP_CONDITION_SWITCH_ON.setValue( defaultParams, avBool( true ) );
     OP_CONDITION_SWITCH_OFF.setValue( defaultParams, avBool( false ) );
     OP_PARAM_FORMER_JAVA_CLASS.setValue( defaultParams, avStr( EVENTS_ONE_TAG_TO_ONE_PARAM_FORMER ) );
-    OP_FORMER_EVENT_PARAM.setValue( defaultParams, avStr( "on" ) );
+    OP_FORMER_EVENT_PARAM.setValue( defaultParams, avStr( STR_ON ) );
 
     ICfgUnitRealizationType opcTagsEventSender3 = new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_SWITCH_EVENT,
-        "Событие переключения битового тега", ECfgUnitType.EVENT, paramDefenitions, defaultParams );
+        STR_BIT_TAG_VAL_CHANGED_EVENT, ECfgUnitType.EVENT, paramDefenitions, defaultParams );
 
     realizationTypeRegister.registerType( opcTagsEventSender3 );
 
@@ -793,12 +794,12 @@ public class OpcUaUtils {
     OP_CONDITION_SWITCH_ON.setValue( defaultParams, avBool( true ) );
     OP_CONDITION_SWITCH_OFF.setValue( defaultParams, avBool( false ) );
     OP_PARAM_FORMER_JAVA_CLASS.setValue( defaultParams, avStr( EVENTS_ONE_TAG_TO_ONE_PARAM_FORMER ) );
-    OP_FORMER_EVENT_PARAM.setValue( defaultParams, avStr( "on" ) );
+    OP_FORMER_EVENT_PARAM.setValue( defaultParams, avStr( STR_ON ) );
     OP_BIT_INDEX.setValue( defaultParams, avInt( 0 ) );
 
     ICfgUnitRealizationType opcTagsEventSender4 =
-        new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_BIT_SWITCH_EVENT,
-            "Событие переключения бита интового тега", ECfgUnitType.EVENT, paramDefenitions, defaultParams );
+        new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_BIT_SWITCH_EVENT, STR_BIT_WORD_TAG_VAL_CHANGED_EVENT,
+            ECfgUnitType.EVENT, paramDefenitions, defaultParams );
 
     realizationTypeRegister.registerType( opcTagsEventSender4 );
   }

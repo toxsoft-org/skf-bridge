@@ -10,46 +10,78 @@ public interface ISkResources {
   /**
    * {@link OpcUaTreeBrowserPanel}
    */
-  String DLG_C_NEW_CLASS                 = "Создание описания класса";
-  String DLG_T_NEW_CLASS                 = "Проверьте и отредактируйте описание и нажмите Ok";
-  String DLG_C_NEW_OBJS                  = "Создание объектов OPC UA";
-  String DLG_T_NEW_OBJS                  = "Отредактируйте список объектов и нажмите Ok";
-  String STR_ENTER_DESCR                 = "<введите описание>";
-  String STR_N_EV_SET_POINT_MIN          = "Уставка включения";
-  String STR_D_EV_SET_POINT_MIN          = "Уставка включения";
-  String STR_N_EV_PARAM_OLD_VAL          = "старое значение";
-  String STR_D_EV_PARAM_OLD_VAL          = "Старое значение";
-  String STR_N_EV_PARAM_NEW_VAL          = "новое значение";
-  String STR_D_EV_PARAM_NEW_VAL          = "Новое значение";
-  String STR_N_EV_SET_POINT_MAX          = "Уставка отключения";
-  String STR_D_EV_SET_POINT_MAX          = "Уставка отключения";
-  String STR_N_EV_PARAM_ON               = "вкл:";
-  String STR_D_EV_PARAM_ON               = "включено";
-  String STR_N_EV_AUTO                   = "Регулятор в автомате";
-  String STR_D_EV_AUTO                   = "Регулятор в автомате";
-  String STR_N_EV_ON                     = "Команда включения от регулятора";
-  String STR_D_EV_ON                     = "Команда включения от регулятора";
-  String STR_N_ARG_VALUE                 = "значение";
-  String STR_D_ARG_VALUE                 = "значение аргумента команды";
-  String STR_SUCCESS_CLASS_CREATED       = "Операция завершена успешно, создан class: %s";
+  String DLG_C_NEW_CLASS                 = Messages.DLG_C_NEW_CLASS;
+  String DLG_T_NEW_CLASS                 = Messages.DLG_T_NEW_CLASS;
+  String DLG_C_NEW_OBJS                  = Messages.DLG_C_NEW_OBJS;
+  String DLG_T_NEW_OBJS                  = Messages.DLG_T_NEW_OBJS;
+  String STR_ENTER_DESCR                 = Messages.STR_ENTER_DESCR;
+  String STR_N_EV_SET_POINT_MIN          = Messages.STR_N_EV_SET_POINT_MIN;
+  String STR_D_EV_SET_POINT_MIN          = Messages.STR_D_EV_SET_POINT_MIN;
+  String STR_N_EV_PARAM_OLD_VAL          = Messages.STR_N_EV_PARAM_OLD_VAL;
+  String STR_D_EV_PARAM_OLD_VAL          = Messages.STR_D_EV_PARAM_OLD_VAL;
+  String STR_N_EV_PARAM_NEW_VAL          = Messages.STR_N_EV_PARAM_NEW_VAL;
+  String STR_D_EV_PARAM_NEW_VAL          = Messages.STR_D_EV_PARAM_NEW_VAL;
+  String STR_N_EV_SET_POINT_MAX          = Messages.STR_N_EV_SET_POINT_MAX;
+  String STR_D_EV_SET_POINT_MAX          = Messages.STR_D_EV_SET_POINT_MAX;
+  String STR_N_EV_PARAM_ON               = Messages.STR_N_EV_PARAM_ON;
+  String STR_D_EV_PARAM_ON               = Messages.STR_D_EV_PARAM_ON;
+  String STR_N_EV_AUTO                   = Messages.STR_N_EV_AUTO;
+  String STR_D_EV_AUTO                   = Messages.STR_D_EV_AUTO;
+  String STR_N_EV_ON                     = Messages.STR_N_EV_ON;
+  String STR_D_EV_ON                     = Messages.STR_D_EV_ON;
+  String STR_N_ARG_VALUE                 = Messages.STR_N_ARG_VALUE;
+  String STR_D_ARG_VALUE                 = Messages.STR_D_ARG_VALUE;
+  String STR_SUCCESS_CLASS_CREATED       = Messages.STR_SUCCESS_CLASS_CREATED;
   String STR_SUCCESS_CLASS_UPDATED       =
-      "Операция завершена успешно, обновлен class: %s \n Также обновлены Node->Gwid объектов этого класса";
-  String STR_WARN_RECREATE_OBJS          = "Внимание class: %s обновлен, желательно удалить его объекты.\n Удалить?";
-  String STR_ENTER_NAME                  = "<введите название>";
-  String STR_N_OPC_UA_MARKER             = "маркер OPC UA";
-  String STR_D_OPC_UA_MARKER             = "маркер класса сгенерированного из OPC UA";
-  String STR_SUCCESS_OBJS_UPDATED        = "Операция завершена успешно, обновлены объекты: %s";
-  String SELECT_FILE_4_IMPORT_CMD        = "Выберите файл с описанием команд";
-  String SELECT_FILE_4_IMPORT_BIT_RTDATA = "Выберите файл с описанием битовых масок для RtData и Events";
+      Messages.STR_SUCCESS_CLASS_UPDATED;
+  String STR_WARN_RECREATE_OBJS          = Messages.STR_WARN_RECREATE_OBJS;
+  String STR_ENTER_NAME                  = Messages.STR_ENTER_NAME;
+  String STR_N_OPC_UA_MARKER             = Messages.STR_N_OPC_UA_MARKER;
+  String STR_D_OPC_UA_MARKER             = Messages.STR_D_OPC_UA_MARKER;
+  String STR_SUCCESS_OBJS_UPDATED        = Messages.STR_SUCCESS_OBJS_UPDATED;
+  String SELECT_FILE_4_IMPORT_CMD        = Messages.SELECT_FILE_4_IMPORT_CMD;
+  String SELECT_FILE_4_IMPORT_BIT_RTDATA = Messages.SELECT_FILE_4_IMPORT_BIT_RTDATA;
+  String STR_BITMASK_FILE_LOADED         = Messages.STR_BITMASK_FILE_LOADED;
+  String ERR_MSG_CACHE_OUTDATED          = Messages.ERR_MSG_CACHE_OUTDATED;
+  String MSG_CMDS_DESCR_LOADED           = Messages.MSG_CMDS_DESCR_LOADED;
 
   /**
    * {@link PanelClassInfoSelector}
    */
-  String DLG_C_CLASS_INFO            = "Выбор класса";
-  String DLG_T_CLASS_INFO            = "Выберите класс и нажмите Ok";
-  String STR_CLASSES_LIST            = "id класса";
-  String STR_MSG_SELECT_NODE         = "Выбор узла из дерева OPC UA";
-  String STR_DESCR_SELECT_NODE       = "Выделите нужный и нажмите Ok";
-  String STR_MSG_SELECT_NODE_4_OBJS  = "Создание объектов из дерева узлов OPC UA";
-  String STR_MSG_SELECT_NODE_4_CLASS = "Создание класса из дерева узлов OPC UA";
+  String DLG_C_CLASS_INFO            = Messages.DLG_C_CLASS_INFO;
+  String DLG_T_CLASS_INFO            = Messages.DLG_T_CLASS_INFO;
+  String STR_CLASSES_LIST            = Messages.STR_CLASSES_LIST;
+  String STR_MSG_SELECT_NODE         = Messages.STR_MSG_SELECT_NODE;
+  String STR_DESCR_SELECT_NODE       = Messages.STR_DESCR_SELECT_NODE;
+  String STR_MSG_SELECT_NODE_4_OBJS  = Messages.STR_MSG_SELECT_NODE_4_OBJS;
+  String STR_MSG_SELECT_NODE_4_CLASS = Messages.STR_MSG_SELECT_NODE_4_CLASS;
+
+  /**
+   * {@link OpcToS5DataCfgDocEditorPanel}
+   */
+  String STR_N_EDIT_CONFIG_SET              = Messages.STR_N_EDIT_CONFIG_SET;
+  String STR_D_EDIT_CONFIG_SET              = Messages.STR_D_EDIT_CONFIG_SET;
+  String STR_N_EDIT_OPC_UA_NODES            = Messages.STR_N_EDIT_OPC_UA_NODES;
+  String STR_D_EDIT_OPC_UA_NODES            = Messages.STR_D_EDIT_OPC_UA_NODES;
+  String STR_N_SAVE_CONFIG                  = Messages.STR_N_SAVE_CONFIG;
+  String STR_D_SAVE_CONFIG                  = Messages.STR_D_SAVE_CONFIG;
+  String STR_N_SELECT_S5_SERVER             = Messages.STR_N_SELECT_S5_SERVER;
+  String STR_D_SELECT_S5_SERVER             = Messages.STR_D_SELECT_S5_SERVER;
+  String STR_N_SELECT_OPC_UA_SERVER         = Messages.STR_N_SELECT_OPC_UA_SERVER;
+  String STR_D_SELECT_OPC_UA_SERVER         = Messages.STR_D_SELECT_OPC_UA_SERVER;
+  String STR_LINKS                          = Messages.STR_LINKS;
+  String STR_NODES                          = Messages.STR_NODES;
+  String STR_SK_CONN_DESCR                  = Messages.STR_SK_CONN_DESCR;
+  String STR_OPC_UA_DESCR                   = Messages.STR_OPC_UA_DESCR;
+  String STR_OPC_UA_CONNECTING_PROCESS      = Messages.STR_OPC_UA_CONNECTING_PROCESS;
+  String STR_CHECK_OPC_UA_CACHE             = Messages.STR_CHECK_OPC_UA_CACHE;
+  String STR_OPC_UA_CACHE                   = Messages.STR_OPC_UA_CACHE;
+  String STR_USE_OPC_UA_CACHE               = Messages.STR_USE_OPC_UA_CACHE;
+  String STR_OPC_UA_CLIENT_CREATE           = Messages.STR_OPC_UA_CLIENT_CREATE;
+  String STR_OPC_UA_CLIENT_CONNECTING       = Messages.STR_OPC_UA_CLIENT_CONNECTING;
+  String STR_OPC_UA_CONNECTED               = Messages.STR_OPC_UA_CONNECTED;
+  String STR_OPC_UA_CONNECTING_PROCESS_FAIL = Messages.STR_OPC_UA_CONNECTING_PROCESS_FAIL;
+  String STR_USE_OPC_UA_CACHE_CREATING      = Messages.STR_USE_OPC_UA_CACHE_CREATING;
+  String STR_USE_OPC_UA_CACHE_CREATED       = Messages.STR_USE_OPC_UA_CACHE_CREATED;
+  String STR_USE_OPC_UA_CACHE_CREATION_FAIL = Messages.STR_USE_OPC_UA_CACHE_CREATION_FAIL;
 }

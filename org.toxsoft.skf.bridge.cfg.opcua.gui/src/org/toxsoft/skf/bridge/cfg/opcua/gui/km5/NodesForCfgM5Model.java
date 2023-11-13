@@ -6,6 +6,7 @@ import static org.toxsoft.core.tsgui.m5.IM5Constants.*;
 import static org.toxsoft.core.tsgui.m5.gui.mpc.IMultiPaneComponentConstants.*;
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
+import static org.toxsoft.skf.bridge.cfg.opcua.gui.km5.ISkResources.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
 import org.eclipse.milo.opcua.sdk.client.*;
@@ -50,10 +51,10 @@ public class NodesForCfgM5Model
   final static String ACTID_EDIT_AS_STR = SK_ID + ".opcua.to.s5.edit.nodeid.as.str"; //$NON-NLS-1$
 
   final static TsActionDef ACDEF_ADD_AS_STR =
-      TsActionDef.ofPush2( ACTID_ADD_AS_STR, "Добавить как строку", "Добавить как строку", ICONID_LIST_ADD );
+      TsActionDef.ofPush2( ACTID_ADD_AS_STR, STR_N_ADD_AS_STRING, STR_D_ADD_AS_STRING, ICONID_LIST_ADD );
 
-  final static TsActionDef ACDEF_EDIT_AS_STR = TsActionDef.ofPush2( ACTID_EDIT_AS_STR, "Редактировать как строку",
-      "Редактировать как строку", ICONID_DOCUMENT_EDIT );
+  final static TsActionDef ACDEF_EDIT_AS_STR =
+      TsActionDef.ofPush2( ACTID_EDIT_AS_STR, STR_N_EDIT_AS_STRING, STR_D_EDIT_AS_STRING, ICONID_DOCUMENT_EDIT );
 
   /**
    * Canonical str node
@@ -61,8 +62,8 @@ public class NodesForCfgM5Model
   public static final String FID_NODE_STR = "node.str"; //$NON-NLS-1$
 
   public M5AttributeFieldDef<NodeId> NODE_STR = new M5AttributeFieldDef<>( FID_NODE_STR, EAtomicType.STRING, //
-      TSID_NAME, "Node Str", //
-      TSID_DESCRIPTION, "Node Str" //
+      TSID_NAME, STR_N_NODE_STRING, //
+      TSID_DESCRIPTION, STR_D_NODE_STRING //
   ) {
 
     @Override
@@ -152,10 +153,10 @@ public class NodesForCfgM5Model
                 OpcUaServerConnCfg config =
                     (OpcUaServerConnCfg)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
                 if( uaClient != null ) {
-                  System.out.println( "Selecetd opc conn: " + uaClient.toString() );
+                  System.out.println( "Selected opc conn: " + uaClient.toString() );
                 }
                 else {
-                  System.out.println( "Selecetd opc conn: " + "null" );
+                  System.out.println( "Selected opc conn: " + "null" );
                 }
 
                 IList<UaTreeNode> selNodes =

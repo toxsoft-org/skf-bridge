@@ -15,6 +15,8 @@ import org.toxsoft.core.tslib.bricks.strio.*;
  */
 public class CfgOpcUaNode {
 
+  private final static String CHECK_NODE = "CheckNode"; //$NON-NLS-1$
+
   /**
    * The keeper singleton.
    */
@@ -50,7 +52,7 @@ public class CfgOpcUaNode {
           // realization options
           OptionSetKeeper.KEEPER.write( aSw, aEntity.getExtraParams() );
 
-          aSw.writeQuotedString( "CheckNode" );
+          aSw.writeQuotedString( CHECK_NODE );
 
           aSw.decNewLine();
         }
@@ -78,8 +80,8 @@ public class CfgOpcUaNode {
 
           IOptionSet extraParams = OptionSetKeeper.KEEPER.read( aSr );
 
-          if( !aSr.readQuotedString().equals( "CheckNode" ) ) {
-            System.out.println( "Error Node Read" );
+          if( !aSr.readQuotedString().equals( CHECK_NODE ) ) {
+            System.out.println( "Error Node Read" ); //$NON-NLS-1$
           }
 
           CfgOpcUaNode result = new CfgOpcUaNode( id, read, write, synch, type, extraParams );
@@ -151,50 +153,86 @@ public class CfgOpcUaNode {
     this( aNodeId, aSynch, aRead, aWrite, aType, new OptionSet() );
   }
 
+  /**
+   * @return node identifier
+   */
   public String getNodeId() {
     return nodeId;
   }
 
+  /**
+   * @param aNodeId node identifier
+   */
   public void setNodeId( String aNodeId ) {
     nodeId = aNodeId;
   }
 
+  /**
+   * @return true - output node
+   */
   public boolean isWrite() {
     return write;
   }
 
+  /**
+   * @param aWrite true - output node
+   */
   public void setWrite( boolean aWrite ) {
     write = aWrite;
   }
 
+  /**
+   * @return true - input node
+   */
   public boolean isRead() {
     return read;
   }
 
+  /**
+   * @param aRead true - input node
+   */
   public void setRead( boolean aRead ) {
     read = aRead;
   }
 
+  /**
+   * @return true - synch node
+   */
   public boolean isSynch() {
     return synch;
   }
 
+  /**
+   * @param aSynch true - synch node
+   */
   public void setSynch( boolean aSynch ) {
     synch = aSynch;
   }
 
+  /**
+   * @return type {@link EAtomicType} of node value
+   */
   public EAtomicType getType() {
     return type;
   }
 
+  /**
+   * @param aType {@link EAtomicType} of node value
+   */
   public void setType( EAtomicType aType ) {
     type = aType;
   }
 
+  /**
+   * @return {@link IOptionSet} extra type
+   */
   public IOptionSet getExtraParams() {
     return extraParams;
   }
 
+  /**
+   * @param aExtraParams extra type
+   */
   public void setExtraParams( IOptionSet aExtraParams ) {
     extraParams = aExtraParams;
   }
