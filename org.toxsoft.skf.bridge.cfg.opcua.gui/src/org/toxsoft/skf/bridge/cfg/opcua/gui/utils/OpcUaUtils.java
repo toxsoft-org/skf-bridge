@@ -603,6 +603,27 @@ public class OpcUaUtils {
       TSID_NAME, STR_N_BIT_NUMBER, //
       TSID_DESCRIPTION, STR_D_BIT_NUMBER );
 
+  /**
+   * Имя параметра - период синхронизации
+   */
+  public static final IDataDef OP_SYNCH_PERIOD = create( "synch.period", INTEGER, //$NON-NLS-1$
+      TSID_NAME, "Период синхронизации", //
+      TSID_DESCRIPTION, "Период синхронизации данных" );
+
+  /**
+   * Имя параметра - признак исторических данных
+   */
+  public static final IDataDef OP_IS_HIST = create( "is.hist", BOOLEAN, //$NON-NLS-1$
+      TSID_NAME, "Исторические", //
+      TSID_DESCRIPTION, "Исторические данные" );
+
+  /**
+   * Имя параметра - признак исторических данных
+   */
+  public static final IDataDef OP_IS_CURR = create( "is.curr", BOOLEAN, //$NON-NLS-1$
+      TSID_NAME, "Текущие", //
+      TSID_DESCRIPTION, "Текущие данные" );
+
   public static final IDataDef OP_EVENT_SENDER_JAVA_CLASS = create( "event.sender.java.class", STRING, //$NON-NLS-1$
       TSID_NAME, STR_N_EVENT_SENDER_JAVA_CLASS, //
       TSID_DESCRIPTION, STR_D_EVENT_SENDER_JAVA_CLASS, //
@@ -698,9 +719,16 @@ public class OpcUaUtils {
     paramDefenitions = new ElemArrayList<>();
 
     paramDefenitions.add( OP_DATA_JAVA_CLASS );
+    paramDefenitions.add( OP_SYNCH_PERIOD );
+    paramDefenitions.add( OP_IS_CURR );
+    paramDefenitions.add( OP_IS_HIST );
 
     defaultParams = new OptionSet();
     OP_DATA_JAVA_CLASS.setValue( defaultParams, avStr( DATA_JAVA_CLASS_ONE_TO_ONE_DATA_TRANSMITTER_FACTORY ) );
+
+    OP_SYNCH_PERIOD.setValue( defaultParams, avInt( -1 ) );
+    OP_IS_CURR.setValue( defaultParams, avBool( false ) );
+    OP_IS_HIST.setValue( defaultParams, avBool( false ) );
 
     ICfgUnitRealizationType dataOneToOne = new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_ONT_TO_ONE_DATA,
         STR_ONE_2_ONE, ECfgUnitType.DATA, paramDefenitions, defaultParams );
@@ -714,10 +742,17 @@ public class OpcUaUtils {
 
     paramDefenitions.add( OP_DATA_JAVA_CLASS );
     paramDefenitions.add( OP_BIT_INDEX );
+    paramDefenitions.add( OP_SYNCH_PERIOD );
+    paramDefenitions.add( OP_IS_CURR );
+    paramDefenitions.add( OP_IS_HIST );
 
     defaultParams = new OptionSet();
     OP_DATA_JAVA_CLASS.setValue( defaultParams, avStr( DATA_JAVA_CLASS_ONE_INT_TO_ONE_BIT_DATA_TRANSMITTER_FACTORY ) );
     OP_BIT_INDEX.setValue( defaultParams, avInt( 0 ) );
+
+    OP_SYNCH_PERIOD.setValue( defaultParams, avInt( -1 ) );
+    OP_IS_CURR.setValue( defaultParams, avBool( false ) );
+    OP_IS_HIST.setValue( defaultParams, avBool( false ) );
 
     ICfgUnitRealizationType dataIntToOne =
         new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_ONE_INT_TO_ONE_BIT_DATA, STR_BIT_FROM_WORD,

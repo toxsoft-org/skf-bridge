@@ -294,13 +294,13 @@ public class OpcToS5DataCfgConverter {
     // }
 
     // признак текущности, историчности TODO
-    pinOpSet1.setBool( IS_HIST, true );
-    pinOpSet1.setBool( IS_CURR, true );
+    // pinOpSet1.setBool( IS_HIST, true );
+    // pinOpSet1.setBool( IS_CURR, true );
 
     // признак синхронности заменён на конкретное значение периода синхронизации
-    if( isSynch ) {
-      pinOpSet1.setLong( SYNCH_PERIOD, 1000L );
-    }
+    // if( isSynch ) {
+    // pinOpSet1.setLong( SYNCH_PERIOD, 1000L );
+    // }
 
     try {
       IAvTree pinTree1 =

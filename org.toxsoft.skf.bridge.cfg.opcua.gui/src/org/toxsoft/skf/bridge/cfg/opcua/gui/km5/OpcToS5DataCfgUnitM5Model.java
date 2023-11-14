@@ -45,6 +45,11 @@ import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 import org.toxsoft.skide.plugin.exconn.service.*;
+import org.toxsoft.uskat.core.*;
+import org.toxsoft.uskat.core.api.sysdescr.*;
+import org.toxsoft.uskat.core.api.sysdescr.dto.*;
+import org.toxsoft.uskat.core.connection.*;
+import org.toxsoft.uskat.core.gui.conn.*;
 
 /**
  * M5 model realization for {@link OpcToS5DataCfgUnit} entities.
@@ -461,10 +466,10 @@ public class OpcToS5DataCfgUnitM5Model
                     // dima 20.10.23 FIXME использовать IdChain для передачи информации о соединении. Цитата от Гоги:
                     // Кстати, напомню, что "класть соединение в контекст" нельзя,
                     // можно только использовать ISkConnectionSupplier
-                    IdChain connIdChain = selectConnection( aContext );
-                    if( connIdChain != null ) {
-                      aContext.put( OPCUA_BRIDGE_CFG_S5_CONNECTION, connIdChain );
-                    }
+                    // IdChain connIdChain = selectConnection( aContext );
+                    // if( connIdChain != null ) {
+                    // aContext.put( OPCUA_BRIDGE_CFG_S5_CONNECTION, connIdChain );
+                    // }
 
                     break;
 
@@ -481,6 +486,9 @@ public class OpcToS5DataCfgUnitM5Model
                     break;
 
                   case ACTID_AUTO_LINK:
+
+                    IdChain connIdChain =
+                        (IdChain)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_S5_CONNECTION );
 
                     IStringMap<IStringMap<Integer>> cmdOpcCodes = new StringMap<>();
 
@@ -576,6 +584,8 @@ public class OpcToS5DataCfgUnitM5Model
                     }
                     // Data
                     IList<UaNode2Gwid> nodes2Gwids = OpcUaUtils.loadNodes2RtdGwids( aContext );
+                    ISkConnectionSupplier connSup = aContext.get( ISkConnectionSupplier.class );
+                    ISkConnection currConn = connSup.getConn( connIdChain );
                     for( UaNode2Gwid dataNode : nodes2Gwids ) {
 
                       // битовый индекс для данного
@@ -621,6 +631,16 @@ public class OpcToS5DataCfgUnitM5Model
                       if( bitIndex != null ) {
                         OpcUaUtils.OP_BIT_INDEX.setValue( realization, avInt( bitIndex.bitIndex() ) );
                       }
+
+                      ISkCoreApi api = currConn.coreApi();
+                      ISkSysdescr sysDescr = api.sysdescr();
+                      ISkClassInfo classInfo = sysDescr.getClassInfo( gwid.classId() );
+                      ISkClassProps<IDtoRtdataInfo> dataInfoes = classInfo.rtdata();
+                      IDtoRtdataInfo dataInfo = dataInfoes.list().getByKey( gwid.propId() );
+
+                      OpcUaUtils.OP_SYNCH_PERIOD.setValue( realization, avInt( dataInfo.isSync() ? 1000 : 0 ) );
+                      OpcUaUtils.OP_IS_CURR.setValue( realization, avBool( dataInfo.isCurr() ) );
+                      OpcUaUtils.OP_IS_HIST.setValue( realization, avBool( dataInfo.isHist() ) );
 
                       String name = STR_LINK_PREFIX + gwid.asString();
 
