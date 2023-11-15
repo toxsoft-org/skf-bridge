@@ -71,6 +71,7 @@ public class Messages
   public static String        STR_USE_OPC_UA_CACHE_CREATING;
   public static String        STR_USE_OPC_UA_CACHE_CREATION_FAIL;
   public static String        STR_WARN_RECREATE_OBJS;
+  public static String        STR_DEFAULT_WORKROOM_SK_CONN;
   static {
     // initialize resource bundle
     NLS.initializeMessages( BUNDLE_NAME, Messages.class );

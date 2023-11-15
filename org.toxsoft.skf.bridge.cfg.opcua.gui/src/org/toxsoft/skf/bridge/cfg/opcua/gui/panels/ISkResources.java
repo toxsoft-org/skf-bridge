@@ -32,8 +32,7 @@ public interface ISkResources {
   String STR_N_ARG_VALUE                 = Messages.STR_N_ARG_VALUE;
   String STR_D_ARG_VALUE                 = Messages.STR_D_ARG_VALUE;
   String STR_SUCCESS_CLASS_CREATED       = Messages.STR_SUCCESS_CLASS_CREATED;
-  String STR_SUCCESS_CLASS_UPDATED       =
-      Messages.STR_SUCCESS_CLASS_UPDATED;
+  String STR_SUCCESS_CLASS_UPDATED       = Messages.STR_SUCCESS_CLASS_UPDATED;
   String STR_WARN_RECREATE_OBJS          = Messages.STR_WARN_RECREATE_OBJS;
   String STR_ENTER_NAME                  = Messages.STR_ENTER_NAME;
   String STR_N_OPC_UA_MARKER             = Messages.STR_N_OPC_UA_MARKER;
@@ -84,4 +83,5 @@ public interface ISkResources {
   String STR_USE_OPC_UA_CACHE_CREATING      = Messages.STR_USE_OPC_UA_CACHE_CREATING;
   String STR_USE_OPC_UA_CACHE_CREATED       = Messages.STR_USE_OPC_UA_CACHE_CREATED;
   String STR_USE_OPC_UA_CACHE_CREATION_FAIL = Messages.STR_USE_OPC_UA_CACHE_CREATION_FAIL;
+  String STR_DEFAULT_WORKROOM_SK_CONN       = Messages.STR_DEFAULT_WORKROOM_SK_CONN;
 }

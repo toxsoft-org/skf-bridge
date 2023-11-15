@@ -208,7 +208,7 @@ public class OpcToS5DataCfgDocEditorPanel
     textContr1 = new TextControlContribution( "Label", 200, STR_SK_CONN_DESCR, SWT.NONE ); //$NON-NLS-1$
     toolBar.addContributionItem( textContr1 );
     toolBar.addSeparator();
-    textContr2 = new TextControlContribution( "Label2", 200, STR_SK_CONN_DESCR, SWT.NONE ); //$NON-NLS-1$
+    textContr2 = new TextControlContribution( "Label2", 200, STR_OPC_UA_DESCR, SWT.NONE ); //$NON-NLS-1$
     toolBar.addContributionItem( textContr2 );
 
     IM5Domain m5 = conn.scope().get( IM5Domain.class );
@@ -311,7 +311,8 @@ public class OpcToS5DataCfgDocEditorPanel
     // установить по умолчанию s5 соединение рабочего пространства
     IdChain defaultConnIdChain = connSup.getDefaultConnectionKey();
     ctx.put( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_S5_CONNECTION, defaultConnIdChain );
-    textContr1.setText( STR_SK_CONN_DESCR + defaultConnIdChain.first() );
+    String defConnName = defaultConnIdChain.first() != null ? defaultConnIdChain.first() : STR_DEFAULT_WORKROOM_SK_CONN;
+    textContr1.setText( STR_SK_CONN_DESCR + defConnName );
 
     // Связи
     IM5Model<OpcToS5DataCfgUnit> model = m5.getModel( OpcToS5DataCfgUnitM5Model.MODEL_ID, OpcToS5DataCfgUnit.class );
