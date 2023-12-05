@@ -25,7 +25,6 @@ import org.eclipse.milo.opcua.sdk.client.nodes.*;
 import org.eclipse.milo.opcua.stack.core.security.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.*;
-import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
 import org.eclipse.milo.opcua.stack.core.types.structured.*;
 import org.eclipse.milo.opcua.stack.core.util.*;
 import org.eclipse.swt.widgets.*;
@@ -116,47 +115,53 @@ public class OpcUaUtils {
       "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.SingleIntToSingleBoolDataTransmitterFactory";
 
   /**
-   * id secton for cached OPC UA nodes
+   * template for id secton for cached OPC UA nodes
    */
-  public static final String SECTID_OPC_UA_NODES_PREFIX = "cached.opc.ua.nodes"; //$NON-NLS-1$
+  private static final String SECTID_OPC_UA_NODES_TEMPLATE = "cached.opc.ua.nodes"; //$NON-NLS-1$
 
   /**
-   * id secton for store links UaNode->Skid meta info
+   * template for id secton for store links UaNode->Skid meta info
    */
-  public static final String SECTID_OPC_UA_NODES_2_SKIDS = "opc.ua.nodes2skids"; //$NON-NLS-1$
+  private static final String SECTID_OPC_UA_NODES_2_SKIDS_TEMPLATE = "opc.ua.nodes2skids"; //$NON-NLS-1$
 
   /**
-   * id secton for store links UaNode->RtdGwid
+   * template for id secton for store links UaNode->RtdGwid
    */
-  public static final String SECTID_OPC_UA_NODES_2_RTD_GWIDS = "opc.ua.nodes2rtd.gwids"; //$NON-NLS-1$
+  public static final String SECTID_OPC_UA_NODES_2_RTD_GWIDS_TEMPLATE = "opc.ua.nodes2rtd.gwids"; //$NON-NLS-1$
 
   /**
-   * id secton for store links UaNode->ClassGwid
+   * template for id secton for store links UaNode->ClassGwid
    */
-  public static final String SECTID_OPC_UA_NODES_2_CLS_GWIDS = "opc.ua.nodes2class.gwids"; //$NON-NLS-1$
+  public static final String SECTID_OPC_UA_NODES_2_CLS_GWIDS_TEMPLATE = "opc.ua.nodes2class.gwids"; //$NON-NLS-1$
 
   /**
-   * id secton for store links UaNode->EvtGwid
+   * template for id secton for store links UaNode->EvtGwid
    */
-  public static final String SECTID_OPC_UA_NODES_2_EVT_GWIDS = "opc.ua.nodes2evt.gwids"; //$NON-NLS-1$
+  public static final String SECTID_OPC_UA_NODES_2_EVT_GWIDS_TEMPLATE = "opc.ua.nodes2evt.gwids"; //$NON-NLS-1$
 
   /**
-   * id secton for store links CmdGwid->UaNodes
+   * template for id secton for store links CmdGwid->UaNodes
    */
-  public static final String SECTID_CMD_GWIDS_2_OPC_UA_NODES = "cmd.gwid2opc.ua.nodes"; //$NON-NLS-1$
+  private static final String SECTID_CMD_GWIDS_2_OPC_UA_NODES_TEMPLATE = "cmd.gwid2opc.ua.nodes"; //$NON-NLS-1$
 
-  private static final String                       CLIENT_APP_NAME                            =
+  private static final String                                    CLIENT_APP_NAME                            =
       "eclipse milo opc-ua client";
-  private static final String                       CLIENT_APP_URI                             =
+  private static final String                                    CLIENT_APP_URI                             =
       "urn:eclipse:milo:examples:client";
-  private static final String                       ERROR_FORMAT_UNABLE_TO_CREATE_SECURITY_DIR =
+  private static final String                                    ERROR_FORMAT_UNABLE_TO_CREATE_SECURITY_DIR =
       "unable to create security dir: %s";
-  private static final String                       SYS_PROP_JAVA_IO_TMPDIR_DEF_VAL            = "security";
-  private static final String                       SYS_PROP_JAVA_IO_TMPDIR                    = "java.io.tmpdir";
-  private static final Map<String, Gwid>            nodeId2GwidMap                             = new HashMap<>();
-  private static final Map<String, NodeId>          classGwid2NodeIdMap                        = new HashMap<>();
-  private static final Map<Skid, NodeId>            skid2NodeIdMap                             = new HashMap<>();
-  private static final Map<String, CmdGwid2UaNodes> cmdGwid2NodeIdsMap                         = new HashMap<>();
+  private static final String                                    SYS_PROP_JAVA_IO_TMPDIR_DEF_VAL            =
+      "security";
+  private static final String                                    SYS_PROP_JAVA_IO_TMPDIR                    =
+      "java.io.tmpdir";
+  private static final Map<String, Map<String, Gwid>>            sect2nodeId2GwidMap                        =
+      new HashMap<>();
+  private static final Map<String, Map<String, NodeId>>          sect2classGwid2NodeIdMap                   =
+      new HashMap<>();
+  private static final Map<String, Map<Skid, NodeId>>            sect2skid2NodeIdMap                        =
+      new HashMap<>();
+  private static final Map<String, Map<String, CmdGwid2UaNodes>> sect2cmdGwid2NodeIdsMap                    =
+      new HashMap<>();
 
   /**
    * Hided constructor.
@@ -234,22 +239,26 @@ public class OpcUaUtils {
    * @return класс типа данных значения узла
    */
   public static Class<?> getNodeDataTypeClass( UaVariableNode aEntity ) {
-    Class<?> retVal = null;
-    // получение значения узла
-    DataValue dataValue = aEntity.getValue();
-    // тут получаем Variant
-    Variant variant = dataValue.getValue();
-    Optional<ExpandedNodeId> dataTypeNode = variant.getDataType();
-    if( dataTypeNode.isPresent() ) {
-      ExpandedNodeId expNodeId = dataTypeNode.get();
-      // TODO разобраться с отображением не числовых типов
-      if( expNodeId.getType() == IdType.Numeric ) {
-        UInteger id = (UInteger)expNodeId.getIdentifier();
-        NodeId nodeId = new NodeId( expNodeId.getNamespaceIndex(), id );
-        Class<?> clazz = TypeUtil.getBackingClass( nodeId );
-        retVal = clazz;
-      }
-    }
+    // old version of dima
+    // Class<?> retVal = null;
+    // // получение значения узла
+    // DataValue dataValue = aEntity.getValue();
+    // // тут получаем Variant
+    // Variant variant = dataValue.getValue();
+    // Optional<ExpandedNodeId> dataTypeNode = variant.getDataType();
+    // if( dataTypeNode.isPresent() ) {
+    // ExpandedNodeId expNodeId = dataTypeNode.get();
+    // // TODO разобраться с отображением не числовых типов
+    // if( expNodeId.getType() == IdType.Numeric ) {
+    // UInteger id = (UInteger)expNodeId.getIdentifier();
+    // NodeId nodeId = new NodeId( expNodeId.getNamespaceIndex(), id );
+    // Class<?> clazz = TypeUtil.getBackingClass( nodeId );
+    // retVal = clazz;
+    // }
+    // }
+
+    // new verion of max
+    Class<?> retVal = TypeUtil.getBackingClass( aEntity.getDataType() );
     return retVal;
   }
 
@@ -339,13 +348,14 @@ public class OpcUaUtils {
    *
    * @param aContext app context
    * @param aNodes2Skids list of links UaNode->Skid
-   * @param aSectId section id to store data
+   * @param aOpcUaServerConnCfg параметры подключения к OPC UA
    */
   public static void updateNodes2SkidsInStore( ITsGuiContext aContext, IList<UaNode2Skid> aNodes2Skids,
-      String aSectId ) {
+      IOpcUaServerConnCfg aOpcUaServerConnCfg ) {
     ITsWorkroom workroom = aContext.eclipseContext().get( ITsWorkroom.class );
     TsInternalErrorRtException.checkNull( workroom );
-    IList<UaNode2Skid> oldList = loadNodes2Skids( aContext, aSectId );
+    String sectId = getTreeSectionNameByConfig( SECTID_OPC_UA_NODES_2_SKIDS_TEMPLATE, aOpcUaServerConnCfg );
+    IList<UaNode2Skid> oldList = loadNodes2Skids( aContext, sectId );
     IListEdit<UaNode2Skid> newList = new ElemArrayList<>();
     // для ускорения переложим в карту
     IStringMapEdit<UaNode2Skid> tmpCach = new StringMap<>();
@@ -359,9 +369,9 @@ public class OpcUaUtils {
     }
     newList.addAll( aNodes2Skids );
     IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
-    storage.writeColl( aSectId, newList, UaNode2Skid.KEEPER );
+    storage.writeColl( sectId, newList, UaNode2Skid.KEEPER );
     // чистим кеш
-    skid2NodeIdMap.clear();
+    sect2skid2NodeIdMap.remove( sectId );
   }
 
   /**
@@ -370,14 +380,16 @@ public class OpcUaUtils {
    * @param <T> - шаблон для описания привязки {@link UaNode2Gwid}
    * @param aContext app context
    * @param aNodes2Gwids list of links UaNode->Gwid
-   * @param aSectId section id to store data
+   * @param aSectIdTempate section id template to store data
    * @param aKeeper хранитель шаблона
+   * @param aOpcUaServerConnCfg параметры подключения к OPC UA
    */
   public static <T extends UaNode2Gwid> void updateNodes2GwidsInStore( ITsGuiContext aContext, IList<T> aNodes2Gwids,
-      String aSectId, IEntityKeeper<T> aKeeper ) {
+      String aSectIdTempate, IEntityKeeper<T> aKeeper, IOpcUaServerConnCfg aOpcUaServerConnCfg ) {
     ITsWorkroom workroom = aContext.eclipseContext().get( ITsWorkroom.class );
     TsInternalErrorRtException.checkNull( workroom );
-    IList<T> oldList = loadNodes2Gwids( aContext, aSectId, aKeeper );
+    String sectId = getTreeSectionNameByConfig( aSectIdTempate, aOpcUaServerConnCfg );
+    IList<T> oldList = loadNodes2Gwids( aContext, sectId, aKeeper );
     IListEdit<T> newList = new ElemArrayList<>();
     // для ускорения переложим в карту
     IStringMapEdit<IContainNodeId> tmpCach = new StringMap<>();
@@ -391,23 +403,29 @@ public class OpcUaUtils {
     }
     newList.addAll( aNodes2Gwids );
     IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
-    storage.writeColl( aSectId, newList, aKeeper );
+    storage.writeColl( sectId, newList, aKeeper );
   }
 
   /**
    * @param aContext app context
+   * @param aOpcUaServerConnCfg параметры подключения к OPC UA
    * @return list of links {@link UaNode2Gwid } UaNode->Gwid
    */
-  public static IList<UaNode2Gwid> loadNodes2RtdGwids( ITsGuiContext aContext ) {
-    return loadNodes2Gwids( aContext, SECTID_OPC_UA_NODES_2_RTD_GWIDS, UaNode2Gwid.KEEPER );
+  public static IList<UaNode2Gwid> loadNodes2RtdGwids( ITsGuiContext aContext,
+      IOpcUaServerConnCfg aOpcUaServerConnCfg ) {
+    String sectId = getTreeSectionNameByConfig( SECTID_OPC_UA_NODES_2_RTD_GWIDS_TEMPLATE, aOpcUaServerConnCfg );
+    return loadNodes2Gwids( aContext, sectId, UaNode2Gwid.KEEPER );
   }
 
   /**
    * @param aContext app context
+   * @param aOpcUaServerConnCfg параметры подключения к OPC UA
    * @return list of links {@link UaNode2Gwid } UaNode->Gwid
    */
-  public static IList<UaNode2EventGwid> loadNodes2EvtGwids( ITsGuiContext aContext ) {
-    return loadNodes2Gwids( aContext, SECTID_OPC_UA_NODES_2_EVT_GWIDS, UaNode2EventGwid.KEEPER );
+  public static IList<UaNode2EventGwid> loadNodes2EvtGwids( ITsGuiContext aContext,
+      IOpcUaServerConnCfg aOpcUaServerConnCfg ) {
+    String sectId = getTreeSectionNameByConfig( SECTID_OPC_UA_NODES_2_EVT_GWIDS_TEMPLATE, aOpcUaServerConnCfg );
+    return loadNodes2Gwids( aContext, sectId, UaNode2EventGwid.KEEPER );
   }
 
   /**
@@ -445,17 +463,22 @@ public class OpcUaUtils {
    *
    * @param aContext app context
    * @param aSkid OPC UA nodeId
+   * @param aOpcUaServerConnCfg параметры подключения к OPC UA
    * @return NodeId linked to Skid or null
    */
-  public static NodeId nodeBySkid( ITsGuiContext aContext, Skid aSkid ) {
+  public static NodeId nodeBySkid( ITsGuiContext aContext, Skid aSkid, IOpcUaServerConnCfg aOpcUaServerConnCfg ) {
     NodeId retVal = null;
-    if( skid2NodeIdMap.isEmpty() ) {
-      // пустая карта кеша, загружаем
-      IList<UaNode2Skid> nodes2Skids = loadNodes2Skids( aContext, SECTID_OPC_UA_NODES_2_SKIDS );
+    // пустая карта кеша, загружаем
+    String sectId = getTreeSectionNameByConfig( SECTID_OPC_UA_NODES_2_SKIDS_TEMPLATE, aOpcUaServerConnCfg );
+    if( !sect2skid2NodeIdMap.containsKey( sectId ) ) {
+      IList<UaNode2Skid> nodes2Skids = loadNodes2Skids( aContext, sectId );
+      Map<Skid, NodeId> skid2NodeIdMap = new HashMap<>();
+      sect2skid2NodeIdMap.put( sectId, skid2NodeIdMap );
       for( UaNode2Skid node2Skid : nodes2Skids ) {
         skid2NodeIdMap.put( node2Skid.skid(), node2Skid.getNodeId() );
       }
     }
+    Map<Skid, NodeId> skid2NodeIdMap = sect2skid2NodeIdMap.get( sectId );
     if( skid2NodeIdMap.containsKey( aSkid ) ) {
       retVal = skid2NodeIdMap.get( aSkid );
     }
@@ -467,18 +490,23 @@ public class OpcUaUtils {
    *
    * @param aContext app context
    * @param aNodeId OPC UA nodeId
+   * @param aOpcUaServerConnCfg параметры подключения к OPC UA
    * @return Gwid linked to UaNode or null
    */
-  public static Gwid uaNode2rtdGwid( ITsGuiContext aContext, NodeId aNodeId ) {
+  public static Gwid uaNode2rtdGwid( ITsGuiContext aContext, NodeId aNodeId, IOpcUaServerConnCfg aOpcUaServerConnCfg ) {
     Gwid retVal = null;
-    if( nodeId2GwidMap.isEmpty() ) {
+    String sectId = getTreeSectionNameByConfig( SECTID_OPC_UA_NODES_2_RTD_GWIDS_TEMPLATE, aOpcUaServerConnCfg );
+    if( !sect2nodeId2GwidMap.containsKey( sectId ) ) {
       // пустая карта кеша, загружаем
-      IList<UaNode2Gwid> nodes2Gwids = loadNodes2Gwids( aContext, SECTID_OPC_UA_NODES_2_RTD_GWIDS, UaNode2Gwid.KEEPER );
+      IList<UaNode2Gwid> nodes2Gwids = loadNodes2Gwids( aContext, sectId, UaNode2Gwid.KEEPER );
+      Map<String, Gwid> nodeId2GwidMap = new HashMap<>();
+      sect2nodeId2GwidMap.put( sectId, nodeId2GwidMap );
       for( UaNode2Gwid node2Gwid : nodes2Gwids ) {
         String key = node2Gwid.getNodeId().toParseableString();
         nodeId2GwidMap.put( key, node2Gwid.gwid() );
       }
     }
+    Map<String, Gwid> nodeId2GwidMap = sect2nodeId2GwidMap.get( sectId );
     String nodeKey = aNodeId.toParseableString();
     if( nodeId2GwidMap.containsKey( nodeKey ) ) {
       retVal = nodeId2GwidMap.get( nodeKey );
@@ -491,19 +519,24 @@ public class OpcUaUtils {
    *
    * @param aContext app context
    * @param aGwid Class Gwid
+   * @param aOpcUaServerConnCfg параметры подключения к OPC UA
    * @return NodeId linked to aGwid or null
    */
-  public static NodeId classGwid2uaNode( ITsGuiContext aContext, Gwid aGwid ) {
+  public static NodeId classGwid2uaNode( ITsGuiContext aContext, Gwid aGwid, IOpcUaServerConnCfg aOpcUaServerConnCfg ) {
     NodeId retVal = null;
-    if( classGwid2NodeIdMap.isEmpty() ) {
+    String sectId = getTreeSectionNameByConfig( SECTID_OPC_UA_NODES_2_CLS_GWIDS_TEMPLATE, aOpcUaServerConnCfg );
+    if( !sect2classGwid2NodeIdMap.containsKey( sectId ) ) {
       // пустая карта кеша, загружаем
-      IList<UaNode2Gwid> nodes2Gwids = loadNodes2Gwids( aContext, SECTID_OPC_UA_NODES_2_CLS_GWIDS, UaNode2Gwid.KEEPER );
+      IList<UaNode2Gwid> nodes2Gwids = loadNodes2Gwids( aContext, sectId, UaNode2Gwid.KEEPER );
+      Map<String, NodeId> classGwid2NodeIdMap = new HashMap<>();
+      sect2classGwid2NodeIdMap.put( sectId, classGwid2NodeIdMap );
       for( UaNode2Gwid node2Gwid : nodes2Gwids ) {
         String key = node2Gwid.gwid().asString();
         classGwid2NodeIdMap.put( key, node2Gwid.getNodeId() );
       }
     }
     String gwidKey = aGwid.asString();
+    Map<String, NodeId> classGwid2NodeIdMap = sect2classGwid2NodeIdMap.get( sectId );
     if( classGwid2NodeIdMap.containsKey( gwidKey ) ) {
       retVal = classGwid2NodeIdMap.get( gwidKey );
     }
@@ -515,11 +548,13 @@ public class OpcUaUtils {
    *
    * @param aContext app context
    * @param aCmdGwid2UaNodes list of links CmdGwid->UaNodes
+   * @param aOpcUaServerConnCfg OPC UA server connection params
    */
-  public static void updateCmdGwid2NodesInStore( ITsGuiContext aContext, IList<CmdGwid2UaNodes> aCmdGwid2UaNodes ) {
+  public static void updateCmdGwid2NodesInStore( ITsGuiContext aContext, IList<CmdGwid2UaNodes> aCmdGwid2UaNodes,
+      IOpcUaServerConnCfg aOpcUaServerConnCfg ) {
     ITsWorkroom workroom = aContext.eclipseContext().get( ITsWorkroom.class );
     TsInternalErrorRtException.checkNull( workroom );
-    IList<CmdGwid2UaNodes> oldList = loadCmdGwid2Nodes( aContext );
+    IList<CmdGwid2UaNodes> oldList = loadCmdGwid2Nodes( aContext, aOpcUaServerConnCfg );
     // добавляем в список на запись только те элементы которых нет в новом списке
     IListEdit<CmdGwid2UaNodes> newList = new ElemArrayList<>();
     for( CmdGwid2UaNodes oldItem : oldList ) {
@@ -529,7 +564,8 @@ public class OpcUaUtils {
     }
     newList.addAll( aCmdGwid2UaNodes );
     IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
-    storage.writeColl( SECTID_CMD_GWIDS_2_OPC_UA_NODES, newList, CmdGwid2UaNodes.KEEPER );
+    String sectId = getTreeSectionNameByConfig( SECTID_CMD_GWIDS_2_OPC_UA_NODES_TEMPLATE, aOpcUaServerConnCfg );
+    storage.writeColl( sectId, newList, CmdGwid2UaNodes.KEEPER );
   }
 
   private static boolean containsGwidIn( IList<CmdGwid2UaNodes> aCmdGwid2UaNodes, CmdGwid2UaNodes aOldItem ) {
@@ -543,38 +579,16 @@ public class OpcUaUtils {
 
   /**
    * @param aContext app context
+   * @param aOpcUaServerConnCfg OPC UA server connection config
    * @return list of links {@link CmdGwid2UaNodes } CmdGwid->UaNodes
    */
-  public static IList<CmdGwid2UaNodes> loadCmdGwid2Nodes( ITsGuiContext aContext ) {
+  public static IList<CmdGwid2UaNodes> loadCmdGwid2Nodes( ITsGuiContext aContext,
+      IOpcUaServerConnCfg aOpcUaServerConnCfg ) {
     ITsWorkroom workroom = aContext.eclipseContext().get( ITsWorkroom.class );
     TsInternalErrorRtException.checkNull( workroom );
     IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
-    IList<CmdGwid2UaNodes> retVal =
-        new ElemArrayList<>( storage.readColl( SECTID_CMD_GWIDS_2_OPC_UA_NODES, CmdGwid2UaNodes.KEEPER ) );
-    return retVal;
-  }
-
-  /**
-   * Get NodeIds by Gwid
-   *
-   * @param aContext app context
-   * @param aGwid command Gwid
-   * @return {@link CmdGwid2UaNodes} NodeIds linked to aGwid or null
-   */
-  public static CmdGwid2UaNodes cmdGwidu2Nodes( ITsGuiContext aContext, Gwid aGwid ) {
-    CmdGwid2UaNodes retVal = null;
-    if( cmdGwid2NodeIdsMap.isEmpty() ) {
-      // пустая карта кеша, загружаем
-      IList<CmdGwid2UaNodes> cmdGwid2NodesList = loadCmdGwid2Nodes( aContext );
-      for( CmdGwid2UaNodes cmdGwid2Nodes : cmdGwid2NodesList ) {
-        String key = cmdGwid2Nodes.gwid().asString();
-        cmdGwid2NodeIdsMap.put( key, cmdGwid2Nodes );
-      }
-    }
-    String gwidKey = aGwid.asString();
-    if( cmdGwid2NodeIdsMap.containsKey( gwidKey ) ) {
-      retVal = cmdGwid2NodeIdsMap.get( gwidKey );
-    }
+    String sectId = getTreeSectionNameByConfig( SECTID_CMD_GWIDS_2_OPC_UA_NODES_TEMPLATE, aOpcUaServerConnCfg );
+    IList<CmdGwid2UaNodes> retVal = new ElemArrayList<>( storage.readColl( sectId, CmdGwid2UaNodes.KEEPER ) );
     return retVal;
   }
 
@@ -847,7 +861,25 @@ public class OpcUaUtils {
    */
   @SuppressWarnings( "nls" )
   public static String getCachedTreeSectionName( IOpcUaServerConnCfg aSelConfig ) {
-    // создаем имя секции для хранения дерева узлов
+    String ipAddress = extractIP( aSelConfig );
+    return SECTID_OPC_UA_NODES_TEMPLATE + ".IP_Address_" + ipAddress + ".UserName_" + aSelConfig.login();
+  }
+
+  /**
+   * По описанию конфигурации подключения к OPC UA выдает имя соотв. секции для хранения метаинформации
+   *
+   * @param aSectNameTemplate - шаблон для генерации названия секции
+   * @param aSelConfig - описание конфигурации подключения к OPC UA
+   * @return строка с именем секции
+   */
+  @SuppressWarnings( "nls" )
+  public static String getTreeSectionNameByConfig( String aSectNameTemplate, IOpcUaServerConnCfg aSelConfig ) {
+    // создаем имя секции
+    String ipAddress = extractIP( aSelConfig );
+    return aSectNameTemplate + ".IP_Address_" + ipAddress;
+  }
+
+  private static String extractIP( IOpcUaServerConnCfg aSelConfig ) {
     // выделяем из хоста IP, opc.tcp://192.168.12.61:4840
     Pattern p = Pattern.compile( "[a-z:\\.\\/]+([0-9\\.]+)" );
     String host = aSelConfig.host();
@@ -858,7 +890,7 @@ public class OpcUaUtils {
       // заменим точки на символы подчеркивания
       ipAddress = ipAddress.replace( '.', '_' );
     }
-    return SECTID_OPC_UA_NODES_PREFIX + ".IP_Address_" + ipAddress + ".UserName_" + aSelConfig.login();
+    return ipAddress;
   }
 
   /**
@@ -1041,12 +1073,24 @@ public class OpcUaUtils {
 
   /**
    * Clear all cached meta info
+   *
+   * @param aOpcUaServerConnCfg OPC UA server config
    */
-  public static void clearCache() {
-    nodeId2GwidMap.clear();
-    classGwid2NodeIdMap.clear();
-    skid2NodeIdMap.clear();
-    cmdGwid2NodeIdsMap.clear();
+  public static void clearCache( IOpcUaServerConnCfg aOpcUaServerConnCfg ) {
+    String sectId = getTreeSectionNameByConfig( SECTID_OPC_UA_NODES_2_RTD_GWIDS_TEMPLATE, aOpcUaServerConnCfg );
+    if( sect2skid2NodeIdMap.containsKey( sectId ) ) {
+      sect2nodeId2GwidMap.remove( sectId );
+    }
+
+    sectId = getTreeSectionNameByConfig( SECTID_OPC_UA_NODES_2_CLS_GWIDS_TEMPLATE, aOpcUaServerConnCfg );
+    if( sect2classGwid2NodeIdMap.containsKey( sectId ) ) {
+      sect2classGwid2NodeIdMap.remove( sectId );
+    }
+    sectId = getTreeSectionNameByConfig( SECTID_OPC_UA_NODES_2_SKIDS_TEMPLATE, aOpcUaServerConnCfg );
+    if( sect2skid2NodeIdMap.containsKey( sectId ) ) {
+      sect2skid2NodeIdMap.remove( sectId );
+    }
+    // cmdGwid2NodeIdsMap.clear();
 
   }
 

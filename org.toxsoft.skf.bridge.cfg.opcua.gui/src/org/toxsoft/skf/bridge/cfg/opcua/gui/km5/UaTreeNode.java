@@ -134,7 +134,9 @@ public class UaTreeNode {
     uaNode = aUaNode;
     if( uaNode instanceof UaVariableNode variableNode ) {
       Class<?> clazz = OpcUaUtils.getNodeDataTypeClass( variableNode );
-      type = OpcUaUtils.getAtomicType( clazz );
+      if( clazz != null ) {
+        type = OpcUaUtils.getAtomicType( clazz );
+      }
       accessLevel = ImmutableSet.copyOf( AccessLevel.fromValue( variableNode.getAccessLevel() ) );
     }
     if( aParent != null ) {

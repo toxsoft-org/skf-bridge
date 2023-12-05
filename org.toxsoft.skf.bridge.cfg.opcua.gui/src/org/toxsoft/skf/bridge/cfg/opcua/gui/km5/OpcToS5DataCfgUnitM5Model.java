@@ -524,7 +524,14 @@ public class OpcToS5DataCfgUnitM5Model
                     }
 
                     // Commands
-                    IList<CmdGwid2UaNodes> autoElements = OpcUaUtils.loadCmdGwid2Nodes( aContext );
+                    // dima
+                    OpcUaServerConnCfg conConf =
+                        (OpcUaServerConnCfg)aContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
+                    if( conConf == null ) {
+                      selectOpcConfigAndOpenConnection( aContext );
+                      conConf = (OpcUaServerConnCfg)aContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
+                    }
+                    IList<CmdGwid2UaNodes> autoElements = OpcUaUtils.loadCmdGwid2Nodes( aContext, conConf );
                     System.out.println( "Auto elements size = " + autoElements.size() );
                     for( CmdGwid2UaNodes cmd2Nodes : autoElements ) {
 
@@ -583,7 +590,7 @@ public class OpcToS5DataCfgUnitM5Model
                       // master().addDataUnit( result );
                     }
                     // Data
-                    IList<UaNode2Gwid> nodes2Gwids = OpcUaUtils.loadNodes2RtdGwids( aContext );
+                    IList<UaNode2Gwid> nodes2Gwids = OpcUaUtils.loadNodes2RtdGwids( aContext, conConf );
                     ISkConnectionSupplier connSup = aContext.get( ISkConnectionSupplier.class );
                     ISkConnection currConn = connSup.getConn( connIdChain );
                     for( UaNode2Gwid dataNode : nodes2Gwids ) {
@@ -657,8 +664,7 @@ public class OpcToS5DataCfgUnitM5Model
                     }
 
                     // events
-
-                    IList<UaNode2EventGwid> autoEvents = OpcUaUtils.loadNodes2EvtGwids( aContext );
+                    IList<UaNode2EventGwid> autoEvents = OpcUaUtils.loadNodes2EvtGwids( aContext, conConf );
 
                     for( UaNode2Gwid evtNode : autoEvents ) {
                       Gwid gwid = evtNode.gwid();
@@ -801,6 +807,12 @@ public class OpcToS5DataCfgUnitM5Model
     return idChain;
   }
 
+  /**
+   * Выбор и подключение к OPC UA серверу
+   *
+   * @param aContext контекст приложения
+   * @return подключение
+   */
   public OpcUaClient selectOpcConfigAndOpenConnection( ITsGuiContext aContext ) {
     IOpcUaServerConnCfg conConf = OpcUaUtils.selectOpcServerConfig( aContext );
     // dima 13.10.23 сохраним в контекст

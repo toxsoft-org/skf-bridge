@@ -174,7 +174,8 @@ public class OpcUaNodesSelector
   private static class UaNodesTreeMaker
       implements ITsTreeMaker<UaTreeNode> {
 
-    private static final String IGNORE_REFIX = "null"; //$NON-NLS-1$
+    private static final String IGNORE_REFIX     = "null";   //$NON-NLS-1$
+    private static final String STATIC_NODE_NAME = "Static"; //$NON-NLS-1$
 
     private final ITsNodeKind<UaTreeNode> kind =
         new TsNodeKind<>( "UaTreeNode", UaTreeNode.class, true, IOpcUaServerConnCfgConstants.ICONID_APP_ICON ); //$NON-NLS-1$
@@ -222,6 +223,14 @@ public class OpcUaNodesSelector
             continue;
           }
         }
+        if( hideVariableNodes && child.getNodeClass().equals( NodeClass.Object ) ) {
+          String name = child.getBrowseName();
+          // отрезаем листья Static
+          if( name.compareTo( STATIC_NODE_NAME ) == 0 ) {
+            continue;
+          }
+        }
+
         if( !hideVariableNodes && child.getNodeClass().equals( NodeClass.Variable ) ) {
           // отсекаем узлы у которых имя начинается с символа '/'
           String name = child.getBrowseName();
@@ -229,7 +238,7 @@ public class OpcUaNodesSelector
             continue;
           }
           // фильтруем узлы по уровню доступа
-          if( !accessLevel.equals( AccessLevel.NONE ) && !child.accessLevel().equals( accessLevel ) ) {
+          if( !accessLevel.equals( AccessLevel.NONE ) && !accessLevel.containsAll( child.accessLevel() ) ) {
             continue;
           }
         }
@@ -338,7 +347,9 @@ public class OpcUaNodesSelector
    */
   public static IList<UaTreeNode> selectUaNodes4Objects( ITsGuiContext aTsContext, NodeId aTopNode, OpcUaClient aClient,
       IOpcUaServerConnCfg aServerConnCfg ) {
-    ITsDialogInfo cdi = new TsDialogInfo( aTsContext, STR_MSG_SELECT_NODE_4_OBJS, STR_DESCR_SELECT_NODE );
+    TsDialogInfo cdi = new TsDialogInfo( aTsContext, STR_MSG_SELECT_NODE_4_OBJS, STR_DESCR_SELECT_NODE );
+    // установим нормальный размер диалога
+    cdi.setMinSize( new TsPoint( -30, -60 ) );
     OpcUaNodesSelectorContext ctx =
         new OpcUaNodesSelectorContext( aTopNode, aClient, true, true, aServerConnCfg, AccessLevel.READ_WRITE );
 
