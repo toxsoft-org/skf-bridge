@@ -307,9 +307,10 @@ public class OpcToS5DataCfgDocEditorPanel
 
     } );
 
-    ISkConnectionSupplier connSup = ctx.get( ISkConnectionSupplier.class );
+    // ISkConnectionSupplier connSup = ctx.get( ISkConnectionSupplier.class );
     // установить по умолчанию s5 соединение рабочего пространства
-    IdChain defaultConnIdChain = connSup.getDefaultConnectionKey();
+    // IdChain defaultConnIdChain = connSup.getDefaultConnectionKey();
+    IdChain defaultConnIdChain = ISkConnectionSupplier.DEF_CONN_ID;
     ctx.put( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_S5_CONNECTION, defaultConnIdChain );
     String defConnName = defaultConnIdChain.first() != null ? defaultConnIdChain.first() : STR_DEFAULT_WORKROOM_SK_CONN;
     textContr1.setText( STR_SK_CONN_DESCR + defConnName );
