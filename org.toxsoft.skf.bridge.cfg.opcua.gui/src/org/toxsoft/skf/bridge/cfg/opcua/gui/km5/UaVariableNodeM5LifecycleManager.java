@@ -1,20 +1,14 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
 
-import static org.toxsoft.skf.bridge.cfg.opcua.gui.km5.ISkResources.*;
-
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.*;
 
 import org.eclipse.milo.opcua.sdk.client.*;
 import org.eclipse.milo.opcua.sdk.client.nodes.*;
 import org.eclipse.milo.opcua.sdk.core.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
-import org.eclipse.milo.opcua.stack.core.types.builtin.DateTime;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.*;
-import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.log4j.*;
-import org.toxsoft.core.tsgui.dialogs.*;
 import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tsgui.m5.model.impl.*;
 import org.toxsoft.core.tslib.bricks.validator.*;
@@ -70,11 +64,13 @@ public class UaVariableNodeM5LifecycleManager
       needWarn = true;
     }
     if( needWarn ) {
-      ETsDialogCode userAnswer = TsDialogUtils.askYesNoCancel( tsContext().get( Shell.class ), STR_WRITE_NODE_CONFIRM,
-          aValues.originalEntity().getNodeId().toParseableString() );
-      if( userAnswer != ETsDialogCode.YES ) {
-        return ValidationResult.error( "User cancel operation" );
-      }
+      // ETsDialogCode userAnswer = TsDialogUtils.askYesNoCancel( tsContext().get( Shell.class ),
+      // STR_WRITE_NODE_CONFIRM,
+      // aValues.originalEntity().getNodeId().toParseableString() );
+      // if( userAnswer != ETsDialogCode.YES ) {
+      // return ValidationResult.error( "Node read only" );
+      // }
+      return ValidationResult.error( "Node read only" );
     }
 
     return ValidationResult.SUCCESS;

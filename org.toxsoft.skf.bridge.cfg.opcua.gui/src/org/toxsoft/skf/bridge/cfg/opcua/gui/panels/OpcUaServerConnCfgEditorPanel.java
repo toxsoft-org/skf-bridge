@@ -64,7 +64,7 @@ public class OpcUaServerConnCfgEditorPanel
   final static String ACTID_BROWSE_CONN = SK_ID + ".bridge.cfg.opcua.BrowseConn"; //$NON-NLS-1$
 
   final static TsActionDef ACDEF_BROWSE_CONN =
-      TsActionDef.ofPush2( ACTID_BROWSE_CONN, STR_N_BROWSE_CONN, STR_D_BROWSE_CONN, ITsStdIconIds.ICONID_VIEW_AS_TREE );
+      TsActionDef.ofPush2( ACTID_BROWSE_CONN, STR_N_BROWSE_CONN, STR_D_BROWSE_CONN, ICONID_LOAD_TREE );
 
   /**
    * id действия "remove OPC UA nodes cache"
@@ -72,7 +72,7 @@ public class OpcUaServerConnCfgEditorPanel
   final static String REMOVE_CACHED_NODES_OPC_UA_ACT_ID = "remove_cached_nodes_opc_ua_act_id"; //$NON-NLS-1$
 
   TsActionDef ACDEF_REMOVE_CACHE = TsActionDef.ofPush2( REMOVE_CACHED_NODES_OPC_UA_ACT_ID,
-      STR_N_REMOVE_CACHED_NODES_OPC_UA, STR_D_REMOVE_CACHED_NODES_OPC_UA, ITsStdIconIds.ICONID_EDIT_CLEAR );
+      STR_N_REMOVE_CACHED_NODES_OPC_UA, STR_D_REMOVE_CACHED_NODES_OPC_UA, ICONID_CLEAR_CASH );
 
   /**
    * Конструктор панели.
@@ -128,7 +128,8 @@ public class OpcUaServerConnCfgEditorPanel
               // TODO Auto-generated method stub
 
             } );
-
+            // установим пока 32, там посмотрим
+            toolbar.setIconSize( EIconSize.IS_32X32 );
             return toolbar;
           }
 

@@ -14,12 +14,13 @@ import org.toxsoft.core.tslib.av.metainfo.*;
 /**
  * Константы пакета.
  *
- * @author goga
+ * @author dima
  */
 @SuppressWarnings( { "javadoc" } )
 public interface IOpcUaServerConnCfgConstants {
 
   String OPC_AU_CLASS_MARKER = "atrGeneratedFromOPC_UA"; //$NON-NLS-1$
+
   //
   // ------------------------------------------------------------------------------------
   // Icons
@@ -34,6 +35,7 @@ public interface IOpcUaServerConnCfgConstants {
   String ICONID_S_NEW_OBJECTS        = "S-object-new";         //$NON-NLS-1$
   String ICONID_P_NEW_OBJECTS        = "P-object-new";         //$NON-NLS-1$
   String ICONID_IMPORT               = "import";               //$NON-NLS-1$
+  String ICONID_IMPORT_BLACK         = "import-rtData";        //$NON-NLS-1$
   String ICONID_SAVE_DOC             = "save_doc";             //$NON-NLS-1$
   String ICONID_S5_SERVER_SELECT     = "s5_server_select";     //$NON-NLS-1$
   String ICONID_OPC_SERVER_SELECT    = "opc_ua_server_select"; //$NON-NLS-1$
@@ -52,6 +54,8 @@ public interface IOpcUaServerConnCfgConstants {
   String ICONID_CLEAR_ALL            = "clear_all";            //$NON-NLS-1$
   String ICONID_ADD_NODE             = "add_node";             //$NON-NLS-1$
   String ICONID_REMOVE_NODE          = "remove_node";          //$NON-NLS-1$
+  String ICONID_LOAD_TREE            = "open-tree";            //$NON-NLS-1$
+  String ICONID_CLEAR_CASH           = "clear-cash";           //$NON-NLS-1$
 
   //
   // -------------------------------------------------------------------------------------
@@ -161,7 +165,7 @@ public interface IOpcUaServerConnCfgConstants {
       TsActionDef.ofPush2( LOAD_CMD_DESCR_ACT_ID, STR_N_LOAD_CMD_DESCR, STR_D_LOAD_CMD_DESCR, ICONID_IMPORT );
 
   TsActionDef ACTDEF_LOAD_BIT_RTDATA_DESCR =
-      TsActionDef.ofPush2( ACT_ID_LOAD_BIT_RTDATA, STR_N_LOAD_BIT_RTDATA, STR_D_LOAD_BIT_RTDATA, ICONID_IMPORT );
+      TsActionDef.ofPush2( ACT_ID_LOAD_BIT_RTDATA, STR_N_LOAD_BIT_RTDATA, STR_D_LOAD_BIT_RTDATA, ICONID_IMPORT_BLACK );
 
   TsActionDef ACTDEF_FILTER_READ_ONLY =
       TsActionDef.ofRadio2( FILTER_READ_ONLY_ACT_ID, STR_N_FILTER_READ_ONLY, STR_D_FILTER_READ_ONLY, ICONID_READ_ONLY );
@@ -194,6 +198,5 @@ public interface IOpcUaServerConnCfgConstants {
     ITsIconManager iconManager = aWinContext.get( ITsIconManager.class );
     iconManager.registerStdIconByIds( Activator.PLUGIN_ID, IOpcUaServerConnCfgConstants.class,
         PREFIX_OF_ICON_FIELD_NAME );
-    //
   }
 }

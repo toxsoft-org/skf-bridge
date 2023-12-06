@@ -394,6 +394,12 @@ public class OpcUaTreeBrowserPanel
       componentModown.toolbar().getAction( CREATE_CINFO_FROM_SIEMENS_OPC_UA_ACT_ID )
           .setEnabled( enableCreateClassBttn );
       componentModown.toolbar().getAction( CREATE_OBJS_FROM_POLIGONE_OPC_UA_ACT_ID ).setEnabled( enableCreateObjBttn );
+      // TODO код установки disable picture
+      // ITsIconManager iconManager = aContext.get( ITsIconManager.class );
+      // // тут подгружаем disable картинки
+      // ImageDescriptor imd = iconManager.loadStdDescriptor( ICONID_REMOVE_NODE, EIconSize.IS_32X32 );
+      // componentModown.toolbar().getAction( CREATE_OBJS_FROM_POLIGONE_OPC_UA_ACT_ID ).setDisabledImageDescriptor( imd
+      // );
       componentModown.toolbar().getAction( CREATE_OBJS_FROM_SIEMENS_OPC_UA_ACT_ID ).setEnabled( enableCreateObjBttn );
       componentModown.toolbar().getAction( SHOW_OPC_UA_NODE_2_GWID_ACT_ID ).setEnabled( enableCheckLinkBttn );
 
