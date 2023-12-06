@@ -71,7 +71,7 @@ import org.toxsoft.uskat.core.gui.conn.*;
  */
 public class OpcUaUtils {
 
-  private static final String COMMANDS_JAVA_CLASS_VALUE_COMMAND_BY_ONE_TAG_EXEC =
+  public static final String COMMANDS_JAVA_CLASS_VALUE_COMMAND_BY_ONE_TAG_EXEC =
       "ru.toxsoft.l2.dlm.opc_bridge.submodules.commands.ValCommandByOneTagWithParamExec";
 
   public static final String CFG_UNIT_REALIZATION_TYPE_VALUE_COMMAND_BY_ONE_TAG = "val.command.one.tag";
