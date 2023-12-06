@@ -432,8 +432,12 @@ public class CfgOpcUaNodeM5Model
         for( int i = 0; i < nodes.size(); i++ ) {
           NodeId node = nodes.get( i );
           if( !nodesCfgs.hasKey( node.toParseableString() ) ) {
-            nodesCfgs.put( node.toParseableString(),
-                realType.createInitCfg( aContext, node.toParseableString(), i, nodes.size() ) );
+            CfgOpcUaNode uaNode = realType.createInitCfg( aContext, node.toParseableString(), i, nodes.size() );
+            nodesCfgs.put( node.toParseableString(), uaNode );
+
+            if( unit.getRealizationOpts().hasKey( OpcUaUtils.OP_SYNCH_PERIOD.id() ) ) {
+              uaNode.setSynch( OpcUaUtils.OP_SYNCH_PERIOD.getValue( unit.getRealizationOpts() ).asInt() > 0 );
+            }
             // new CfgOpcUaNode( node.toParseableString(), false, true, false, EAtomicType.INTEGER ) );
           }
         }
