@@ -1,4 +1,4 @@
-package org.toxsoft.skf.bidge.incub.rtpeer.helpers;
+package org.toxsoft.skf.bridge.incub.rtpeer.helpers;
 
 import org.toxsoft.core.tslib.bricks.strid.more.*;
 

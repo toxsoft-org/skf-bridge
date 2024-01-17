@@ -1,9 +1,9 @@
-package org.toxsoft.skf.bidge.incub.rtpeer;
+package org.toxsoft.skf.bridge.incub.rtpeer;
 
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.bricks.strid.*;
 import org.toxsoft.core.tslib.bricks.strid.coll.*;
-import org.toxsoft.skf.bidge.incub.rtpeer.mapping.*;
+import org.toxsoft.skf.bridge.incub.rtpeer.mapping.*;
 
 public interface ISkideRtPeersProvider {
 

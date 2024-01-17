@@ -1,4 +1,4 @@
-package org.toxsoft.skf.bidge.incub.rtpeer.mapping;
+package org.toxsoft.skf.bridge.incub.rtpeer.mapping;
 
 import org.toxsoft.core.tslib.bricks.strid.*;
 import org.toxsoft.core.tslib.coll.*;

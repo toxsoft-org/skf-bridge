@@ -1,11 +1,10 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: USkat Bridges common code development incubator
-Bundle-SymbolicName: org.toxsoft.skf.bidge.incub
-Bundle-Version: 1.0.0.qualifier
-Export-Package: org.toxsoft.skf.bidge.incub
-Bundle-Activator: org.toxsoft.skf.bidge.incub.Activator
+Bundle-SymbolicName: org.toxsoft.skf.bridge.incub
 Bundle-Vendor: toxsoft.og
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.toxsoft.skf.bridge.incub.Activator
 Require-Bundle: javax.annotation,
  javax.inject,
  org.eclipse.core.runtime,
@@ -23,5 +22,5 @@ Require-Bundle: javax.annotation,
  org.toxsoft.uskat.core,
  org.toxsoft.uskat.core.gui
 Bundle-RequiredExecutionEnvironment: JavaSE-17
-Automatic-Module-Name: org.toxsoft.skf.bidge.incub
+Automatic-Module-Name: org.toxsoft.skf.bridge.incub
 Bundle-ActivationPolicy: lazy

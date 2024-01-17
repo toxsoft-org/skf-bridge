@@ -1,4 +1,4 @@
-package org.toxsoft.skf.bidge.incub.rtpeer.mapping;
+package org.toxsoft.skf.bridge.incub.rtpeer.mapping;
 
 /**
  * Configuration of the RT peer source to USkat entities mapping.

@@ -1,4 +1,4 @@
-package org.toxsoft.skf.bidge.incub.rtpeer;
+package org.toxsoft.skf.bridge.incub.rtpeer;
 
 /**
  * The RT peer node.

@@ -1,4 +1,4 @@
-package org.toxsoft.skf.bidge.incub;
+package org.toxsoft.skf.bridge.incub;
 
 import org.osgi.framework.*;
 

@@ -1,6 +1,6 @@
-package org.toxsoft.skf.bidge.incub.rtpeer;
+package org.toxsoft.skf.bridge.incub.rtpeer;
 
-import org.toxsoft.skf.bidge.incub.rtpeer.mapping.*;
+import org.toxsoft.skf.bridge.incub.rtpeer.mapping.*;
 
 // TODO ISkideRtPeersService
 @SuppressWarnings( "javadoc" )

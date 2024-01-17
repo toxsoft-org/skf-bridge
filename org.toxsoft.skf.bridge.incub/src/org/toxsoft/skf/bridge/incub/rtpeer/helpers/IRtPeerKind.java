@@ -1,8 +1,8 @@
-package org.toxsoft.skf.bidge.incub.rtpeer.helpers;
+package org.toxsoft.skf.bridge.incub.rtpeer.helpers;
 
 import org.toxsoft.core.tslib.bricks.strid.*;
 import org.toxsoft.core.tslib.coll.*;
-import org.toxsoft.skf.bidge.incub.rtpeer.*;
+import org.toxsoft.skf.bridge.incub.rtpeer.*;
 
 /**
  * The kind of RT peer data source, mainly determines protocol to use for communication.
