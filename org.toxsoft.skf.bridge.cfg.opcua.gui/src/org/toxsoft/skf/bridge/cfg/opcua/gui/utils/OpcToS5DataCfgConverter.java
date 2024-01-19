@@ -13,6 +13,7 @@ import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
+import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.filegen.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
@@ -28,6 +29,7 @@ public class OpcToS5DataCfgConverter {
   private static final String DESCRIPTION_STR                                   = "description";
   private static final String ID_STR                                            = "id";
   private static final String DATA_DEF_FORMAT                                   = "data.%s.def";
+  private static final String RRI_ATTR_DEF_FORMAT                               = "rri.attr.%s.def";
   private static final String CMD_DEF_FORMAT                                    = "cmd.%s.def";
   private static final String CLASS_DEF_FORMAT                                  = "class.%s.def";
   private static final String DLM_ID_TEMPLATE                                   = "ru.toxsoft.l2.dlm.tags.common";
@@ -85,6 +87,11 @@ public class OpcToS5DataCfgConverter {
   private static final String DATA_DEFS = "dataDefs";
 
   /**
+   * Начало блока, отвечающего за конфигурацию НСИ данных.
+   */
+  private static final String RRI_DEFS = "rriDefs";
+
+  /**
    * Начало блока, отвечающего за конфигурацию команд.
    */
   private static final String CMD_DEFS = "cmdDefs";
@@ -118,6 +125,11 @@ public class OpcToS5DataCfgConverter {
    * Имя параметра - идентификатор данного.
    */
   private static final String DATA_ID = "data.id";
+
+  /**
+   * Имя параметра - id НСИ атрибута.
+   */
+  private static final String RRI_ATTR_ID = "rri.attr.id";
 
   /**
    * Имя параметра - идентификатор команды.
@@ -188,12 +200,22 @@ public class OpcToS5DataCfgConverter {
 
   }
 
+  /**
+   * Из описания {@link OpcToS5DataCfgDoc} создает дерево {@link IAvTree} конфигурации DLM
+   *
+   * @param aDoc описание конфигурации
+   * @return дерево для конфигурирования модуля DLM
+   */
   public static IAvTree convertToDlmCfgTree( OpcToS5DataCfgDoc aDoc ) {
     StringMap<IAvTree> nodes = new StringMap<>();
 
     // данные
     IAvTree datasMassivTree = createDatas( aDoc );
     nodes.put( DATA_DEFS, datasMassivTree );
+
+    // атрибуты НСИ
+    IAvTree rriAttrsArrayTree = createRriAttrs( aDoc );
+    nodes.put( RRI_DEFS, rriAttrsArrayTree );
 
     // перечисление возможных команд по классам
     IAvTree commandInfoesMassivTree = createCommandInfoes( aDoc );
@@ -233,6 +255,28 @@ public class OpcToS5DataCfgConverter {
 
       if( unit.getTypeOfCfgUnit() == ECfgUnitType.DATA ) {
         pinsMassivTree.addElement( createDataPin( unit ) );
+      }
+    }
+
+    return pinsMassivTree;
+  }
+
+  /**
+   * Создаёт конфигурацию всех НСИ атрибутов для подмодуля данных базового DLM.
+   *
+   * @param aDoc OpcToS5DataCfgDoc - набор единиц конфигурации
+   * @return IAvTree - конфигурация в стандартном виде.
+   */
+  private static IAvTree createRriAttrs( OpcToS5DataCfgDoc aDoc ) {
+    AvTree pinsMassivTree = AvTree.createArrayAvTree();
+
+    IList<OpcToS5DataCfgUnit> cfgUnits = aDoc.dataUnits();
+
+    for( int i = 0; i < cfgUnits.size(); i++ ) {
+      OpcToS5DataCfgUnit unit = cfgUnits.get( i );
+
+      if( unit.getTypeOfCfgUnit() == ECfgUnitType.RRI ) {
+        pinsMassivTree.addElement( createRriAttrPin( unit ) );
       }
     }
 
@@ -310,6 +354,64 @@ public class OpcToS5DataCfgConverter {
     catch( TsValidationFailedRtException e ) {
       System.out.println( "Validation Exception" ); //$NON-NLS-1$
       throw e;
+    }
+
+  }
+
+  /**
+   * Создаёт конфигурацию одного НСИ атрибута (пина-тега) для подмодуля данных базового DLM.
+   *
+   * @param aUnit OpcToS5DataCfgUnit - описание данного (пина-тега). Предполагается что все параметры заполнены.
+   * @return IAvTree - конфигурация в стандартном виде.
+   */
+
+  private static IAvTree createRriAttrPin( OpcToS5DataCfgUnit aUnit ) {
+    String pinId = aUnit.id();
+
+    IOptionSetEdit pinOpSet1 = new OptionSet();
+    pinOpSet1.setStr( PIN_ID, pinId );
+
+    IOptionSet opts = aUnit.getRealizationOpts();
+    pinOpSet1.addAll( opts );
+
+    IList<Gwid> gwids = aUnit.getDataGwids();
+
+    for( int i = 0; i < gwids.size(); i++ ) {
+      Gwid gwid = gwids.get( i );
+
+      // класс
+      String classId = gwid.classId();
+      String objName = gwid.strid();
+      String dataId = gwid.propId();
+
+      // класс-объект-данное - остаётся как есть
+      pinOpSet1.setStr( i == 0 ? CLASS_ID : CLASS_ID + i, classId );
+      pinOpSet1.setStr( i == 0 ? OBJ_NAME : OBJ_NAME + i, objName );
+      pinOpSet1.setStr( i == 0 ? RRI_ATTR_ID : RRI_ATTR_ID + i, dataId );
+    }
+
+    // вместо пина - данные о теге
+    // идентификатор OPC-устройства (драйвера)
+    pinOpSet1.setStr( TAG_DEVICE_ID, OPC_TAG_DEVICE );
+
+    IList<NodeId> nodes = aUnit.getDataNodes();
+
+    for( int i = 0; i < nodes.size(); i++ ) {
+      NodeId node = nodes.get( i );
+
+      // сам идентфикатор тега
+      pinOpSet1.setStr( i == 0 ? TAG_ID : TAG_ID + i, node.toParseableString() );
+
+    }
+
+    try {
+      IAvTree pinTree1 =
+          AvTree.createSingleAvTree( String.format( RRI_ATTR_DEF_FORMAT, pinId ), pinOpSet1, IStringMap.EMPTY );
+      return pinTree1;
+    }
+    catch( TsValidationFailedRtException ex ) {
+      LoggerUtils.errorLogger().error( ex );
+      throw ex;
     }
 
   }

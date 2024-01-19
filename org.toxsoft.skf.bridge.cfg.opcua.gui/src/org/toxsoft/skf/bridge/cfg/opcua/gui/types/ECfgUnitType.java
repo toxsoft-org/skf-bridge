@@ -17,6 +17,11 @@ public enum ECfgUnitType {
   DATA,
 
   /**
+   * Cfg unit type for configuration rri transmition.
+   */
+  RRI,
+
+  /**
    * Cfg unit type for configuration command execution.
    */
   COMMAND,

@@ -7,6 +7,7 @@ import static org.toxsoft.core.tslib.gw.IGwHardConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IBridgeCfgOpcUaResources.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.*;
+import static org.toxsoft.uskat.core.gui.km5.sded.IKM5SdedConstants.*;
 
 import java.io.*;
 
@@ -44,6 +45,7 @@ import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.*;
 import org.toxsoft.core.tslib.bricks.events.change.*;
 import org.toxsoft.core.tslib.bricks.geometry.impl.*;
+import org.toxsoft.core.tslib.bricks.strid.coll.*;
 import org.toxsoft.core.tslib.bricks.strid.coll.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
@@ -58,6 +60,7 @@ import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
+import org.toxsoft.skf.rri.lib.*;
 import org.toxsoft.uskat.core.*;
 import org.toxsoft.uskat.core.api.objserv.*;
 import org.toxsoft.uskat.core.api.sysdescr.*;
@@ -76,16 +79,26 @@ import org.toxsoft.uskat.core.impl.dto.*;
 public class OpcUaTreeBrowserPanel
     extends TsPanel {
 
-  private static final String                           nodeCmdIdBrowseName = "CmdId";       //$NON-NLS-1$
-  private static final String                           nodeCmdArgInt       = "CmdArgInt";   //$NON-NLS-1$
-  private static final String                           nodeCmdArgFlt       = "CmdArgFlt";   //$NON-NLS-1$
-  private static final String                           nodeCmdFeedback     = "CmdFeedback"; //$NON-NLS-1$
-  private StringMap<IList<IDtoCmdInfo>>                 clsId2CmdInfoes     = null;
-  private StringMap<StringMap<IList<BitIdx2DtoRtData>>> clsId2RtDataInfoes  = null;
+  private static final String           nodeCmdIdBrowseName = "CmdId";       //$NON-NLS-1$
+  private static final String           nodeCmdArgInt       = "CmdArgInt";   //$NON-NLS-1$
+  private static final String           nodeCmdArgFlt       = "CmdArgFlt";   //$NON-NLS-1$
+  private static final String           nodeCmdFeedback     = "CmdFeedback"; //$NON-NLS-1$
+  private StringMap<IList<IDtoCmdInfo>> clsId2CmdInfoes     = null;
+
+  /**
+   * карта id класса - > его BitIdx2DtoRtData
+   */
+  private StringMap<StringMap<IList<BitIdx2DtoRtData>>>  clsId2RtDataInfoes  = null;
+  /**
+   * карта id класса - > его BitIdx2DtoRriAttr
+   */
+  private StringMap<StringMap<IList<BitIdx2RriDtoAttr>>> clsId2RriAttrInfoes = null;
+  private ISkRegRefInfoService                           rriService;
+
   /**
    * карта id класса - > его BitIdx2DtoEvent
    */
-  private StringMap<StringMap<IList<BitIdx2DtoEvent>>>  clsId2EventInfoes   = null;
+  private StringMap<StringMap<IList<BitIdx2DtoEvent>>> clsId2EventInfoes = null;
 
   private final IOpcUaServerConnCfg opcUaServerConnCfg;
   /**
@@ -169,6 +182,7 @@ public class OpcUaTreeBrowserPanel
 
   private final ISkConnection conn;
   static private String       RTD_PREFIX = "rtd"; //$NON-NLS-1$
+  static private String       RRI_PREFIX = "rri"; //$NON-NLS-1$
   static private String       EVT_PREFIX = "evt"; //$NON-NLS-1$
 
   private IM5CollectionPanel<UaTreeNode> opcUaNodePanel;
@@ -236,10 +250,6 @@ public class OpcUaTreeBrowserPanel
       return items;
     }
 
-    // public UaTreeNode nodeById( String aObjId ) {
-    // return id2Node.get( aObjId );
-    // }
-
   }
 
   /**
@@ -255,6 +265,7 @@ public class OpcUaTreeBrowserPanel
     this.setLayout( new BorderLayout() );
     ISkConnectionSupplier connSup = aContext.get( ISkConnectionSupplier.class );
     conn = connSup.defConn();
+    rriService = (ISkRegRefInfoService)conn.coreApi().services().getByKey( ISkRegRefInfoService.SERVICE_ID );
 
     IM5Domain m5 = conn.scope().get( IM5Domain.class );
     IM5Model<UaTreeNode> model = m5.getModel( OpcUaNodeModel.MODEL_ID, UaTreeNode.class );
@@ -418,7 +429,7 @@ public class OpcUaTreeBrowserPanel
   }
 
   protected void ensureBitMaskDescription() {
-    if( clsId2RtDataInfoes == null || clsId2EventInfoes == null ) {
+    if( clsId2RtDataInfoes == null || clsId2EventInfoes == null || clsId2RriAttrInfoes == null ) {
       loadBitMaskDescrFile();
     }
   }
@@ -434,6 +445,7 @@ public class OpcUaTreeBrowserPanel
         Ods2DtoRtDataInfoParser.parse( file );
         clsId2RtDataInfoes = Ods2DtoRtDataInfoParser.getRtdataInfoesMap();
         clsId2EventInfoes = Ods2DtoRtDataInfoParser.getEventInfoesMap();
+        clsId2RriAttrInfoes = Ods2DtoRtDataInfoParser.getRriAttrInfoesMap();
         TsDialogUtils.info( getShell(), STR_BITMASK_FILE_LOADED, bitRtdataFileDescr );
       }
       catch( IOException ex ) {
@@ -580,12 +592,15 @@ public class OpcUaTreeBrowserPanel
     IList<UaTreeNode> selNodes = OpcUaNodesSelector.selectUaNodes4Class( aContext, selectedNode.getUaNode().getNodeId(),
         client, opcUaServerConnCfg );
     if( selNodes != null ) {
+      ISkRriSection rriSection = null;
       // создаем описание класса из списка выбранных узлов
       // отредактируем список узлов чтобы в нем была вся необходимая информация для описания класса
       IList<UaTreeNode> nodes4DtoClass = nodes4DtoClass( selectedNode, selNodes, aTreeType );
+      // TODO здесь очищаем список от rri нодов и формируем отдельный для
       IListEdit<UaNode2Gwid> node2ClassGwidList = new ElemArrayList<>();
-
-      IDtoClassInfo dtoClassInfo = makeDtoClassInfo( nodes4DtoClass, node2ClassGwidList );
+      Pair<IDtoClassInfo, IDtoClassInfo> pairClassInfo = makeDtoClassInfo( nodes4DtoClass, node2ClassGwidList );
+      IDtoClassInfo dtoClassInfo = pairClassInfo.left();
+      IDtoClassInfo rriDtoClassInfo = pairClassInfo.right();
       IM5Model<IDtoClassInfo> modelDto = conn.scope().get( IM5Domain.class )
           .getModel( IKM5SdedConstants.MID_SDED_DTO_CLASS_INFO, IDtoClassInfo.class );
       TsDialogInfo cdi = new TsDialogInfo( tsContext(), null, DLG_C_NEW_CLASS, DLG_T_NEW_CLASS, 0 );
@@ -601,8 +616,32 @@ public class OpcUaTreeBrowserPanel
         dtoClassInfo =
             M5GuiUtils.askEdit( tsContext(), modelDto, dtoClassInfo, cdi, modelDto.getLifecycleManager( conn ) );
         if( dtoClassInfo != null ) {
+          // создаем временный IM5LifecycleManager задача которого ничего не делать, а просто отобразить содержимое
+          // описания класса
+          IM5LifecycleManager<IDtoClassInfo> localLM = localLifeCycleManager4DtoClassInfo( modelDto );
+          // фильтруем содержимое НСИ так чтобы атрибуты НСИ не совпадали с rtData базового класса
+          rriDtoClassInfo = filterRriClassInfo( dtoClassInfo, rriDtoClassInfo );
+          // создаем НСИ атрибуты и связи
+          cdi = new TsDialogInfo( tsContext(), null, "Параметры НСИ класса",
+              "Отредактируйте НСИ атрибуты и связи класса", 0 );
+          // установим нормальный размер диалога
+          cdi.setMinSize( new TsPoint( -30, -80 ) );
+          rriDtoClassInfo = M5GuiUtils.askEdit( tsContext(), modelDto, rriDtoClassInfo, cdi, localLM );
+          if( rriDtoClassInfo != null ) {
+            rriSection = PanelRriSectionSelector.selectRriSection( null, aContext );
+            if( rriSection != null ) {
+              // TODO refactoring создаем/обновляем НСИ параметры
+              for( IDtoAttrInfo attrInfo : rriDtoClassInfo.attrInfos() ) {
+                rriSection.defineAttrParam( rriDtoClassInfo.id(), attrInfo );
+              }
+              for( IDtoLinkInfo linkInfo : rriDtoClassInfo.linkInfos() ) {
+                rriSection.defineLinkParam( rriDtoClassInfo.id(), linkInfo );
+              }
+            }
+          }
+
           // чистим список привязок ClassGwid -> NodeId
-          node2ClassGwidList = filterNode2ClassGwidList( dtoClassInfo, node2ClassGwidList );
+          node2ClassGwidList = filterNode2ClassGwidList( dtoClassInfo, rriDtoClassInfo, node2ClassGwidList );
           // заливаем в хранилище
           OpcUaUtils.updateNodes2GwidsInStore( aContext, node2ClassGwidList,
               OpcUaUtils.SECTID_OPC_UA_NODES_2_CLS_GWIDS_TEMPLATE, UaNode2Gwid.KEEPER, opcUaServerConnCfg );
@@ -616,7 +655,8 @@ public class OpcUaTreeBrowserPanel
             listObj2Update.add( DtoObject.createFromSk( obj2Update, conn.coreApi() ) );
           }
           OpcUaUtils.clearCache( opcUaServerConnCfg );
-          generateNode2GwidLinks( aContext, updatedClassInfo, listObj2Update, aTreeType );
+          generateNode2GwidLinks( aContext, updatedClassInfo, listObj2Update, aTreeType,
+              rriSection == null ? IStridablesList.EMPTY : rriSection.listParamInfoes( updatedClassInfo.id() ) );
           TsDialogUtils.info( getShell(), STR_SUCCESS_CLASS_UPDATED, dtoClassInfo.id() );
         }
       }
@@ -627,8 +667,34 @@ public class OpcUaTreeBrowserPanel
         dtoClassInfo =
             M5GuiUtils.askCreate( tsContext(), modelDto, bunchOfFieldVals, cdi, modelDto.getLifecycleManager( conn ) );
         if( dtoClassInfo != null ) {
+          // FIXME copy|paste code, see up need refactoring
+
+          // создаем временный IM5LifecycleManager задача которого ничего не делать, а просто отобразить содержимое
+          // описания класса
+          IM5LifecycleManager<IDtoClassInfo> localLM = localLifeCycleManager4DtoClassInfo( modelDto );
+          // фильтруем содержимое НСИ так чтобы атрибуты НСИ не совпадали с rtData базового класса
+          rriDtoClassInfo = filterRriClassInfo( dtoClassInfo, rriDtoClassInfo );
+          // создаем НСИ атрибуты и связи
+          cdi = new TsDialogInfo( tsContext(), null, "Параметры НСИ класса",
+              "Отредактируйте НСИ атрибуты и связи класса", 0 );
+          // установим нормальный размер диалога
+          cdi.setMinSize( new TsPoint( -30, -80 ) );
+          rriDtoClassInfo = M5GuiUtils.askEdit( tsContext(), modelDto, rriDtoClassInfo, cdi, localLM );
+          if( rriDtoClassInfo != null ) {
+            rriSection = PanelRriSectionSelector.selectRriSection( null, aContext );
+            if( rriSection != null ) {
+              // TODO refactoring создаем/обновляем НСИ параметры
+              for( IDtoAttrInfo attrInfo : rriDtoClassInfo.attrInfos() ) {
+                rriSection.defineAttrParam( rriDtoClassInfo.id(), attrInfo );
+              }
+              for( IDtoLinkInfo linkInfo : rriDtoClassInfo.linkInfos() ) {
+                rriSection.defineLinkParam( rriDtoClassInfo.id(), linkInfo );
+              }
+            }
+          }
+
           // чистим список привязок ClassGwid -> NodeId
-          node2ClassGwidList = filterNode2ClassGwidList( dtoClassInfo, node2ClassGwidList );
+          node2ClassGwidList = filterNode2ClassGwidList( dtoClassInfo, rriDtoClassInfo, node2ClassGwidList );
           // заливаем в хранилище
           OpcUaUtils.updateNodes2GwidsInStore( aContext, node2ClassGwidList,
               OpcUaUtils.SECTID_OPC_UA_NODES_2_CLS_GWIDS_TEMPLATE, UaNode2Gwid.KEEPER, opcUaServerConnCfg );
@@ -640,15 +706,35 @@ public class OpcUaTreeBrowserPanel
     }
   }
 
+  private static IDtoClassInfo filterRriClassInfo( IDtoClassInfo aDtoClassInfo, IDtoClassInfo aRriDtoClassInfo ) {
+    // копируем свойства исходного
+    DtoClassInfo retVal =
+        new DtoClassInfo( aRriDtoClassInfo.id(), aRriDtoClassInfo.parentId(), aRriDtoClassInfo.params() );
+    retVal.attrInfos().addAll( aRriDtoClassInfo.attrInfos() );
+    retVal.linkInfos().addAll( aRriDtoClassInfo.linkInfos() );
+    // удаляем из класса описания НСИ все атрибуты которые совпадают с rtData базового класса
+    for( IDtoRtdataInfo rtData : aDtoClassInfo.rtdataInfos() ) {
+      String nodeName = rtData.id().substring( 3 );
+      for( IDtoAttrInfo attr : aRriDtoClassInfo.attrInfos() ) {
+        if( attr.id().indexOf( nodeName ) >= 0 ) {
+          retVal.attrInfos().remove( attr );
+        }
+      }
+    }
+    return retVal;
+  }
+
   /**
-   * Фильтрует ранее подготовленный список привязок NodeId->ClassGwid удаляее элементы которые пользователь выбросил
+   * Фильтрует ранее подготовленный список привязок NodeId->ClassGwid удаляее элементы которые пользователь выбросил.
+   * Оставляет
    *
-   * @param aDtoClassInfo - описание класса отредактирвоанное пользователем
+   * @param aDtoClassInfo - описание класса отредактированное пользователем
+   * @param aRriDtoClassInfo - описание НСИшной части класса отредактированное пользователем
    * @param aNode2ClassGwidList - ранее подготовленный список привязок NodeId->ClassGwid
    * @return отфильрованный список
    */
   private static IListEdit<UaNode2Gwid> filterNode2ClassGwidList( IDtoClassInfo aDtoClassInfo,
-      IListEdit<UaNode2Gwid> aNode2ClassGwidList ) {
+      IDtoClassInfo aRriDtoClassInfo, IListEdit<UaNode2Gwid> aNode2ClassGwidList ) {
     IListEdit<UaNode2Gwid> retVal = new ElemArrayList<>();
     // выкидываем из списка события и rtData которые пользователь удалил
     for( IDtoRtdataInfo rtDataInfo : aDtoClassInfo.rtdataInfos() ) {
@@ -661,6 +747,14 @@ public class OpcUaTreeBrowserPanel
     }
     for( IDtoEventInfo evtInfo : aDtoClassInfo.eventInfos() ) {
       Gwid gwid = Gwid.createEvent( aDtoClassInfo.id(), evtInfo.id() );
+      for( UaNode2Gwid uaNode2Gwid : aNode2ClassGwidList ) {
+        if( gwid.equals( uaNode2Gwid.gwid() ) ) {
+          retVal.add( uaNode2Gwid );
+        }
+      }
+    }
+    for( IDtoAttrInfo attrInfo : aRriDtoClassInfo.attrInfos() ) {
+      Gwid gwid = Gwid.createAttr( aDtoClassInfo.id(), attrInfo.id() );
       for( UaNode2Gwid uaNode2Gwid : aNode2ClassGwidList ) {
         if( gwid.equals( uaNode2Gwid.gwid() ) ) {
           retVal.add( uaNode2Gwid );
@@ -769,7 +863,8 @@ public class OpcUaTreeBrowserPanel
   // ------------------------------------------------------------------------------------
   // implementation
   //
-  private IDtoClassInfo makeDtoClassInfo( IList<UaTreeNode> aNodes, IListEdit<UaNode2Gwid> aNode2ClassGwidList ) {
+  private Pair<IDtoClassInfo, IDtoClassInfo> makeDtoClassInfo( IList<UaTreeNode> aNodes,
+      IListEdit<UaNode2Gwid> aNode2ClassGwidList ) {
     // узел типа Object, его данные используются для создания описания класса
     UaTreeNode classNode = objNode( aNodes );
 
@@ -782,11 +877,14 @@ public class OpcUaTreeBrowserPanel
     params.setStr( FID_NAME, name );
     params.setStr( FID_DESCRIPTION, description );
     DtoClassInfo cinf = new DtoClassInfo( id, IGwHardConstants.GW_ROOT_CLASS_ID, params );
+    DtoClassInfo rriCinf = new DtoClassInfo( id, IGwHardConstants.GW_ROOT_CLASS_ID, params );
     for( UaTreeNode node : aNodes ) {
       if( node.getNodeClass().equals( NodeClass.Variable ) ) {
         try {
           UaVariableNode varNode = client.getAddressSpace().getVariableNode( NodeId.parse( node.getNodeId() ) );
           readDataInfo( cinf, varNode, aNode2ClassGwidList );
+          // НСИ атрибут
+          readRriAttrInfo( rriCinf, varNode, aNode2ClassGwidList );
           readEventInfo( cinf, varNode, aNode2ClassGwidList );
         }
         catch( UaRuntimeException | UaException ex ) {
@@ -816,6 +914,18 @@ public class OpcUaTreeBrowserPanel
         }
       }
     }
+    // добавим битовые RRI Param, если они описаны
+    if( clsId2RriAttrInfoes != null ) {
+      if( clsId2RriAttrInfoes.hasKey( id ) ) {
+        StringMap<IList<BitIdx2RriDtoAttr>> rriAttrInfioesMap = clsId2RriAttrInfoes.getByKey( id );
+        for( String key : rriAttrInfioesMap.keys() ) {
+          IList<BitIdx2RriDtoAttr> list = rriAttrInfioesMap.getByKey( key );
+          for( BitIdx2RriDtoAttr dto : list ) {
+            rriCinf.attrInfos().add( dto.dtoAttrInfo() );
+          }
+        }
+      }
+    }
     // добавим битовые события, если они описаны
     if( clsId2EventInfoes != null ) {
       if( clsId2EventInfoes.hasKey( id ) ) {
@@ -829,7 +939,7 @@ public class OpcUaTreeBrowserPanel
       }
     }
 
-    return cinf;
+    return new Pair<>( cinf, rriCinf );
   }
 
   private static UaTreeNode objNode( IList<UaTreeNode> aNodes ) {
@@ -845,22 +955,68 @@ public class OpcUaTreeBrowserPanel
   }
 
   /**
-   * Читает описание данного и добавляет его в описание класса {@link IDtoClassInfo}
+   * Читает описание Rt данного и добавляет его в описание класса {@link IDtoClassInfo}
    *
    * @param aDtoClass текущее описание класса
    * @param aVariableNode описание узла типа переменная
    * @param aNode2ClassGwidList список для хранения привязки node -> Class Gwid
    */
-  private static void readDataInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode,
+  private static void readRriAttrInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode,
+      IListEdit<UaNode2Gwid> aNode2ClassGwidList ) {
+    // id атрибута
+    String attrId = aVariableNode.getBrowseName().getName();
+    if( isIgnore4RriAttr( attrId ) ) {
+      return;
+    }
+    // соблюдаем соглашения о наименовании
+    if( !attrId.startsWith( RRI_PREFIX ) ) {
+      attrId = RRI_PREFIX + attrId;
+    }
+    // название
+    String name = aVariableNode.getDisplayName().getText();
+    // описание
+    String descr = aVariableNode.getDescription().getText();
+    // описание
+    if( (descr == null) || descr.isBlank() ) {
+      descr = name;
+    }
+
+    // тип данных атрибута
+    Class<?> clazz = OpcUaUtils.getNodeDataTypeClass( aVariableNode );
+    EAtomicType type = OpcUaUtils.getAtomicType( clazz );
+    DataType ddType = DataType.create( type );
+
+    IDtoAttrInfo atrInfo = DtoAttrInfo.create2( attrId, ddType, //
+        TSID_NAME, name, //
+        TSID_DESCRIPTION, descr );
+
+    aDtoClass.attrInfos().add( atrInfo );
+
+    // TODO boilerplate code сохраним привязку для использования в автоматическом связывании
+    NodeId nodeId = aVariableNode.getNodeId();
+    Gwid classGwid = Gwid.createAttr( aDtoClass.id(), attrId );
+    UaNode2Gwid uaNode2Gwid = new UaNode2Gwid( nodeId.toParseableString(), descr, classGwid );
+    aNode2ClassGwidList.add( uaNode2Gwid );
+  }
+
+  /**
+   * Читает описание Rt данного и добавляет его в описание класса {@link IDtoClassInfo}
+   *
+   * @param aDtoClass текущее описание класса
+   * @param aVariableNode описание узла типа переменная
+   * @param aNode2ClassGwidList список для хранения привязки node -> Class Gwid
+   * @return {@link IDtoRtdataInfo} - созданное описание RtData или null
+   */
+  private static IDtoRtdataInfo readDataInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode,
       IListEdit<UaNode2Gwid> aNode2ClassGwidList ) {
     // id данного
     String dataId = aVariableNode.getBrowseName().getName();
+    if( isIgnore4RtData( dataId ) ) {
+      return null;
+    }
     // соблюдаем соглашения о наименовании
     if( !dataId.startsWith( RTD_PREFIX ) ) {
       dataId = RTD_PREFIX + dataId;
-    }
-    if( isIgnore4RtData( dataId ) ) {
-      return;
     }
     // название
     String name = aVariableNode.getDisplayName().getText();
@@ -894,9 +1050,22 @@ public class OpcUaTreeBrowserPanel
     Gwid classGwid = Gwid.createRtdata( aDtoClass.id(), dataId );
     UaNode2Gwid uaNode2Gwid = new UaNode2Gwid( nodeId.toParseableString(), descr, classGwid );
     aNode2ClassGwidList.add( uaNode2Gwid );
+    return dataInfo;
+  }
+
+  private static boolean isIgnore4RriAttr( String aAttrId ) {
+    // используем только узлы для работы с НСИ
+    if( aAttrId.startsWith( RRI_PREFIX ) ) {
+      return false;
+    }
+    return isIgnore4Event( aAttrId );
   }
 
   private static boolean isIgnore4RtData( String aDataId ) {
+    // игнорируем узлы для работы с НСИ
+    if( aDataId.startsWith( RRI_PREFIX ) ) {
+      return true;
+    }
     // игнорируем узлы для работы с командами
     if( aDataId.indexOf( nodeCmdIdBrowseName ) >= 0 ) {
       return true;
@@ -1027,7 +1196,7 @@ public class OpcUaTreeBrowserPanel
           llObjs.add( dtoObj );
         }
 
-        IM5LifecycleManager<IDtoObject> localLM = localLifeCycleManager( modelSk, llObjs, itemProvider );
+        IM5LifecycleManager<IDtoObject> localLM = localLifeCycleManager4DtoObject( modelSk, llObjs, itemProvider );
 
         // ITsGuiContext ctxSk = new TsGuiContext( tsContext() );
 
@@ -1041,7 +1210,9 @@ public class OpcUaTreeBrowserPanel
           OpcUaUtils.updateNodes2SkidsInStore( aContext, itemProvider.node2SkidList, opcUaServerConnCfg );
           String userMsg = createSelObjs( localLM );
           // делаем автоматическую привязку NodeId -> Gwid
-          generateNode2GwidLinks( aContext, selectedClassInfo, localLM.itemsProvider().listItems(), aTreeType );
+          ISkRriSection rriSection = PanelRriSectionSelector.selectRriSection( null, aContext );
+          generateNode2GwidLinks( aContext, selectedClassInfo, localLM.itemsProvider().listItems(), aTreeType,
+              rriSection == null ? IStridablesList.EMPTY : rriSection.listParamInfoes( selectedClassInfo.id() ) );
           // подтверждаем успешное создание объектов
           TsDialogUtils.info( getShell(), STR_SUCCESS_OBJS_UPDATED, userMsg );
         }
@@ -1050,8 +1221,9 @@ public class OpcUaTreeBrowserPanel
   }
 
   private void generateNode2GwidLinks( ITsGuiContext aContext, ISkClassInfo aClassInfo, IList<IDtoObject> aObjList,
-      EOPCUATreeType aTreeType ) {
+      EOPCUATreeType aTreeType, IStridablesList<ISkRriParamInfo> aRriParamInfoes ) {
     IListEdit<UaNode2Gwid> node2RtdGwidList = new ElemArrayList<>();
+    IListEdit<UaNode2Gwid> node2RriGwidList = new ElemArrayList<>();
     IListEdit<UaNode2EventGwid> node2EvtGwidList = new ElemArrayList<>();
     IListEdit<CmdGwid2UaNodes> cmdGwid2UaNodesList = new ElemArrayList<>();
     // в этом месте у нас 100% уже загружено дерево узлов OPC UA
@@ -1060,8 +1232,14 @@ public class OpcUaTreeBrowserPanel
     for( IDtoObject obj : aObjList ) {
       // находим родительский UaNode
       // UaTreeNode parentNode = aItemProvider.nodeById( obj.id() );
-      NodeId parentNodeId =
-          OpcUaUtils.nodeBySkid( aContext, new Skid( aClassInfo.id(), obj.id() ), opcUaServerConnCfg );
+      Skid parentSkid = new Skid( aClassInfo.id(), obj.id() );
+      OpcUaUtils.getTreeSectionNameByConfig( OpcUaUtils.SECTID_OPC_UA_NODES_2_SKIDS_TEMPLATE, opcUaServerConnCfg );
+
+      NodeId parentNodeId = OpcUaUtils.nodeBySkid( aContext, parentSkid, opcUaServerConnCfg );
+      TsIllegalStateRtException.checkNull( parentNodeId,
+          "Can't find nodeId for Skid: %s .\n Check section %s in file data-storage.kt", parentSkid.toString(),
+          OpcUaUtils.getTreeSectionNameByConfig( OpcUaUtils.SECTID_OPC_UA_NODES_2_SKIDS_TEMPLATE,
+              opcUaServerConnCfg ) );
       UaTreeNode parentNode = findParentNode( treeNodes, parentNodeId );
       // привязываем команды
       for( IDtoCmdInfo cmdInfo : aClassInfo.cmds().list() ) {
@@ -1091,6 +1269,38 @@ public class OpcUaTreeBrowserPanel
           String nodeDescr = parentNode.getBrowseName() + "::" + uaNode.getBrowseName(); //$NON-NLS-1$
           UaNode2Gwid node2Gwid = new UaNode2Gwid( uaNode.getNodeId(), nodeDescr, gwid );
           node2RtdGwidList.add( node2Gwid );
+        }
+        else {
+          LoggerUtils.errorLogger().error( "Can't match rtData: ? -> %s", gwid.asString() ); //$NON-NLS-1$
+        }
+      }
+      // идем по списку его rriProperties
+      for( ISkRriParamInfo aParamInfo : aRriParamInfoes ) {
+        if( aParamInfo.isLink() ) {
+          continue;
+        }
+        IDtoAttrInfo attrInfo = aParamInfo.attrInfo();
+        // находим свой UaNode
+        // сначала ищем в данных битовой маски
+        UaTreeNode uaNode = tryBitMaskRriAttr( aClassInfo, parentNode, attrInfo, aTreeType );
+        if( uaNode == null ) {
+          uaNode = switch( aTreeType ) {
+            case OTHER -> throw new TsUnsupportedFeatureRtException();
+            // version for Poligone tree
+            case POLIGONE -> findVarNodeByClassGwid( aContext, Gwid.createAttr( aClassInfo.id(), attrInfo.id() ),
+                parentNode.getChildren() );
+            // version for Siemens tree
+            case SIEMENS -> findVarNodeByPropName( attrInfo, parentNode, aTreeType );
+            default -> throw new TsUnsupportedFeatureRtException();
+          };
+        }
+        Gwid gwid = Gwid.createAttr( obj.classId(), obj.id(), attrInfo.id() );
+        if( uaNode != null ) {
+          LoggerUtils.defaultLogger().debug( "%s [%s] -> RRI attr %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
+              gwid.asString() );
+          String nodeDescr = parentNode.getBrowseName() + "::" + uaNode.getBrowseName(); //$NON-NLS-1$
+          UaNode2Gwid node2Gwid = new UaNode2Gwid( uaNode.getNodeId(), nodeDescr, gwid );
+          node2RriGwidList.add( node2Gwid );
         }
         else {
           LoggerUtils.errorLogger().error( "Can't match rtData: ? -> %s", gwid.asString() ); //$NON-NLS-1$
@@ -1131,6 +1341,8 @@ public class OpcUaTreeBrowserPanel
     // заливаем в хранилище
     OpcUaUtils.updateNodes2GwidsInStore( aContext, node2RtdGwidList,
         OpcUaUtils.SECTID_OPC_UA_NODES_2_RTD_GWIDS_TEMPLATE, UaNode2Gwid.KEEPER, opcUaServerConnCfg );
+    OpcUaUtils.updateNodes2GwidsInStore( aContext, node2RriGwidList,
+        OpcUaUtils.SECTID_OPC_UA_NODES_2_RRI_GWIDS_TEMPLATE, UaNode2Gwid.KEEPER, opcUaServerConnCfg );
     OpcUaUtils.updateNodes2GwidsInStore( aContext, node2EvtGwidList,
         OpcUaUtils.SECTID_OPC_UA_NODES_2_EVT_GWIDS_TEMPLATE, UaNode2EventGwid.KEEPER, opcUaServerConnCfg );
     OpcUaUtils.updateCmdGwid2NodesInStore( aContext, cmdGwid2UaNodesList, opcUaServerConnCfg );
@@ -1177,7 +1389,32 @@ public class OpcUaTreeBrowserPanel
         }
       }
     }
-    // событие не из битовой маски, возвращаем null
+    // данное не из битовой маски, возвращаем null
+    return null;
+  }
+
+  private UaTreeNode tryBitMaskRriAttr( ISkClassInfo aClassInfo, UaTreeNode aParentNode, IDtoAttrInfo aRriAttrInfo,
+      EOPCUATreeType aTreeType ) {
+    if( clsId2RriAttrInfoes != null && clsId2RriAttrInfoes.hasKey( aClassInfo.id() ) ) {
+      StringMap<IList<BitIdx2RriDtoAttr>> strid2RriBits = clsId2RriAttrInfoes.getByKey( aClassInfo.id() );
+      for( String strid : strid2RriBits.keys() ) {
+        IList<BitIdx2RriDtoAttr> rriAttrBits = strid2RriBits.getByKey( strid );
+        for( BitIdx2RriDtoAttr bit2rriAttr : rriAttrBits ) {
+          if( bit2rriAttr.dtoAttrInfo().id().equals( aRriAttrInfo.id() ) ) {
+            // нашли свой НСИ атрибут, значит у него 100пудово должен быть его узел
+            String bitArrayNode = bit2rriAttr.bitArrayWordStrid().substring( RTD_PREFIX.length() );
+            // получаем список узлов в котором описаны переменные класса
+            IList<UaTreeNode> variableNodes = getVariableNodes( aParentNode, aTreeType );
+            UaTreeNode retVal = findNodeByBrowseName( bitArrayNode, variableNodes );
+            TsIllegalStateRtException.checkNull( retVal,
+                "Subtree %s, can't find node %s for class: %s, bit mask rriAttr: %s", bitArrayNode, //$NON-NLS-1$
+                aParentNode.getBrowseName(), aClassInfo.id(), aRriAttrInfo.id() );
+            return retVal;
+          }
+        }
+      }
+    }
+    // НСИ атрибут не из битовой маски, возвращаем null
     return null;
   }
 
@@ -1366,12 +1603,52 @@ public class OpcUaTreeBrowserPanel
   }
 
   /**
+   * @param aModel M5 модель {@link IDtoClassInfo}
+   * @return lm заточенный под редактирование списка параметров НСИ без реального обновления на сервере
+   */
+  private static IM5LifecycleManager<IDtoClassInfo> localLifeCycleManager4DtoClassInfo(
+      IM5Model<IDtoClassInfo> aModel ) {
+    IM5LifecycleManager<IDtoClassInfo> retVal = new M5LifecycleManager<>( aModel, false, true, true, true, null ) {
+
+      private IDtoClassInfo makeDtoClassInfo( IM5Bunch<IDtoClassInfo> aValues ) {
+        String id = aValues.getAsAv( FID_CLASS_ID ).asString();
+        String parentId = aValues.getAs( FID_PARENT_ID, String.class );
+        IOptionSetEdit params = new OptionSet();
+        if( aValues.originalEntity() != null ) {
+          params.setAll( aValues.originalEntity().params() );
+        }
+        params.setStr( FID_NAME, aValues.getAsAv( FID_NAME ).asString() );
+        params.setStr( FID_DESCRIPTION, aValues.getAsAv( FID_DESCRIPTION ).asString() );
+        DtoClassInfo cinf;
+        if( id.equals( IGwHardConstants.GW_ROOT_CLASS_ID ) ) {
+          cinf = new DtoClassInfo( params );
+        }
+        else {
+          cinf = new DtoClassInfo( id, parentId, params );
+        }
+        IList<IDtoAttrInfo> attrList = aValues.get( IKM5SdedConstants.FID_SELF_ATTR_INFOS );
+        cinf.attrInfos().setAll( attrList );
+        IList<IDtoLinkInfo> linkList = aValues.get( IKM5SdedConstants.FID_SELF_LINK_INFOS );
+        cinf.linkInfos().setAll( linkList );
+        return cinf;
+      }
+
+      @Override
+      protected IDtoClassInfo doEdit( IM5Bunch<IDtoClassInfo> aValues ) {
+        return makeDtoClassInfo( aValues );
+      }
+
+    };
+    return retVal;
+  }
+
+  /**
    * @param aModel M5 модель {@link IDtoObject}
    * @param aListObjs список объектов для верификации пользователем перед реальным созданием в БД сервера
    * @param aItemProvider локальный поставщик списка сущностей
    * @return lm заточенный под редактирование списка сущностей без реального обновления на сервере
    */
-  private IM5LifecycleManager<IDtoObject> localLifeCycleManager( IM5Model<IDtoObject> aModel,
+  private IM5LifecycleManager<IDtoObject> localLifeCycleManager4DtoObject( IM5Model<IDtoObject> aModel,
       IListEdit<IDtoObject> aListObjs, OpcUANode2SkObjectItemsProvider aItemProvider ) {
     IM5LifecycleManager<IDtoObject> retVal = new M5LifecycleManager<>( aModel, false, true, true, true, null ) {
 

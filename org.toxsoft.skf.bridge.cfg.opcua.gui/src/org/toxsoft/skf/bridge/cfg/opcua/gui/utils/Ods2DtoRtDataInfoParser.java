@@ -34,17 +34,23 @@ public class Ods2DtoRtDataInfoParser {
   static String EVPID_ON = "on"; //$NON-NLS-1$
 
   /**
-   * карта id класса - > его BitIdx2DtoRtData
+   * карта id класса - > его {@link BitIdx2DtoRtData}
    */
   static private final StringMap<StringMap<IList<BitIdx2DtoRtData>>> dtoRtdataInfoesMap = new StringMap<>();
 
   /**
-   * карта id класса - > его BitIdx2DtoEvent
+   * карта id класса - > его {@link BitIdx2DtoEvent}
    */
   static private final StringMap<StringMap<IList<BitIdx2DtoEvent>>> dtoEventInfoesMap = new StringMap<>();
 
+  /**
+   * карта id класса - > его {@link BitIdx2RriDtoAttr}
+   */
+  static private final StringMap<StringMap<IList<BitIdx2RriDtoAttr>>> dtoRriAttrInfoesMap = new StringMap<>();
+
   static private final String RTD_PREFIX = "rtd"; //$NON-NLS-1$
   private static final String EVT_PREFIX = "evt"; //$NON-NLS-1$
+  static private final String RRI_PREFIX = "rri"; //$NON-NLS-1$
 
   /**
    * Колонка описания материнского rtDataId
@@ -111,7 +117,34 @@ public class Ods2DtoRtDataInfoParser {
       dtoRtdataInfoesMap.put( classId, rtDataMap );
       StringMap<IList<BitIdx2DtoEvent>> evtMap = readEventInfoes( sheet );
       dtoEventInfoesMap.put( classId, evtMap );
+      StringMap<IList<BitIdx2RriDtoAttr>> rriAttrMap = readRriAttrInfoes( sheet );
+      dtoRriAttrInfoesMap.put( classId, rriAttrMap );
     }
+  }
+
+  private static StringMap<IList<BitIdx2RriDtoAttr>> readRriAttrInfoes( Sheet aSheet ) {
+    StringMap<IList<BitIdx2RriDtoAttr>> retVal = new StringMap<>();
+    // сканируем закладку от 3 ряда
+    for( int currRow = START_ROW; currRow <= aSheet.getRowCount(); currRow++ ) {
+      // читаем материнский rtDataId
+      MutableCell<?> cell = aSheet.getCellAt( cellRef( BIT_ARRAY_DATAID_COL, currRow ) );
+      // если ячейка пустая, то пропускаем
+      if( cell.isEmpty() ) {
+        continue;
+      }
+      String bitArrayRtDataId = cell.getTextValue();
+      // проверяем и создаем, если надо, его список bitRtData
+      if( !retVal.hasKey( bitArrayRtDataId ) ) {
+        retVal.put( bitArrayRtDataId, new ElemArrayList<>() );
+      }
+
+      BitIdx2RriDtoAttr attrInfo = readBitIdx2RriDtoAttr( bitArrayRtDataId, aSheet, currRow );
+      if( attrInfo != null ) {
+        IListEdit<BitIdx2RriDtoAttr> bitList = (IListEdit<BitIdx2RriDtoAttr>)retVal.getByKey( bitArrayRtDataId );
+        bitList.add( attrInfo );
+      }
+    }
+    return retVal;
   }
 
   private static StringMap<IList<BitIdx2DtoRtData>> readRtDataInfoes( Sheet aSheet ) {
@@ -181,9 +214,8 @@ public class Ods2DtoRtDataInfoParser {
     boolean empty = cell.isEmpty();
 
     if( !empty ) {
-      String rtdId = cell.getTextValue();
       // проверяем что это rtData
-      if( !rtdId.startsWith( RTD_PREFIX ) ) {
+      if( !dataId.startsWith( RTD_PREFIX ) ) {
         return null;
       }
       // bit index
@@ -216,6 +248,49 @@ public class Ods2DtoRtDataInfoParser {
   }
 
   /**
+   * Читает описание BitIdx2RriDtoAttr
+   *
+   * @param aBitArrayRtDataId - id переменной битового массива
+   * @param aSheet таблица с описанием
+   * @param aRowIndex текущий ряд парсинга
+   * @return {@link BitIdx2RriDtoAttr} описание атрибута
+   */
+  private static BitIdx2RriDtoAttr readBitIdx2RriDtoAttr( String aBitArrayRtDataId, Sheet aSheet, int aRowIndex ) {
+    // id атрибута
+    MutableCell<?> cell = aSheet.getCellAt( cellRef( RTDATA_ID_COL, aRowIndex ) );
+
+    // если нет id - пропустить эту строчку вообще
+    boolean empty = cell.isEmpty();
+
+    if( !empty ) {
+      String attrId = cell.getTextValue();
+      // проверяем что это НСИ атрибут
+      if( !attrId.startsWith( RRI_PREFIX ) ) {
+        return null;
+      }
+      // bit index
+      cell = aSheet.getCellAt( cellRef( BIT_INDEX_COL, aRowIndex ) );
+      String idxStr = cell.getTextValue();
+      int bitIndex = Integer.parseInt( idxStr );
+      // название
+      cell = aSheet.getCellAt( cellRef( RTDATA_NAME_COL, aRowIndex ) );
+      String name = cell.getTextValue();
+      // описание
+      cell = aSheet.getCellAt( cellRef( RTDATA_DESCR_COL, aRowIndex ) );
+      String descr = cell.getTextValue();
+
+      IDtoAttrInfo attrInfo = DtoAttrInfo.create1( attrId, new DataType( EAtomicType.BOOLEAN ), //
+          OptionSetUtils.createOpSet( //
+              TSID_NAME, name, //
+              TSID_DESCRIPTION, descr //
+          ) );
+
+      return new BitIdx2RriDtoAttr( aBitArrayRtDataId, bitIndex, attrInfo );
+    }
+    return null;
+  }
+
+  /**
    * Читает описание BitIdx2DtoEvent
    *
    * @param aBitArrayRtDataId - id переменной битоваого массива
@@ -234,9 +309,12 @@ public class Ods2DtoRtDataInfoParser {
     if( !empty ) {
       // соблюдаем соглашения о наименовании
       if( !evtId.startsWith( EVT_PREFIX ) ) {
-        // отрезаем префикс rtd
+        // отрезаем префикс rtd or rri
         if( evtId.startsWith( RTD_PREFIX ) ) {
           evtId = evtId.substring( RTD_PREFIX.length() );
+        }
+        if( evtId.startsWith( RRI_PREFIX ) ) {
+          evtId = evtId.substring( RRI_PREFIX.length() );
         }
         evtId = EVT_PREFIX + evtId;
       }
@@ -296,6 +374,13 @@ public class Ods2DtoRtDataInfoParser {
    */
   public static StringMap<StringMap<IList<BitIdx2DtoRtData>>> getRtdataInfoesMap() {
     return dtoRtdataInfoesMap;
+  }
+
+  /**
+   * @return карта id класса - > его {@link BitIdx2DtoRtData}
+   */
+  public static StringMap<StringMap<IList<BitIdx2RriDtoAttr>>> getRriAttrInfoesMap() {
+    return dtoRriAttrInfoesMap;
   }
 
   /**

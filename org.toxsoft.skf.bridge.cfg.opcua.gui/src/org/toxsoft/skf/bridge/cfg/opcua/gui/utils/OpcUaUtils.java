@@ -84,6 +84,9 @@ public class OpcUaUtils {
   private static final String DATA_JAVA_CLASS_ONE_TO_ONE_DATA_TRANSMITTER_FACTORY =
       "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.OneToOneDataTransmitterFactory";
 
+  private static final String JAVA_CLASS_ONE_TO_ONE_RRI_ATTR_TRANSMITTER_FACTORY =
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.rri.OneToOneRriDataTransmitterFactory";
+
   private static final String EVENTS_ONE_TAG_CHANGED_PARAM_FORMER =
       "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagToChangedParamFormer";
 
@@ -109,10 +112,17 @@ public class OpcUaUtils {
 
   public static final String CFG_UNIT_REALIZATION_TYPE_ONT_TO_ONE_DATA = "ont.to.one.data";
 
+  public static final String CFG_UNIT_REALIZATION_TYPE_ONE_TO_ONE_RRI = "one.to.one.rri";
+
   public static final String CFG_UNIT_REALIZATION_TYPE_ONE_INT_TO_ONE_BIT_DATA = "int.to.byte.data";
+
+  public static final String CFG_UNIT_REALIZATION_TYPE_ONE_INT_TO_ONE_BIT_RRI = "int.to.bit.rri";
 
   private static final String DATA_JAVA_CLASS_ONE_INT_TO_ONE_BIT_DATA_TRANSMITTER_FACTORY =
       "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.SingleIntToSingleBoolDataTransmitterFactory";
+
+  private static final String JAVA_CLASS_ONE_INT_TO_ONE_BIT_RRI_ATTR_TRANSMITTER_FACTORY =
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.rri.SingleIntToSingleBoolRriDataTransmitterFactory";
 
   /**
    * template for id secton for cached OPC UA nodes
@@ -122,12 +132,17 @@ public class OpcUaUtils {
   /**
    * template for id secton for store links UaNode->Skid meta info
    */
-  private static final String SECTID_OPC_UA_NODES_2_SKIDS_TEMPLATE = "opc.ua.nodes2skids"; //$NON-NLS-1$
+  public static final String SECTID_OPC_UA_NODES_2_SKIDS_TEMPLATE = "opc.ua.nodes2skids"; //$NON-NLS-1$
 
   /**
    * template for id secton for store links UaNode->RtdGwid
    */
   public static final String SECTID_OPC_UA_NODES_2_RTD_GWIDS_TEMPLATE = "opc.ua.nodes2rtd.gwids"; //$NON-NLS-1$
+
+  /**
+   * template for id secton for store links UaNode->RriGwid
+   */
+  public static final String SECTID_OPC_UA_NODES_2_RRI_GWIDS_TEMPLATE = "opc.ua.nodes2rri.gwids"; //$NON-NLS-1$
 
   /**
    * template for id secton for store links UaNode->ClassGwid
@@ -407,6 +422,8 @@ public class OpcUaUtils {
   }
 
   /**
+   * Загрузить карту привязки узлов OPC -> RtData Gwid
+   *
    * @param aContext app context
    * @param aOpcUaServerConnCfg параметры подключения к OPC UA
    * @return list of links {@link UaNode2Gwid } UaNode->Gwid
@@ -418,6 +435,21 @@ public class OpcUaUtils {
   }
 
   /**
+   * Загрузить карту привязки узлов OPC -> RRI Gwid
+   *
+   * @param aContext app context
+   * @param aOpcUaServerConnCfg параметры подключения к OPC UA
+   * @return list of links {@link UaNode2Gwid } UaNode->Gwid
+   */
+  public static IList<UaNode2Gwid> loadNodes2RriGwids( ITsGuiContext aContext,
+      IOpcUaServerConnCfg aOpcUaServerConnCfg ) {
+    String sectId = getTreeSectionNameByConfig( SECTID_OPC_UA_NODES_2_RRI_GWIDS_TEMPLATE, aOpcUaServerConnCfg );
+    return loadNodes2Gwids( aContext, sectId, UaNode2Gwid.KEEPER );
+  }
+
+  /**
+   * Загрузить карту привязки узлов OPC -> Event Gwid
+   *
    * @param aContext app context
    * @param aOpcUaServerConnCfg параметры подключения к OPC UA
    * @return list of links {@link UaNode2Gwid } UaNode->Gwid
@@ -775,6 +807,39 @@ public class OpcUaUtils {
     realizationTypeRegister.registerType( dataIntToOne );
 
     // ----------------------------------------------------
+    // Определение первой реализации НСИ атрибута (простое - один к одному)
+
+    paramDefenitions = new ElemArrayList<>();
+
+    paramDefenitions.add( OP_DATA_JAVA_CLASS );
+
+    defaultParams = new OptionSet();
+    OP_DATA_JAVA_CLASS.setValue( defaultParams, avStr( JAVA_CLASS_ONE_TO_ONE_RRI_ATTR_TRANSMITTER_FACTORY ) );
+
+    ICfgUnitRealizationType oneNodeToOneRriAttr = new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_ONE_TO_ONE_RRI,
+        STR_ONE_2_ONE, ECfgUnitType.RRI, paramDefenitions, defaultParams );
+
+    realizationTypeRegister.registerType( oneNodeToOneRriAttr );
+
+    // ----------------------------------------------------
+    // Определение второй реализации данных (битовое данное из интового тега)
+
+    paramDefenitions = new ElemArrayList<>();
+
+    paramDefenitions.add( OP_DATA_JAVA_CLASS );
+    paramDefenitions.add( OP_BIT_INDEX );
+
+    defaultParams = new OptionSet();
+    OP_DATA_JAVA_CLASS.setValue( defaultParams, avStr( JAVA_CLASS_ONE_INT_TO_ONE_BIT_RRI_ATTR_TRANSMITTER_FACTORY ) );
+    OP_BIT_INDEX.setValue( defaultParams, avInt( 0 ) );
+
+    ICfgUnitRealizationType intNodeToOneRriBit =
+        new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_ONE_INT_TO_ONE_BIT_RRI, STR_BIT_FROM_WORD,
+            ECfgUnitType.RRI, paramDefenitions, defaultParams );
+
+    realizationTypeRegister.registerType( intNodeToOneRriBit );
+
+    // ----------------------------------------------------
     // Определение первой реализации события
 
     // ----------------------------------------------------
@@ -877,6 +942,8 @@ public class OpcUaUtils {
     // создаем имя секции
     String ipAddress = extractIP( aSelConfig );
     return aSectNameTemplate + ".IP_Address_" + ipAddress;
+    // for debug
+    // return aSectNameTemplate;
   }
 
   private static String extractIP( IOpcUaServerConnCfg aSelConfig ) {
@@ -1012,16 +1079,48 @@ public class OpcUaUtils {
    * Возвращает битовый индекс в интовом теге, с помощью которого следует формировать булевое данное, заданное в gwid.
    *
    * @param aGwid - булевое данное, для которого идёёт поиск индекса.
-   * @param aClsId2EvtInfoes - карта classId-wordId-boolDataId-index
-   * @return BitIdx2DtoEvent - битовый индекс или null;
+   * @param aClsId2RriAttrInfoes - карта classId-wordId-boolDataId-index
+   * @return BitIdx2RriDtoAttr - битовый индекс или null;
    */
-  public static BitIdx2DtoRtData getDataBitIndexForGwid( Gwid aGwid,
-      IStringMap<StringMap<IList<BitIdx2DtoRtData>>> aClsId2EvtInfoes ) {
-    if( !aClsId2EvtInfoes.hasKey( aGwid.classId() ) ) {
+  public static BitIdx2RriDtoAttr getDataBitIndexForRriAttrGwid( Gwid aGwid,
+      IStringMap<StringMap<IList<BitIdx2RriDtoAttr>>> aClsId2RriAttrInfoes ) {
+    if( !aClsId2RriAttrInfoes.hasKey( aGwid.classId() ) ) {
       return null;
     }
 
-    StringMap<IList<BitIdx2DtoRtData>> classIndexes = aClsId2EvtInfoes.getByKey( aGwid.classId() );
+    StringMap<IList<BitIdx2RriDtoAttr>> classIndexes = aClsId2RriAttrInfoes.getByKey( aGwid.classId() );
+
+    // перебор всех наборов для данного класса
+
+    IStringList keys = classIndexes.keys();
+
+    for( String key : keys ) {
+      IList<BitIdx2RriDtoAttr> indexes = classIndexes.getByKey( key );
+
+      for( BitIdx2RriDtoAttr indexData : indexes ) {
+        if( indexData.dtoAttrInfo().id().equals( aGwid.propId() ) ) {
+          return indexData;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Возвращает битовый индекс в интовом теге, с помощью которого следует формировать булевое данное, заданное в gwid.
+   *
+   * @param aGwid - булевое данное, для которого идёёт поиск индекса.
+   * @param aClsId2RtDataInfoes - карта classId-wordId-boolDataId-index
+   * @return BitIdx2DtoEvent - битовый индекс или null;
+   */
+  public static BitIdx2DtoRtData getDataBitIndexForRtDataGwid( Gwid aGwid,
+      IStringMap<StringMap<IList<BitIdx2DtoRtData>>> aClsId2RtDataInfoes ) {
+    if( !aClsId2RtDataInfoes.hasKey( aGwid.classId() ) ) {
+      return null;
+    }
+
+    StringMap<IList<BitIdx2DtoRtData>> classIndexes = aClsId2RtDataInfoes.getByKey( aGwid.classId() );
 
     // перебор всех наборов для данного класса
 
@@ -1047,7 +1146,7 @@ public class OpcUaUtils {
    * @param aClsId2EvtInfoes - карта classId-wordId-boolDataId-index
    * @return BitIdx2DtoEvent - битовый индекс или null;
    */
-  public static BitIdx2DtoEvent getBitIndexForGwid( Gwid aGwid,
+  public static BitIdx2DtoEvent getBitIndexForEvtGwid( Gwid aGwid,
       IStringMap<StringMap<IList<BitIdx2DtoEvent>>> aClsId2EvtInfoes ) {
     if( !aClsId2EvtInfoes.hasKey( aGwid.classId() ) ) {
       return null;

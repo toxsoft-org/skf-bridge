@@ -73,6 +73,8 @@ public class OpcToS5DataCfgUnitM5Model
 
   private final static String CFG_DATA_UNIT_ID_FORMAT = "opctos5.bridge.cfg.data.unit.id%d.%s.%s";
 
+  private final static String CFG_RRI_UNIT_ID_FORMAT = "opctos5.bridge.cfg.rri.unit.id%d.%s.%s";
+
   private final static String CFG_EVENT_UNIT_ID_FORMAT = "opctos5.bridge.cfg.event.unit.id%d.%s.%s";
 
   /**
@@ -496,7 +498,7 @@ public class OpcToS5DataCfgUnitM5Model
 
                   case ACTID_AUTO_LINK:
 
-                    //вынести в отделный класс реализации
+                    // вынести в отделный класс реализации
                     IdChain connIdChain =
                         (IdChain)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_S5_CONNECTION );
 
@@ -516,6 +518,7 @@ public class OpcToS5DataCfgUnitM5Model
                     }
 
                     StringMap<StringMap<IList<BitIdx2DtoRtData>>> clsId2RtDataInfoes = new StringMap<>();
+                    StringMap<StringMap<IList<BitIdx2RriDtoAttr>>> clsId2RriAttrInfoes = new StringMap<>();
                     StringMap<StringMap<IList<BitIdx2DtoEvent>>> clsId2EventInfoes = new StringMap<>();
 
                     String bitRtdataFileDescr = getDescrFile(
@@ -526,6 +529,7 @@ public class OpcToS5DataCfgUnitM5Model
                         Ods2DtoRtDataInfoParser.parse( file );
                         clsId2RtDataInfoes = Ods2DtoRtDataInfoParser.getRtdataInfoesMap();
                         clsId2EventInfoes = Ods2DtoRtDataInfoParser.getEventInfoesMap();
+                        clsId2RriAttrInfoes = Ods2DtoRtDataInfoParser.getRriAttrInfoesMap();
                         TsDialogUtils.info( getShell(), MSG_LOADED_BIT_MASKS_DESCR, bitRtdataFileDescr );
                       }
                       catch( IOException ex ) {
@@ -606,7 +610,7 @@ public class OpcToS5DataCfgUnitM5Model
 
                       // битовый индекс для данного
                       BitIdx2DtoRtData bitIndex =
-                          OpcUaUtils.getDataBitIndexForGwid( dataNode.gwid(), clsId2RtDataInfoes );
+                          OpcUaUtils.getDataBitIndexForRtDataGwid( dataNode.gwid(), clsId2RtDataInfoes );
 
                       Gwid gwid = dataNode.gwid();
                       IList<Gwid> gwids = new ElemArrayList<>( gwid );
@@ -652,13 +656,55 @@ public class OpcToS5DataCfgUnitM5Model
                       ((OpcToS5DataCfgUnitM5LifecycleManager)lifecycleManager()).addCfgUnit( result );
                     }
 
+                    // dima 18.01.24 RRI attrs
+                    nodes2Gwids = OpcUaUtils.loadNodes2RriGwids( aContext, conConf );
+                    for( UaNode2Gwid rriAttrNode : nodes2Gwids ) {
+
+                      // битовый индекс для rriAttr
+                      BitIdx2RriDtoAttr bitIndex =
+                          OpcUaUtils.getDataBitIndexForRriAttrGwid( rriAttrNode.gwid(), clsId2RriAttrInfoes );
+
+                      Gwid gwid = rriAttrNode.gwid();
+                      IList<Gwid> gwids = new ElemArrayList<>( gwid );
+
+                      IListEdit<NodeId> nodes = new ElemArrayList<>( rriAttrNode.getNodeId() );
+
+                      String strid = String.format( CFG_RRI_UNIT_ID_FORMAT, Long.valueOf( System.currentTimeMillis() ),
+                          gwid.strid(), gwid.propId() );
+
+                      ECfgUnitType type = ECfgUnitType.RRI;
+
+                      CfgUnitRealizationTypeRegister typeReg2 =
+                          m5().tsContext().get( CfgUnitRealizationTypeRegister.class );
+
+                      ICfgUnitRealizationType realType = typeReg2.getTypeOfRealizationById( type,
+                          bitIndex == null ? CFG_UNIT_REALIZATION_TYPE_ONE_TO_ONE_RRI
+                              : CFG_UNIT_REALIZATION_TYPE_ONE_INT_TO_ONE_BIT_RRI );
+
+                      OptionSet realization = new OptionSet( realType.getDefaultValues() );
+                      if( bitIndex != null ) {
+                        OpcUaUtils.OP_BIT_INDEX.setValue( realization, avInt( bitIndex.bitIndex() ) );
+                      }
+
+                      String name = STR_LINK_PREFIX + gwid.asString();
+
+                      OpcToS5DataCfgUnit result = new OpcToS5DataCfgUnit( strid, name );
+                      result.setDataNodes( nodes );
+                      result.setDataGwids( gwids );
+                      result.setTypeOfCfgUnit( type );
+                      result.setRelizationTypeId( realType.id() );
+                      result.setRealizationOpts( realization );
+
+                      ((OpcToS5DataCfgUnitM5LifecycleManager)lifecycleManager()).addCfgUnit( result );
+                    }
+
                     // events
                     IList<UaNode2EventGwid> autoEvents = OpcUaUtils.loadNodes2EvtGwids( aContext, conConf );
 
                     for( UaNode2Gwid evtNode : autoEvents ) {
                       Gwid gwid = evtNode.gwid();
 
-                      BitIdx2DtoEvent bitIndex = OpcUaUtils.getBitIndexForGwid( gwid, clsId2EventInfoes );
+                      BitIdx2DtoEvent bitIndex = OpcUaUtils.getBitIndexForEvtGwid( gwid, clsId2EventInfoes );
 
                       IList<Gwid> gwids = new ElemArrayList<>( gwid );
 

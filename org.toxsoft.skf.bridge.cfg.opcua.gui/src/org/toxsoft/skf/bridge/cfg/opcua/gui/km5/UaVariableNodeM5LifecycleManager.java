@@ -70,7 +70,7 @@ public class UaVariableNodeM5LifecycleManager
       // if( userAnswer != ETsDialogCode.YES ) {
       // return ValidationResult.error( "Node read only" );
       // }
-      return ValidationResult.error( "Node read only" );
+      return ValidationResult.error( "Node is read only" );
     }
 
     return ValidationResult.SUCCESS;
