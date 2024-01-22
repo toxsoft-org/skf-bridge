@@ -192,7 +192,7 @@ public class OpcUaServerConnCfgEditorPanel
     long timeout = 3000;
 
     // Создание диалога прогресса выполнения запроса
-    SkQueryDialog progressDialog = new SkQueryDialog( getShell(), STR_LOADING_OPC_UA_NODES_STRUCT, timeout );
+    SkAbstractQueryDialog progressDialog = new SkAbstractQueryDialog( getShell(), STR_LOADING_OPC_UA_NODES_STRUCT, timeout );
     // fork = true, cancelable = true
     try {
       progressDialog.run( true, true, aMonitor -> {
