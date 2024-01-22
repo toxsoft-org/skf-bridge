@@ -61,6 +61,7 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 import org.toxsoft.skf.rri.lib.*;
+import org.toxsoft.skf.rri.lib.impl.*;
 import org.toxsoft.uskat.core.*;
 import org.toxsoft.uskat.core.api.objserv.*;
 import org.toxsoft.uskat.core.api.sysdescr.*;
@@ -630,13 +631,7 @@ public class OpcUaTreeBrowserPanel
           if( rriDtoClassInfo != null ) {
             rriSection = PanelRriSectionSelector.selectRriSection( null, aContext );
             if( rriSection != null ) {
-              // TODO refactoring создаем/обновляем НСИ параметры
-              for( IDtoAttrInfo attrInfo : rriDtoClassInfo.attrInfos() ) {
-                rriSection.defineAttrParam( rriDtoClassInfo.id(), attrInfo );
-              }
-              for( IDtoLinkInfo linkInfo : rriDtoClassInfo.linkInfos() ) {
-                rriSection.defineLinkParam( rriDtoClassInfo.id(), linkInfo );
-              }
+              defineRriParams( aContext, rriDtoClassInfo );
             }
           }
 
@@ -681,16 +676,7 @@ public class OpcUaTreeBrowserPanel
           cdi.setMinSize( new TsPoint( -30, -80 ) );
           rriDtoClassInfo = M5GuiUtils.askEdit( tsContext(), modelDto, rriDtoClassInfo, cdi, localLM );
           if( rriDtoClassInfo != null ) {
-            rriSection = PanelRriSectionSelector.selectRriSection( null, aContext );
-            if( rriSection != null ) {
-              // TODO refactoring создаем/обновляем НСИ параметры
-              for( IDtoAttrInfo attrInfo : rriDtoClassInfo.attrInfos() ) {
-                rriSection.defineAttrParam( rriDtoClassInfo.id(), attrInfo );
-              }
-              for( IDtoLinkInfo linkInfo : rriDtoClassInfo.linkInfos() ) {
-                rriSection.defineLinkParam( rriDtoClassInfo.id(), linkInfo );
-              }
-            }
+            defineRriParams( aContext, rriDtoClassInfo );
           }
 
           // чистим список привязок ClassGwid -> NodeId
@@ -703,6 +689,22 @@ public class OpcUaTreeBrowserPanel
           TsDialogUtils.info( getShell(), STR_SUCCESS_CLASS_CREATED, dtoClassInfo.id() );
         }
       }
+    }
+  }
+
+  public void defineRriParams( ITsGuiContext aContext, IDtoClassInfo rriDtoClassInfo ) {
+    ISkRriSection rriSection;
+    rriSection = PanelRriSectionSelector.selectRriSection( null, aContext );
+    if( rriSection != null ) {
+      // TODO refactoring создаем/обновляем НСИ параметры
+      IStridablesListEdit<IDtoRriParamInfo> rriParamInfoes = new StridablesList<>();
+      for( IDtoAttrInfo attrInfo : rriDtoClassInfo.attrInfos() ) {
+        rriParamInfoes.add( new DtoRriParamInfo( attrInfo ) );
+      }
+      for( IDtoLinkInfo linkInfo : rriDtoClassInfo.linkInfos() ) {
+        rriParamInfoes.add( new DtoRriParamInfo( linkInfo ) );
+      }
+      rriSection.defineParam( rriDtoClassInfo.id(), rriParamInfoes );
     }
   }
 
@@ -1221,7 +1223,7 @@ public class OpcUaTreeBrowserPanel
   }
 
   private void generateNode2GwidLinks( ITsGuiContext aContext, ISkClassInfo aClassInfo, IList<IDtoObject> aObjList,
-      EOPCUATreeType aTreeType, IStridablesList<ISkRriParamInfo> aRriParamInfoes ) {
+      EOPCUATreeType aTreeType, IStridablesList<IDtoRriParamInfo> aRriParamInfoes ) {
     IListEdit<UaNode2Gwid> node2RtdGwidList = new ElemArrayList<>();
     IListEdit<UaNode2Gwid> node2RriGwidList = new ElemArrayList<>();
     IListEdit<UaNode2EventGwid> node2EvtGwidList = new ElemArrayList<>();
@@ -1275,7 +1277,7 @@ public class OpcUaTreeBrowserPanel
         }
       }
       // идем по списку его rriProperties
-      for( ISkRriParamInfo aParamInfo : aRriParamInfoes ) {
+      for( IDtoRriParamInfo aParamInfo : aRriParamInfoes ) {
         if( aParamInfo.isLink() ) {
           continue;
         }
