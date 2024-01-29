@@ -42,7 +42,7 @@ public class OpcToS5DataCfgDocM5Model
   /**
    * Attribute {@link OpcToS5DataCfgDoc#id() } string id
    */
-  static M5AttributeFieldDef<OpcToS5DataCfgDoc> STRID = new M5AttributeFieldDef<>( FID_STRID, EAtomicType.STRING, //
+  final M5AttributeFieldDef<OpcToS5DataCfgDoc> STRID = new M5AttributeFieldDef<>( FID_STRID, EAtomicType.STRING, //
       TSID_NAME, STR_N_PARAM_STRID, //
       TSID_DESCRIPTION, STR_D_PARAM_STRID, //
       OPID_EDITOR_FACTORY_NAME, ValedAvStringText.FACTORY_NAME //
@@ -62,7 +62,7 @@ public class OpcToS5DataCfgDocM5Model
   /**
    * Attribute {@link OpcToS5DataCfgDoc#nmName() } name
    */
-  static M5AttributeFieldDef<OpcToS5DataCfgDoc> NAME = new M5AttributeFieldDef<>( FID_NAME, EAtomicType.STRING, //
+  final M5AttributeFieldDef<OpcToS5DataCfgDoc> NAME = new M5AttributeFieldDef<>( FID_NAME, EAtomicType.STRING, //
       TSID_NAME, STR_N_CONFIG_NAME, //
       TSID_DESCRIPTION, STR_D_CONFIG_NAME, //
       OPID_EDITOR_FACTORY_NAME, ValedAvStringText.FACTORY_NAME //
@@ -82,7 +82,7 @@ public class OpcToS5DataCfgDocM5Model
   /**
    * Attribute {@link OpcToS5DataCfgDoc#description() } description
    */
-  static M5AttributeFieldDef<OpcToS5DataCfgDoc> DESCR = new M5AttributeFieldDef<>( FID_DESCR, EAtomicType.STRING, //
+  final M5AttributeFieldDef<OpcToS5DataCfgDoc> DESCR = new M5AttributeFieldDef<>( FID_DESCR, EAtomicType.STRING, //
       TSID_NAME, STR_N_CONFIG_DESCR, //
       TSID_DESCRIPTION, STR_D_CONFIG_DESCR, //
       OPID_EDITOR_FACTORY_NAME, ValedAvStringText.FACTORY_NAME //

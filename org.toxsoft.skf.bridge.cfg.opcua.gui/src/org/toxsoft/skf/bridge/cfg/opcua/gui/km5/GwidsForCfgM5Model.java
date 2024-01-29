@@ -75,7 +75,7 @@ public class GwidsForCfgM5Model
   /**
    * Attribute {@link Node#getNodeId() } string id
    */
-  public M5AttributeFieldDef<Gwid> DISPLAY_NAME = new M5AttributeFieldDef<>( FID_DISPLAY_NAME, EAtomicType.STRING, //
+  public final M5AttributeFieldDef<Gwid> DISPLAY_NAME = new M5AttributeFieldDef<>( FID_DISPLAY_NAME, EAtomicType.STRING, //
       TSID_NAME, STR_N_PARAM_DISPLAY_NAME, //
       TSID_DESCRIPTION, STR_D_PARAM_DISPLAY_NAME //
   ) {
@@ -95,7 +95,7 @@ public class GwidsForCfgM5Model
   /**
    * Invisible attribute for sending selected entity into lifecyclemanager string id
    */
-  public M5AttributeFieldDef<Gwid> GWID_STR = new M5AttributeFieldDef<>( FID_GWID_STR, EAtomicType.STRING, //
+  public final M5AttributeFieldDef<Gwid> GWID_STR = new M5AttributeFieldDef<>( FID_GWID_STR, EAtomicType.STRING, //
       TSID_NAME, FID_GWID_STR, //
       TSID_DESCRIPTION, FID_GWID_STR //
   ) {

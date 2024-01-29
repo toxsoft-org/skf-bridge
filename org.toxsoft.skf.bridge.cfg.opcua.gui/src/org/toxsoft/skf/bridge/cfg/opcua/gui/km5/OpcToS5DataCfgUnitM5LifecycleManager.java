@@ -41,7 +41,10 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
    */
   public OpcToS5DataCfgUnitM5LifecycleManager( IM5Model<OpcToS5DataCfgUnit> aModel, OpcToS5DataCfgDoc aCfgDoc ) {
     super( aModel, true, true, true, true, aCfgDoc );
+  }
 
+  private OpcToS5DataCfgUnitM5Model m() {
+    return (OpcToS5DataCfgUnitM5Model)model();
   }
 
   @Override
@@ -51,15 +54,15 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
 
   @Override
   protected OpcToS5DataCfgUnit doCreate( IM5Bunch<OpcToS5DataCfgUnit> aValues ) {
-    String name = OpcToS5DataCfgUnitM5Model.DISPLAY_NAME.getFieldValue( aValues ).asString();
+    String name = m().DISPLAY_NAME.getFieldValue( aValues ).asString();
     String strid = "opctos5.bridge.cfg.unit.id" + System.currentTimeMillis();// OpcToS5DataCfgUnitM5Model.STRID.getFieldValue( //$NON-NLS-1$
-    ECfgUnitType type = OpcToS5DataCfgUnitM5Model.TYPE.getFieldValue( aValues ).asValobj();
+    ECfgUnitType type = m().TYPE.getFieldValue( aValues ).asValobj();
     // aValues ).asString();
-    IList<Gwid> gwids = OpcToS5DataCfgUnitM5Model.GWIDS.getFieldValue( aValues );
-    IList<NodeId> nodes = OpcToS5DataCfgUnitM5Model.NODES.getFieldValue( aValues );
+    IList<Gwid> gwids = m().GWIDS.getFieldValue( aValues );
+    IList<NodeId> nodes = m().NODES.getFieldValue( aValues );
 
-    ICfgUnitRealizationType realType = OpcToS5DataCfgUnitM5Model.REALIZATION_TYPE.getFieldValue( aValues );
-    IOptionSet realization = OpcToS5DataCfgUnitM5Model.REALIZATION.getFieldValue( aValues );
+    ICfgUnitRealizationType realType = m().REALIZATION_TYPE.getFieldValue( aValues );
+    IOptionSet realization = m().REALIZATION.getFieldValue( aValues );
 
     OpcToS5DataCfgUnit result = new OpcToS5DataCfgUnit( strid, name );
     result.setDataNodes( nodes );
@@ -73,14 +76,14 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
 
   @Override
   protected OpcToS5DataCfgUnit doEdit( IM5Bunch<OpcToS5DataCfgUnit> aValues ) {
-    String name = OpcToS5DataCfgUnitM5Model.DISPLAY_NAME.getFieldValue( aValues ).asString();
-    // String strid = OpcToS5DataCfgUnitM5Model.STRID.getFieldValue( aValues ).asString();
-    IList<Gwid> gwids = OpcToS5DataCfgUnitM5Model.GWIDS.getFieldValue( aValues );
-    ECfgUnitType type = OpcToS5DataCfgUnitM5Model.TYPE.getFieldValue( aValues ).asValobj();
-    IList<NodeId> nodes = OpcToS5DataCfgUnitM5Model.NODES.getFieldValue( aValues );
+    String name = m().DISPLAY_NAME.getFieldValue( aValues ).asString();
+    // String strid= m().STRID.getFieldValue( aValues ).asString();
+    IList<Gwid> gwids = m().GWIDS.getFieldValue( aValues );
+    ECfgUnitType type = m().TYPE.getFieldValue( aValues ).asValobj();
+    IList<NodeId> nodes = m().NODES.getFieldValue( aValues );
 
-    ICfgUnitRealizationType realType = OpcToS5DataCfgUnitM5Model.REALIZATION_TYPE.getFieldValue( aValues );
-    IOptionSet realization = OpcToS5DataCfgUnitM5Model.REALIZATION.getFieldValue( aValues );
+    ICfgUnitRealizationType realType = m().REALIZATION_TYPE.getFieldValue( aValues );
+    IOptionSet realization = m().REALIZATION.getFieldValue( aValues );
 
     OpcToS5DataCfgUnit result = aValues.originalEntity();
     result.setDataNodes( nodes );

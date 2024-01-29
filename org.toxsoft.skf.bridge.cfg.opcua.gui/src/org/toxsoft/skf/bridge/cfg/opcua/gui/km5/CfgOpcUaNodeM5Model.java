@@ -101,7 +101,7 @@ public class CfgOpcUaNodeM5Model
   /**
    * Attribute {@link CfgOpcUaNode#getNodeId() } string id
    */
-  static M5AttributeFieldDef<CfgOpcUaNode> STRID = new M5AttributeFieldDef<>( FID_STRID, EAtomicType.STRING, //
+  final M5AttributeFieldDef<CfgOpcUaNode> STRID = new M5AttributeFieldDef<>( FID_STRID, EAtomicType.STRING, //
       TSID_NAME, STR_N_PARAM_STRID, //
       TSID_DESCRIPTION, STR_D_PARAM_STRID, //
       OPID_EDITOR_FACTORY_NAME, ValedAvStringText.FACTORY_NAME //
@@ -121,7 +121,7 @@ public class CfgOpcUaNodeM5Model
   /**
    * Attribute {@link CfgOpcUaNode#getType() } type
    */
-  static M5AttributeFieldDef<CfgOpcUaNode> TYPE = new M5AttributeFieldDef<>( FID_TYPE, EAtomicType.VALOBJ, //
+  final M5AttributeFieldDef<CfgOpcUaNode> TYPE = new M5AttributeFieldDef<>( FID_TYPE, EAtomicType.VALOBJ, //
       TSID_NAME, STR_N_NODE_VALUE_TYPE, //
       TSID_DESCRIPTION, STR_D_NODE_VALUE_TYPE, //
       TSID_KEEPER_ID, EAtomicType.KEEPER_ID //
@@ -141,7 +141,7 @@ public class CfgOpcUaNodeM5Model
   /**
    * Attribute {@link CfgOpcUaNode#isRead() } boolean
    */
-  static M5AttributeFieldDef<CfgOpcUaNode> IS_READ = new M5AttributeFieldDef<>( FID_IS_READ, EAtomicType.BOOLEAN, //
+  final M5AttributeFieldDef<CfgOpcUaNode> IS_READ = new M5AttributeFieldDef<>( FID_IS_READ, EAtomicType.BOOLEAN, //
       TSID_NAME, STR_N_NODE_2READ, //
       TSID_DESCRIPTION, STR_D_NODE_2READ //
   ) {
@@ -160,7 +160,7 @@ public class CfgOpcUaNodeM5Model
   /**
    * Attribute {@link CfgOpcUaNode#isWrite() } boolean
    */
-  static M5AttributeFieldDef<CfgOpcUaNode> IS_WRITE = new M5AttributeFieldDef<>( FID_IS_WRITE, EAtomicType.BOOLEAN, //
+  final M5AttributeFieldDef<CfgOpcUaNode> IS_WRITE = new M5AttributeFieldDef<>( FID_IS_WRITE, EAtomicType.BOOLEAN, //
       TSID_NAME, STR_N_NODE_2WRITE, //
       TSID_DESCRIPTION, STR_D_NODE_2WRITE //
   ) {
@@ -179,7 +179,7 @@ public class CfgOpcUaNodeM5Model
   /**
    * Attribute {@link CfgOpcUaNode#isSynch() } boolean
    */
-  static M5AttributeFieldDef<CfgOpcUaNode> IS_SYNCH = new M5AttributeFieldDef<>( FID_IS_SYNCH, EAtomicType.BOOLEAN, //
+  final M5AttributeFieldDef<CfgOpcUaNode> IS_SYNCH = new M5AttributeFieldDef<>( FID_IS_SYNCH, EAtomicType.BOOLEAN, //
       TSID_NAME, STR_N_NODE_SYNC, //
       TSID_DESCRIPTION, STR_D_NODE_SYNC//
   ) {

@@ -61,7 +61,7 @@ public class NodesForCfgM5Model
    */
   public static final String FID_NODE_STR = "node.str"; //$NON-NLS-1$
 
-  public M5AttributeFieldDef<NodeId> NODE_STR = new M5AttributeFieldDef<>( FID_NODE_STR, EAtomicType.STRING, //
+  public final M5AttributeFieldDef<NodeId> NODE_STR = new M5AttributeFieldDef<>( FID_NODE_STR, EAtomicType.STRING, //
       TSID_NAME, STR_N_NODE_STRING, //
       TSID_DESCRIPTION, STR_D_NODE_STRING //
   ) {

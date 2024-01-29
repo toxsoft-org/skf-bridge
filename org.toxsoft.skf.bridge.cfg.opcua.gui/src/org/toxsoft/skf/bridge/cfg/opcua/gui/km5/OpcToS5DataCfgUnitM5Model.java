@@ -159,7 +159,7 @@ public class OpcToS5DataCfgUnitM5Model
   /**
    * Attribute {@link OpcToS5DataCfgUnit#id() } string id
    */
-  static M5AttributeFieldDef<OpcToS5DataCfgUnit> STRID = new M5AttributeFieldDef<>( FID_STRID, EAtomicType.STRING, //
+  final M5AttributeFieldDef<OpcToS5DataCfgUnit> STRID = new M5AttributeFieldDef<>( FID_STRID, EAtomicType.STRING, //
       TSID_NAME, STR_N_PARAM_STRID, //
       TSID_DESCRIPTION, STR_D_PARAM_STRID, //
       OPID_EDITOR_FACTORY_NAME, ValedAvStringText.FACTORY_NAME //
@@ -179,7 +179,7 @@ public class OpcToS5DataCfgUnitM5Model
   /**
    * Attribute {@link OpcToS5DataCfgUnit#nmName() } display name
    */
-  static M5AttributeFieldDef<OpcToS5DataCfgUnit> DISPLAY_NAME =
+  final M5AttributeFieldDef<OpcToS5DataCfgUnit> DISPLAY_NAME =
       new M5AttributeFieldDef<>( FID_DISPLAY_NAME, EAtomicType.STRING, //
           TSID_NAME, STR_N_PARAM_DISPLAY_NAME, //
           TSID_DESCRIPTION, STR_D_PARAM_DISPLAY_NAME, //
@@ -200,7 +200,7 @@ public class OpcToS5DataCfgUnitM5Model
   /**
    * Attribute {@link OpcToS5DataCfgUnit#getDataGwids() } gwids list
    */
-  static IM5MultiModownFieldDef<OpcToS5DataCfgUnit, Gwid> GWIDS =
+  final IM5MultiModownFieldDef<OpcToS5DataCfgUnit, Gwid> GWIDS =
       new M5MultiModownFieldDef<>( FID_GWIDS, GwidsForCfgM5Model.MODEL_ID ) {
 
         @Override
@@ -236,7 +236,7 @@ public class OpcToS5DataCfgUnitM5Model
   /**
    * Attribute {@link OpcToS5DataCfgUnit#getTypeOfCfgUnit() } type
    */
-  static M5AttributeFieldDef<OpcToS5DataCfgUnit> TYPE = new M5AttributeFieldDef<>( FID_TYPE, EAtomicType.VALOBJ, //
+  final M5AttributeFieldDef<OpcToS5DataCfgUnit> TYPE = new M5AttributeFieldDef<>( FID_TYPE, EAtomicType.VALOBJ, //
       TSID_NAME, STR_N_NODE_VALUE_TYPE, //
       TSID_DESCRIPTION, STR_D_NODE_VALUE_TYPE, //
       TSID_KEEPER_ID, ECfgUnitType.KEEPER_ID //
@@ -256,7 +256,7 @@ public class OpcToS5DataCfgUnitM5Model
   /**
    * Attribute {@link OpcToS5DataCfgUnit#getDataNodes() } gwids list
    */
-  static IM5MultiModownFieldDef<OpcToS5DataCfgUnit, NodeId> NODES =
+  final IM5MultiModownFieldDef<OpcToS5DataCfgUnit, NodeId> NODES =
       new M5MultiModownFieldDef<>( FID_NODES, NodesForCfgM5Model.MODEL_ID ) {
 
         @Override
@@ -291,7 +291,7 @@ public class OpcToS5DataCfgUnitM5Model
    * Attribute {@link OpcToS5DataCfgUnit#getRelizationTypeId() } realization options
    */
 
-  static IM5SingleLookupFieldDef<OpcToS5DataCfgUnit, ICfgUnitRealizationType> REALIZATION_TYPE =
+  final IM5SingleLookupFieldDef<OpcToS5DataCfgUnit, ICfgUnitRealizationType> REALIZATION_TYPE =
       new M5SingleLookupFieldDef<>( FID_REALIZATION_TYPE, CfgUnitRealizationTypeM5Model.MODEL_ID ) {
 
         @Override
@@ -320,7 +320,7 @@ public class OpcToS5DataCfgUnitM5Model
   /**
    * Attribute {@link OpcToS5DataCfgUnit#getRealizationOpts() } realization options
    */
-  static IM5FieldDef<OpcToS5DataCfgUnit, IOptionSet> REALIZATION =
+  final IM5FieldDef<OpcToS5DataCfgUnit, IOptionSet> REALIZATION =
       new M5FieldDef<>( FID_REALIZATION, IOptionSet.class ) {
 
         @Override
