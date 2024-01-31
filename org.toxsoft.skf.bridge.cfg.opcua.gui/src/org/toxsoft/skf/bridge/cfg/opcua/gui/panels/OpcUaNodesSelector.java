@@ -1,5 +1,6 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.panels;
 
+import static org.toxsoft.core.tsgui.graphics.icons.ITsStdIconIds.*;
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IBridgeCfgOpcUaResources.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
@@ -178,7 +179,7 @@ public class OpcUaNodesSelector
     private static final String STATIC_NODE_NAME = "Static"; //$NON-NLS-1$
 
     private final ITsNodeKind<UaTreeNode> kind =
-        new TsNodeKind<>( "UaTreeNode", UaTreeNode.class, true, IOpcUaServerConnCfgConstants.ICONID_APP_ICON ); //$NON-NLS-1$
+        new TsNodeKind<>( "UaTreeNode", UaTreeNode.class, true, ICONID_TSAPP_WINDOWS_ICON ); //$NON-NLS-1$
 
     private boolean                   hideVariableNodes;
     private ImmutableSet<AccessLevel> accessLevel = AccessLevel.NONE;

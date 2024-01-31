@@ -25,8 +25,7 @@ public interface IOpcUaServerConnCfgConstants {
   // ------------------------------------------------------------------------------------
   // Icons
 
-  String PREFIX_OF_ICON_FIELD_NAME = "ICONID_";  //$NON-NLS-1$
-  String ICONID_APP_ICON           = "app-icon"; //$NON-NLS-1$
+  String PREFIX_OF_ICON_FIELD_NAME = "ICONID_"; //$NON-NLS-1$
 
   String ICONID_VARIABLE_NODE        = "s5-datatype";          //$NON-NLS-1$
   String ICONID_OBJECT_NODE          = "s5-obj";               //$NON-NLS-1$

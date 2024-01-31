@@ -1,5 +1,6 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.panels;
 
+import static org.toxsoft.core.tsgui.graphics.icons.ITsStdIconIds.*;
 import static org.toxsoft.core.tsgui.m5.IM5Constants.*;
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
@@ -519,7 +520,7 @@ public class OpcUaTreeBrowserPanel
       implements ITsTreeMaker<UaTreeNode> {
 
     private final ITsNodeKind<UaTreeNode> kind =
-        new TsNodeKind<>( "UaTreeNode", UaTreeNode.class, true, IOpcUaServerConnCfgConstants.ICONID_APP_ICON ); //$NON-NLS-1$
+        new TsNodeKind<>( "UaTreeNode", UaTreeNode.class, true, ICONID_TSAPP_WINDOWS_ICON ); //$NON-NLS-1$
 
     @Override
     public IList<ITsNode> makeRoots( ITsNode aRootNode, IList<UaTreeNode> aItems ) {
