@@ -1,5 +1,8 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.utils;
 
+import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
+import static org.toxsoft.skf.bridge.cfg.opcua.gui.utils.OpcUaUtils.*;
+
 import java.util.*;
 
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
@@ -13,6 +16,8 @@ import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
+import org.toxsoft.core.tslib.gw.skid.*;
+import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.filegen.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
@@ -24,6 +29,18 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
  * @author max
  */
 public class OpcToS5DataCfgConverter {
+
+  public static final String СT_WRITE_ID_TAG         = "write.id.tag";
+  public static final String СT_WRITE_VAL_TAG_PREFIX = "write.param.";
+  public static final String СT_WRITE_VAL_TAG_FORMAT = СT_WRITE_VAL_TAG_PREFIX + "%s.tag";
+  public static final String СT_READ_FEEDBACK_TAG    = "read.feedback.tag";
+
+  private static final String СOMPLEX_TAGS_DEFS = "complexTagsDefs";
+
+  public static final String СOMPLEX_TAG_ID   = "complex.tag.id";
+  public static final String СOMPLEX_TAG_TYPE = "complex.tag.type";
+
+  public static final String SIMPLE_СOMPLEX_TAG_TYPE = "node.with.address.params.feedback";
 
   private static final String DLM_CFG_NODE_ID_TEMPLATE                          = "opc.dlm.cfg";
   private static final String DESCRIPTION_STR                                   = "description";
@@ -196,6 +213,16 @@ public class OpcToS5DataCfgConverter {
    */
   private static final String OBJ_NAMES_LIST = "obj.names.list";
 
+  /**
+   * Хранилище комплексных тегов (идентификаторов и составляющих тегов) - очищать перед новой генерацией.
+   */
+  private static IStringMapEdit<IStringMapEdit<NodeId>> complexTagsContetnt = new StringMap<>();
+
+  /**
+   * Хранилище идов комплексных тегов (мапированных по skid объектов) - очищать перед новой генерацией.
+   */
+  private static IMapEdit<Skid, String> complexTagsIdsBySkidsContetnt = new ElemMap<>();
+
   private OpcToS5DataCfgConverter() {
 
   }
@@ -207,6 +234,9 @@ public class OpcToS5DataCfgConverter {
    * @return дерево для конфигурирования модуля DLM
    */
   public static IAvTree convertToDlmCfgTree( OpcToS5DataCfgDoc aDoc ) {
+    complexTagsContetnt.clear();
+    complexTagsIdsBySkidsContetnt.clear();
+
     StringMap<IAvTree> nodes = new StringMap<>();
 
     // данные
@@ -229,6 +259,10 @@ public class OpcToS5DataCfgConverter {
     IAvTree eventsMassivTree = createEvents( aDoc );
     nodes.put( EVENT_DEFS, eventsMassivTree );
 
+    // сложные теги
+    IAvTree complexTagsTree = createComplexTags();
+    nodes.put( СOMPLEX_TAGS_DEFS, complexTagsTree );
+
     IOptionSetEdit opSet = new OptionSet();
 
     opSet.setStr( ID_STR, DLM_ID_TEMPLATE );
@@ -237,6 +271,33 @@ public class OpcToS5DataCfgConverter {
     IAvTree dstParams = AvTree.createSingleAvTree( DLM_CFG_NODE_ID_TEMPLATE, opSet, nodes );
 
     return dstParams;
+  }
+
+  private static IAvTree createComplexTags() {
+    AvTree pinsMassivTree = AvTree.createArrayAvTree();
+
+    IStringList tagsIds = complexTagsContetnt.keys();
+
+    for( String tagId : tagsIds ) {
+      IOptionSetEdit pinOpSet1 = new OptionSet();
+
+      pinOpSet1.setStr( СOMPLEX_TAG_ID, tagId );
+      pinOpSet1.setStr( СOMPLEX_TAG_TYPE, SIMPLE_СOMPLEX_TAG_TYPE );
+      pinOpSet1.setStr( TAG_DEVICE_ID, OPC_TAG_DEVICE );
+
+      // ссылки на составляющие теги
+      IStringMapEdit<NodeId> tags = complexTagsContetnt.getByKey( tagId );
+
+      for( String tagKey : tags.keys() ) {
+        pinOpSet1.setStr( tagKey, tags.getByKey( tagKey ).toParseableString() );
+      }
+
+      AvTree complexTagTree = AvTree.createSingleAvTree( tagId + ".def", pinOpSet1, IStringMap.EMPTY );
+      pinsMassivTree.addElement( complexTagTree );
+
+    }
+
+    return pinsMassivTree;
   }
 
   /**
@@ -464,8 +525,6 @@ public class OpcToS5DataCfgConverter {
     String pinId = aUnit.id();
 
     IOptionSetEdit pinOpSet1 = new OptionSet();
-    // pinOpSet1.setStr( PIN_ID, pinId );
-    // pinOpSet1.setStr( JAVA_CLASS, ONE_TO_ONE_DATA_TRANSMITTER_FACTORY_CLASS );
 
     IList<Gwid> gwids = aUnit.getDataGwids();
     Gwid gwid = gwids.first();
@@ -480,17 +539,59 @@ public class OpcToS5DataCfgConverter {
     pinOpSet1.setStr( OBJ_NAME, objName );
     pinOpSet1.setStr( CMD_ID, cmdId );
 
+    IOptionSet unitOpts = aUnit.getRealizationOpts();
+
     // параметры реализации
     pinOpSet1.addAll( aUnit.getRealizationOpts() );
 
+    // проверка на сложную команду с заменой на сложный тег
+    if( unitOpts.hasKey( OP_CMD_JAVA_CLASS.id() )
+        && unitOpts.getStr( OP_CMD_JAVA_CLASS ).equals( COMMANDS_JAVA_CLASS_VALUE_COMMAND_BY_ONE_TAG_EXEC ) ) {
+
+      // поментяь класс , оставить один сложный тег, создать его, если надо, проверить правильность состава сложного
+      // тега
+      // добавить теги параметров, если не совпадает фидбак - выкинуть ошибку
+      // IOptionSetEdit replacedRealizationOpts = new OptionSet( unitOpts );
+      OP_CMD_JAVA_CLASS.setValue( pinOpSet1, avStr( COMMANDS_JAVA_CLASS_VALUE_COMMAND_BY_COMPLEX_TAG_EXEC ) );
+
+      try {
+        EAtomicType cmdArgType = null;
+        if( unitOpts.hasKey( OP_CMD_VALUE_PARAM_ID.id() ) ) {
+          String cmdArgTypeStr = unitOpts.getStr( OP_CMD_VALUE_PARAM_ID.id() );
+          if( cmdArgTypeStr.equals( Ods2DtoCmdInfoParser.CMD_ARG_INT_ID ) ) {
+            cmdArgType = EAtomicType.INTEGER;
+          }
+          else
+            if( cmdArgTypeStr.equals( Ods2DtoCmdInfoParser.CMD_ARG_FLT_ID ) ) {
+              cmdArgType = EAtomicType.FLOATING;
+            }
+        }
+        String complexNodeId = createIfNeedAndGetComplexNodeId( aUnit.getDataNodes(), cmdArgType );
+        OP_COMPLEX_TAG_ID.setValue( pinOpSet1, avStr( complexNodeId ) );
+
+        // специально для ДИМЫ:
+        complexTagsIdsBySkidsContetnt.put( new Skid( classId, objName ), complexNodeId );
+      }
+      catch( TsIllegalArgumentRtException e ) {
+        System.out.println( "Complex tag Exception" ); //$NON-NLS-1$
+        throw e;
+      }
+
+      try {
+        return AvTree.createSingleAvTree( String.format( CMD_DEF_FORMAT, pinId ), pinOpSet1, IStringMap.EMPTY );
+      }
+      catch( TsValidationFailedRtException e ) {
+        System.out.println( "Validation Exception" ); //$NON-NLS-1$
+        throw e;
+      }
+
+    }
+
+    // дерево тегов
     IStringMapEdit<IAvTree> cmdTreeNodes = new StringMap<>();
 
     AvTree tagsTree = AvTree.createArrayAvTree();
     cmdTreeNodes.put( COMMAND_TAGS_ARRAY, tagsTree );
-
-    // вместо пина - данные о теге
-    // идентификатор OPC-устройства (драйвера)
-    // pinOpSet1.setStr( TAG_DEVICE_ID, OPC_TAG_DEVICE );
 
     IList<NodeId> nodes = aUnit.getDataNodes();
 
@@ -513,6 +614,73 @@ public class OpcToS5DataCfgConverter {
       System.out.println( "Validation Exception" ); //$NON-NLS-1$
       throw e;
     }
+  }
+
+  /**
+   * Создаёт сложный тег, если надо, проверяет правильность состава сложного тега, добавляет теги параметров, если не
+   * совпадает фидбак - выкидывает ошибку.
+   *
+   * @param aDataNodes IList - список тегов, из которых состоит сложный тег (может отличаться тегами параметров),
+   *          сложный тег мапируется по тегу с идентификатором команд - должен быть первым в списке, тег с фидбаком
+   *          должен быть последним.
+   * @param aParamNodeType EAtomicType - тип передваемого в команде, использующей данный сложный тег, параметра, может
+   *          быть null
+   * @return String - идентификатор сложного тега
+   * @throws TsIllegalArgumentRtException - в случае несовпадения фидбаков при одинаковых командных тегов.
+   */
+  private static String createIfNeedAndGetComplexNodeId( IList<NodeId> aDataNodes, EAtomicType aParamNodeType ) {
+    // миниммум 2 тега - командный и фидбак
+    TsIllegalArgumentRtException.checkFalse( aDataNodes.size() > 1 );
+
+    // первый node - командный (по нему же - мапирование
+    NodeId cmdIdNode = aDataNodes.first();
+
+    // последний - фидбак
+    NodeId feedBackNode = aDataNodes.last();
+
+    // генерим идентификатор
+    String compexTagId = "synthetic_" + cmdIdNode.toParseableString();
+    compexTagId = compexTagId.replaceAll( ";", "_" ).replaceAll( "=", "_" );
+
+    // проверка наличия этого сложного тега
+    IStringMapEdit<NodeId> cTagContent = complexTagsContetnt.findByKey( compexTagId );
+    if( cTagContent == null ) {
+      cTagContent = new StringMap<>();
+      // командный
+      cTagContent.put( СT_WRITE_ID_TAG, cmdIdNode );
+      // фидбак
+      cTagContent.put( СT_READ_FEEDBACK_TAG, feedBackNode );
+
+      // между ними - если есть - тег параметров
+      if( aDataNodes.size() > 2 && aParamNodeType != null ) {
+        String paramTagId = String.format( СT_WRITE_VAL_TAG_FORMAT, aParamNodeType.id().toLowerCase() );
+        cTagContent.put( paramTagId, aDataNodes.get( 1 ) );
+      }
+
+      complexTagsContetnt.put( compexTagId, cTagContent );
+      return compexTagId;
+    }
+
+    // проверка содержания тега
+    // сначала фидбак
+    TsIllegalArgumentRtException.checkFalse( cTagContent.hasKey( СT_READ_FEEDBACK_TAG ) && cTagContent
+        .getByKey( СT_READ_FEEDBACK_TAG ).toParseableString().equals( feedBackNode.toParseableString() ) );
+
+    // далее проверяем и добавляем теги параметров
+    if( aDataNodes.size() > 2 && aParamNodeType != null ) {
+      String paramTagId = String.format( СT_WRITE_VAL_TAG_FORMAT, aParamNodeType.id().toLowerCase() );
+      if( cTagContent.hasKey( paramTagId ) ) {
+        // проверка
+        TsIllegalArgumentRtException.checkFalse(
+            cTagContent.getByKey( paramTagId ).toParseableString().equals( aDataNodes.get( 1 ).toParseableString() ) );
+      }
+      else {
+        // добавление
+        cTagContent.put( paramTagId, aDataNodes.get( 1 ) );
+      }
+    }
+
+    return compexTagId;
   }
 
   /**
