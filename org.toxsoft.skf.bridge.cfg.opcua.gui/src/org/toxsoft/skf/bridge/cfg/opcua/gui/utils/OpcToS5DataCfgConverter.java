@@ -268,7 +268,8 @@ public class OpcToS5DataCfgConverter {
    * @return IAvTree - конфигурация в стандартном виде.
    */
   private static IAvTree createRriAttrs( OpcToS5DataCfgDoc aDoc ) {
-    AvTree pinsMassivTree = AvTree.createArrayAvTree();
+
+    AvTree rriDefsTree = AvTree.createArrayAvTree();
 
     IList<OpcToS5DataCfgUnit> cfgUnits = aDoc.dataUnits();
 
@@ -276,11 +277,25 @@ public class OpcToS5DataCfgConverter {
       OpcToS5DataCfgUnit unit = cfgUnits.get( i );
 
       if( unit.getTypeOfCfgUnit() == ECfgUnitType.RRI ) {
-        pinsMassivTree.addElement( createRriAttrPin( unit ) );
+        rriDefsTree.addElement( createRriAttrPin( unit ) );
       }
     }
+    // создаем корневое дерево НСИ и вносим в него общие нстройки модуля
+    StringMap<IAvTree> rriDefNodes = new StringMap<>();
 
-    return pinsMassivTree;
+    rriDefNodes.put( "rriNodes", rriDefsTree );
+
+    IOptionSetEdit opSet = new OptionSet();
+    // TODO заполним описание настройки для модуля вцелом
+    opSet.setStr( "status.rri.tag.dev.id", "opc2s5.bridge.collection.id" ); // device где node статуса НСИ
+    opSet.setStr( "status.rri.read.tag.id", "ns=32769;i=4955" ); // сам node статуса НСИ
+    opSet.setInt( "status.rri.cmd.opc.id", 13 ); // аргумент aAddress в IComplexTag::setValue( int aAddress,
+                                                 // IAtomicValue aValue ) для смены статуса НСИ
+    opSet.setStr( "status.rri.write.tag.id", "ns=32769;i=4955" );
+
+    IAvTree retVal = AvTree.createSingleAvTree( DLM_CFG_NODE_ID_TEMPLATE, opSet, rriDefNodes );
+
+    return retVal;
   }
 
   /**
