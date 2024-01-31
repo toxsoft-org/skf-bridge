@@ -239,14 +239,6 @@ public class OpcToS5DataCfgConverter {
 
     StringMap<IAvTree> nodes = new StringMap<>();
 
-    // данные
-    IAvTree datasMassivTree = createDatas( aDoc );
-    nodes.put( DATA_DEFS, datasMassivTree );
-
-    // атрибуты НСИ
-    IAvTree rriAttrsArrayTree = createRriAttrs( aDoc );
-    nodes.put( RRI_DEFS, rriAttrsArrayTree );
-
     // перечисление возможных команд по классам
     IAvTree commandInfoesMassivTree = createCommandInfoes( aDoc );
     nodes.put( CMD_CLASS_DEFS, commandInfoesMassivTree );
@@ -254,6 +246,14 @@ public class OpcToS5DataCfgConverter {
     // команды
     IAvTree commandsMassivTree = createCommands( aDoc );
     nodes.put( CMD_DEFS, commandsMassivTree );
+
+    // данные
+    IAvTree datasMassivTree = createDatas( aDoc );
+    nodes.put( DATA_DEFS, datasMassivTree );
+
+    // атрибуты НСИ
+    IAvTree rriAttrsArrayTree = createRriAttrs( aDoc );
+    nodes.put( RRI_DEFS, rriAttrsArrayTree );
 
     // события
     IAvTree eventsMassivTree = createEvents( aDoc );
