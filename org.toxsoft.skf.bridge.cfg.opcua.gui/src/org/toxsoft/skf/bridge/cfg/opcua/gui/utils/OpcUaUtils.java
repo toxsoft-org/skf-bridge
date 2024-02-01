@@ -71,6 +71,9 @@ import org.toxsoft.uskat.core.gui.conn.*;
  */
 public class OpcUaUtils {
 
+  public static final String COMMANDS_JAVA_CLASS_VALUE_COMMAND_BY_COMPLEX_TAG_EXEC =
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.commands.ValCommandByComplexTagExec";
+
   public static final String COMMANDS_JAVA_CLASS_VALUE_COMMAND_BY_ONE_TAG_EXEC =
       "ru.toxsoft.l2.dlm.opc_bridge.submodules.commands.ValCommandByOneTagWithParamExec";
 
@@ -623,6 +626,10 @@ public class OpcUaUtils {
     IList<CmdGwid2UaNodes> retVal = new ElemArrayList<>( storage.readColl( sectId, CmdGwid2UaNodes.KEEPER ) );
     return retVal;
   }
+
+  public static final IDataDef OP_COMPLEX_TAG_ID = create( "complex.tag.id", STRING, //$NON-NLS-1$
+      TSID_NAME, "Синтетический тег", //
+      TSID_DESCRIPTION, "Идентификатор синтетического тега" ); //
 
   public static final IDataDef OP_CMD_JAVA_CLASS = create( "command.exec.java.class", STRING, //$NON-NLS-1$
       TSID_NAME, STR_N_JAVA_CLASS, //
