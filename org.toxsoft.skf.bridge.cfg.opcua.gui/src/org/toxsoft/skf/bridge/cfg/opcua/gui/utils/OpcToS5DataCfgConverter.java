@@ -172,6 +172,11 @@ public class OpcToS5DataCfgConverter {
   private static final String TAG_ID = "tag.id";
 
   /**
+   * Имя параметра - идентификатор тега для записи значения в OPC UA
+   */
+  private static final String COMPLEX_TAG_ID = "complex.tag.id";
+
+  /**
    * Имя параметра - идентификатор специального устройства с тегами
    */
   private static final String TAG_DEVICE_ID = "tag.dev.id";
@@ -383,11 +388,11 @@ public class OpcToS5DataCfgConverter {
   private static IAvTree createRriAttrPin( OpcToS5DataCfgUnit aUnit ) {
     String pinId = aUnit.id();
 
-    IOptionSetEdit pinOpSet1 = new OptionSet();
-    pinOpSet1.setStr( PIN_ID, pinId );
+    IOptionSetEdit rriAttrOpSet = new OptionSet();
+    rriAttrOpSet.setStr( PIN_ID, pinId );
 
     IOptionSet opts = aUnit.getRealizationOpts();
-    pinOpSet1.addAll( opts );
+    rriAttrOpSet.addAll( opts );
 
     IList<Gwid> gwids = aUnit.getDataGwids();
 
@@ -400,14 +405,14 @@ public class OpcToS5DataCfgConverter {
       String dataId = gwid.propId();
 
       // класс-объект-данное - остаётся как есть
-      pinOpSet1.setStr( i == 0 ? CLASS_ID : CLASS_ID + i, classId );
-      pinOpSet1.setStr( i == 0 ? OBJ_NAME : OBJ_NAME + i, objName );
-      pinOpSet1.setStr( i == 0 ? RRI_ATTR_ID : RRI_ATTR_ID + i, dataId );
+      rriAttrOpSet.setStr( i == 0 ? CLASS_ID : CLASS_ID + i, classId );
+      rriAttrOpSet.setStr( i == 0 ? OBJ_NAME : OBJ_NAME + i, objName );
+      rriAttrOpSet.setStr( i == 0 ? RRI_ATTR_ID : RRI_ATTR_ID + i, dataId );
     }
 
     // вместо пина - данные о теге
     // идентификатор OPC-устройства (драйвера)
-    pinOpSet1.setStr( TAG_DEVICE_ID, OPC_TAG_DEVICE );
+    rriAttrOpSet.setStr( TAG_DEVICE_ID, OPC_TAG_DEVICE );
 
     IList<NodeId> nodes = aUnit.getDataNodes();
 
@@ -415,14 +420,23 @@ public class OpcToS5DataCfgConverter {
       NodeId node = nodes.get( i );
 
       // сам идентфикатор тега
-      pinOpSet1.setStr( i == 0 ? TAG_ID : TAG_ID + i, node.toParseableString() );
-
+      rriAttrOpSet.setStr( i == 0 ? TAG_ID : TAG_ID + i, node.toParseableString() );
     }
+    // TODO комплексный тег и индексы команд OPC
+    // rriAttrOpSet.setStr( COMPLEX_TAG_ID, "tag.syntetic1" );
+    // // индексы команды OPC получаем через справочник
+    // ISkRefbookService skRefServ = (ISkRefbookService)skConn.coreApi().getService( ISkRefbookService.SERVICE_ID );
+    // IList<ISkRefbookItem> miRbItems = skRefServ.findRefbook( CMD_RB_ID ).listItems();
+    // for( ISkRefbookItem miRbItem : miRbItems ) {
+    // // Получаем значение кода команды
+    // int numberIntvl = intervalRbi.attrs().getValue( NUMBER_ATTR_ID ).asInt();
+    // int typeIntvl = intervalRbi.attrs().getValue( TYPE_ATTR_ID ).asInt();
+    // }
 
     try {
-      IAvTree pinTree1 =
-          AvTree.createSingleAvTree( String.format( RRI_ATTR_DEF_FORMAT, pinId ), pinOpSet1, IStringMap.EMPTY );
-      return pinTree1;
+      IAvTree retVal =
+          AvTree.createSingleAvTree( String.format( RRI_ATTR_DEF_FORMAT, pinId ), rriAttrOpSet, IStringMap.EMPTY );
+      return retVal;
     }
     catch( TsValidationFailedRtException ex ) {
       LoggerUtils.errorLogger().error( ex );
