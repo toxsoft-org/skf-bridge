@@ -22,6 +22,10 @@ import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.filegen.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
+import org.toxsoft.skf.refbooks.lib.*;
+import org.toxsoft.uskat.core.connection.*;
+
+import ru.toxsoft.l2.dlm.opc_bridge.*;
 
 /**
  * Converter of cfg to avtree and back
@@ -238,7 +242,7 @@ public class OpcToS5DataCfgConverter {
    * @param aDoc описание конфигурации
    * @return дерево для конфигурирования модуля DLM
    */
-  public static IAvTree convertToDlmCfgTree( OpcToS5DataCfgDoc aDoc ) {
+  public static IAvTree convertToDlmCfgTree( OpcToS5DataCfgDoc aDoc, ISkConnection aConn ) {
     complexTagsContetnt.clear();
     complexTagsIdsBySkidsContetnt.clear();
 
@@ -257,7 +261,7 @@ public class OpcToS5DataCfgConverter {
     nodes.put( DATA_DEFS, datasMassivTree );
 
     // атрибуты НСИ
-    IAvTree rriAttrsArrayTree = createRriAttrs( aDoc );
+    IAvTree rriAttrsArrayTree = createRriAttrs( aDoc, aConn );
     nodes.put( RRI_DEFS, rriAttrsArrayTree );
 
     // события
@@ -331,9 +335,10 @@ public class OpcToS5DataCfgConverter {
    * Создаёт конфигурацию всех НСИ атрибутов для подмодуля данных базового DLM.
    *
    * @param aDoc OpcToS5DataCfgDoc - набор единиц конфигурации
+   * @param aConnection - соединение с сервером
    * @return IAvTree - конфигурация в стандартном виде.
    */
-  private static IAvTree createRriAttrs( OpcToS5DataCfgDoc aDoc ) {
+  private static IAvTree createRriAttrs( OpcToS5DataCfgDoc aDoc, ISkConnection aConnection ) {
 
     AvTree rriDefsTree = AvTree.createArrayAvTree();
 
@@ -343,7 +348,7 @@ public class OpcToS5DataCfgConverter {
       OpcToS5DataCfgUnit unit = cfgUnits.get( i );
 
       if( unit.getTypeOfCfgUnit() == ECfgUnitType.RRI ) {
-        rriDefsTree.addElement( createRriAttrPin( unit ) );
+        rriDefsTree.addElement( createRriAttrPin( unit, aConnection ) );
       }
     }
     // создаем корневое дерево НСИ и вносим в него общие нстройки модуля
@@ -443,10 +448,11 @@ public class OpcToS5DataCfgConverter {
    * Создаёт конфигурацию одного НСИ атрибута (пина-тега) для подмодуля данных базового DLM.
    *
    * @param aUnit OpcToS5DataCfgUnit - описание данного (пина-тега). Предполагается что все параметры заполнены.
+   * @param aConnection - соединение с сервером
    * @return IAvTree - конфигурация в стандартном виде.
    */
 
-  private static IAvTree createRriAttrPin( OpcToS5DataCfgUnit aUnit ) {
+  private static IAvTree createRriAttrPin( OpcToS5DataCfgUnit aUnit, ISkConnection aConnection ) {
     String pinId = aUnit.id();
 
     IOptionSetEdit rriAttrOpSet = new OptionSet();
@@ -484,16 +490,52 @@ public class OpcToS5DataCfgConverter {
       rriAttrOpSet.setStr( i == 0 ? TAG_ID : TAG_ID + i, node.toParseableString() );
     }
     // TODO комплексный тег и индексы команд OPC
-    // rriAttrOpSet.setStr( COMPLEX_TAG_ID, "tag.syntetic1" );
-    // // индексы команды OPC получаем через справочник
-    // ISkRefbookService skRefServ = (ISkRefbookService)skConn.coreApi().getService( ISkRefbookService.SERVICE_ID );
-    // IList<ISkRefbookItem> miRbItems = skRefServ.findRefbook( CMD_RB_ID ).listItems();
-    // for( ISkRefbookItem miRbItem : miRbItems ) {
-    // // Получаем значение кода команды
-    // int numberIntvl = intervalRbi.attrs().getValue( NUMBER_ATTR_ID ).asInt();
-    // int typeIntvl = intervalRbi.attrs().getValue( TYPE_ATTR_ID ).asInt();
-    // }
-
+    Skid attrSkid = new Skid( gwids.first().classId(), gwids.first().strid() );
+    String complexTagId = complexTagsIdsBySkidsContetnt.findByKey( attrSkid );
+    rriAttrOpSet.setStr( COMPLEX_TAG_ID, complexTagId );
+    // индексы команды OPC получаем через справочник
+    ISkRefbookService skRefServ = (ISkRefbookService)aConnection.coreApi().getService( ISkRefbookService.SERVICE_ID );
+    // FIXME пока тупо вбиваем id справочника руками
+    String refbookName = "aiRRI";
+    IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( refbookName ).listItems();
+    String rriAttrId = gwids.first().propId();
+    // ищем все элементы справочника у которых есть такой rriAttrId
+    IList<ISkRefbookItem> myRbItems = getMyRbItems( rbItems, rriAttrId );
+    TsIllegalStateRtException.checkTrue( myRbItems.isEmpty(),
+        "Can't find command index'es for attrId: %s in refbook %s", rriAttrId, refbookName );
+    TsIllegalStateRtException.checkTrue( myRbItems.size() > 2, "Find more than 2 commands for attrId: %s in refbook %s",
+        rriAttrId, refbookName );
+    if( myRbItems.size() == 1 ) {
+      // команда с аргументом
+      int cmdIndex = myRbItems.first().attrs().getValue( "paramId" ).asInt();
+      // проверяем переходы 0->1 & 1->0
+      Boolean flag0_1 = myRbItems.first().attrs().getValue( "on" ).asBool();
+      Boolean flag1_0 = myRbItems.first().attrs().getValue( "off" ).asBool();
+      if( !flag0_1 && !flag1_0 ) {
+        rriAttrOpSet.setInt( IDlmsBaseConstants.OPC_CMD_INDEX, cmdIndex );
+      }
+      else {
+        if( flag0_1 ) {
+          rriAttrOpSet.setInt( IDlmsBaseConstants.OPC_CMD_INDEX_ON, cmdIndex );
+        }
+        else {
+          rriAttrOpSet.setInt( IDlmsBaseConstants.OPC_CMD_INDEX_OFF, cmdIndex );
+        }
+      }
+    }
+    else {
+      // команды для установки и сброса булевых флагов
+      for( ISkRefbookItem myRbItem : myRbItems ) {
+        int cmdIndex = myRbItems.first().attrs().getValue( "paramId" ).asInt();
+        Boolean flag0_1 = myRbItems.first().attrs().getValue( "on" ).asBool();
+        if( flag0_1 ) {
+          rriAttrOpSet.setInt( IDlmsBaseConstants.OPC_CMD_INDEX_ON, cmdIndex );
+        }
+        else {
+          rriAttrOpSet.setInt( IDlmsBaseConstants.OPC_CMD_INDEX_OFF, cmdIndex );
+        }
+      }
+    }
     try {
       IAvTree retVal =
           AvTree.createSingleAvTree( String.format( RRI_ATTR_DEF_FORMAT, pinId ), rriAttrOpSet, IStringMap.EMPTY );
@@ -504,6 +546,18 @@ public class OpcToS5DataCfgConverter {
       throw ex;
     }
 
+  }
+
+  private static IList<ISkRefbookItem> getMyRbItems( IList<ISkRefbookItem> aRbItems, String aRriAttrId ) {
+    IListEdit<ISkRefbookItem> retVal = new ElemArrayList<>();
+    for( ISkRefbookItem rbItem : aRbItems ) {
+      // Получаем значение aтрибута
+      String paramId = rbItem.attrs().getValue( "paramId" ).asString();
+      if( aRriAttrId.compareTo( paramId ) == 0 ) {
+        retVal.add( rbItem );
+      }
+    }
+    return retVal;
   }
 
   /**
