@@ -445,6 +445,7 @@ public class OpcToS5DataCfgConverter {
   }
 
   /**
+   * TODO журнал описания команд прошит! И причесать все имена полей журнала.<br>
    * Создаёт конфигурацию одного НСИ атрибута (пина-тега) для подмодуля данных базового DLM.
    *
    * @param aUnit OpcToS5DataCfgUnit - описание данного (пина-тега). Предполагается что все параметры заполнены.
@@ -507,7 +508,7 @@ public class OpcToS5DataCfgConverter {
         rriAttrId, refbookName );
     if( myRbItems.size() == 1 ) {
       // команда с аргументом
-      int cmdIndex = myRbItems.first().attrs().getValue( "paramId" ).asInt();
+      int cmdIndex = myRbItems.first().attrs().getValue( "cmdIndex" ).asInt();
       // проверяем переходы 0->1 & 1->0
       Boolean flag0_1 = myRbItems.first().attrs().getValue( "on" ).asBool();
       Boolean flag1_0 = myRbItems.first().attrs().getValue( "off" ).asBool();
@@ -526,8 +527,8 @@ public class OpcToS5DataCfgConverter {
     else {
       // команды для установки и сброса булевых флагов
       for( ISkRefbookItem myRbItem : myRbItems ) {
-        int cmdIndex = myRbItems.first().attrs().getValue( "paramId" ).asInt();
-        Boolean flag0_1 = myRbItems.first().attrs().getValue( "on" ).asBool();
+        int cmdIndex = myRbItem.attrs().getValue( "cmdIndex" ).asInt();
+        Boolean flag0_1 = myRbItem.attrs().getValue( "on" ).asBool();
         if( flag0_1 ) {
           rriAttrOpSet.setInt( IDlmsBaseConstants.OPC_CMD_INDEX_ON, cmdIndex );
         }

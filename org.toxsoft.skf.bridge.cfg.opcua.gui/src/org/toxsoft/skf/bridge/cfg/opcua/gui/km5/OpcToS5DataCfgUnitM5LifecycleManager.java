@@ -16,10 +16,12 @@ import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.utils.*;
+import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 import org.toxsoft.uskat.core.connection.*;
+import org.toxsoft.uskat.core.gui.conn.*;
 
 /**
  * Lifecycle Manager of {@link UaTreeNode} entities.
@@ -119,7 +121,10 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
       return;
     }
     try {
-      ISkConnection conn = aContext.get( ISkConnection.class );
+      ISkConnectionSupplier cs = aContext.get( ISkConnectionSupplier.class );
+      TsInternalErrorRtException.checkNull( cs );
+      ISkConnection conn = cs.defConn();
+      TsInternalErrorRtException.checkNull( conn );
       IAvTree avTree = OpcToS5DataCfgConverter.convertToDlmCfgTree( master(), conn );
       String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
       AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
