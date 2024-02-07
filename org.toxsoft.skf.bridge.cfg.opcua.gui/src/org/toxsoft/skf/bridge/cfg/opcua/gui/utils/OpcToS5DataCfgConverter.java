@@ -1,6 +1,7 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.utils;
 
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
+import static org.toxsoft.skf.bridge.cfg.opcua.gui.skide.IGreenWorldRefbooks.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.utils.OpcUaUtils.*;
 
 import java.util.*;
@@ -496,18 +497,16 @@ public class OpcToS5DataCfgConverter {
     rriAttrOpSet.setStr( COMPLEX_TAG_ID, complexTagId );
     // индексы команды OPC получаем через справочник
     ISkRefbookService skRefServ = (ISkRefbookService)aConnection.coreApi().getService( ISkRefbookService.SERVICE_ID );
-    // FIXME пока тупо вбиваем id справочника руками
-    String refbookName = "RRI_OPCUA";
-    IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( refbookName ).listItems();
+    IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( RBID_RRI_OPCUA ).listItems();
     String rriAttrId = gwids.first().propId();
     String rriClassId = gwids.first().classId();
 
     // ищем все элементы справочника у которых есть такой rriAttrId
     IList<ISkRefbookItem> myRbItems = getMyRbItems( rbItems, rriClassId, rriAttrId );
     TsIllegalStateRtException.checkTrue( myRbItems.isEmpty(),
-        "Can't find command index'es for attrId: %s in refbook %s", rriAttrId, refbookName );
+        "Can't find command index'es for attrId: %s in refbook %s", rriAttrId, RBID_RRI_OPCUA );
     TsIllegalStateRtException.checkTrue( myRbItems.size() > 2, "Find more than 2 commands for attrId: %s in refbook %s",
-        rriAttrId, refbookName );
+        rriAttrId, RBID_RRI_OPCUA );
     fillCmdIndex( rriAttrOpSet, myRbItems );
     try {
       IAvTree retVal =
@@ -530,10 +529,10 @@ public class OpcToS5DataCfgConverter {
   static void fillCmdIndex( IOptionSetEdit aAttrOpSet, IList<ISkRefbookItem> aRbItems ) {
     if( aRbItems.size() == 1 ) {
       // команда с аргументом
-      int cmdIndex = aRbItems.first().attrs().getValue( "index" ).asInt();
+      int cmdIndex = aRbItems.first().attrs().getValue( RBATRID_RRI_OPCUA___INDEX ).asInt();
       // проверяем переходы 0->1 & 1->0
-      Boolean flagUp = aRbItems.first().attrs().getValue( "On" ).asBool();
-      Boolean flagDn = aRbItems.first().attrs().getValue( "Off" ).asBool();
+      Boolean flagUp = aRbItems.first().attrs().getValue( RBATRID_RRI_OPCUA___ON ).asBool();
+      Boolean flagDn = aRbItems.first().attrs().getValue( RBATRID_RRI_OPCUA___OFF ).asBool();
       if( !flagUp && !flagDn ) {
         aAttrOpSet.setInt( IDlmsBaseConstants.OPC_CMD_INDEX, cmdIndex );
       }
@@ -549,8 +548,8 @@ public class OpcToS5DataCfgConverter {
     else {
       // команды для установки и сброса булевых флагов
       for( ISkRefbookItem myRbItem : aRbItems ) {
-        int cmdIndex = myRbItem.attrs().getValue( "index" ).asInt();
-        Boolean flagUp = myRbItem.attrs().getValue( "On" ).asBool();
+        int cmdIndex = myRbItem.attrs().getValue( RBATRID_RRI_OPCUA___INDEX ).asInt();
+        Boolean flagUp = myRbItem.attrs().getValue( RBATRID_RRI_OPCUA___ON ).asBool();
         if( flagUp ) {
           aAttrOpSet.setInt( IDlmsBaseConstants.OPC_CMD_INDEX_ON, cmdIndex );
         }
@@ -568,7 +567,7 @@ public class OpcToS5DataCfgConverter {
       // Получаем класс aтрибута
       String classId = rbItem.strid().split( "\\." )[0];
       // Получаем значение aтрибута
-      String paramId = rbItem.attrs().getValue( "rriID" ).asString();
+      String paramId = rbItem.attrs().getValue( RBATRID_RRI_OPCUA___RRIID ).asString();
       if( classId.compareTo( aClassId ) == 0 && aRriAttrId.compareTo( paramId ) == 0 ) {
         retVal.add( rbItem );
       }

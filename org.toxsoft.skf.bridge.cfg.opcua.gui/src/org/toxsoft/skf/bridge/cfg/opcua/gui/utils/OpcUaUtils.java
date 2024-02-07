@@ -5,6 +5,7 @@ import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.impl.DataDef.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
+import static org.toxsoft.skf.bridge.cfg.opcua.gui.skide.IGreenWorldRefbooks.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.utils.ISkResources.*;
 import static org.toxsoft.skide.plugin.exconn.ISkidePluginExconnSharedResources.*;
 
@@ -872,7 +873,7 @@ public class OpcUaUtils {
     OP_EVENT_SENDER_JAVA_CLASS.setValue( defaultParams, avStr( EVENTS_JAVA_CLASS_OPC_TAGS_EVENT_SENDER ) );
     OP_CONDITION_JAVA_CLASS.setValue( defaultParams, avStr( EVENTS_JAVA_CLASS_TAG_VALUE_CHANGED_CONDITION ) );
     OP_PARAM_FORMER_JAVA_CLASS.setValue( defaultParams, avStr( EVENTS_ONE_TAG_CHANGED_PARAM_FORMER ) );
-    OP_FORMER_EVENT_PARAM.setValue( defaultParams, avStr( "oldVal;newVal" ) );
+    OP_FORMER_EVENT_PARAM.setValue( defaultParams, avStr( "oldVal;newVal" ) ); //$NON-NLS-1$
 
     ICfgUnitRealizationType opcTagsEventSender2 =
         new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_TAG_VALUE_CHANGED, STR_TAG_VAL_CHANGED_EVENT,
@@ -962,6 +963,7 @@ public class OpcUaUtils {
     // return aSectNameTemplate;
   }
 
+  @SuppressWarnings( "nls" )
   private static String extractIP( IOpcUaServerConnCfg aSelConfig ) {
     // выделяем из хоста IP, opc.tcp://192.168.12.61:4840
     Pattern p = Pattern.compile( "[a-z:\\.\\/]+([0-9\\.]+)" );
@@ -1218,15 +1220,14 @@ public class OpcUaUtils {
   public static StringMap<IList<IDtoCmdInfo>> readClass2CmdInfoes( ISkConnection aConn ) {
     StringMap<IList<IDtoCmdInfo>> dtoCmdInfoesMap = new StringMap<>();
     // открываем справочник команд
-    String refbookName = "Cmd_OPCUA";
+    String refbookName = RBID_CMD_OPCUA;
     ISkRefbookService skRefServ = (ISkRefbookService)aConn.coreApi().getService( ISkRefbookService.SERVICE_ID );
     IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( refbookName ).listItems();
     for( ISkRefbookItem myRbItem : rbItems ) {
       String strid = myRbItem.strid();
       // выделяем id класса
-      String classId = strid.split( "\\." )[0];
-      // int cmdIndex = myRbItem.attrs().getValue( "index" ).asInt();// Код
-      String cmdId = myRbItem.attrs().getValue( "cmdID" ).asString();// ID
+      String classId = extractClassId( strid );
+      String cmdId = myRbItem.attrs().getValue( RBATRID_CMD_OPCUA___CMDID ).asString();// ID
       // название
       String name = myRbItem.nmName();
       // описание
@@ -1264,6 +1265,10 @@ public class OpcUaUtils {
     return dtoCmdInfoesMap;
   }
 
+  static String extractClassId( String strid ) {
+    return strid.split( "\\." )[0]; //$NON-NLS-1$
+  }
+
   /**
    * Читает из справочника метаинформацию о парах USkat cmdId -> код OPC команды
    *
@@ -1273,15 +1278,15 @@ public class OpcUaUtils {
   public static IStringMap<IStringMap<Integer>> readClass2CmdIdx( ISkConnection aConn ) {
     IStringMapEdit<IStringMap<Integer>> retVal = new StringMap<>();
     // открываем справочник команд
-    String refbookName = "Cmd_OPCUA";
+    String refbookName = RBID_CMD_OPCUA;
     ISkRefbookService skRefServ = (ISkRefbookService)aConn.coreApi().getService( ISkRefbookService.SERVICE_ID );
     IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( refbookName ).listItems();
     for( ISkRefbookItem myRbItem : rbItems ) {
       String strid = myRbItem.strid();
       // выделяем id класса
-      String classId = strid.split( "\\." )[0];
-      int cmdIndex = myRbItem.attrs().getValue( "index" ).asInt();// Код
-      String cmdId = myRbItem.attrs().getValue( "cmdID" ).asString();// ID
+      String classId = extractClassId( strid );
+      int cmdIndex = myRbItem.attrs().getValue( RBATRID_CMD_OPCUA___INDEX ).asInt();// Код
+      String cmdId = myRbItem.attrs().getValue( RBATRID_CMD_OPCUA___CMDID ).asString();// ID
       // считали, ищем список этого класса
       if( !retVal.hasKey( classId ) ) {
         IStringMapEdit<Integer> classCmds = new StringMap<>();
@@ -1302,19 +1307,19 @@ public class OpcUaUtils {
   public static StringMap<StringMap<IList<BitIdx2DtoRtData>>> readRtDataInfoes( ISkConnection aConn ) {
     StringMap<StringMap<IList<BitIdx2DtoRtData>>> retVal = new StringMap<>();
     // открываем справочник битовых масок
-    String refbookName = "BitMask";
+    String refbookName = RBID_BITMASK;
     ISkRefbookService skRefServ = (ISkRefbookService)aConn.coreApi().getService( ISkRefbookService.SERVICE_ID );
     IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( refbookName ).listItems();
     for( ISkRefbookItem rbItem : rbItems ) {
       String strid = rbItem.strid();
       // выделяем id класса
-      String classId = strid.split( "\\." )[0];
+      String classId = extractClassId( strid );
       if( !retVal.hasKey( classId ) ) {
         StringMap<IList<BitIdx2DtoRtData>> rtDataMap = new StringMap<>();
         retVal.put( classId, rtDataMap );
       }
       StringMap<IList<BitIdx2DtoRtData>> rtDataMap = retVal.getByKey( classId );
-      String bitArrayRtDataId = rbItem.attrs().getValue( "idW" ).asString();
+      String bitArrayRtDataId = rbItem.attrs().getValue( RBATRID_BITMASK___IDW ).asString();
       if( !rtDataMap.hasKey( bitArrayRtDataId ) ) {
         rtDataMap.put( bitArrayRtDataId, new ElemArrayList<>() );
       }
@@ -1337,19 +1342,19 @@ public class OpcUaUtils {
   public static StringMap<StringMap<IList<BitIdx2RriDtoAttr>>> readRriAttrInfoes( ISkConnection aConn ) {
     StringMap<StringMap<IList<BitIdx2RriDtoAttr>>> retVal = new StringMap<>();
     // открываем справочник битовых масок
-    String refbookName = "BitMask";
+    String refbookName = RBID_BITMASK;
     ISkRefbookService skRefServ = (ISkRefbookService)aConn.coreApi().getService( ISkRefbookService.SERVICE_ID );
     IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( refbookName ).listItems();
     for( ISkRefbookItem rbItem : rbItems ) {
       String strid = rbItem.strid();
       // выделяем id класса
-      String classId = strid.split( "\\." )[0];
+      String classId = extractClassId( strid );
       if( !retVal.hasKey( classId ) ) {
         StringMap<IList<BitIdx2RriDtoAttr>> rriAttrMap = new StringMap<>();
         retVal.put( classId, rriAttrMap );
       }
       StringMap<IList<BitIdx2RriDtoAttr>> rriAttrMap = retVal.getByKey( classId );
-      String bitArrayRtDataId = rbItem.attrs().getValue( "idW" ).asString();
+      String bitArrayRtDataId = rbItem.attrs().getValue( RBATRID_BITMASK___IDW ).asString();
       if( !rriAttrMap.hasKey( bitArrayRtDataId ) ) {
         rriAttrMap.put( bitArrayRtDataId, new ElemArrayList<>() );
       }
@@ -1372,14 +1377,14 @@ public class OpcUaUtils {
    */
   private static BitIdx2DtoRtData readBitIdx2DtoRtData( String aBitArrayRtDataId, ISkRefbookItem aRefbookItem ) {
     // id данного
-    String dataId = aRefbookItem.attrs().getValue( "identificator" ).asString(); // ID;
+    String dataId = aRefbookItem.attrs().getValue( RBATRID_BITMASK___IDENTIFICATOR ).asString(); // ID;
 
     // проверяем что это rtData
     if( !dataId.startsWith( RTD_PREFIX ) ) {
       return null;
     }
     // bit index
-    int bitIndex = aRefbookItem.attrs().getValue( "bitN" ).asInt();
+    int bitIndex = aRefbookItem.attrs().getValue( RBATRID_BITMASK___BITN ).asInt();
     // название
     String name = aRefbookItem.nmName();
     // описание
@@ -1410,14 +1415,14 @@ public class OpcUaUtils {
    */
   private static BitIdx2RriDtoAttr readBitIdx2RriDtoAttr( String aBitArrayRtDataId, ISkRefbookItem aRefbookItem ) {
     // id атрибута
-    String attrId = aRefbookItem.attrs().getValue( "identificator" ).asString(); // ID;
+    String attrId = aRefbookItem.attrs().getValue( RBATRID_BITMASK___IDENTIFICATOR ).asString(); // ID;
 
     // проверяем что это НСИ атрибут
     if( !attrId.startsWith( RRI_PREFIX ) ) {
       return null;
     }
     // bit index
-    int bitIndex = aRefbookItem.attrs().getValue( "bitN" ).asInt();
+    int bitIndex = aRefbookItem.attrs().getValue( RBATRID_BITMASK___BITN ).asInt();
     // название
     String name = aRefbookItem.nmName();
     // описание
