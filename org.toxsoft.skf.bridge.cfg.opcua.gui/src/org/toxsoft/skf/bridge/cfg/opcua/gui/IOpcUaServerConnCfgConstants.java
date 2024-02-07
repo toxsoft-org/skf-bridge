@@ -118,7 +118,7 @@ public interface IOpcUaServerConnCfgConstants {
   /**
    * id действия "загрузить описание команд "
    */
-  String LOAD_CMD_DESCR_ACT_ID = "load_cmd_descr_act_id"; //$NON-NLS-1$
+  // String LOAD_CMD_DESCR_ACT_ID = "load_cmd_descr_act_id"; //$NON-NLS-1$
 
   /**
    * id действия "загрузить описание битовых данных "
@@ -160,11 +160,11 @@ public interface IOpcUaServerConnCfgConstants {
   TsActionDef ACTDEF_SHOW_OPC_UA_NODE_2_GWID = TsActionDef.ofPush2( SHOW_OPC_UA_NODE_2_GWID_ACT_ID,
       STR_N_SHOW_OPC_UA_NODE_2_GWID, STR_D_SHOW_OPC_UA_NODE_2_GWID, ITsStdIconIds.ICONID_EDIT_FIND_REPLACE );
 
-  TsActionDef ACTDEF_LOAD_CMD_DESCR =
-      TsActionDef.ofPush2( LOAD_CMD_DESCR_ACT_ID, STR_N_LOAD_CMD_DESCR, STR_D_LOAD_CMD_DESCR, ICONID_IMPORT );
+  // TsActionDef ACTDEF_LOAD_CMD_DESCR =
+  // TsActionDef.ofPush2( LOAD_CMD_DESCR_ACT_ID, STR_N_LOAD_CMD_DESCR, STR_D_LOAD_CMD_DESCR, ICONID_IMPORT );
 
-  TsActionDef ACTDEF_LOAD_BIT_RTDATA_DESCR =
-      TsActionDef.ofPush2( ACT_ID_LOAD_BIT_RTDATA, STR_N_LOAD_BIT_RTDATA, STR_D_LOAD_BIT_RTDATA, ICONID_IMPORT_BLACK );
+  // TsActionDef ACTDEF_LOAD_BIT_RTDATA_DESCR =
+  // TsActionDef.ofPush2( ACT_ID_LOAD_BIT_RTDATA, STR_N_LOAD_BIT_RTDATA, STR_D_LOAD_BIT_RTDATA, ICONID_IMPORT_BLACK );
 
   TsActionDef ACTDEF_FILTER_READ_ONLY =
       TsActionDef.ofRadio2( FILTER_READ_ONLY_ACT_ID, STR_N_FILTER_READ_ONLY, STR_D_FILTER_READ_ONLY, ICONID_READ_ONLY );

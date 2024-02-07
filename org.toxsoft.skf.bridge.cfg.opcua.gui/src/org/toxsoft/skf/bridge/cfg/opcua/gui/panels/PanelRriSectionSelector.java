@@ -82,7 +82,7 @@ public class PanelRriSectionSelector
   public static final ISkRriSection selectRriSection( ISkRriSection aDfltSection, ITsGuiContext aContext ) {
     TsNullArgumentRtException.checkNull( aContext );
     IDialogPanelCreator<ISkRriSection, ITsGuiContext> creator = PanelRriSectionSelector::new;
-    TsDialogInfo dlgInfo = new TsDialogInfo( aContext, "Секция НСИ", "Выберите секция для хранения." );
+    TsDialogInfo dlgInfo = new TsDialogInfo( aContext, "Секция НСИ", "Выберите секцию для размещения атрибутов." );
     dlgInfo.setMinSizeShellRelative( 28, 26 );
     dlgInfo.setMaxSizeShellRelative( 28, 26 );
     TsDialog<ISkRriSection, ITsGuiContext> d = new TsDialog<>( dlgInfo, aDfltSection, aContext, creator );

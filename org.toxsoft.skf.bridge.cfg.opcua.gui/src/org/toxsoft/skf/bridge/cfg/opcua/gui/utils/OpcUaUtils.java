@@ -40,11 +40,13 @@ import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.impl.*;
 import org.toxsoft.core.tslib.av.metainfo.*;
 import org.toxsoft.core.tslib.av.opset.*;
+import org.toxsoft.core.tslib.av.opset.impl.*;
 import org.toxsoft.core.tslib.av.opset.impl.OptionSet;
 import org.toxsoft.core.tslib.bricks.apprefs.*;
 import org.toxsoft.core.tslib.bricks.apprefs.impl.*;
 import org.toxsoft.core.tslib.bricks.geometry.impl.*;
 import org.toxsoft.core.tslib.bricks.keeper.*;
+import org.toxsoft.core.tslib.bricks.strid.coll.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.coll.primtypes.*;
@@ -60,8 +62,11 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.filegen.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.bridge.cfg.opcua.service.impl.*;
+import org.toxsoft.skf.refbooks.lib.*;
+import org.toxsoft.uskat.core.api.sysdescr.dto.*;
 import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.gui.conn.*;
+import org.toxsoft.uskat.core.impl.dto.*;
 
 /**
  * Utils of OPC UA server connections.
@@ -180,6 +185,10 @@ public class OpcUaUtils {
       new HashMap<>();
   private static final Map<String, Map<String, CmdGwid2UaNodes>> sect2cmdGwid2NodeIdsMap                    =
       new HashMap<>();
+
+  static private final String RTD_PREFIX = "rtd"; //$NON-NLS-1$
+  private static final String EVT_PREFIX = "evt"; //$NON-NLS-1$
+  static private final String RRI_PREFIX = "rri"; //$NON-NLS-1$
 
   /**
    * Hided constructor.
@@ -1198,6 +1207,229 @@ public class OpcUaUtils {
     }
     // cmdGwid2NodeIdsMap.clear();
 
+  }
+
+  /**
+   * Читает из справочника метаинформацию о командах
+   *
+   * @param aConn соединение с сервером
+   * @return структура описывающая все команды всех классов OPC UA
+   */
+  public static StringMap<IList<IDtoCmdInfo>> readClass2CmdInfoes( ISkConnection aConn ) {
+    StringMap<IList<IDtoCmdInfo>> dtoCmdInfoesMap = new StringMap<>();
+    // открываем справочник команд
+    String refbookName = "Cmd_OPCUA";
+    ISkRefbookService skRefServ = (ISkRefbookService)aConn.coreApi().getService( ISkRefbookService.SERVICE_ID );
+    IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( refbookName ).listItems();
+    for( ISkRefbookItem myRbItem : rbItems ) {
+      String strid = myRbItem.strid();
+      // выделяем id класса
+      String classId = strid.split( "\\." )[0];
+      // int cmdIndex = myRbItem.attrs().getValue( "index" ).asInt();// Код
+      String cmdId = myRbItem.attrs().getValue( "cmdID" ).asString();// ID
+      // название
+      String name = myRbItem.nmName();
+      // описание
+      String descr = myRbItem.description();
+      // аргументов пока НЕТ
+      StridablesList<IDataDef> cmdArgs = new StridablesList<>();
+      // String argType = myRbItem.attrs().getValue( "ArgType" ).asString();
+      //
+      // EAtomicType type = getDataType( argType );
+      // StridablesList<IDataDef> cmdArgs;
+      // cmdArgs = switch( type ) {
+      // case INTEGER -> new StridablesList<>( Ods2DtoCmdInfoParser.CMD_ARG_INT );
+      // case BOOLEAN -> throw invalidArgTypeExcpt( cmdId, type );
+      // case FLOATING -> new StridablesList<>( Ods2DtoCmdInfoParser.CMD_ARG_FLT );
+      // case NONE -> new StridablesList<>();
+      // case STRING -> throw invalidArgTypeExcpt( cmdId, type );
+      // case TIMESTAMP -> throw invalidArgTypeExcpt( cmdId, type );
+      // case VALOBJ -> throw invalidArgTypeExcpt( cmdId, type );
+      // };
+
+      DtoCmdInfo dtoCmdInfo = DtoCmdInfo.create1( cmdId, //
+          cmdArgs, //
+          OptionSetUtils.createOpSet( //
+              IAvMetaConstants.TSID_NAME, name, //
+              IAvMetaConstants.TSID_DESCRIPTION, descr //
+          ) ); //
+      // считали, ищем список этого класса
+      if( !dtoCmdInfoesMap.hasKey( classId ) ) {
+        IListEdit<IDtoCmdInfo> classCmds = new ElemArrayList<>();
+        dtoCmdInfoesMap.put( classId, classCmds );
+      }
+      IListEdit<IDtoCmdInfo> classCmds = (IListEdit<IDtoCmdInfo>)dtoCmdInfoesMap.getByKey( classId );
+      classCmds.add( dtoCmdInfo );
+    }
+    return dtoCmdInfoesMap;
+  }
+
+  /**
+   * Читает из справочника метаинформацию о парах USkat cmdId -> код OPC команды
+   *
+   * @param aConn соединение с сервером
+   * @return структура описывающая все команды всех классов OPC UA
+   */
+  public static IStringMap<IStringMap<Integer>> readClass2CmdIdx( ISkConnection aConn ) {
+    IStringMapEdit<IStringMap<Integer>> retVal = new StringMap<>();
+    // открываем справочник команд
+    String refbookName = "Cmd_OPCUA";
+    ISkRefbookService skRefServ = (ISkRefbookService)aConn.coreApi().getService( ISkRefbookService.SERVICE_ID );
+    IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( refbookName ).listItems();
+    for( ISkRefbookItem myRbItem : rbItems ) {
+      String strid = myRbItem.strid();
+      // выделяем id класса
+      String classId = strid.split( "\\." )[0];
+      int cmdIndex = myRbItem.attrs().getValue( "index" ).asInt();// Код
+      String cmdId = myRbItem.attrs().getValue( "cmdID" ).asString();// ID
+      // считали, ищем список этого класса
+      if( !retVal.hasKey( classId ) ) {
+        IStringMapEdit<Integer> classCmds = new StringMap<>();
+        retVal.put( classId, classCmds );
+      }
+      IStringMapEdit<Integer> classCmds = (IStringMapEdit<Integer>)retVal.getByKey( classId );
+      classCmds.put( cmdId, Integer.valueOf( cmdIndex ) );
+    }
+    return retVal;
+  }
+
+  /**
+   * Считывает из справочника масочные rtData
+   *
+   * @param aConn - соединение с сервером
+   * @return карта класс->id битового массива -> список его rtData типа булевое
+   */
+  public static StringMap<StringMap<IList<BitIdx2DtoRtData>>> readRtDataInfoes( ISkConnection aConn ) {
+    StringMap<StringMap<IList<BitIdx2DtoRtData>>> retVal = new StringMap<>();
+    // открываем справочник битовых масок
+    String refbookName = "BitMask";
+    ISkRefbookService skRefServ = (ISkRefbookService)aConn.coreApi().getService( ISkRefbookService.SERVICE_ID );
+    IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( refbookName ).listItems();
+    for( ISkRefbookItem rbItem : rbItems ) {
+      String strid = rbItem.strid();
+      // выделяем id класса
+      String classId = strid.split( "\\." )[0];
+      if( !retVal.hasKey( classId ) ) {
+        StringMap<IList<BitIdx2DtoRtData>> rtDataMap = new StringMap<>();
+        retVal.put( classId, rtDataMap );
+      }
+      StringMap<IList<BitIdx2DtoRtData>> rtDataMap = retVal.getByKey( classId );
+      String bitArrayRtDataId = rbItem.attrs().getValue( "idW" ).asString();
+      if( !rtDataMap.hasKey( bitArrayRtDataId ) ) {
+        rtDataMap.put( bitArrayRtDataId, new ElemArrayList<>() );
+      }
+
+      BitIdx2DtoRtData dataInfo = readBitIdx2DtoRtData( bitArrayRtDataId, rbItem );
+      if( dataInfo != null ) {
+        IListEdit<BitIdx2DtoRtData> bitList = (IListEdit<BitIdx2DtoRtData>)rtDataMap.getByKey( bitArrayRtDataId );
+        bitList.add( dataInfo );
+      }
+    }
+    return retVal;
+  }
+
+  /**
+   * Считывает из справочника масочные НСИ атрибуты
+   *
+   * @param aConn - соединение с сервером
+   * @return карта класс->id битового массива -> список его rtData типа булевое
+   */
+  public static StringMap<StringMap<IList<BitIdx2RriDtoAttr>>> readRriAttrInfoes( ISkConnection aConn ) {
+    StringMap<StringMap<IList<BitIdx2RriDtoAttr>>> retVal = new StringMap<>();
+    // открываем справочник битовых масок
+    String refbookName = "BitMask";
+    ISkRefbookService skRefServ = (ISkRefbookService)aConn.coreApi().getService( ISkRefbookService.SERVICE_ID );
+    IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( refbookName ).listItems();
+    for( ISkRefbookItem rbItem : rbItems ) {
+      String strid = rbItem.strid();
+      // выделяем id класса
+      String classId = strid.split( "\\." )[0];
+      if( !retVal.hasKey( classId ) ) {
+        StringMap<IList<BitIdx2RriDtoAttr>> rriAttrMap = new StringMap<>();
+        retVal.put( classId, rriAttrMap );
+      }
+      StringMap<IList<BitIdx2RriDtoAttr>> rriAttrMap = retVal.getByKey( classId );
+      String bitArrayRtDataId = rbItem.attrs().getValue( "idW" ).asString();
+      if( !rriAttrMap.hasKey( bitArrayRtDataId ) ) {
+        rriAttrMap.put( bitArrayRtDataId, new ElemArrayList<>() );
+      }
+
+      BitIdx2RriDtoAttr attrInfo = readBitIdx2RriDtoAttr( bitArrayRtDataId, rbItem );
+      if( attrInfo != null ) {
+        IListEdit<BitIdx2RriDtoAttr> bitList = (IListEdit<BitIdx2RriDtoAttr>)rriAttrMap.getByKey( bitArrayRtDataId );
+        bitList.add( attrInfo );
+      }
+    }
+    return retVal;
+  }
+
+  /**
+   * Читает описание BitIdx2DtoRtData
+   *
+   * @param aBitArrayRtDataId - id переменной битового массива
+   * @param aRefbookItem - элемент справочника масок
+   * @return {@link BitIdx2DtoRtData} описание данного
+   */
+  private static BitIdx2DtoRtData readBitIdx2DtoRtData( String aBitArrayRtDataId, ISkRefbookItem aRefbookItem ) {
+    // id данного
+    String dataId = aRefbookItem.attrs().getValue( "identificator" ).asString(); // ID;
+
+    // проверяем что это rtData
+    if( !dataId.startsWith( RTD_PREFIX ) ) {
+      return null;
+    }
+    // bit index
+    int bitIndex = aRefbookItem.attrs().getValue( "bitN" ).asInt();
+    // название
+    String name = aRefbookItem.nmName();
+    // описание
+    String descr = aRefbookItem.description();
+    // sync
+    boolean sync = false; // по умолчанию асинхронное
+    int deltaT = sync ? 1000 : 1;
+
+    IDtoRtdataInfo dataInfo = DtoRtdataInfo.create1( dataId, new DataType( EAtomicType.BOOLEAN ), //
+        true, // isCurr
+        true, // isHist
+        sync, // isSync
+        deltaT, // deltaT
+        OptionSetUtils.createOpSet( //
+            TSID_NAME, name, //
+            TSID_DESCRIPTION, descr //
+        ) );
+
+    return new BitIdx2DtoRtData( aBitArrayRtDataId, bitIndex, dataInfo );
+  }
+
+  /**
+   * Читает описание BitIdx2RriDtoAttr
+   *
+   * @param aBitArrayRtDataId - id переменной битового массива
+   * @param aRefbookItem - элемент справочника масок
+   * @return {@link BitIdx2RriDtoAttr} описание атрибута
+   */
+  private static BitIdx2RriDtoAttr readBitIdx2RriDtoAttr( String aBitArrayRtDataId, ISkRefbookItem aRefbookItem ) {
+    // id атрибута
+    String attrId = aRefbookItem.attrs().getValue( "identificator" ).asString(); // ID;
+
+    // проверяем что это НСИ атрибут
+    if( !attrId.startsWith( RRI_PREFIX ) ) {
+      return null;
+    }
+    // bit index
+    int bitIndex = aRefbookItem.attrs().getValue( "bitN" ).asInt();
+    // название
+    String name = aRefbookItem.nmName();
+    // описание
+    String descr = aRefbookItem.description();
+
+    IDtoAttrInfo attrInfo = DtoAttrInfo.create1( attrId, new DataType( EAtomicType.BOOLEAN ), //
+        OptionSetUtils.createOpSet( //
+            TSID_NAME, name, //
+            TSID_DESCRIPTION, descr //
+        ) );
+
+    return new BitIdx2RriDtoAttr( aBitArrayRtDataId, bitIndex, attrInfo );
   }
 
 }

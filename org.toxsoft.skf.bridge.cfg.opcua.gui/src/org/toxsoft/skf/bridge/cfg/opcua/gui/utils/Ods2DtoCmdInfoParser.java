@@ -52,7 +52,7 @@ public class Ods2DtoCmdInfoParser {
    * <p>
    * Параметр имеет тип {@link EAtomicType#INTEGER}.
    */
-  static DataDef CMD_ARG_INT = DataDef.create( CMD_ARG_INT_ID, EAtomicType.INTEGER, TSID_NAME, STR_N_CMD_ARG_INT, //
+  public static DataDef CMD_ARG_INT = DataDef.create( CMD_ARG_INT_ID, EAtomicType.INTEGER, TSID_NAME, STR_N_CMD_ARG_INT, //
       TSID_DESCRIPTION, STR_D_CMD_ARG_INT, //
       TSID_IS_NULL_ALLOWED, AV_TRUE );
 
@@ -68,9 +68,10 @@ public class Ods2DtoCmdInfoParser {
    * <p>
    * Параметр имеет тип {@link EAtomicType#FLOATING}.
    */
-  static DataDef CMD_ARG_FLT = DataDef.create( CMD_ARG_FLT_ID, EAtomicType.FLOATING, TSID_NAME, STR_N_CMD_ARG_FLT, //
-      TSID_DESCRIPTION, STR_D_CMD_ARG_FLT, //
-      TSID_IS_NULL_ALLOWED, AV_TRUE );
+  public static DataDef CMD_ARG_FLT =
+      DataDef.create( CMD_ARG_FLT_ID, EAtomicType.FLOATING, TSID_NAME, STR_N_CMD_ARG_FLT, //
+          TSID_DESCRIPTION, STR_D_CMD_ARG_FLT, //
+          TSID_IS_NULL_ALLOWED, AV_TRUE );
 
   /**
    * Колонка описания кода команды
@@ -109,7 +110,7 @@ public class Ods2DtoCmdInfoParser {
    * @throws IOException исключение при работе с файлом
    */
   @SuppressWarnings( "javadoc" )
-  public static StringMap<IList<IDtoCmdInfo>> parse( File aOdsFile )
+  private static StringMap<IList<IDtoCmdInfo>> parse( File aOdsFile )
       throws IOException {
 
     // Читаем подряд пока не закончатся закладки с описанием команд
@@ -242,7 +243,7 @@ public class Ods2DtoCmdInfoParser {
    * @throws IOException исключение при работе с файлом
    */
   @SuppressWarnings( "javadoc" )
-  public static IStringMap<IStringMap<Integer>> parseOpcCmdCodes( File aOdsFile )
+  private static IStringMap<IStringMap<Integer>> parseOpcCmdCodes( File aOdsFile )
       throws IOException {
 
     // Читаем подряд пока не закончатся закладки с описанием команд

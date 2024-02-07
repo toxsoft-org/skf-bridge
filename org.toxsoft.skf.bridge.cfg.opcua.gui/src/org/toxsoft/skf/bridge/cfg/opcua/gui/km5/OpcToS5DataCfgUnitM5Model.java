@@ -11,15 +11,12 @@ import static org.toxsoft.skf.bridge.cfg.opcua.gui.km5.ISkResources.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.utils.OpcUaUtils.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
-import java.io.*;
-
 import org.eclipse.milo.opcua.sdk.client.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.tsgui.bricks.actions.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
-import org.toxsoft.core.tsgui.dialogs.*;
 import org.toxsoft.core.tsgui.graphics.icons.*;
 import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tsgui.m5.gui.mpc.impl.*;
@@ -501,41 +498,51 @@ public class OpcToS5DataCfgUnitM5Model
                     // вынести в отделный класс реализации
                     IdChain connIdChain =
                         (IdChain)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_S5_CONNECTION );
+                    ISkConnectionSupplier connSup = aContext.get( ISkConnectionSupplier.class );
 
-                    IStringMap<IStringMap<Integer>> cmdOpcCodes = new StringMap<>();
+                    // dima 06.02.24 работаем теперь через справочник
+                    ISkConnection currConn = connSup.getConn( connIdChain );
+                    IStringMap<IStringMap<Integer>> cmdOpcCodes = OpcUaUtils.readClass2CmdIdx( currConn );
+                    // IStringMap<IStringMap<Integer>> cmdOpcCodes = new StringMap<>();
+                    // String cmdFileDescr = getDescrFile(
+                    // org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.SELECT_FILE_4_IMPORT_CMD );
+                    // if( cmdFileDescr != null ) {
+                    // File file = new File( cmdFileDescr );
+                    // try {
+                    // cmdOpcCodes = Ods2DtoCmdInfoParser.parseOpcCmdCodes( file );
+                    // // TODO ensure cmdIndex refbook
+                    //
+                    // TsDialogUtils.info( getShell(), MSG_LOADED_CMDS_DESCR, cmdFileDescr );
+                    // }
+                    // catch( IOException ex ) {
+                    // LoggerUtils.errorLogger().error( ex );
+                    // }
+                    // }
 
-                    String cmdFileDescr = getDescrFile(
-                        org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.SELECT_FILE_4_IMPORT_CMD );
-                    if( cmdFileDescr != null ) {
-                      File file = new File( cmdFileDescr );
-                      try {
-                        cmdOpcCodes = Ods2DtoCmdInfoParser.parseOpcCmdCodes( file );
-                        TsDialogUtils.info( getShell(), MSG_LOADED_CMDS_DESCR, cmdFileDescr );
-                      }
-                      catch( IOException ex ) {
-                        LoggerUtils.errorLogger().error( ex );
-                      }
-                    }
-
-                    StringMap<StringMap<IList<BitIdx2DtoRtData>>> clsId2RtDataInfoes = new StringMap<>();
-                    StringMap<StringMap<IList<BitIdx2RriDtoAttr>>> clsId2RriAttrInfoes = new StringMap<>();
-                    StringMap<StringMap<IList<BitIdx2DtoEvent>>> clsId2EventInfoes = new StringMap<>();
-
-                    String bitRtdataFileDescr = getDescrFile(
-                        org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.SELECT_FILE_4_IMPORT_BIT_RTDATA );
-                    if( bitRtdataFileDescr != null ) {
-                      File file = new File( bitRtdataFileDescr );
-                      try {
-                        Ods2DtoRtDataInfoParser.parse( file );
-                        clsId2RtDataInfoes = Ods2DtoRtDataInfoParser.getRtdataInfoesMap();
-                        clsId2EventInfoes = Ods2DtoRtDataInfoParser.getEventInfoesMap();
-                        clsId2RriAttrInfoes = Ods2DtoRtDataInfoParser.getRriAttrInfoesMap();
-                        TsDialogUtils.info( getShell(), MSG_LOADED_BIT_MASKS_DESCR, bitRtdataFileDescr );
-                      }
-                      catch( IOException ex ) {
-                        LoggerUtils.errorLogger().error( ex );
-                      }
-                    }
+                    // dima 07.02.24 работаем теперь через справочники
+                    StringMap<StringMap<IList<BitIdx2DtoRtData>>> clsId2RtDataInfoes =
+                        OpcUaUtils.readRtDataInfoes( currConn );
+                    StringMap<StringMap<IList<BitIdx2RriDtoAttr>>> clsId2RriAttrInfoes =
+                        OpcUaUtils.readRriAttrInfoes( currConn );
+                    // StringMap<StringMap<IList<BitIdx2DtoRtData>>> clsId2RtDataInfoes = new StringMap<>();
+                    // StringMap<StringMap<IList<BitIdx2RriDtoAttr>>> clsId2RriAttrInfoes = new StringMap<>();
+                    // StringMap<StringMap<IList<BitIdx2DtoEvent>>> clsId2EventInfoes = new StringMap<>();
+                    //
+                    // String bitRtdataFileDescr = getDescrFile(
+                    // org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.SELECT_FILE_4_IMPORT_BIT_RTDATA );
+                    // if( bitRtdataFileDescr != null ) {
+                    // File file = new File( bitRtdataFileDescr );
+                    // try {
+                    // Ods2DtoRtDataInfoParser.parse( file );
+                    // clsId2RtDataInfoes = Ods2DtoRtDataInfoParser.getRtdataInfoesMap();
+                    // clsId2EventInfoes = Ods2DtoRtDataInfoParser.getEventInfoesMap();
+                    // clsId2RriAttrInfoes = Ods2DtoRtDataInfoParser.getRriAttrInfoesMap();
+                    // TsDialogUtils.info( getShell(), MSG_LOADED_BIT_MASKS_DESCR, bitRtdataFileDescr );
+                    // }
+                    // catch( IOException ex ) {
+                    // LoggerUtils.errorLogger().error( ex );
+                    // }
+                    // }
 
                     // Commands
                     // dima
@@ -604,8 +611,6 @@ public class OpcToS5DataCfgUnitM5Model
                     }
                     // Data
                     IList<UaNode2Gwid> nodes2Gwids = OpcUaUtils.loadNodes2RtdGwids( aContext, conConf );
-                    ISkConnectionSupplier connSup = aContext.get( ISkConnectionSupplier.class );
-                    ISkConnection currConn = connSup.getConn( connIdChain );
                     for( UaNode2Gwid dataNode : nodes2Gwids ) {
 
                       // битовый индекс для данного
@@ -703,8 +708,10 @@ public class OpcToS5DataCfgUnitM5Model
 
                     for( UaNode2Gwid evtNode : autoEvents ) {
                       Gwid gwid = evtNode.gwid();
-
-                      BitIdx2DtoEvent bitIndex = OpcUaUtils.getBitIndexForEvtGwid( gwid, clsId2EventInfoes );
+                      // dima 07.02.24 отключаем пока битовые события потому что они требуют переделки по уму, то есть
+                      // генерить не через битовую маску, а через через булевую перменную
+                      // BitIdx2DtoEvent bitIndex = OpcUaUtils.getBitIndexForEvtGwid( gwid, clsId2EventInfoes );
+                      BitIdx2DtoEvent bitIndex = null;
 
                       IList<Gwid> gwids = new ElemArrayList<>( gwid );
 

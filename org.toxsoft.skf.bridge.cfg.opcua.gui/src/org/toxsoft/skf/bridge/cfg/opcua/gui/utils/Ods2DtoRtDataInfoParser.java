@@ -105,7 +105,7 @@ public class Ods2DtoRtDataInfoParser {
    * @throws IOException исключение при работе с файлом
    */
   @SuppressWarnings( "javadoc" )
-  public static void parse( File aOdsFile )
+  private static void parse( File aOdsFile )
       throws IOException {
 
     // Читаем подряд пока не закончатся закладки с описанием данных
@@ -372,21 +372,21 @@ public class Ods2DtoRtDataInfoParser {
   /**
    * @return карта id класса - > его {@link BitIdx2DtoRtData}
    */
-  public static StringMap<StringMap<IList<BitIdx2DtoRtData>>> getRtdataInfoesMap() {
+  private static StringMap<StringMap<IList<BitIdx2DtoRtData>>> getRtdataInfoesMap() {
     return dtoRtdataInfoesMap;
   }
 
   /**
    * @return карта id класса - > его {@link BitIdx2DtoRtData}
    */
-  public static StringMap<StringMap<IList<BitIdx2RriDtoAttr>>> getRriAttrInfoesMap() {
+  private static StringMap<StringMap<IList<BitIdx2RriDtoAttr>>> getRriAttrInfoesMap() {
     return dtoRriAttrInfoesMap;
   }
 
   /**
    * @return карта id класса - > его BitIdx2DtoEvent
    */
-  public static StringMap<StringMap<IList<BitIdx2DtoEvent>>> getEventInfoesMap() {
+  private static StringMap<StringMap<IList<BitIdx2DtoEvent>>> getEventInfoesMap() {
     return dtoEventInfoesMap;
   }
 }

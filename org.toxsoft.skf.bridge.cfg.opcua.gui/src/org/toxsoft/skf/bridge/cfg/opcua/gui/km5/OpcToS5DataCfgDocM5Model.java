@@ -50,7 +50,7 @@ public class OpcToS5DataCfgDocM5Model
 
     @Override
     protected void doInit() {
-      setFlags( M5FF_READ_ONLY );
+      setFlags( M5FF_HIDDEN | M5FF_READ_ONLY );
     }
 
     protected IAtomicValue doGetFieldValue( OpcToS5DataCfgDoc aEntity ) {

@@ -497,46 +497,18 @@ public class OpcToS5DataCfgConverter {
     // индексы команды OPC получаем через справочник
     ISkRefbookService skRefServ = (ISkRefbookService)aConnection.coreApi().getService( ISkRefbookService.SERVICE_ID );
     // FIXME пока тупо вбиваем id справочника руками
-    String refbookName = "aiRRI";
+    String refbookName = "RRI_OPCUA";
     IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( refbookName ).listItems();
     String rriAttrId = gwids.first().propId();
+    String rriClassId = gwids.first().classId();
+
     // ищем все элементы справочника у которых есть такой rriAttrId
-    IList<ISkRefbookItem> myRbItems = getMyRbItems( rbItems, rriAttrId );
+    IList<ISkRefbookItem> myRbItems = getMyRbItems( rbItems, rriClassId, rriAttrId );
     TsIllegalStateRtException.checkTrue( myRbItems.isEmpty(),
         "Can't find command index'es for attrId: %s in refbook %s", rriAttrId, refbookName );
     TsIllegalStateRtException.checkTrue( myRbItems.size() > 2, "Find more than 2 commands for attrId: %s in refbook %s",
         rriAttrId, refbookName );
-    if( myRbItems.size() == 1 ) {
-      // команда с аргументом
-      int cmdIndex = myRbItems.first().attrs().getValue( "cmdIndex" ).asInt();
-      // проверяем переходы 0->1 & 1->0
-      Boolean flag0_1 = myRbItems.first().attrs().getValue( "on" ).asBool();
-      Boolean flag1_0 = myRbItems.first().attrs().getValue( "off" ).asBool();
-      if( !flag0_1 && !flag1_0 ) {
-        rriAttrOpSet.setInt( IDlmsBaseConstants.OPC_CMD_INDEX, cmdIndex );
-      }
-      else {
-        if( flag0_1 ) {
-          rriAttrOpSet.setInt( IDlmsBaseConstants.OPC_CMD_INDEX_ON, cmdIndex );
-        }
-        else {
-          rriAttrOpSet.setInt( IDlmsBaseConstants.OPC_CMD_INDEX_OFF, cmdIndex );
-        }
-      }
-    }
-    else {
-      // команды для установки и сброса булевых флагов
-      for( ISkRefbookItem myRbItem : myRbItems ) {
-        int cmdIndex = myRbItem.attrs().getValue( "cmdIndex" ).asInt();
-        Boolean flag0_1 = myRbItem.attrs().getValue( "on" ).asBool();
-        if( flag0_1 ) {
-          rriAttrOpSet.setInt( IDlmsBaseConstants.OPC_CMD_INDEX_ON, cmdIndex );
-        }
-        else {
-          rriAttrOpSet.setInt( IDlmsBaseConstants.OPC_CMD_INDEX_OFF, cmdIndex );
-        }
-      }
-    }
+    fillCmdIndex( rriAttrOpSet, myRbItems );
     try {
       IAvTree retVal =
           AvTree.createSingleAvTree( String.format( RRI_ATTR_DEF_FORMAT, pinId ), rriAttrOpSet, IStringMap.EMPTY );
@@ -549,12 +521,55 @@ public class OpcToS5DataCfgConverter {
 
   }
 
-  private static IList<ISkRefbookItem> getMyRbItems( IList<ISkRefbookItem> aRbItems, String aRriAttrId ) {
+  /**
+   * Заполняет дерево описания атрибута НСИ командами на его изменение
+   *
+   * @param aAttrOpSet - дерево описания
+   * @param aRbItems - элементы справочника описывающие команды изменения этого НСИ атрибуа
+   */
+  static void fillCmdIndex( IOptionSetEdit aAttrOpSet, IList<ISkRefbookItem> aRbItems ) {
+    if( aRbItems.size() == 1 ) {
+      // команда с аргументом
+      int cmdIndex = aRbItems.first().attrs().getValue( "index" ).asInt();
+      // проверяем переходы 0->1 & 1->0
+      Boolean flagUp = aRbItems.first().attrs().getValue( "On" ).asBool();
+      Boolean flagDn = aRbItems.first().attrs().getValue( "Off" ).asBool();
+      if( !flagUp && !flagDn ) {
+        aAttrOpSet.setInt( IDlmsBaseConstants.OPC_CMD_INDEX, cmdIndex );
+      }
+      else {
+        if( flagUp ) {
+          aAttrOpSet.setInt( IDlmsBaseConstants.OPC_CMD_INDEX_ON, cmdIndex );
+        }
+        else {
+          aAttrOpSet.setInt( IDlmsBaseConstants.OPC_CMD_INDEX_OFF, cmdIndex );
+        }
+      }
+    }
+    else {
+      // команды для установки и сброса булевых флагов
+      for( ISkRefbookItem myRbItem : aRbItems ) {
+        int cmdIndex = myRbItem.attrs().getValue( "index" ).asInt();
+        Boolean flagUp = myRbItem.attrs().getValue( "On" ).asBool();
+        if( flagUp ) {
+          aAttrOpSet.setInt( IDlmsBaseConstants.OPC_CMD_INDEX_ON, cmdIndex );
+        }
+        else {
+          aAttrOpSet.setInt( IDlmsBaseConstants.OPC_CMD_INDEX_OFF, cmdIndex );
+        }
+      }
+    }
+  }
+
+  private static IList<ISkRefbookItem> getMyRbItems( IList<ISkRefbookItem> aRbItems, String aClassId,
+      String aRriAttrId ) {
     IListEdit<ISkRefbookItem> retVal = new ElemArrayList<>();
     for( ISkRefbookItem rbItem : aRbItems ) {
+      // Получаем класс aтрибута
+      String classId = rbItem.strid().split( "\\." )[0];
       // Получаем значение aтрибута
-      String paramId = rbItem.attrs().getValue( "paramId" ).asString();
-      if( aRriAttrId.compareTo( paramId ) == 0 ) {
+      String paramId = rbItem.attrs().getValue( "rriID" ).asString();
+      if( classId.compareTo( aClassId ) == 0 && aRriAttrId.compareTo( paramId ) == 0 ) {
         retVal.add( rbItem );
       }
     }
