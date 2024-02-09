@@ -712,10 +712,10 @@ public class OpcToS5DataCfgConverter {
    * @throws TsIllegalArgumentRtException - в случае несовпадения фидбаков при одинаковых командных тегов.
    */
   private static String createIfNeedAndGetComplexNodeId( IList<NodeId> aDataNodes, EAtomicType aParamNodeType ) {
-    // миниммум 2 тега - командный и фидбак
+    // минимум 2 тега - командный и фидбак
     TsIllegalArgumentRtException.checkFalse( aDataNodes.size() > 1 );
 
-    // первый node - командный (по нему же - мапирование
+    // первый node - командный (по нему же - мапирование)
     NodeId cmdIdNode = aDataNodes.first();
 
     // последний - фидбак
@@ -733,12 +733,19 @@ public class OpcToS5DataCfgConverter {
       cTagContent.put( СT_WRITE_ID_TAG, cmdIdNode );
       // фидбак
       cTagContent.put( СT_READ_FEEDBACK_TAG, feedBackNode );
-
-      // между ними - если есть - тег параметров
-      if( aDataNodes.size() > 2 && aParamNodeType != null ) {
-        String paramTagId = String.format( СT_WRITE_VAL_TAG_FORMAT, aParamNodeType.id().toLowerCase() );
-        cTagContent.put( paramTagId, aDataNodes.get( 1 ) );
-      }
+      // dima 08.02.24 теперь всегда приходят теги с параметрами
+      // первым идет int
+      String argIntTagId = String.format( СT_WRITE_VAL_TAG_FORMAT, EAtomicType.INTEGER.id().toLowerCase() );
+      cTagContent.put( argIntTagId, aDataNodes.get( 1 ) );
+      // вторым float
+      String argFloatTagId = String.format( СT_WRITE_VAL_TAG_FORMAT, EAtomicType.FLOATING.id().toLowerCase() );
+      cTagContent.put( argFloatTagId, aDataNodes.get( 2 ) );
+      // old version
+      // // между ними - если есть - тег параметров
+      // if( aDataNodes.size() > 2 && aParamNodeType != null ) {
+      // String paramTagId = String.format( СT_WRITE_VAL_TAG_FORMAT, aParamNodeType.id().toLowerCase() );
+      // cTagContent.put( paramTagId, aDataNodes.get( 1 ) );
+      // }
 
       complexTagsContetnt.put( compexTagId, cTagContent );
       return compexTagId;

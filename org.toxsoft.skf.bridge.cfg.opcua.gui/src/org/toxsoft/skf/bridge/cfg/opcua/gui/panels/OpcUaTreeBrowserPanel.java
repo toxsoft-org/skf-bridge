@@ -8,6 +8,7 @@ import static org.toxsoft.core.tslib.gw.IGwHardConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IBridgeCfgOpcUaResources.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.*;
+import static org.toxsoft.skf.bridge.cfg.opcua.gui.skide.IGreenWorldRefbooks.*;
 import static org.toxsoft.uskat.core.gui.km5.sded.IKM5SdedConstants.*;
 
 import org.eclipse.milo.opcua.sdk.client.*;
@@ -59,6 +60,7 @@ import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
+import org.toxsoft.skf.refbooks.lib.*;
 import org.toxsoft.skf.rri.lib.*;
 import org.toxsoft.skf.rri.lib.impl.*;
 import org.toxsoft.uskat.core.*;
@@ -622,7 +624,7 @@ public class OpcUaTreeBrowserPanel
       // создаем описание класса из списка выбранных узлов
       // отредактируем список узлов чтобы в нем была вся необходимая информация для описания класса
       IList<UaTreeNode> nodes4DtoClass = nodes4DtoClass( selectedNode, selNodes, aTreeType );
-      // TODO здесь очищаем список от rri нодов и формируем отдельный для
+      // TODO здесь очищаем список от rri нодов и формируем отдельный для rtd
       IListEdit<UaNode2Gwid> node2ClassGwidList = new ElemArrayList<>();
       Pair<IDtoClassInfo, IDtoClassInfo> pairClassInfo = makeDtoClassInfo( nodes4DtoClass, node2ClassGwidList );
       IDtoClassInfo dtoClassInfo = pairClassInfo.left();
@@ -988,11 +990,11 @@ public class OpcUaTreeBrowserPanel
    * @param aVariableNode описание узла типа переменная
    * @param aNode2ClassGwidList список для хранения привязки node -> Class Gwid
    */
-  private static void readRriAttrInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode,
+  private void readRriAttrInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode,
       IListEdit<UaNode2Gwid> aNode2ClassGwidList ) {
     // id атрибута
     String attrId = aVariableNode.getBrowseName().getName();
-    if( isIgnore4RriAttr( attrId ) ) {
+    if( isIgnore4RriAttr( aDtoClass.id(), attrId ) ) {
       return;
     }
     // соблюдаем соглашения о наименовании
@@ -1034,11 +1036,11 @@ public class OpcUaTreeBrowserPanel
    * @param aNode2ClassGwidList список для хранения привязки node -> Class Gwid
    * @return {@link IDtoRtdataInfo} - созданное описание RtData или null
    */
-  private static IDtoRtdataInfo readDataInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode,
+  private IDtoRtdataInfo readDataInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode,
       IListEdit<UaNode2Gwid> aNode2ClassGwidList ) {
     // id данного
     String dataId = aVariableNode.getBrowseName().getName();
-    if( isIgnore4RtData( dataId ) ) {
+    if( isIgnore4RtData( aDtoClass.id(), dataId ) ) {
       return null;
     }
     // соблюдаем соглашения о наименовании
@@ -1080,15 +1082,15 @@ public class OpcUaTreeBrowserPanel
     return dataInfo;
   }
 
-  private static boolean isIgnore4RriAttr( String aAttrId ) {
+  private boolean isIgnore4RriAttr( String aClassId, String aAttrId ) {
     // используем только узлы для работы с НСИ
     if( aAttrId.startsWith( RRI_PREFIX ) ) {
       return false;
     }
-    return isIgnore4Event( aAttrId );
+    return !existInRriRefbook( aClassId, aAttrId );
   }
 
-  private static boolean isIgnore4RtData( String aDataId ) {
+  private boolean isIgnore4RtData( String aClassId, String aDataId ) {
     // игнорируем узлы для работы с НСИ
     if( aDataId.startsWith( RRI_PREFIX ) ) {
       return true;
@@ -1103,10 +1105,32 @@ public class OpcUaTreeBrowserPanel
     if( aDataId.indexOf( nodeCmdArgInt ) >= 0 ) {
       return true;
     }
+    // последним пунктом проверки на содержание в справочнике НСИ
+    return existInRriRefbook( aClassId, aDataId );
+  }
+
+  /**
+   * Проверяет наличие в справочнике RBID_RRI_OPCUA элемента с составным strid
+   *
+   * @param aClassId - префикс составного strid
+   * @param aDataId - суффикс составного strid
+   * @return true если элемент с таким strid есть в справочнике
+   */
+  private boolean existInRriRefbook( String aClassId, String aDataId ) {
+    // читаем справочник НСИ и фильтруем то что предназначено для этого
+    ISkRefbookService skRefServ = (ISkRefbookService)conn.coreApi().getService( ISkRefbookService.SERVICE_ID );
+    IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( RBID_RRI_OPCUA ).listItems();
+    // создаем id элемента справочника
+    String rbItemStrid = new StringBuffer( aClassId ).append( "." ).append( aDataId ).toString();
+    for( ISkRefbookItem rbItem : rbItems ) {
+      if( rbItem.strid().equals( rbItemStrid ) ) {
+        return true;
+      }
+    }
     return false;
   }
 
-  private static boolean isIgnore4Event( String aEvId ) {
+  private boolean isIgnore4Event( String aClassId, String aEvId ) {
     // игнорируем узлы для работы с командами
     if( aEvId.indexOf( nodeCmdIdBrowseName ) >= 0 ) {
       return true;
@@ -1120,7 +1144,9 @@ public class OpcUaTreeBrowserPanel
     if( aEvId.indexOf( nodeCmdFeedback ) >= 0 ) {
       return true;
     }
-    return false;
+
+    // последним пунктом проверки на содержание в справочнике НСИ
+    return existInRriRefbook( aClassId, aEvId );
   }
 
   /**
@@ -1130,16 +1156,16 @@ public class OpcUaTreeBrowserPanel
    * @param aVariableNode описание узла типа переменная
    * @param aNode2ClassGwidList список привязок Node -> Class Gwid
    */
-  private static void readEventInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode,
+  private void readEventInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode,
       IListEdit<UaNode2Gwid> aNode2ClassGwidList ) {
     // id события
     String evtId = aVariableNode.getBrowseName().getName();
+    if( isIgnore4Event( aDtoClass.id(), evtId ) ) {
+      return;
+    }
     // соблюдаем соглашения о наименовании
     if( !evtId.startsWith( EVT_PREFIX ) ) {
       evtId = EVT_PREFIX + evtId;
-    }
-    if( isIgnore4Event( evtId ) ) {
-      return;
     }
     // название
     String name = aVariableNode.getDisplayName().getText();
@@ -1535,26 +1561,11 @@ public class OpcUaTreeBrowserPanel
         }
       }
     }
-    switch( argType ) {
-      case INTEGER: {
-        retVal = new CmdGwid2UaNodes( gwid, nodeDescr, niCmdId, niCmdArgInt, null, niCmdFeedback );
-        break;
-      }
-      case FLOATING: {
-        retVal = new CmdGwid2UaNodes( gwid, nodeDescr, niCmdId, null, niCmdArgFlt, niCmdFeedback );
-        break;
-      }
-      case NONE: {
-        retVal = new CmdGwid2UaNodes( gwid, nodeDescr, niCmdId, null, null, niCmdFeedback );
-        break;
-      }
-      case BOOLEAN:
-      case STRING:
-      case TIMESTAMP:
-      case VALOBJ:
-      default:
-        throw new TsNotAllEnumsUsedRtException( argType.name() );
-    }
+    retVal = switch( argType ) {
+      case INTEGER, FLOATING, NONE -> new CmdGwid2UaNodes( gwid, nodeDescr, niCmdId, niCmdArgInt, niCmdArgFlt,
+          niCmdFeedback, argType );
+      case BOOLEAN, STRING, TIMESTAMP, VALOBJ -> throw new TsNotAllEnumsUsedRtException( argType.name() );
+    };
     return retVal;
   }
 

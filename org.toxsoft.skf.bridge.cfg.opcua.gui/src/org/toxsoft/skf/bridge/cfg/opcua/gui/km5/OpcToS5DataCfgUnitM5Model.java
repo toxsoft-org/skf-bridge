@@ -560,15 +560,34 @@ public class OpcToS5DataCfgUnitM5Model
                       String cmdArgParam = null;
                       IListEdit<NodeId> nodes = new ElemArrayList<>();
                       nodes.add( cmd2Nodes.getNodeCmdId() );
-                      if( cmd2Nodes.getNodeCmdArgInt() != null ) {
-                        nodes.add( cmd2Nodes.getNodeCmdArgInt() );
-                        cmdArgParam = Ods2DtoCmdInfoParser.CMD_ARG_INT_ID;
-                      }
-                      else
-                        if( cmd2Nodes.getNodeCmdArgFlt() != null ) {
-                          nodes.add( cmd2Nodes.getNodeCmdArgFlt() );
+                      // dima 08.02.24 сразу заносим все ноды аргументов
+                      nodes.add( cmd2Nodes.getNodeCmdArgInt() );
+                      nodes.add( cmd2Nodes.getNodeCmdArgFlt() );
+                      switch( cmd2Nodes.argType() ) {
+                        case INTEGER:
+                          cmdArgParam = Ods2DtoCmdInfoParser.CMD_ARG_INT_ID;
+                          break;
+                        case FLOATING:
                           cmdArgParam = Ods2DtoCmdInfoParser.CMD_ARG_FLT_ID;
-                        }
+                          break;
+                        case BOOLEAN:
+                        case NONE:
+                        case STRING:
+                        case TIMESTAMP:
+                        case VALOBJ:
+                        default:
+                          break;
+                      }
+                      // old version
+                      // if( cmd2Nodes.getNodeCmdArgInt() != null ) {
+                      // nodes.add( cmd2Nodes.getNodeCmdArgInt() );
+                      // cmdArgParam = Ods2DtoCmdInfoParser.CMD_ARG_INT_ID;
+                      // }
+                      // else
+                      // if( cmd2Nodes.getNodeCmdArgFlt() != null ) {
+                      // nodes.add( cmd2Nodes.getNodeCmdArgFlt() );
+                      // cmdArgParam = Ods2DtoCmdInfoParser.CMD_ARG_FLT_ID;
+                      // }
                       nodes.add( cmd2Nodes.getNodeCmdFeedback() );
 
                       String strid = String.format( CFG_CMD_UNIT_ID_FORMAT, Long.valueOf( System.currentTimeMillis() ),
