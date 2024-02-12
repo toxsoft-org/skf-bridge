@@ -79,7 +79,8 @@ public class CmdGwid2UaNodes {
           String niCmdFeedback = aSr.readQuotedString();
           aSr.ensureChar( CHAR_ITEM_SEPARATOR );
           EAtomicType argType = EAtomicType.KEEPER.read( aSr );
-          return new CmdGwid2UaNodes( gwid, nodeDescr, niCmdId, niCmdArgInt, niCmdArgFlt, niCmdFeedback, argType );
+          return new CmdGwid2UaNodes( gwid, nodeDescr, niCmdId, niCmdArgInt.isBlank() ? null : niCmdArgInt,
+              niCmdArgFlt.isBlank() ? null : niCmdArgFlt, niCmdFeedback, argType );
         }
       };
 

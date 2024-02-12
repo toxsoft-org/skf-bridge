@@ -945,15 +945,18 @@ public class OpcToS5DataCfgConverter {
     bridgeOps.setStr( USER_PARAM_NAME, USER_PARAM_VAL_TEMPLATE );
     bridgeOps.setStr( PASSWORD_PARAM_NAME, PASSWORD_PARAM_VAL_TEMPLATE );
 
-    AvTree synchGroup = createGroup( aDoc, aCfgNode -> (aCfgNode.isRead() && aCfgNode.isSynch()), SYNC_TAGS_ARRAY_ID,
-        SYNC_GROUP_NODE_ID );
+    AvTree synchGroup =
+        createGroup( aDoc, aCfgNode -> (aCfgNode.isRead() && aCfgNode.isSynch() && !aCfgNode.isNodeIdNull()),
+            SYNC_TAGS_ARRAY_ID, SYNC_GROUP_NODE_ID );
 
     synchGroup.fieldsEdit().setInt( SYNCH_PERIOD_PARAM_NAME, 500 );
 
-    IAvTree asynchGroup = createGroup( aDoc, aCfgNode -> (aCfgNode.isRead() && !aCfgNode.isSynch()),
-        ASYNC_TAGS_ARRAY_ID, ASYNC_GROUP_NODE_ID );
+    IAvTree asynchGroup =
+        createGroup( aDoc, aCfgNode -> (aCfgNode.isRead() && !aCfgNode.isSynch()) && !aCfgNode.isNodeIdNull(),
+            ASYNC_TAGS_ARRAY_ID, ASYNC_GROUP_NODE_ID );
 
-    IAvTree outputGroup = createGroup( aDoc, CfgOpcUaNode::isWrite, OUTPUT_TAGS_ARRAY_ID, OUTPUT_GROUP_NODE_ID );
+    IAvTree outputGroup = createGroup( aDoc, aCfgNode -> (aCfgNode.isWrite() && !aCfgNode.isNodeIdNull()),
+        OUTPUT_TAGS_ARRAY_ID, OUTPUT_GROUP_NODE_ID );
 
     // массив групп
     AvTree groupsMassivTree = AvTree.createArrayAvTree();

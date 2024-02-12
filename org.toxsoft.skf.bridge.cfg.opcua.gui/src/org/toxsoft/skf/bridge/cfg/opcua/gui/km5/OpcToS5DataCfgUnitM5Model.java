@@ -561,8 +561,10 @@ public class OpcToS5DataCfgUnitM5Model
                       IListEdit<NodeId> nodes = new ElemArrayList<>();
                       nodes.add( cmd2Nodes.getNodeCmdId() );
                       // dima 08.02.24 сразу заносим все ноды аргументов
-                      nodes.add( cmd2Nodes.getNodeCmdArgInt() );
-                      nodes.add( cmd2Nodes.getNodeCmdArgFlt() );
+                      nodes.add(
+                          cmd2Nodes.getNodeCmdArgInt() == null ? NodeId.NULL_VALUE : cmd2Nodes.getNodeCmdArgInt() );
+                      nodes.add(
+                          cmd2Nodes.getNodeCmdArgFlt() == null ? NodeId.NULL_VALUE : cmd2Nodes.getNodeCmdArgFlt() );
                       switch( cmd2Nodes.argType() ) {
                         case INTEGER:
                           cmdArgParam = Ods2DtoCmdInfoParser.CMD_ARG_INT_ID;
