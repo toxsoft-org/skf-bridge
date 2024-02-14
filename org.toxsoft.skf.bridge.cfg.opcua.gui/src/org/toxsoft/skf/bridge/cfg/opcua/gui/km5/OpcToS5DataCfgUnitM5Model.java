@@ -694,7 +694,17 @@ public class OpcToS5DataCfgUnitM5Model
                       IList<Gwid> gwids = new ElemArrayList<>( gwid );
 
                       IListEdit<NodeId> nodes = new ElemArrayList<>( rriAttrNode.getNodeId() );
-
+                      // добиваем тут командные ноды
+                      CmdGwid2UaNodes rriAttrCmdNode = getRriAttrCmdNode( gwid, conConf );
+                      // FIXME dima просто заплатка на текущий момент
+                      if( rriAttrCmdNode != null ) {
+                        nodes.add( rriAttrCmdNode.getNodeCmdId() );
+                        nodes.add( rriAttrCmdNode.getNodeCmdArgInt() == null ? NodeId.NULL_VALUE
+                            : rriAttrCmdNode.getNodeCmdArgInt() );
+                        nodes.add( rriAttrCmdNode.getNodeCmdArgFlt() == null ? NodeId.NULL_VALUE
+                            : rriAttrCmdNode.getNodeCmdArgFlt() );
+                        nodes.add( rriAttrCmdNode.getNodeCmdFeedback() );
+                      }
                       String strid = String.format( CFG_RRI_UNIT_ID_FORMAT, Long.valueOf( System.currentTimeMillis() ),
                           gwid.strid(), gwid.propId() );
 
@@ -780,6 +790,18 @@ public class OpcToS5DataCfgUnitM5Model
                   default:
                     throw new TsNotAllEnumsUsedRtException( aActionId );
                 }
+              }
+
+              private CmdGwid2UaNodes getRriAttrCmdNode( Gwid aGwid, OpcUaServerConnCfg aConConf ) {
+                CmdGwid2UaNodes retVal = null;
+                IList<CmdGwid2UaNodes> rriAttrCmdList = loadRriAttrGwid2Nodes( aContext, aConConf );
+                for( CmdGwid2UaNodes rriAttrCmd : rriAttrCmdList ) {
+                  if( rriAttrCmd.gwid().skid().equals( aGwid.skid() ) ) {
+                    retVal = rriAttrCmd;
+                    break;
+                  }
+                }
+                return retVal;
               }
 
               @Override

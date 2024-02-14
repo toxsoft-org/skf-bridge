@@ -1278,6 +1278,7 @@ public class OpcUaTreeBrowserPanel
     IListEdit<UaNode2Gwid> node2RriGwidList = new ElemArrayList<>();
     IListEdit<UaNode2EventGwid> node2EvtGwidList = new ElemArrayList<>();
     IListEdit<CmdGwid2UaNodes> cmdGwid2UaNodesList = new ElemArrayList<>();
+    IListEdit<CmdGwid2UaNodes> rriAttrCmdGwid2UaNodesList = new ElemArrayList<>();
     // в этом месте у нас 100% уже загружено дерево узлов OPC UA
     IList<UaTreeNode> treeNodes = ((OpcUaNodeM5LifecycleManager)componentModown.lifecycleManager()).getCached();
     // идем по списку объектов
@@ -1332,6 +1333,10 @@ public class OpcUaTreeBrowserPanel
           continue;
         }
         IDtoAttrInfo attrInfo = aParamInfo.attrInfo();
+        // привязываем атрибуты к командным тегам
+        CmdGwid2UaNodes rriAttrCmdGwid2UaNodes = findAttrCmdNodes( obj, attrInfo, parentNode, aTreeType );
+        rriAttrCmdGwid2UaNodesList.add( rriAttrCmdGwid2UaNodes );
+
         // находим свой UaNode
         // сначала ищем в данных битовой маски
         UaTreeNode uaNode = tryBitMaskRriAttr( aClassInfo, parentNode, attrInfo, aTreeType );
@@ -1398,6 +1403,7 @@ public class OpcUaTreeBrowserPanel
     OpcUaUtils.updateNodes2GwidsInStore( aContext, node2EvtGwidList,
         OpcUaUtils.SECTID_OPC_UA_NODES_2_EVT_GWIDS_TEMPLATE, UaNode2EventGwid.KEEPER, opcUaServerConnCfg );
     OpcUaUtils.updateCmdGwid2NodesInStore( aContext, cmdGwid2UaNodesList, opcUaServerConnCfg );
+    OpcUaUtils.updateRriAttrGwid2NodesInStore( aContext, rriAttrCmdGwid2UaNodesList, opcUaServerConnCfg );
   }
 
   private static IList<UaTreeNode> getVariableNodes( UaTreeNode aObjectNode, EOPCUATreeType aTreeType ) {
@@ -1570,6 +1576,58 @@ public class OpcUaTreeBrowserPanel
   }
 
   /**
+   * По описанию атрибута ищем подходящие командные UaNodes
+   *
+   * @param aObj описание объекта
+   * @param aAttrInfo описание атрибута
+   * @param aObjNode родительский узел описывающий объект
+   * @param aTreeType тип дерева
+   * @return контейнер с описание узлов или null
+   */
+  private static CmdGwid2UaNodes findAttrCmdNodes( IDtoObject aObj, IDtoAttrInfo aAttrInfo, UaTreeNode aObjNode,
+      EOPCUATreeType aTreeType ) {
+    CmdGwid2UaNodes retVal = null;
+    Gwid gwid = Gwid.createCmd( aObj.classId(), aObj.id(), aAttrInfo.id() );
+    String nodeDescr = aObjNode.getBrowseName();
+    String niCmdId = null;
+    String niCmdArgInt = null; // может и не быть
+    String niCmdArgFlt = null;
+    String niCmdFeedback = null;
+    // получаем тип
+    EAtomicType argType = aAttrInfo.dataType().atomicType();
+    // получаем список узлов в котором описаны переменные класса
+    IList<UaTreeNode> variableNodes = getVariableNodes( aObjNode, aTreeType );
+    // перебираем все узлы и заполняем нужные нам для описания связи
+    for( UaTreeNode varNode : variableNodes ) {
+      if( varNode.getNodeClass().equals( NodeClass.Variable ) ) {
+        String candidateBrowseName = varNode.getBrowseName();
+        if( nodeCmdIdBrowseName.compareTo( candidateBrowseName ) == 0 ) {
+          niCmdId = varNode.getNodeId();
+          continue;
+        }
+        if( nodeCmdArgInt.compareTo( candidateBrowseName ) == 0 ) {
+          niCmdArgInt = varNode.getNodeId();
+          continue;
+        }
+        if( nodeCmdArgFlt.compareTo( candidateBrowseName ) == 0 ) {
+          niCmdArgFlt = varNode.getNodeId();
+          continue;
+        }
+        if( nodeCmdFeedback.compareTo( candidateBrowseName ) == 0 ) {
+          niCmdFeedback = varNode.getNodeId();
+          continue;
+        }
+      }
+    }
+    retVal = switch( argType ) {
+      case INTEGER, FLOATING, NONE -> new CmdGwid2UaNodes( gwid, nodeDescr, niCmdId, niCmdArgInt, niCmdArgFlt,
+          niCmdFeedback, argType );
+      case BOOLEAN, STRING, TIMESTAMP, VALOBJ -> throw new TsNotAllEnumsUsedRtException( argType.name() );
+    };
+    return retVal;
+  }
+
+  /**
    * По описанию параметра ищем подходящий UaNode
    *
    * @param aPropInfo описание свойства класса
@@ -1605,6 +1663,15 @@ public class OpcUaTreeBrowserPanel
     UaTreeNode retVal = null;
     NodeId classNodeId = OpcUaUtils.classGwid2uaNode( aContext, aClassGwid, opcUaServerConnCfg );
     TsIllegalStateRtException.checkNull( classNodeId, "Can't find nodeId for Gwid: %s", aClassGwid.asString() ); //$NON-NLS-1$
+    // отрабатываем вариант когда 1 класс - 1 объект, в таком случае ищем полное совпадение nodeId
+    for( UaTreeNode varNode : aVarNodes ) {
+      NodeId nodeId = NodeId.parse( varNode.getNodeId() );
+      if( nodeId.equals( classNodeId ) ) {
+        return varNode;
+      }
+    }
+    // здесь отрабатываем вариант когда класс отдельно, объекты отдельно. В этом варианте опираемся на правило равенства
+    // namespace у узлов описания класса и объекта
     int classNamespace = classNodeId.getNamespaceIndex().intValue();
     for( UaTreeNode varNode : aVarNodes ) {
       NodeId nodeId = NodeId.parse( varNode.getNodeId() );

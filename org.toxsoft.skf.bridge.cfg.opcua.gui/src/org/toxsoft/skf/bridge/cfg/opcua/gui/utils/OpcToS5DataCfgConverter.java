@@ -299,6 +299,11 @@ public class OpcToS5DataCfgConverter {
       IStringMapEdit<NodeId> tags = complexTagsContetnt.getByKey( tagId );
 
       for( String tagKey : tags.keys() ) {
+        // dima 12.02.24 пустые теги игнорируем
+        NodeId nodeId = tags.getByKey( tagKey );
+        if( nodeId.isNull() ) {
+          continue;
+        }
         pinOpSet1.setStr( tagKey, tags.getByKey( tagKey ).toParseableString() );
       }
 
@@ -363,7 +368,7 @@ public class OpcToS5DataCfgConverter {
     opSet.setStr( "status.rri.read.tag.id", "ns=32769;i=4955" ); // сам node статуса НСИ
     opSet.setInt( "status.rri.cmd.opc.id", 13 ); // аргумент aAddress в IComplexTag::setValue( int aAddress,
                                                  // IAtomicValue aValue ) для смены статуса НСИ
-    opSet.setStr( "status.rri.write.tag.id", "ns=32769;i=4955" );
+    opSet.setStr( "status.rri.write.tag.id", "ns=2;i=1832" );
 
     IAvTree retVal = AvTree.createSingleAvTree( DLM_CFG_NODE_ID_TEMPLATE, opSet, rriDefNodes );
 
@@ -491,8 +496,14 @@ public class OpcToS5DataCfgConverter {
       // сам идентфикатор тега
       rriAttrOpSet.setStr( i == 0 ? TAG_ID : TAG_ID + i, node.toParseableString() );
     }
-    // TODO комплексный тег и индексы команд OPC
-    Skid attrSkid = new Skid( gwids.first().classId(), gwids.first().strid() );
+    // комплексный тег и индексы команд OPC
+    Skid attrSkid = gwids.first().skid();
+    if( !complexTagsIdsBySkidsContetnt.hasKey( attrSkid ) ) {
+      // создаем комплексный тег, его узлы описаны после 0 элемента
+      IList<NodeId> cmdNodes = aUnit.getDataNodes().fetch( 1, aUnit.getDataNodes().size() - 1 );
+      String complexNodeId = createIfNeedAndGetComplexNodeId( cmdNodes, null );
+      complexTagsIdsBySkidsContetnt.put( attrSkid, complexNodeId );
+    }
     String complexTagId = complexTagsIdsBySkidsContetnt.findByKey( attrSkid );
     rriAttrOpSet.setStr( COMPLEX_TAG_ID, complexTagId );
     // индексы команды OPC получаем через справочник

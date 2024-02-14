@@ -166,7 +166,11 @@ public class OpcUaUtils {
   /**
    * template for id secton for store links CmdGwid->UaNodes
    */
-  private static final String SECTID_CMD_GWIDS_2_OPC_UA_NODES_TEMPLATE = "cmd.gwid2opc.ua.nodes"; //$NON-NLS-1$
+  private static final String SECTID_CMD_GWIDS_2_OPC_UA_NODES_TEMPLATE      = "cmd.gwid2opc.ua.nodes";      //$NON-NLS-1$
+  /**
+   * template for id secton for store links RriAttrCmdGwid->UaNodes
+   */
+  private static final String SECTID_RRI_ATTR_GWIDS_2_OPC_UA_NODES_TEMPLATE = "rri.attr.gwid2opc.ua.nodes"; //$NON-NLS-1$
 
   private static final String                                    CLIENT_APP_NAME                            =
       "eclipse milo opc-ua client";
@@ -613,6 +617,31 @@ public class OpcUaUtils {
     storage.writeColl( sectId, newList, CmdGwid2UaNodes.KEEPER );
   }
 
+  /**
+   * Add in inner storage list of {@link CmdGwid2UaNodes} links CmdGwid->UaNodes
+   *
+   * @param aContext app context
+   * @param aRriAttrGwid2UaNodes list of links RriAttrGwid->UaNodes
+   * @param aOpcUaServerConnCfg OPC UA server connection params
+   */
+  public static void updateRriAttrGwid2NodesInStore( ITsGuiContext aContext,
+      IList<CmdGwid2UaNodes> aRriAttrGwid2UaNodes, IOpcUaServerConnCfg aOpcUaServerConnCfg ) {
+    ITsWorkroom workroom = aContext.eclipseContext().get( ITsWorkroom.class );
+    TsInternalErrorRtException.checkNull( workroom );
+    IList<CmdGwid2UaNodes> oldList = loadRriAttrGwid2Nodes( aContext, aOpcUaServerConnCfg );
+    // добавляем в список на запись только те элементы которых нет в новом списке
+    IListEdit<CmdGwid2UaNodes> newList = new ElemArrayList<>();
+    for( CmdGwid2UaNodes oldItem : oldList ) {
+      if( !containsGwidIn( aRriAttrGwid2UaNodes, oldItem ) ) {
+        newList.add( oldItem );
+      }
+    }
+    newList.addAll( aRriAttrGwid2UaNodes );
+    IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
+    String sectId = getTreeSectionNameByConfig( SECTID_RRI_ATTR_GWIDS_2_OPC_UA_NODES_TEMPLATE, aOpcUaServerConnCfg );
+    storage.writeColl( sectId, newList, CmdGwid2UaNodes.KEEPER );
+  }
+
   private static boolean containsGwidIn( IList<CmdGwid2UaNodes> aCmdGwid2UaNodes, CmdGwid2UaNodes aOldItem ) {
     for( CmdGwid2UaNodes item : aCmdGwid2UaNodes ) {
       if( item.gwid().equals( aOldItem.gwid() ) ) {
@@ -633,6 +662,21 @@ public class OpcUaUtils {
     TsInternalErrorRtException.checkNull( workroom );
     IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
     String sectId = getTreeSectionNameByConfig( SECTID_CMD_GWIDS_2_OPC_UA_NODES_TEMPLATE, aOpcUaServerConnCfg );
+    IList<CmdGwid2UaNodes> retVal = new ElemArrayList<>( storage.readColl( sectId, CmdGwid2UaNodes.KEEPER ) );
+    return retVal;
+  }
+
+  /**
+   * @param aContext app context
+   * @param aOpcUaServerConnCfg OPC UA server connection config
+   * @return list of links {@link CmdGwid2UaNodes } CmdGwid->UaNodes
+   */
+  public static IList<CmdGwid2UaNodes> loadRriAttrGwid2Nodes( ITsGuiContext aContext,
+      IOpcUaServerConnCfg aOpcUaServerConnCfg ) {
+    ITsWorkroom workroom = aContext.eclipseContext().get( ITsWorkroom.class );
+    TsInternalErrorRtException.checkNull( workroom );
+    IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
+    String sectId = getTreeSectionNameByConfig( SECTID_RRI_ATTR_GWIDS_2_OPC_UA_NODES_TEMPLATE, aOpcUaServerConnCfg );
     IList<CmdGwid2UaNodes> retVal = new ElemArrayList<>( storage.readColl( sectId, CmdGwid2UaNodes.KEEPER ) );
     return retVal;
   }
