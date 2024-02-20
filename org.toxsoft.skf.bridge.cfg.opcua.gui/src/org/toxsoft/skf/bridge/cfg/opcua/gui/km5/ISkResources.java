@@ -5,7 +5,7 @@ package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
  *
  * @author dima
  */
-interface ISkResources {
+public interface ISkResources {
 
   /**
    * {@link UaVariableNodeM5Model}
@@ -26,8 +26,7 @@ interface ISkResources {
   /**
    * {@link UaVariableNodeM5LifecycleManager}
    */
-  String STR_WRITE_NODE_CONFIRM =
-      Messages.STR_WRITE_NODE_CONFIRM;
+  String STR_WRITE_NODE_CONFIRM = Messages.STR_WRITE_NODE_CONFIRM;
 
   /**
    * {@link CfgOpcUaNodeM5Model}
@@ -50,8 +49,7 @@ interface ISkResources {
   String STR_D_NODE_SYNC                = Messages.STR_D_NODE_SYNC;
   String STR_SELECT_FILE_SAVE_DEVCFG    = Messages.STR_SELECT_FILE_SAVE_DEVCFG;
   String MSG_CONFIG_FILE_DEVCFG_CREATED = Messages.MSG_CONFIG_FILE_DEVCFG_CREATED;
-  String MSG_SELECT_OPC_UA_SERVER       =
-      Messages.MSG_SELECT_OPC_UA_SERVER;
+  String MSG_SELECT_OPC_UA_SERVER       = Messages.MSG_SELECT_OPC_UA_SERVER;
 
   /**
    * {@link GwidsForCfgM5Model}
@@ -91,8 +89,7 @@ interface ISkResources {
   String STR_N_SELECT_OPC_UA_SERVER = Messages.STR_N_SELECT_OPC_UA_SERVER;
   String STR_D_SELECT_OPC_UA_SERVER = Messages.STR_D_SELECT_OPC_UA_SERVER;
   String STR_N_VALIDATE_CONFIG      = Messages.STR_N_VALIDATE_CONFIG;
-  String STR_D_VALIDATE_CONFIG      =
-      Messages.STR_D_VALIDATE_CONFIG;
+  String STR_D_VALIDATE_CONFIG      = Messages.STR_D_VALIDATE_CONFIG;
 
   String STR_N_AUTO_LINK            = Messages.STR_N_AUTO_LINK;
   String STR_D_AUTO_LINK            = Messages.STR_D_AUTO_LINK;

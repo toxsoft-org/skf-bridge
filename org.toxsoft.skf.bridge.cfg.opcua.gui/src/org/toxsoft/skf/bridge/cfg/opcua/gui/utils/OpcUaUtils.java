@@ -1008,7 +1008,7 @@ public class OpcUaUtils {
   }
 
   @SuppressWarnings( "nls" )
-  private static String extractIP( IOpcUaServerConnCfg aSelConfig ) {
+  public static String extractIP( IOpcUaServerConnCfg aSelConfig ) {
     // выделяем из хоста IP, opc.tcp://192.168.12.61:4840
     Pattern p = Pattern.compile( "[a-z:\\.\\/]+([0-9\\.]+)" );
     String host = aSelConfig.host();

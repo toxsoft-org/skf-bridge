@@ -143,7 +143,14 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
   /**
    * @param aResult config unit
    */
-  public void addCfgUnit( OpcToS5DataCfgUnit aResult ) {
-    master().addDataUnit( aResult );
+  public void addCfgUnit( OpcToS5DataCfgUnit aCfgUnit ) {
+    master().addDataUnit( aCfgUnit );
+  }
+
+  /**
+   * @param aResult config unit
+   */
+  public void addCfgUnits( IList<OpcToS5DataCfgUnit> aCfgUnits ) {
+    master().addDataUnits( aCfgUnits );
   }
 }

@@ -161,6 +161,22 @@ public class OpcToS5DataCfgUnit
   }
 
   /**
+   * Constructor by id and name
+   *
+   * @param aId String - id
+   * @param aName String - name
+   * @param aGwids IList - список данных сервера S5, используемых в этой единице конфигурации
+   * @param aNodes IList - список узлов opc ua, используемых в этой единице конфигурации
+   */
+  public OpcToS5DataCfgUnit( String aId, String aName, IList<Gwid> aGwids, IList<NodeId> aNodes ) {
+    super( aId, aName, aName );
+    dataGwids = aGwids;
+    dataNodes = aNodes;
+    // realizationOpts.setStr( "param.str", "string" );
+    // realizationOpts.setInt( "param.int", 5 );
+  }
+
+  /**
    * Тип конфигурационной единицы
    */
   private ECfgUnitType typeOfCfgUnit = ECfgUnitType.DATA;

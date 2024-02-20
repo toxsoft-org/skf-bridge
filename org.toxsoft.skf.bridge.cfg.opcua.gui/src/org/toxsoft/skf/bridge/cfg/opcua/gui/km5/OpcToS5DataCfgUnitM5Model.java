@@ -8,7 +8,6 @@ import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IBridgeCfgOpcUaResources.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.km5.ISkResources.*;
-import static org.toxsoft.skf.bridge.cfg.opcua.gui.utils.OpcUaUtils.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
 import org.eclipse.milo.opcua.sdk.client.*;
@@ -31,12 +30,8 @@ import org.toxsoft.core.tsgui.valed.controls.av.*;
 import org.toxsoft.core.tsgui.valed.controls.basic.*;
 import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.opset.*;
-import org.toxsoft.core.tslib.av.opset.impl.*;
 import org.toxsoft.core.tslib.bricks.strid.more.*;
 import org.toxsoft.core.tslib.coll.*;
-import org.toxsoft.core.tslib.coll.impl.*;
-import org.toxsoft.core.tslib.coll.primtypes.*;
-import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
@@ -44,9 +39,6 @@ import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 import org.toxsoft.skide.plugin.exconn.service.*;
-import org.toxsoft.uskat.core.*;
-import org.toxsoft.uskat.core.api.sysdescr.*;
-import org.toxsoft.uskat.core.api.sysdescr.dto.*;
 import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.gui.conn.*;
 
@@ -65,14 +57,6 @@ public class OpcToS5DataCfgUnitM5Model
 
   public static final String OPCUA_BRIDGE_CFG_OPC_CONNECTION = "opcua.bridge.cfg.opc.connection";
   public static final String OPCUA_OPC_CONNECTION_CFG        = "opcua.bridge.connection.cfg";
-
-  private final static String CFG_CMD_UNIT_ID_FORMAT = "opctos5.bridge.cfg.cmd.unit.id%d.%s";
-
-  private final static String CFG_DATA_UNIT_ID_FORMAT = "opctos5.bridge.cfg.data.unit.id%d.%s.%s";
-
-  private final static String CFG_RRI_UNIT_ID_FORMAT = "opctos5.bridge.cfg.rri.unit.id%d.%s.%s";
-
-  private final static String CFG_EVENT_UNIT_ID_FORMAT = "opctos5.bridge.cfg.event.unit.id%d.%s.%s";
 
   /**
    * Model ID.
@@ -502,287 +486,19 @@ public class OpcToS5DataCfgUnitM5Model
 
                     // dima 06.02.24 работаем теперь через справочник
                     ISkConnection currConn = connSup.getConn( connIdChain );
-                    IStringMap<IStringMap<Integer>> cmdOpcCodes = OpcUaUtils.readClass2CmdIdx( currConn );
-                    // IStringMap<IStringMap<Integer>> cmdOpcCodes = new StringMap<>();
-                    // String cmdFileDescr = getDescrFile(
-                    // org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.SELECT_FILE_4_IMPORT_CMD );
-                    // if( cmdFileDescr != null ) {
-                    // File file = new File( cmdFileDescr );
-                    // try {
-                    // cmdOpcCodes = Ods2DtoCmdInfoParser.parseOpcCmdCodes( file );
-                    // // TODO ensure cmdIndex refbook
-                    //
-                    // TsDialogUtils.info( getShell(), MSG_LOADED_CMDS_DESCR, cmdFileDescr );
-                    // }
-                    // catch( IOException ex ) {
-                    // LoggerUtils.errorLogger().error( ex );
-                    // }
-                    // }
 
-                    // dima 07.02.24 работаем теперь через справочники
-                    StringMap<StringMap<IList<BitIdx2DtoRtData>>> clsId2RtDataInfoes =
-                        OpcUaUtils.readRtDataInfoes( currConn );
-                    StringMap<StringMap<IList<BitIdx2RriDtoAttr>>> clsId2RriAttrInfoes =
-                        OpcUaUtils.readRriAttrInfoes( currConn );
-                    // StringMap<StringMap<IList<BitIdx2DtoRtData>>> clsId2RtDataInfoes = new StringMap<>();
-                    // StringMap<StringMap<IList<BitIdx2RriDtoAttr>>> clsId2RriAttrInfoes = new StringMap<>();
-                    // StringMap<StringMap<IList<BitIdx2DtoEvent>>> clsId2EventInfoes = new StringMap<>();
-                    //
-                    // String bitRtdataFileDescr = getDescrFile(
-                    // org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.SELECT_FILE_4_IMPORT_BIT_RTDATA );
-                    // if( bitRtdataFileDescr != null ) {
-                    // File file = new File( bitRtdataFileDescr );
-                    // try {
-                    // Ods2DtoRtDataInfoParser.parse( file );
-                    // clsId2RtDataInfoes = Ods2DtoRtDataInfoParser.getRtdataInfoesMap();
-                    // clsId2EventInfoes = Ods2DtoRtDataInfoParser.getEventInfoesMap();
-                    // clsId2RriAttrInfoes = Ods2DtoRtDataInfoParser.getRriAttrInfoesMap();
-                    // TsDialogUtils.info( getShell(), MSG_LOADED_BIT_MASKS_DESCR, bitRtdataFileDescr );
-                    // }
-                    // catch( IOException ex ) {
-                    // LoggerUtils.errorLogger().error( ex );
-                    // }
-                    // }
-
-                    // Commands
-                    // dima
                     OpcUaServerConnCfg conConf =
                         (OpcUaServerConnCfg)aContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
                     if( conConf == null ) {
                       selectOpcConfigAndOpenConnection( aContext );
                       conConf = (OpcUaServerConnCfg)aContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
                     }
-                    IList<CmdGwid2UaNodes> autoElements = OpcUaUtils.loadCmdGwid2Nodes( aContext, conConf );
-                    System.out.println( "Auto elements size = " + autoElements.size() ); //$NON-NLS-1$
-                    for( CmdGwid2UaNodes cmd2Nodes : autoElements ) {
 
-                      IList<Gwid> gwids = new ElemArrayList<>( cmd2Nodes.gwid() );
-                      String cmdArgParam = null;
-                      IListEdit<NodeId> nodes = new ElemArrayList<>();
-                      nodes.add( cmd2Nodes.getNodeCmdId() );
-                      // dima 08.02.24 сразу заносим все ноды аргументов
-                      nodes.add(
-                          cmd2Nodes.getNodeCmdArgInt() == null ? NodeId.NULL_VALUE : cmd2Nodes.getNodeCmdArgInt() );
-                      nodes.add(
-                          cmd2Nodes.getNodeCmdArgFlt() == null ? NodeId.NULL_VALUE : cmd2Nodes.getNodeCmdArgFlt() );
-                      switch( cmd2Nodes.argType() ) {
-                        case INTEGER:
-                          cmdArgParam = Ods2DtoCmdInfoParser.CMD_ARG_INT_ID;
-                          break;
-                        case FLOATING:
-                          cmdArgParam = Ods2DtoCmdInfoParser.CMD_ARG_FLT_ID;
-                          break;
-                        case BOOLEAN:
-                        case NONE:
-                        case STRING:
-                        case TIMESTAMP:
-                        case VALOBJ:
-                        default:
-                          break;
-                      }
-                      // old version
-                      // if( cmd2Nodes.getNodeCmdArgInt() != null ) {
-                      // nodes.add( cmd2Nodes.getNodeCmdArgInt() );
-                      // cmdArgParam = Ods2DtoCmdInfoParser.CMD_ARG_INT_ID;
-                      // }
-                      // else
-                      // if( cmd2Nodes.getNodeCmdArgFlt() != null ) {
-                      // nodes.add( cmd2Nodes.getNodeCmdArgFlt() );
-                      // cmdArgParam = Ods2DtoCmdInfoParser.CMD_ARG_FLT_ID;
-                      // }
-                      nodes.add( cmd2Nodes.getNodeCmdFeedback() );
+                    // TODO - процессор брать из контекста
+                    IList<OpcToS5DataCfgUnit> cfgUnits = new StoredMetaInfoAutoLinkConfigurationProcess()
+                        .formCfgUnitsFromAutoElements( aContext, currConn, conConf );
 
-                      String strid = String.format( CFG_CMD_UNIT_ID_FORMAT, Long.valueOf( System.currentTimeMillis() ),
-                          cmd2Nodes.gwid().strid() );
-                      ECfgUnitType type = ECfgUnitType.COMMAND;
-
-                      CfgUnitRealizationTypeRegister typeReg2 =
-                          m5().tsContext().get( CfgUnitRealizationTypeRegister.class );
-
-                      ICfgUnitRealizationType realType =
-                          typeReg2.getTypeOfRealizationById( type, CFG_UNIT_REALIZATION_TYPE_VALUE_COMMAND_BY_ONE_TAG );
-                      OptionSet realization = new OptionSet();
-                      OpcUaUtils.OP_CMD_JAVA_CLASS.setValue( realization,
-                          avStr( COMMANDS_JAVA_CLASS_VALUE_COMMAND_BY_ONE_TAG_EXEC ) );
-                      if( cmdArgParam != null ) {
-                        OpcUaUtils.OP_CMD_VALUE_PARAM_ID.setValue( realization, avStr( cmdArgParam ) );
-                      }
-                      int cmdOpcCode = 1;
-
-                      if( cmdOpcCodes.hasKey( cmd2Nodes.gwid().classId() ) ) {
-                        IStringMap<Integer> classCodes = cmdOpcCodes.getByKey( cmd2Nodes.gwid().classId() );
-
-                        if( classCodes.hasKey( cmd2Nodes.gwid().propId() ) ) {
-                          cmdOpcCode = classCodes.getByKey( cmd2Nodes.gwid().propId() ).intValue();
-                        }
-                      }
-
-                      OpcUaUtils.OP_CMD_OPC_ID.setValue( realization, avInt( cmdOpcCode ) );
-
-                      String name = STR_LINK_PREFIX + cmd2Nodes.gwid().asString();
-
-                      OpcToS5DataCfgUnit result = new OpcToS5DataCfgUnit( strid, name );
-                      result.setDataNodes( nodes );
-                      result.setDataGwids( gwids );
-                      result.setTypeOfCfgUnit( type );
-                      result.setRelizationTypeId( realType.id() );
-                      result.setRealizationOpts( realization );
-
-                      ((OpcToS5DataCfgUnitM5LifecycleManager)lifecycleManager()).addCfgUnit( result );
-                    }
-                    // Data
-                    IList<UaNode2Gwid> nodes2Gwids = OpcUaUtils.loadNodes2RtdGwids( aContext, conConf );
-                    for( UaNode2Gwid dataNode : nodes2Gwids ) {
-
-                      // битовый индекс для данного
-                      BitIdx2DtoRtData bitIndex =
-                          OpcUaUtils.getDataBitIndexForRtDataGwid( dataNode.gwid(), clsId2RtDataInfoes );
-
-                      Gwid gwid = dataNode.gwid();
-                      IList<Gwid> gwids = new ElemArrayList<>( gwid );
-
-                      IListEdit<NodeId> nodes = new ElemArrayList<>( dataNode.getNodeId() );
-
-                      String strid = String.format( CFG_DATA_UNIT_ID_FORMAT, Long.valueOf( System.currentTimeMillis() ),
-                          gwid.strid(), gwid.propId() );
-
-                      ECfgUnitType type = ECfgUnitType.DATA;
-
-                      CfgUnitRealizationTypeRegister typeReg2 =
-                          m5().tsContext().get( CfgUnitRealizationTypeRegister.class );
-
-                      ICfgUnitRealizationType realType = typeReg2.getTypeOfRealizationById( type,
-                          bitIndex == null ? CFG_UNIT_REALIZATION_TYPE_ONT_TO_ONE_DATA
-                              : CFG_UNIT_REALIZATION_TYPE_ONE_INT_TO_ONE_BIT_DATA );
-
-                      OptionSet realization = new OptionSet( realType.getDefaultValues() );
-                      if( bitIndex != null ) {
-                        OpcUaUtils.OP_BIT_INDEX.setValue( realization, avInt( bitIndex.bitIndex() ) );
-                      }
-
-                      ISkCoreApi api = currConn.coreApi();
-                      ISkSysdescr sysDescr = api.sysdescr();
-                      ISkClassInfo classInfo = sysDescr.getClassInfo( gwid.classId() );
-                      ISkClassProps<IDtoRtdataInfo> dataInfoes = classInfo.rtdata();
-                      IDtoRtdataInfo dataInfo = dataInfoes.list().getByKey( gwid.propId() );
-
-                      OpcUaUtils.OP_SYNCH_PERIOD.setValue( realization, avInt( dataInfo.isSync() ? 1000 : 0 ) );
-                      OpcUaUtils.OP_IS_CURR.setValue( realization, avBool( dataInfo.isCurr() ) );
-                      OpcUaUtils.OP_IS_HIST.setValue( realization, avBool( dataInfo.isHist() ) );
-
-                      String name = STR_LINK_PREFIX + gwid.asString();
-
-                      OpcToS5DataCfgUnit result = new OpcToS5DataCfgUnit( strid, name );
-                      result.setDataNodes( nodes );
-                      result.setDataGwids( gwids );
-                      result.setTypeOfCfgUnit( type );
-                      result.setRelizationTypeId( realType.id() );
-                      result.setRealizationOpts( realization );
-
-                      ((OpcToS5DataCfgUnitM5LifecycleManager)lifecycleManager()).addCfgUnit( result );
-                    }
-
-                    // dima 18.01.24 RRI attrs
-                    nodes2Gwids = OpcUaUtils.loadNodes2RriGwids( aContext, conConf );
-                    for( UaNode2Gwid rriAttrNode : nodes2Gwids ) {
-
-                      // битовый индекс для rriAttr
-                      BitIdx2RriDtoAttr bitIndex =
-                          OpcUaUtils.getDataBitIndexForRriAttrGwid( rriAttrNode.gwid(), clsId2RriAttrInfoes );
-
-                      Gwid gwid = rriAttrNode.gwid();
-                      IList<Gwid> gwids = new ElemArrayList<>( gwid );
-
-                      IListEdit<NodeId> nodes = new ElemArrayList<>( rriAttrNode.getNodeId() );
-                      // добиваем тут командные ноды
-                      CmdGwid2UaNodes rriAttrCmdNode = getRriAttrCmdNode( gwid, conConf );
-                      // FIXME dima просто заплатка на текущий момент
-                      if( rriAttrCmdNode != null ) {
-                        nodes.add( rriAttrCmdNode.getNodeCmdId() );
-                        nodes.add( rriAttrCmdNode.getNodeCmdArgInt() == null ? NodeId.NULL_VALUE
-                            : rriAttrCmdNode.getNodeCmdArgInt() );
-                        nodes.add( rriAttrCmdNode.getNodeCmdArgFlt() == null ? NodeId.NULL_VALUE
-                            : rriAttrCmdNode.getNodeCmdArgFlt() );
-                        nodes.add( rriAttrCmdNode.getNodeCmdFeedback() );
-                      }
-                      String strid = String.format( CFG_RRI_UNIT_ID_FORMAT, Long.valueOf( System.currentTimeMillis() ),
-                          gwid.strid(), gwid.propId() );
-
-                      ECfgUnitType type = ECfgUnitType.RRI;
-
-                      CfgUnitRealizationTypeRegister typeReg2 =
-                          m5().tsContext().get( CfgUnitRealizationTypeRegister.class );
-
-                      ICfgUnitRealizationType realType = typeReg2.getTypeOfRealizationById( type,
-                          bitIndex == null ? CFG_UNIT_REALIZATION_TYPE_ONE_TO_ONE_RRI
-                              : CFG_UNIT_REALIZATION_TYPE_ONE_INT_TO_ONE_BIT_RRI );
-
-                      OptionSet realization = new OptionSet( realType.getDefaultValues() );
-                      if( bitIndex != null ) {
-                        OpcUaUtils.OP_BIT_INDEX.setValue( realization, avInt( bitIndex.bitIndex() ) );
-                      }
-
-                      String name = STR_LINK_PREFIX + gwid.asString();
-
-                      OpcToS5DataCfgUnit result = new OpcToS5DataCfgUnit( strid, name );
-                      result.setDataNodes( nodes );
-                      result.setDataGwids( gwids );
-                      result.setTypeOfCfgUnit( type );
-                      result.setRelizationTypeId( realType.id() );
-                      result.setRealizationOpts( realization );
-
-                      ((OpcToS5DataCfgUnitM5LifecycleManager)lifecycleManager()).addCfgUnit( result );
-                    }
-
-                    // events
-                    IList<UaNode2EventGwid> autoEvents = OpcUaUtils.loadNodes2EvtGwids( aContext, conConf );
-
-                    for( UaNode2Gwid evtNode : autoEvents ) {
-                      Gwid gwid = evtNode.gwid();
-                      // dima 07.02.24 отключаем пока битовые события потому что они требуют переделки по уму, то есть
-                      // генерить не через битовую маску, а через через булевую перменную
-                      // BitIdx2DtoEvent bitIndex = OpcUaUtils.getBitIndexForEvtGwid( gwid, clsId2EventInfoes );
-                      BitIdx2DtoEvent bitIndex = null;
-
-                      IList<Gwid> gwids = new ElemArrayList<>( gwid );
-
-                      IListEdit<NodeId> nodes = new ElemArrayList<>( evtNode.getNodeId() );
-
-                      String strid = String.format( CFG_EVENT_UNIT_ID_FORMAT,
-                          Long.valueOf( System.currentTimeMillis() ), gwid.strid(), gwid.propId() );
-
-                      ECfgUnitType type = ECfgUnitType.EVENT;
-
-                      CfgUnitRealizationTypeRegister typeReg2 =
-                          m5().tsContext().get( CfgUnitRealizationTypeRegister.class );
-
-                      ICfgUnitRealizationType realType = typeReg2.getTypeOfRealizationById( type,
-                          bitIndex == null ? OpcUaUtils.CFG_UNIT_REALIZATION_TYPE_TAG_VALUE_CHANGED
-                              : OpcUaUtils.CFG_UNIT_REALIZATION_TYPE_BIT_SWITCH_EVENT );
-
-                      OptionSet realization = new OptionSet( realType.getDefaultValues() );
-
-                      if( bitIndex != null ) {
-                        int index = bitIndex.bitIndex();
-                        boolean genUp = bitIndex.isGenerateUp();
-                        boolean genDn = bitIndex.isGenerateDn();
-
-                        OpcUaUtils.OP_BIT_INDEX.setValue( realization, avInt( index ) );
-                        OpcUaUtils.OP_CONDITION_SWITCH_ON.setValue( realization, avBool( genUp ) );
-                        OpcUaUtils.OP_CONDITION_SWITCH_OFF.setValue( realization, avBool( genDn ) );
-                      }
-
-                      String name = STR_LINK_PREFIX + gwid.asString();
-
-                      OpcToS5DataCfgUnit result = new OpcToS5DataCfgUnit( strid, name );
-                      result.setDataNodes( nodes );
-                      result.setDataGwids( gwids );
-                      result.setTypeOfCfgUnit( type );
-                      result.setRelizationTypeId( realType.id() );
-                      result.setRealizationOpts( realization );
-
-                      ((OpcToS5DataCfgUnitM5LifecycleManager)lifecycleManager()).addCfgUnit( result );
-                    }
+                    ((OpcToS5DataCfgUnitM5LifecycleManager)lifecycleManager()).addCfgUnits( cfgUnits );
 
                     doFillTree();
                     break;
@@ -790,18 +506,6 @@ public class OpcToS5DataCfgUnitM5Model
                   default:
                     throw new TsNotAllEnumsUsedRtException( aActionId );
                 }
-              }
-
-              private CmdGwid2UaNodes getRriAttrCmdNode( Gwid aGwid, OpcUaServerConnCfg aConConf ) {
-                CmdGwid2UaNodes retVal = null;
-                IList<CmdGwid2UaNodes> rriAttrCmdList = loadRriAttrGwid2Nodes( aContext, aConConf );
-                for( CmdGwid2UaNodes rriAttrCmd : rriAttrCmdList ) {
-                  if( rriAttrCmd.gwid().skid().equals( aGwid.skid() ) ) {
-                    retVal = rriAttrCmd;
-                    break;
-                  }
-                }
-                return retVal;
               }
 
               @Override

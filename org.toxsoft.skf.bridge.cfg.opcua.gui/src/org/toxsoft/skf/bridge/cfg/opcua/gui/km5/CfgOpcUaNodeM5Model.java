@@ -378,7 +378,7 @@ public class CfgOpcUaNodeM5Model
       }
 
       try {
-        IAvTree avTree = OpcToS5DataCfgConverter.convertToDevCfgTree( master() );
+        IAvTree avTree = OpcToS5DataCfgConverter.convertToDevCfgTree( aContext, master() );
 
         String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
         AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );

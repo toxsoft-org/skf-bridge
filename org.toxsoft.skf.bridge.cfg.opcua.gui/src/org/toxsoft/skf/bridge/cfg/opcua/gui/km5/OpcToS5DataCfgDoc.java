@@ -176,6 +176,10 @@ public class OpcToS5DataCfgDoc
     dataCfgUnits.add( aDataUnit );
   }
 
+  public void addDataUnits( IList<OpcToS5DataCfgUnit> aDataUnits ) {
+    dataCfgUnits.addAll( aDataUnits );
+  }
+
   public void removeDataUnit( OpcToS5DataCfgUnit aDataUnit ) {
     dataCfgUnits.remove( aDataUnit );
   }
