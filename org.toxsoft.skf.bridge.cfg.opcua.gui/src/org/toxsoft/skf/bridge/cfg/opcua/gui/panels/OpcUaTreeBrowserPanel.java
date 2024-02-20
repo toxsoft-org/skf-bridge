@@ -745,7 +745,8 @@ public class OpcUaTreeBrowserPanel
     for( IDtoRtdataInfo rtData : aDtoClassInfo.rtdataInfos() ) {
       String nodeName = rtData.id().substring( 3 );
       for( IDtoAttrInfo attr : aRriDtoClassInfo.attrInfos() ) {
-        if( attr.id().indexOf( nodeName ) >= 0 ) {
+        String rriAttrId = attr.id().substring( 3 );
+        if( rriAttrId.compareTo( nodeName ) == 0 ) {
           retVal.attrInfos().remove( attr );
         }
       }
