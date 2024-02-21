@@ -60,16 +60,10 @@ public class UaVariableNodeM5LifecycleManager
     boolean needWarn = !isWritable( nodeIds );
     // получаем тип доступа к узлу
     EnumSet<AccessLevel> accessLevel = AccessLevel.fromValue( aValues.originalEntity().getAccessLevel() );
-    if( accessLevel.containsAll( AccessLevel.READ_ONLY ) ) {
+    if( !accessLevel.containsAll( AccessLevel.READ_WRITE ) ) {
       needWarn = true;
     }
     if( needWarn ) {
-      // ETsDialogCode userAnswer = TsDialogUtils.askYesNoCancel( tsContext().get( Shell.class ),
-      // STR_WRITE_NODE_CONFIRM,
-      // aValues.originalEntity().getNodeId().toParseableString() );
-      // if( userAnswer != ETsDialogCode.YES ) {
-      // return ValidationResult.error( "Node read only" );
-      // }
       return ValidationResult.error( "Node is read only" );
     }
 
