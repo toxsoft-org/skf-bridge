@@ -802,10 +802,10 @@ public class OpcUaTreeBrowserPanel
       dtoClass = new DtoClassInfo( aDtoClassInfo.id(), aDtoClassInfo.parentId(), aDtoClassInfo.params() );
     }
     // копируем свойства исходного
-    dtoClass.attrInfos().setAll( aDtoClassInfo.attrInfos() );
-    dtoClass.rtdataInfos().setAll( aDtoClassInfo.rtdataInfos() );
-    dtoClass.cmdInfos().setAll( aDtoClassInfo.cmdInfos() );
-    dtoClass.eventInfos().setAll( aDtoClassInfo.eventInfos() );
+    dtoClass.attrInfos().setAll( aCurrDtoClassInfo.attrInfos() );
+    dtoClass.rtdataInfos().setAll( aCurrDtoClassInfo.rtdataInfos() );
+    dtoClass.cmdInfos().setAll( aCurrDtoClassInfo.cmdInfos() );
+    dtoClass.eventInfos().setAll( aCurrDtoClassInfo.eventInfos() );
 
     // обновляем атрибуты
     for( IDtoAttrInfo attrInfo : aDtoClassInfo.attrInfos() ) {
