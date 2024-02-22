@@ -659,26 +659,25 @@ public class OpcUaTreeBrowserPanel
           if( rriDtoClassInfo != null ) {
             defineRriParams( aContext, rriDtoClassInfo );
           }
-
-          // чистим список привязок ClassGwid -> NodeId
-          node2ClassGwidList = filterNode2ClassGwidList( dtoClassInfo, rriDtoClassInfo, node2ClassGwidList );
-          // заливаем в хранилище
-          OpcUaUtils.updateNodes2GwidsInStore( aContext, node2ClassGwidList,
-              OpcUaUtils.SECTID_OPC_UA_NODES_2_CLS_GWIDS_TEMPLATE, UaNode2Gwid.KEEPER, opcUaServerConnCfg );
-
-          ISkidList skids2Remove = conn.coreApi().objService().listSkids( dtoClassInfo.id(), false );
-          // перепривязываем объекты
-          ISkClassInfo updatedClassInfo = conn.coreApi().sysdescr().getClassInfo( dtoClassInfo.id() );
-          IListEdit<IDtoObject> listObj2Update = new ElemArrayList<>();
-          for( Skid skid : skids2Remove ) {
-            ISkObject obj2Update = conn.coreApi().objService().find( skid );
-            listObj2Update.add( DtoObject.createFromSk( obj2Update, conn.coreApi() ) );
-          }
-          OpcUaUtils.clearCache( opcUaServerConnCfg );
-          generateNode2GwidLinks( aContext, updatedClassInfo, listObj2Update, aTreeType,
-              rriSection == null ? IStridablesList.EMPTY : rriSection.listParamInfoes( updatedClassInfo.id() ) );
-          TsDialogUtils.info( getShell(), STR_SUCCESS_CLASS_UPDATED, dtoClassInfo.id() );
         }
+        // чистим список привязок ClassGwid -> NodeId
+        node2ClassGwidList = filterNode2ClassGwidList( dtoClassInfo, rriDtoClassInfo, node2ClassGwidList );
+        // заливаем в хранилище
+        OpcUaUtils.updateNodes2GwidsInStore( aContext, node2ClassGwidList,
+            OpcUaUtils.SECTID_OPC_UA_NODES_2_CLS_GWIDS_TEMPLATE, UaNode2Gwid.KEEPER, opcUaServerConnCfg );
+
+        ISkidList skids2Remove = conn.coreApi().objService().listSkids( currDtoClassInfo.id(), false );
+        // перепривязываем объекты
+        ISkClassInfo updatedClassInfo = conn.coreApi().sysdescr().getClassInfo( currDtoClassInfo.id() );
+        IListEdit<IDtoObject> listObj2Update = new ElemArrayList<>();
+        for( Skid skid : skids2Remove ) {
+          ISkObject obj2Update = conn.coreApi().objService().find( skid );
+          listObj2Update.add( DtoObject.createFromSk( obj2Update, conn.coreApi() ) );
+        }
+        OpcUaUtils.clearCache( opcUaServerConnCfg );
+        generateNode2GwidLinks( aContext, updatedClassInfo, listObj2Update, aTreeType,
+            rriSection == null ? IStridablesList.EMPTY : rriSection.listParamInfoes( updatedClassInfo.id() ) );
+        TsDialogUtils.info( getShell(), STR_SUCCESS_CLASS_UPDATED, currDtoClassInfo.id() );
       }
       else {
         // создаем пучок из модели
