@@ -801,46 +801,34 @@ public class OpcUaTreeBrowserPanel
     else {
       dtoClass = new DtoClassInfo( aDtoClassInfo.id(), aDtoClassInfo.parentId(), aDtoClassInfo.params() );
     }
-    // копируем свойства исходного
-    dtoClass.attrInfos().setAll( aCurrDtoClassInfo.attrInfos() );
-    dtoClass.rtdataInfos().setAll( aCurrDtoClassInfo.rtdataInfos() );
-    dtoClass.cmdInfos().setAll( aCurrDtoClassInfo.cmdInfos() );
-    dtoClass.eventInfos().setAll( aCurrDtoClassInfo.eventInfos() );
+    // копируем свойства нового
+    dtoClass.attrInfos().setAll( aDtoClassInfo.attrInfos() );
+    dtoClass.rtdataInfos().setAll( aDtoClassInfo.rtdataInfos() );
+    dtoClass.cmdInfos().setAll( aDtoClassInfo.cmdInfos() );
+    dtoClass.eventInfos().setAll( aDtoClassInfo.eventInfos() );
 
     // обновляем атрибуты
-    for( IDtoAttrInfo attrInfo : aDtoClassInfo.attrInfos() ) {
-      if( aCurrDtoClassInfo.attrInfos().hasKey( attrInfo.id() ) ) {
-        // если такой атрибут есть в существующем классе, то заменяем его в результирующем
-        IDtoAttrInfo removeAttr = aDtoClassInfo.attrInfos().getByKey( attrInfo.id() );
-        dtoClass.attrInfos().remove( removeAttr );
-        dtoClass.attrInfos().add( aCurrDtoClassInfo.attrInfos().getByKey( attrInfo.id() ) );
+    for( IDtoAttrInfo attrInfo : aCurrDtoClassInfo.attrInfos() ) {
+      if( !dtoClass.attrInfos().hasKey( attrInfo.id() ) ) {
+        dtoClass.attrInfos().add( attrInfo );
       }
     }
     // обновляем rtData
-    for( IDtoRtdataInfo rtDataInfo : aDtoClassInfo.rtdataInfos() ) {
-      if( aCurrDtoClassInfo.rtdataInfos().hasKey( rtDataInfo.id() ) ) {
-        // если такой rtData есть в существующем классе, то заменяем его в результирующем
-        IDtoRtdataInfo removeRtData = aDtoClassInfo.rtdataInfos().getByKey( rtDataInfo.id() );
-        dtoClass.rtdataInfos().remove( removeRtData );
-        dtoClass.rtdataInfos().add( aCurrDtoClassInfo.rtdataInfos().getByKey( rtDataInfo.id() ) );
+    for( IDtoRtdataInfo rtDataInfo : aCurrDtoClassInfo.rtdataInfos() ) {
+      if( !dtoClass.rtdataInfos().hasKey( rtDataInfo.id() ) ) {
+        dtoClass.rtdataInfos().add( rtDataInfo );
       }
     }
     // обновляем cmds
-    for( IDtoCmdInfo cmdInfo : aDtoClassInfo.cmdInfos() ) {
-      if( aCurrDtoClassInfo.cmdInfos().hasKey( cmdInfo.id() ) ) {
-        // если такой cmd есть в существующем классе, то заменяем его в результирующем
-        IDtoCmdInfo removeCmd = aDtoClassInfo.cmdInfos().getByKey( cmdInfo.id() );
-        dtoClass.cmdInfos().remove( removeCmd );
-        dtoClass.cmdInfos().add( aCurrDtoClassInfo.cmdInfos().getByKey( cmdInfo.id() ) );
+    for( IDtoCmdInfo cmdInfo : aCurrDtoClassInfo.cmdInfos() ) {
+      if( !dtoClass.cmdInfos().hasKey( cmdInfo.id() ) ) {
+        dtoClass.cmdInfos().add( cmdInfo );
       }
     }
     // обновляем events
-    for( IDtoEventInfo evtInfo : aDtoClassInfo.eventInfos() ) {
-      if( aCurrDtoClassInfo.eventInfos().hasKey( evtInfo.id() ) ) {
-        // если такой event есть в существующем классе, то заменяем его в результирующем
-        IDtoEventInfo removeEvent = aDtoClassInfo.eventInfos().getByKey( evtInfo.id() );
-        dtoClass.eventInfos().remove( removeEvent );
-        dtoClass.eventInfos().add( aCurrDtoClassInfo.eventInfos().getByKey( evtInfo.id() ) );
+    for( IDtoEventInfo evtInfo : aCurrDtoClassInfo.eventInfos() ) {
+      if( !dtoClass.eventInfos().hasKey( evtInfo.id() ) ) {
+        dtoClass.eventInfos().add( evtInfo );
       }
     }
     return dtoClass;
@@ -1662,24 +1650,28 @@ public class OpcUaTreeBrowserPanel
   private UaTreeNode findVarNodeByClassGwid( ITsGuiContext aContext, Gwid aClassGwid, IList<UaTreeNode> aVarNodes ) {
     UaTreeNode retVal = null;
     NodeId classNodeId = OpcUaUtils.classGwid2uaNode( aContext, aClassGwid, opcUaServerConnCfg );
-    TsIllegalStateRtException.checkNull( classNodeId, "Can't find nodeId for Gwid: %s", aClassGwid.asString() ); //$NON-NLS-1$
-    // отрабатываем вариант когда 1 класс - 1 объект, в таком случае ищем полное совпадение nodeId
-    for( UaTreeNode varNode : aVarNodes ) {
-      NodeId nodeId = NodeId.parse( varNode.getNodeId() );
-      if( nodeId.equals( classNodeId ) ) {
-        return varNode;
+    if( classNodeId != null ) {
+      // TsIllegalStateRtException.checkNull( classNodeId, "Can't find nodeId for Gwid: %s", aClassGwid.asString() );
+      // //$NON-NLS-1$
+      // отрабатываем вариант когда 1 класс - 1 объект, в таком случае ищем полное совпадение nodeId
+      for( UaTreeNode varNode : aVarNodes ) {
+        NodeId nodeId = NodeId.parse( varNode.getNodeId() );
+        if( nodeId.equals( classNodeId ) ) {
+          return varNode;
+        }
       }
-    }
-    // здесь отрабатываем вариант когда класс отдельно, объекты отдельно. В этом варианте опираемся на правило равенства
-    // namespace у узлов описания класса и объекта
-    int classNamespace = classNodeId.getNamespaceIndex().intValue();
-    for( UaTreeNode varNode : aVarNodes ) {
-      NodeId nodeId = NodeId.parse( varNode.getNodeId() );
-      int ns = nodeId.getNamespaceIndex().intValue();
+      // здесь отрабатываем вариант когда класс отдельно, объекты отдельно. В этом варианте опираемся на правило
+      // равенства
+      // namespace у узлов описания класса и объекта
+      int classNamespace = classNodeId.getNamespaceIndex().intValue();
+      for( UaTreeNode varNode : aVarNodes ) {
+        NodeId nodeId = NodeId.parse( varNode.getNodeId() );
+        int ns = nodeId.getNamespaceIndex().intValue();
 
-      if( ns == classNamespace ) {
-        retVal = varNode;
-        break;
+        if( ns == classNamespace ) {
+          retVal = varNode;
+          break;
+        }
       }
     }
     return retVal;
