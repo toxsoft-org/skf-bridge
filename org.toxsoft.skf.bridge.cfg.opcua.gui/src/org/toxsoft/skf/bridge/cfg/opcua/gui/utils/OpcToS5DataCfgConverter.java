@@ -105,6 +105,32 @@ public class OpcToS5DataCfgConverter {
   private static final String PIN_TAG_NODE_ID_FORMAT    = "pin.tag.%s.def";
 
   /**
+   * TODO найти правильное место <br>
+   * id device где node статуса НСИ.
+   */
+  private static final String RRI_STATUS_DEVICE_ID = "status.rri.tag.dev.id";
+
+  /**
+   * node id чтения статуса НСИ.
+   */
+  private static final String RRI_STATUS_READ_NODE_ID = "status.rri.read.tag.id";
+
+  /**
+   * аргумент aAddress в IComplexTag::setValue( int aAddress, IAtomicValue aValue ) для установки статуса НСИ.
+   */
+  private static final String RRI_STATUS_CMD_SET_ID = "status.rri.cmd.set.id";
+
+  /**
+   * аргумент aAddress в IComplexTag::setValue( int aAddress, IAtomicValue aValue ) для сброса статуса НСИ.
+   */
+  private static final String RRI_STATUS_CMD_RESET_ID = "status.rri.cmd.reset.id";
+
+  /**
+   * Complex node id записи статуса НСИ.
+   */
+  private static final String RRI_STATUS_COMPLEX_NODE_ID = "status.rri.complex.tag.id";
+
+  /**
    * Начало блока, отвечающего за конфигурацию данных.
    */
   private static final String DATA_DEFS = "dataDefs";
@@ -366,10 +392,14 @@ public class OpcToS5DataCfgConverter {
     IOptionSetEdit opSet = new OptionSet();
     // TODO заполним описание настройки для модуля вцелом
     opSet.setStr( "status.rri.tag.dev.id", "opc2s5.bridge.collection.id" ); // device где node статуса НСИ
-    opSet.setStr( "status.rri.read.tag.id", "ns=32769;i=4955" ); // сам node статуса НСИ
-    opSet.setInt( "status.rri.cmd.opc.id", 13 ); // аргумент aAddress в IComplexTag::setValue( int aAddress,
-                                                 // IAtomicValue aValue ) для смены статуса НСИ
-    opSet.setStr( "status.rri.write.tag.id", "ns=2;i=1832" );
+    opSet.setStr( "status.rri.read.tag.id", "ns=32769;i=4955" ); // сам node статуса НСИ Gwid
+                                                                 // CtrlSystem[CtrlSystem]rtd(rtdStatusRRI)
+    opSet.setInt( "status.rri.cmd.opc.id", 13 ); // справочника Cmd_OPCUA, strid CtrlSystem.ResetRRI
+    // справочника Cmd_OPCUA, strid CtrlSystem.SetRRI
+    // аргумент aAddress в IComplexTag::setValue( int aAddress,
+    // IAtomicValue aValue ) для смены статуса НСИ
+    opSet.setStr( "status.rri.write.tag.id", "ns=2;i=1832" ); // для всех команд CtrlSystem[CtrlSystem]
+    // Пример как работать со справочником см. OpcUaUtils::readClass2CmdIdx()
 
     IAvTree retVal = AvTree.createSingleAvTree( DLM_CFG_NODE_ID_TEMPLATE, opSet, rriDefNodes );
 
@@ -948,7 +978,7 @@ public class OpcToS5DataCfgConverter {
     OpcUaServerConnCfg conConf =
         (OpcUaServerConnCfg)aContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
     if( conConf != null ) {
-      ipAddress = extractIP( conConf );
+      ipAddress = conConf.host();
       user = conConf.login();
       pass = conConf.passward();
     }
