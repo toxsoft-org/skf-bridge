@@ -12,6 +12,7 @@ import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.avtree.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.*;
+import org.toxsoft.core.tslib.bricks.strid.coll.*;
 import org.toxsoft.core.tslib.bricks.validator.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
@@ -129,6 +130,42 @@ public class OpcToS5DataCfgConverter {
    * Complex node id записи статуса НСИ.
    */
   private static final String RRI_STATUS_COMPLEX_NODE_ID = "status.rri.complex.tag.id";
+
+  /**
+   * System Skid
+   */
+  private static final Skid ctrSystemSkid = new Skid( "CtrlSystem", "CtrlSystem" );
+
+  /**
+   * Gwid of rt data indicating RRI status
+   */
+  private static final Gwid gwidStatusRRI =
+      Gwid.createRtdata( ctrSystemSkid.classId(), ctrSystemSkid.strid(), "rtdStatusRRI" );
+
+  /**
+   * Strid of refbook item of set RRI comand
+   */
+  private static final String itemStridSetRRI = "CtrlSystem.SetRRI";
+
+  /**
+   * Strid of refbook item of reset RRI comand
+   */
+  private static final String itemStridResetRRI = "CtrlSystem.ResetRRI";
+
+  /**
+   * Default complex tag for system
+   */
+  private static final String defaultComplexTagForSystem = "ns=nsIndexSystem;i=indexSystem";// "ns=2;i=1832"
+
+  /**
+   * Default RRI status node id
+   */
+  private static final String defaultNodeIdStatusRRI = "ns=nsIndexRriStatus;i=indexRriStatus";
+
+  /**
+   * Default OPC UA Device id
+   */
+  private static final String defaultOpcUaDeviceId = "opc2s5.bridge.collection.id";
 
   /**
    * Начало блока, отвечающего за конфигурацию данных.
@@ -260,6 +297,11 @@ public class OpcToS5DataCfgConverter {
    */
   private static IMapEdit<Skid, String> complexTagsIdsBySkidsContetnt = new ElemMap<>();
 
+  /**
+   * Хранилище нодов чтение от gwid - заполняется при формировании простых данных - очищать перед новой генерацией.
+   */
+  private static IMapEdit<Gwid, NodeId> tagsIdsByGwidContetnt = new ElemMap<>();
+
   private OpcToS5DataCfgConverter() {
 
   }
@@ -273,6 +315,7 @@ public class OpcToS5DataCfgConverter {
   public static IAvTree convertToDlmCfgTree( OpcToS5DataCfgDoc aDoc, ISkConnection aConn ) {
     complexTagsContetnt.clear();
     complexTagsIdsBySkidsContetnt.clear();
+    tagsIdsByGwidContetnt.clear();
 
     StringMap<IAvTree> nodes = new StringMap<>();
 
@@ -389,17 +432,42 @@ public class OpcToS5DataCfgConverter {
 
     rriDefNodes.put( "rriNodes", rriDefsTree );
 
+    String refbookName = RBID_CMD_OPCUA;
+    ISkRefbookService skRefServ = (ISkRefbookService)aConnection.coreApi().getService( ISkRefbookService.SERVICE_ID );
+    IStridablesList<ISkRefbookItem> rbItems = skRefServ.findRefbook( refbookName ).listItems();
+
+    ISkRefbookItem itemSetRRI = rbItems.findByKey( itemStridSetRRI );
+    ISkRefbookItem itemResetRRI = rbItems.findByKey( itemStridResetRRI );
+
+    int cmdIndexSetRRI = itemSetRRI != null ? itemSetRRI.attrs().getValue( RBATRID_CMD_OPCUA___INDEX ).asInt() : -1;
+    int cmdIndexResetRRI = itemSetRRI != null ? itemResetRRI.attrs().getValue( RBATRID_CMD_OPCUA___INDEX ).asInt() : -1;
+
     IOptionSetEdit opSet = new OptionSet();
-    // TODO заполним описание настройки для модуля вцелом
-    opSet.setStr( "status.rri.tag.dev.id", "opc2s5.bridge.collection.id" ); // device где node статуса НСИ
-    opSet.setStr( "status.rri.read.tag.id", "ns=32769;i=4955" ); // сам node статуса НСИ Gwid
-                                                                 // CtrlSystem[CtrlSystem]rtd(rtdStatusRRI)
-    opSet.setInt( "status.rri.cmd.opc.id", 13 ); // справочника Cmd_OPCUA, strid CtrlSystem.ResetRRI
+
+    // заполним описание настройки для модуля вцелом
+
+    // device где node статуса НСИ
+    opSet.setStr( RRI_STATUS_DEVICE_ID, defaultOpcUaDeviceId );
+
+    NodeId nodeIdStatusRRI = tagsIdsByGwidContetnt.findByKey( gwidStatusRRI );
+    String strNodeIdStatusRRI = nodeIdStatusRRI != null ? nodeIdStatusRRI.toParseableString() : defaultNodeIdStatusRRI;
+
+    // node статуса НСИ Gwid CtrlSystem[CtrlSystem]rtd(rtdStatusRRI)
+    opSet.setStr( RRI_STATUS_READ_NODE_ID, strNodeIdStatusRRI );
+
     // справочника Cmd_OPCUA, strid CtrlSystem.SetRRI
-    // аргумент aAddress в IComplexTag::setValue( int aAddress,
-    // IAtomicValue aValue ) для смены статуса НСИ
-    opSet.setStr( "status.rri.write.tag.id", "ns=2;i=1832" ); // для всех команд CtrlSystem[CtrlSystem]
-    // Пример как работать со справочником см. OpcUaUtils::readClass2CmdIdx()
+    opSet.setInt( RRI_STATUS_CMD_SET_ID, cmdIndexSetRRI );
+
+    // справочника Cmd_OPCUA, strid CtrlSystem.ResetRRI
+    opSet.setInt( RRI_STATUS_CMD_RESET_ID, cmdIndexResetRRI );
+
+    // для всех команд CtrlSystem[CtrlSystem]
+    String complexTagForSystem = complexTagsIdsBySkidsContetnt.findByKey( ctrSystemSkid );
+    if( complexTagForSystem == null ) {
+      complexTagForSystem = defaultComplexTagForSystem;
+    }
+
+    opSet.setStr( RRI_STATUS_COMPLEX_NODE_ID, complexTagForSystem );
 
     IAvTree retVal = AvTree.createSingleAvTree( DLM_CFG_NODE_ID_TEMPLATE, opSet, rriDefNodes );
 
@@ -454,6 +522,15 @@ public class OpcToS5DataCfgConverter {
       // сам идентфикатор тега
       pinOpSet1.setStr( i == 0 ? TAG_ID : TAG_ID + i, node.toParseableString() );
 
+    }
+
+    // сохраняем соответствие для потомков (вдруг пригодится) - для каждого gwid
+    if( nodes.size() == 1 ) {
+      for( int i = 0; i < gwids.size(); i++ ) {
+        Gwid gwid = gwids.get( i );
+
+        tagsIdsByGwidContetnt.put( gwid, nodes.first() );
+      }
     }
 
     // if( aTagData.getCmdWordBitIndex() >= 0 ) {
