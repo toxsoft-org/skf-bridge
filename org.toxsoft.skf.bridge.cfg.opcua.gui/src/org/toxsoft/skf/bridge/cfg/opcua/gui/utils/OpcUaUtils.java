@@ -78,6 +78,13 @@ import org.toxsoft.uskat.core.impl.dto.*;
  */
 public class OpcUaUtils {
 
+  /**
+   * Параметр события: включен.
+   * <p>
+   * Параметр имеет тип {@link EAtomicType#BOOLEAN}.
+   */
+  static String EVPID_ON = "on"; //$NON-NLS-1$
+
   public static final String COMMANDS_JAVA_CLASS_VALUE_COMMAND_BY_COMPLEX_TAG_EXEC =
       "ru.toxsoft.l2.dlm.opc_bridge.submodules.commands.ValCommandByComplexTagExec";
 
@@ -1382,6 +1389,41 @@ public class OpcUaUtils {
   }
 
   /**
+   * Считывает из справочника масочные events
+   *
+   * @param aConn - соединение с сервером
+   * @return карта класс->id битового массива -> список его events типа булевое
+   */
+  public static StringMap<StringMap<IList<BitIdx2DtoEvent>>> readEventInfoes( ISkConnection aConn ) {
+    StringMap<StringMap<IList<BitIdx2DtoEvent>>> retVal = new StringMap<>();
+    // открываем справочник битовых масок
+    String refbookName = RBID_BITMASK;
+    ISkRefbookService skRefServ = (ISkRefbookService)aConn.coreApi().getService( ISkRefbookService.SERVICE_ID );
+    IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( refbookName ).listItems();
+    for( ISkRefbookItem rbItem : rbItems ) {
+      String strid = rbItem.strid();
+      // выделяем id класса
+      String classId = extractClassId( strid );
+      if( !retVal.hasKey( classId ) ) {
+        StringMap<IList<BitIdx2DtoEvent>> rtDataMap = new StringMap<>();
+        retVal.put( classId, rtDataMap );
+      }
+      StringMap<IList<BitIdx2DtoEvent>> rtDataMap = retVal.getByKey( classId );
+      String bitArrayRtDataId = rbItem.attrs().getValue( RBATRID_BITMASK___IDW ).asString();
+      if( !rtDataMap.hasKey( bitArrayRtDataId ) ) {
+        rtDataMap.put( bitArrayRtDataId, new ElemArrayList<>() );
+      }
+
+      BitIdx2DtoEvent eventInfo = readBitIdx2DtoEvent( bitArrayRtDataId, rbItem );
+      if( eventInfo != null ) {
+        IListEdit<BitIdx2DtoEvent> bitList = (IListEdit<BitIdx2DtoEvent>)rtDataMap.getByKey( bitArrayRtDataId );
+        bitList.add( eventInfo );
+      }
+    }
+    return retVal;
+  }
+
+  /**
    * Считывает из справочника масочные НСИ атрибуты
    *
    * @param aConn - соединение с сервером
@@ -1452,6 +1494,63 @@ public class OpcUaUtils {
         ) );
 
     return new BitIdx2DtoRtData( aBitArrayRtDataId, bitIndex, dataInfo );
+
+  }
+
+  /**
+   * Читает описание BitIdx2DtoEvent
+   *
+   * @param aBitArrayRtDataId - id переменной битового массива
+   * @param aRefbookItem - элемент справочника масок
+   * @return {@link BitIdx2DtoEvent} описание события
+   */
+  private static BitIdx2DtoEvent readBitIdx2DtoEvent( String aBitArrayRtDataId, ISkRefbookItem aRefbookItem ) {
+    // id rt данного
+    String dataId = aRefbookItem.attrs().getValue( RBATRID_BITMASK___IDENTIFICATOR ).asString(); // ID;
+
+    // сочиняем evId
+    String evtId = EVT_PREFIX + dataId.substring( RTD_PREFIX.length() );
+
+    // bit index
+    int bitIndex = aRefbookItem.attrs().getValue( RBATRID_BITMASK___BITN ).asInt();
+    // название
+    String name = aRefbookItem.nmName();
+    // описание
+    String descr = aRefbookItem.description();
+    // 0->1
+    String upText = aRefbookItem.attrs().getValue( RBATRID_BITMASK___ON ).asString();
+    boolean up = false;
+    if( !upText.isBlank() ) {
+      up = true;
+    }
+    // 1->0
+    boolean dn = false;
+    String dnText = aRefbookItem.attrs().getValue( RBATRID_BITMASK___OFF ).asString();
+    if( !dnText.isBlank() ) {
+      dn = true;
+    }
+    if( up || dn ) {
+
+      // for example FMT_BOOL_CHECK = "%Б[-|✔]"
+      String FMT_ON = "%Б[" + dnText + "|" + upText + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+      // создаем описание параметра
+      DataDef EVPDD_ON = DataDef.create( EVPID_ON, EAtomicType.BOOLEAN, TSID_NAME, STR_N_EV_PARAM_ON, //
+          TSID_DESCRIPTION, STR_D_EV_PARAM_ON, //
+          TSID_IS_NULL_ALLOWED, AV_FALSE, //
+          TSID_FORMAT_STRING, FMT_ON, //
+          TSID_DEFAULT_VALUE, AV_FALSE );
+      StridablesList<IDataDef> evParams = new StridablesList<>( EVPDD_ON );
+
+      IDtoEventInfo evtInfo = DtoEventInfo.create1( evtId, true, //
+          evParams, //
+          OptionSetUtils.createOpSet( //
+              IAvMetaConstants.TSID_NAME, name, //
+              IAvMetaConstants.TSID_DESCRIPTION, descr //
+          ) ); //
+
+      return new BitIdx2DtoEvent( aBitArrayRtDataId, bitIndex, evtInfo, up, dn );
+    }
+    return null;
   }
 
   /**

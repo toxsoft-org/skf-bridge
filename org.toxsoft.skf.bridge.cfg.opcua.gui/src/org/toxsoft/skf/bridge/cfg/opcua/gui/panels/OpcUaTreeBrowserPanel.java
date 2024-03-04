@@ -100,7 +100,7 @@ public class OpcUaTreeBrowserPanel
   /**
    * карта id класса - > его BitIdx2DtoEvent
    */
-  private StringMap<StringMap<IList<BitIdx2DtoEvent>>> clsId2EventInfoes = new StringMap<>(); // TODO требует реализации
+  private StringMap<StringMap<IList<BitIdx2DtoEvent>>> clsId2EventInfoes = null;
 
   private final IOpcUaServerConnCfg opcUaServerConnCfg;
   /**
@@ -429,15 +429,10 @@ public class OpcUaTreeBrowserPanel
   }
 
   protected void ensureBitMaskDescription() {
-
-    // dima 07.02.24 работаем через файл
-    // TODO реализовать события
-    if( clsId2RtDataInfoes == null || clsId2RriAttrInfoes == null ) {
-      // if( clsId2RtDataInfoes == null || clsId2EventInfoes == null || clsId2RriAttrInfoes == null ) {
-      // loadBitMaskDescrFile();
+    if( clsId2RtDataInfoes == null || clsId2EventInfoes == null || clsId2RriAttrInfoes == null ) {
       clsId2RtDataInfoes = OpcUaUtils.readRtDataInfoes( conn );
       clsId2RriAttrInfoes = OpcUaUtils.readRriAttrInfoes( conn );
-
+      clsId2EventInfoes = OpcUaUtils.readEventInfoes( conn );
     }
   }
 
@@ -1278,7 +1273,7 @@ public class OpcUaTreeBrowserPanel
 
       NodeId parentNodeId = OpcUaUtils.nodeBySkid( aContext, parentSkid, opcUaServerConnCfg );
       TsIllegalStateRtException.checkNull( parentNodeId,
-          "Can't find nodeId for Skid: %s .\n Check section %s in file data-storage.kt", parentSkid.toString(),
+          "Can't find nodeId for Skid: %s .\n Check section %s in file data-storage.ktor", parentSkid.toString(),
           OpcUaUtils.getTreeSectionNameByConfig( OpcUaUtils.SECTID_OPC_UA_NODES_2_SKIDS_TEMPLATE,
               opcUaServerConnCfg ) );
       UaTreeNode parentNode = findParentNode( treeNodes, parentNodeId );
@@ -1466,7 +1461,7 @@ public class OpcUaTreeBrowserPanel
 
   private UaTreeNode tryBitMaskEvent( ISkClassInfo aClassInfo, UaTreeNode aParentNode, IDtoEventInfo aEvtInfo,
       EOPCUATreeType aTreeType ) {
-    if( clsId2RtDataInfoes != null && clsId2EventInfoes.hasKey( aClassInfo.id() ) ) {
+    if( clsId2EventInfoes != null && clsId2EventInfoes.hasKey( aClassInfo.id() ) ) {
       StringMap<IList<BitIdx2DtoEvent>> strid2Bits = clsId2EventInfoes.getByKey( aClassInfo.id() );
       for( String strid : strid2Bits.keys() ) {
         IList<BitIdx2DtoEvent> eventBits = strid2Bits.getByKey( strid );

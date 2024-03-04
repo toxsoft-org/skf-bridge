@@ -60,9 +60,9 @@ public class StoredMetaInfoAutoLinkConfigurationProcess
     // dima 07.02.24 работаем теперь через справочники
     StringMap<StringMap<IList<BitIdx2DtoRtData>>> clsId2RtDataInfoes = OpcUaUtils.readRtDataInfoes( currConn );
     StringMap<StringMap<IList<BitIdx2RriDtoAttr>>> clsId2RriAttrInfoes = OpcUaUtils.readRriAttrInfoes( currConn );
+    StringMap<StringMap<IList<BitIdx2DtoEvent>>> clsId2EventInfoes = OpcUaUtils.readEventInfoes( currConn );
     // StringMap<StringMap<IList<BitIdx2DtoRtData>>> clsId2RtDataInfoes = new StringMap<>();
     // StringMap<StringMap<IList<BitIdx2RriDtoAttr>>> clsId2RriAttrInfoes = new StringMap<>();
-    // StringMap<StringMap<IList<BitIdx2DtoEvent>>> clsId2EventInfoes = new StringMap<>();
     //
     // String bitRtdataFileDescr = getDescrFile(
     // org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.SELECT_FILE_4_IMPORT_BIT_RTDATA );
@@ -258,10 +258,7 @@ public class StoredMetaInfoAutoLinkConfigurationProcess
 
     for( UaNode2Gwid evtNode : autoEvents ) {
       Gwid gwid = evtNode.gwid();
-      // dima 07.02.24 отключаем пока битовые события потому что они требуют переделки по уму, то есть
-      // генерить не через битовую маску, а через через булевую перменную
-      // BitIdx2DtoEvent bitIndex = OpcUaUtils.getBitIndexForEvtGwid( gwid, clsId2EventInfoes );
-      BitIdx2DtoEvent bitIndex = null;
+      BitIdx2DtoEvent bitIndex = OpcUaUtils.getBitIndexForEvtGwid( gwid, clsId2EventInfoes );
 
       IList<Gwid> gwids = new ElemArrayList<>( gwid );
 
