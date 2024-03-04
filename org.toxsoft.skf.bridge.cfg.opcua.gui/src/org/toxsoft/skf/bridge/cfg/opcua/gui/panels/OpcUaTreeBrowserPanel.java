@@ -972,7 +972,7 @@ public class OpcUaTreeBrowserPanel
   }
 
   /**
-   * Читает описание Rt данного и добавляет его в описание класса {@link IDtoClassInfo}
+   * Читает описание НСИ атрибута и добавляет его в описание класса {@link IDtoClassInfo}
    *
    * @param aDtoClass текущее описание класса
    * @param aVariableNode описание узла типа переменная
@@ -1038,7 +1038,7 @@ public class OpcUaTreeBrowserPanel
     // название
     String name = aVariableNode.getDisplayName().getText();
     // описание
-    String descr = aVariableNode.getDescription().getText();
+    String descr = aVariableNode.getDescription() == null ? name : aVariableNode.getDescription().getText();
     // описание
     if( (descr == null) || descr.isBlank() ) {
       descr = name;
@@ -1158,7 +1158,7 @@ public class OpcUaTreeBrowserPanel
     // название
     String name = aVariableNode.getDisplayName().getText();
     // описание
-    String descr = aVariableNode.getDescription().getText();
+    String descr = aVariableNode.getDescription() == null ? name : aVariableNode.getDescription().getText();
     // описание
     if( descr == null ) {
       descr = name;

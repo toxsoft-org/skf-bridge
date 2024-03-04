@@ -26,6 +26,7 @@ import org.eclipse.milo.opcua.sdk.client.nodes.*;
 import org.eclipse.milo.opcua.stack.core.security.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.*;
+import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
 import org.eclipse.milo.opcua.stack.core.types.structured.*;
 import org.eclipse.milo.opcua.stack.core.util.*;
 import org.eclipse.swt.widgets.*;
@@ -271,26 +272,27 @@ public class OpcUaUtils {
    * @return класс типа данных значения узла
    */
   public static Class<?> getNodeDataTypeClass( UaVariableNode aEntity ) {
-    // old version of dima
-    // Class<?> retVal = null;
-    // // получение значения узла
-    // DataValue dataValue = aEntity.getValue();
-    // // тут получаем Variant
-    // Variant variant = dataValue.getValue();
-    // Optional<ExpandedNodeId> dataTypeNode = variant.getDataType();
-    // if( dataTypeNode.isPresent() ) {
-    // ExpandedNodeId expNodeId = dataTypeNode.get();
-    // // TODO разобраться с отображением не числовых типов
-    // if( expNodeId.getType() == IdType.Numeric ) {
-    // UInteger id = (UInteger)expNodeId.getIdentifier();
-    // NodeId nodeId = new NodeId( expNodeId.getNamespaceIndex(), id );
-    // Class<?> clazz = TypeUtil.getBackingClass( nodeId );
-    // retVal = clazz;
-    // }
-    // }
-
     // new verion of max
     Class<?> retVal = TypeUtil.getBackingClass( aEntity.getDataType() );
+    // dima 29.02.24 на Siemens верхний метод срабатывает не всегда, а нижний работает
+    if( retVal == null ) {
+      // old version of dima
+      // получение значения узла
+      DataValue dataValue = aEntity.getValue();
+      // тут получаем Variant
+      Variant variant = dataValue.getValue();
+      Optional<ExpandedNodeId> dataTypeNode = variant.getDataType();
+      if( dataTypeNode.isPresent() ) {
+        ExpandedNodeId expNodeId = dataTypeNode.get();
+        // TODO разобраться с отображением не числовых типов
+        if( expNodeId.getType() == IdType.Numeric ) {
+          UInteger id = (UInteger)expNodeId.getIdentifier();
+          NodeId nodeId = new NodeId( expNodeId.getNamespaceIndex(), id );
+          Class<?> clazz = TypeUtil.getBackingClass( nodeId );
+          retVal = clazz;
+        }
+      }
+    }
     return retVal;
   }
 
@@ -426,10 +428,12 @@ public class OpcUaUtils {
     // для ускорения переложим в карту
     IStringMapEdit<IContainNodeId> tmpCach = new StringMap<>();
     for( T node : aNodes2Gwids ) {
-      tmpCach.put( node.getNodeId().toParseableString(), node );
+      String key = node.getNodeId().toParseableString();
+      tmpCach.put( key, node );
     }
     for( T oldItem : oldList ) {
-      if( !tmpCach.hasKey( oldItem.getNodeId().toParseableString() ) ) {
+      String key = oldItem.getNodeId().toParseableString();
+      if( !tmpCach.hasKey( key ) ) {
         newList.add( oldItem );
       }
     }
