@@ -17,7 +17,6 @@ import org.eclipse.milo.opcua.sdk.core.nodes.*;
 import org.eclipse.milo.opcua.stack.core.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
-import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.tsgui.bricks.actions.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
@@ -214,10 +213,9 @@ public class OpcUaTreeBrowserPanel
   static class OpcUANode2SkObjectItemsProvider
       implements IM5ItemsProvider<IDtoObject> {
 
-    private IListEdit<IDtoObject> items = new ElemArrayList<>();
+    private IListEdit<IDtoObject> items         = new ElemArrayList<>();
     private final ISkCoreApi      coreApi;
-    // private Map<String, UaTreeNode> id2Node = new HashMap<>();
-    IListEdit<UaNode2Skid> node2SkidList = new ElemArrayList<>();
+    IListEdit<UaNode2Skid>        node2SkidList = new ElemArrayList<>();
 
     // Создаем IDpuObject и инициализируем его значениями из узла
     private IDtoObject makeObjDto( String aClassId, UaTreeNode aObjNode ) {
@@ -235,8 +233,6 @@ public class OpcUaTreeBrowserPanel
       for( UaTreeNode objNode : aSelectedNodes ) {
         IDtoObject dtoObj = makeObjDto( aSelectedClassInfo.id(), objNode );
         items.add( dtoObj );
-        // запоминаем привязку узла к Skid
-        // id2Node.put( dtoObj.id(), objNode );
         Skid skid = new Skid( aSelectedClassInfo.id(), dtoObj.id() );
         node2SkidList.add( new UaNode2Skid( objNode.getNodeId(), objNode.getDisplayName(), skid ) );
       }
@@ -458,26 +454,6 @@ public class OpcUaTreeBrowserPanel
     return retVal;
   }
 
-  /**
-   * Load ask user and load file with mask descriptions
-   */
-  // private void loadBitMaskDescrFile() {
-  // String bitRtdataFileDescr = getDescrFile( SELECT_FILE_4_IMPORT_BIT_RTDATA );
-  // if( bitRtdataFileDescr != null ) {
-  // File file = new File( bitRtdataFileDescr );
-  // try {
-  // Ods2DtoRtDataInfoParser.parse( file );
-  // clsId2RtDataInfoes = Ods2DtoRtDataInfoParser.getRtdataInfoesMap();
-  // clsId2EventInfoes = Ods2DtoRtDataInfoParser.getEventInfoesMap();
-  // clsId2RriAttrInfoes = Ods2DtoRtDataInfoParser.getRriAttrInfoesMap();
-  // TsDialogUtils.info( getShell(), STR_BITMASK_FILE_LOADED, bitRtdataFileDescr );
-  // }
-  // catch( IOException ex ) {
-  // LoggerUtils.errorLogger().error( ex );
-  // }
-  // }
-  // }
-
   private static boolean isCheckLinkEnable( UaTreeNode aSelectedItem ) {
     boolean enable = false;
     // узел у которого тип Variable
@@ -487,16 +463,6 @@ public class OpcUaTreeBrowserPanel
       }
     }
     return enable;
-  }
-
-  private String getDescrFile( String aTitle ) {
-    FileDialog fd = new FileDialog( getShell(), SWT.OPEN );
-    fd.setText( aTitle );// SELECT_FILE_4_IMPORT_CMD
-    fd.setFilterPath( DEFAULT_PATH_STR );
-    String[] filterExt = { ODS_EXT };
-    fd.setFilterExtensions( filterExt );
-    String selected = fd.open();
-    return selected;
   }
 
   private static boolean isCtreateObjEnable( UaTreeNode aSelectedItem ) {
@@ -897,7 +863,8 @@ public class OpcUaTreeBrowserPanel
           readDataInfo( cinf, varNode, aNode2ClassGwidList );
           // НСИ атрибут
           readRriAttrInfo( rriCinf, varNode, aNode2ClassGwidList );
-          readEventInfo( cinf, varNode, aNode2ClassGwidList );
+          // dima 05.03.24 не генерим автоматически события из узлов. Только из справочника см. код ниже
+          // readEventInfo( cinf, varNode, aNode2ClassGwidList );
         }
         catch( UaRuntimeException | UaException ex ) {
           LoggerUtils.errorLogger().error( ex );
@@ -1646,8 +1613,6 @@ public class OpcUaTreeBrowserPanel
     UaTreeNode retVal = null;
     NodeId classNodeId = OpcUaUtils.classGwid2uaNode( aContext, aClassGwid, opcUaServerConnCfg );
     if( classNodeId != null ) {
-      // TsIllegalStateRtException.checkNull( classNodeId, "Can't find nodeId for Gwid: %s", aClassGwid.asString() );
-      // //$NON-NLS-1$
       // отрабатываем вариант когда 1 класс - 1 объект, в таком случае ищем полное совпадение nodeId
       for( UaTreeNode varNode : aVarNodes ) {
         NodeId nodeId = NodeId.parse( varNode.getNodeId() );
