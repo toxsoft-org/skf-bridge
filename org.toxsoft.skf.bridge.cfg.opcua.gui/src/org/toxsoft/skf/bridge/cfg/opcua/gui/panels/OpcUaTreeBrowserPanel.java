@@ -954,7 +954,7 @@ public class OpcUaTreeBrowserPanel
     // название
     String name = aVariableNode.getDisplayName().getText();
     // описание
-    String descr = aVariableNode.getDescription().getText();
+    String descr = aVariableNode.getDescription() == null ? name : aVariableNode.getDescription().getText();
     // описание
     if( (descr == null) || descr.isBlank() ) {
       descr = name;

@@ -238,6 +238,10 @@ public class OpcUaNodesSelector
           if( name.startsWith( IGNORE_REFIX ) ) {
             continue;
           }
+          String descr = child.getDescription();
+          if( descr.startsWith( "\\" ) || descr.startsWith( "/" ) ) { //$NON-NLS-1$ //$NON-NLS-2$
+            continue;
+          }
           // фильтруем узлы по уровню доступа
           if( !accessLevel.equals( AccessLevel.NONE ) && !accessLevel.containsAll( child.accessLevel() ) ) {
             continue;
