@@ -40,6 +40,7 @@ import org.toxsoft.core.tsgui.m5.gui.mpc.*;
 import org.toxsoft.core.tsgui.m5.model.*;
 import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.impl.*;
+import org.toxsoft.core.tslib.av.list.*;
 import org.toxsoft.core.tslib.av.metainfo.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.*;
@@ -57,6 +58,7 @@ import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.gw.skid.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.*;
+import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.core.txtproj.lib.storage.*;
 import org.toxsoft.core.txtproj.lib.workroom.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.*;
@@ -216,6 +218,32 @@ public class OpcUaUtils {
   private static ILogger logger = LoggerWrapper.getLogger( OpcUaUtils.class.getName() );
 
   /**
+   * Выбор и подключение к OPC UA серверу
+   *
+   * @param aContext контекст приложения
+   * @return подключение
+   */
+  public static OpcUaClient selectOpcConfigAndOpenConnection( ITsGuiContext aContext ) {
+    IOpcUaServerConnCfg conConf = OpcUaUtils.selectOpcServerConfig( aContext );
+    // dima 13.10.23 сохраним в контекст
+    aContext.put( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG, conConf );
+    if( conConf == null ) {
+      return null;
+    }
+
+    try {
+      OpcUaClient client = OpcUaUtils.createClient( conConf );
+      client.connect().get();
+      return client;
+    }
+    catch( Exception ex ) {
+      LoggerUtils.errorLogger().error( ex );
+      return null;
+    }
+
+  }
+
+  /**
    * Creates and returns opc ua client formed according to connection configuration.
    *
    * @param aCfg IOpcUaServerConnCfg - conn configuration.
@@ -272,6 +300,30 @@ public class OpcUaUtils {
     }
 
     return new AnonymousProvider();
+  }
+
+  public static IList<String> conertToNodesList2( IAvList aAtomicList, INodeIdConvertor aConvertor ) {
+    IListEdit<String> result = new ElemArrayList<>();
+    for( IAtomicValue val : aAtomicList ) {
+      result.add( aConvertor.converToNodeId( val ) );
+    }
+    return result;
+  }
+
+  public static IList<NodeId> conertToNodesList( IAvList aAtomicList ) {
+    IListEdit<NodeId> result = new ElemArrayList<>();
+    for( IAtomicValue val : aAtomicList ) {
+      result.add( val.asValobj() );
+    }
+    return result;
+  }
+
+  public static IAvList conertToAtomicList( IList<NodeId> aNodeList ) {
+    IAvListEdit result = new AvList( new ElemArrayList<>() );
+    for( NodeId node : aNodeList ) {
+      result.add( avValobj( node ) );
+    }
+    return result;
   }
 
   /**

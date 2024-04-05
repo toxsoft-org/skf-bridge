@@ -1,6 +1,7 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
 
-import org.eclipse.milo.opcua.stack.core.types.builtin.*;
+import org.toxsoft.core.tslib.av.impl.*;
+import org.toxsoft.core.tslib.av.list.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.*;
 import org.toxsoft.core.tslib.bricks.keeper.*;
@@ -62,14 +63,19 @@ public class OpcToS5DataCfgUnit
           }
 
           // Nodes
+          // AtomicValueKeeper.KEEPER.write( aSw, aEntity.dataNodes );
+          // aSw.writeSeparatorChar();
+          // aSw.writeEol();
           // nodes count
+
           aSw.writeInt( aEntity.dataNodes.size() );
           aSw.writeSeparatorChar();
           aSw.writeEol();
 
           for( int i = 0; i < aEntity.dataNodes.size(); i++ ) {
             // one node
-            aSw.writeQuotedString( aEntity.dataNodes.get( i ).toParseableString() );
+            // aSw.writeQuotedString( ((NodeId)aEntity.dataNodes.get( i ).asValobj()).toParseableString() );
+            AtomicValueKeeper.KEEPER.write( aSw, aEntity.dataNodes.get( i ) );
             aSw.writeSeparatorChar();
             aSw.writeEol();
           }
@@ -114,18 +120,22 @@ public class OpcToS5DataCfgUnit
           }
 
           // Nodes
+          // IAtomicValue nodes = AtomicValueKeeper.KEEPER.read( aSr );
+
           // nodes count
           int nodesCount = aSr.readInt();
           aSr.ensureSeparatorChar();
 
-          IListEdit<NodeId> nodes = new ElemArrayList<>();
+          IAvListEdit nodes = new AvList( new ElemArrayList<>() );
           for( int i = 0; i < nodesCount; i++ ) {
             // one node
-            String nodeString = aSr.readQuotedString();
+            // String nodeString = aSr.readQuotedString();
+
+            // NodeId nodeId = NodeId.parse( nodeString );
+            nodes.add( AtomicValueKeeper.KEEPER.read( aSr ) );
+            // AvUtils.avValobj( NodeId.parse( nodeString ) ) );
             aSr.ensureSeparatorChar();
 
-            NodeId nodeId = NodeId.parse( nodeString );
-            nodes.add( nodeId );
           }
 
           String relizationTypeId = aSr.readIdPath();
@@ -140,7 +150,7 @@ public class OpcToS5DataCfgUnit
           OpcToS5DataCfgUnit result = new OpcToS5DataCfgUnit( id, name );
           result.typeOfCfgUnit = type;
           result.setDataGwids( gwids );
-          result.setDataNodes( nodes );
+          result.setDataNodes2( nodes );
           result.setRelizationTypeId( relizationTypeId );
           result.setRealizationOpts( realizationOpts );
           return result;
@@ -168,7 +178,7 @@ public class OpcToS5DataCfgUnit
    * @param aGwids IList - список данных сервера S5, используемых в этой единице конфигурации
    * @param aNodes IList - список узлов opc ua, используемых в этой единице конфигурации
    */
-  public OpcToS5DataCfgUnit( String aId, String aName, IList<Gwid> aGwids, IList<NodeId> aNodes ) {
+  public OpcToS5DataCfgUnit( String aId, String aName, IList<Gwid> aGwids, IAvList aNodes ) {
     super( aId, aName, aName );
     dataGwids = aGwids;
     dataNodes = aNodes;
@@ -189,7 +199,9 @@ public class OpcToS5DataCfgUnit
   /**
    * Список узлов opc ua, используемых в этой единице конфигурации
    */
-  private IList<NodeId> dataNodes = new ElemArrayList<>();
+  private IAvList dataNodes = new AvList( new ElemArrayList<>() );
+
+  // private IList<NodeId> dataNodes = new ElemArrayList<>();
 
   /**
    * Ид Типа реализации
@@ -219,17 +231,25 @@ public class OpcToS5DataCfgUnit
     return dataGwids;
   }
 
-  protected void setDataGwids( IList<Gwid> aGwids ) {
+  public void setDataGwids( IList<Gwid> aGwids ) {
     dataGwids = aGwids;
   }
 
-  public IList<NodeId> getDataNodes() {
+  public IAvList getDataNodes2() {
     return dataNodes;
   }
 
-  protected void setDataNodes( IList<NodeId> aNodes ) {
+  public void setDataNodes2( IAvList aNodes ) {
     dataNodes = aNodes;
   }
+
+  // public IList<NodeId> getDataNodes() {
+  // return dataNodes;
+  // }
+  //
+  // protected void setDataNodes( IList<NodeId> aNodes ) {
+  // dataNodes = aNodes;
+  // }
 
   public IOptionSet getRealizationOpts() {
     return realizationOpts;

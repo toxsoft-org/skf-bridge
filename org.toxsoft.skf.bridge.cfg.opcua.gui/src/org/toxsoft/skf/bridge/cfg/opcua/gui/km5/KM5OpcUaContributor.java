@@ -28,7 +28,7 @@ public class KM5OpcUaContributor
       DtoObjectM5Model.MODEL_ID, //
       UaVariableNodeM5Model.MODEL_ID, //
       GwidsForCfgM5Model.MODEL_ID, //
-      OpcToS5DataCfgUnitM5Model.MODEL_ID, //
+      OpcToS5DataCfgUnitM5Model.MODEL_ID_TEMPLATE + ".opcua", //
       OpcToS5DataCfgDocM5Model.MODEL_ID, //
       NodesForCfgM5Model.MODEL_ID, //
       CfgUnitRealizationTypeM5Model.MODEL_ID, //
@@ -70,7 +70,8 @@ public class KM5OpcUaContributor
     myModels.add( gwidsForCfgM5Model.id() );
     m5().addModel( gwidsForCfgM5Model );
 
-    OpcToS5DataCfgUnitM5Model opcToS5DataCfgUnitM5Model = new OpcToS5DataCfgUnitM5Model();
+    OpcToS5DataCfgUnitM5Model opcToS5DataCfgUnitM5Model = new OpcToS5DataCfgUnitM5Model(
+        OpcToS5DataCfgUnitM5Model.MODEL_ID_TEMPLATE + ".opcua", NodesForCfgM5Model.MODEL_ID );
     myModels.add( opcToS5DataCfgUnitM5Model.id() );
     m5().addModel( opcToS5DataCfgUnitM5Model );
 

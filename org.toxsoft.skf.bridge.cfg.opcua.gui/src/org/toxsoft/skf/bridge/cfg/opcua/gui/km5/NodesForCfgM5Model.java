@@ -39,7 +39,7 @@ import org.toxsoft.uskat.core.gui.conn.*;
  * @author max
  */
 public class NodesForCfgM5Model
-    extends M5Model<NodeId> {
+    extends M5Model<IAtomicValue> {
 
   /**
    * Model ID.
@@ -61,7 +61,7 @@ public class NodesForCfgM5Model
    */
   public static final String FID_NODE_STR = "node.str"; //$NON-NLS-1$
 
-  public final M5AttributeFieldDef<NodeId> NODE_STR = new M5AttributeFieldDef<>( FID_NODE_STR, EAtomicType.STRING, //
+  public final M5AttributeFieldDef<IAtomicValue> NODE_STR = new M5AttributeFieldDef<>( FID_NODE_STR, EAtomicType.STRING, //
       TSID_NAME, STR_N_NODE_STRING, //
       TSID_DESCRIPTION, STR_D_NODE_STRING //
   ) {
@@ -73,8 +73,8 @@ public class NodesForCfgM5Model
       // setFlags( M5FF_COLUMN | M5FF_HIDDEN );
     }
 
-    protected IAtomicValue doGetFieldValue( NodeId aEntity ) {
-      return avStr( aEntity.toParseableString() );
+    protected IAtomicValue doGetFieldValue( IAtomicValue aEntity ) {
+      return avStr( ((NodeId)aEntity.asValobj()).toParseableString() );
     }
 
   };
@@ -83,23 +83,24 @@ public class NodesForCfgM5Model
    * Constructor
    */
   public NodesForCfgM5Model() {
-    super( MODEL_ID, NodeId.class );
+    super( MODEL_ID, IAtomicValue.class );
     addFieldDefs( NODE_STR );
 
     setPanelCreator( new M5DefaultPanelCreator<>() {
 
-      protected IM5CollectionPanel<NodeId> doCreateCollViewerPanel( ITsGuiContext aContext,
-          IM5ItemsProvider<NodeId> aItemsProvider ) {
+      protected IM5CollectionPanel<IAtomicValue> doCreateCollViewerPanel( ITsGuiContext aContext,
+          IM5ItemsProvider<IAtomicValue> aItemsProvider ) {
         OPDEF_IS_ACTIONS_CRUD.setValue( aContext.params(), AV_FALSE );
         IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( aContext.params(), AvUtils.AV_FALSE );
-        MultiPaneComponentModown<NodeId> mpc = new MultiPaneComponentModown<>( aContext, model(), aItemsProvider );
+        MultiPaneComponentModown<IAtomicValue> mpc =
+            new MultiPaneComponentModown<>( aContext, model(), aItemsProvider );
         return new M5CollectionPanelMpcModownWrapper<>( mpc, true );
       }
 
-      protected IM5CollectionPanel<NodeId> doCreateCollEditPanel( ITsGuiContext aContext,
-          IM5ItemsProvider<NodeId> aItemsProvider, IM5LifecycleManager<NodeId> aLifecycleManager ) {
+      protected IM5CollectionPanel<IAtomicValue> doCreateCollEditPanel( ITsGuiContext aContext,
+          IM5ItemsProvider<IAtomicValue> aItemsProvider, IM5LifecycleManager<IAtomicValue> aLifecycleManager ) {
         IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( aContext.params(), AvUtils.AV_FALSE );
-        MultiPaneComponentModown<NodeId> mpc =
+        MultiPaneComponentModown<IAtomicValue> mpc =
             new MultiPaneComponentModown<>( aContext, model(), aItemsProvider, aLifecycleManager ) {
 
               @Override
@@ -146,7 +147,7 @@ public class NodesForCfgM5Model
               }
 
               @Override
-              protected NodeId doAddItem() {
+              protected IAtomicValue doAddItem() {
 
                 UaClient uaClient =
                     (UaClient)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_OPC_CONNECTION );
@@ -166,14 +167,14 @@ public class NodesForCfgM5Model
                   return null;
                 }
 
-                IM5BunchEdit<NodeId> bunch = new M5BunchEdit<>( model() );
+                IM5BunchEdit<IAtomicValue> bunch = new M5BunchEdit<>( model() );
                 bunch.set( FID_NODE_STR, avStr( selNodes.first().getNodeId() ) );
                 aLifecycleManager.create( bunch );
-                return NodeId.parse( selNodes.first().getNodeId() );
+                return AvUtils.avValobj( NodeId.parse( selNodes.first().getNodeId() ) );
               }
 
               @Override
-              protected NodeId doEditItem( NodeId aItem ) {
+              protected IAtomicValue doEditItem( IAtomicValue aItem ) {
 
                 UaClient uaClient =
                     (UaClient)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_OPC_CONNECTION );
@@ -194,15 +195,15 @@ public class NodesForCfgM5Model
                   return aItem;
                 }
 
-                IM5BunchEdit<NodeId> bunch = new M5BunchEdit<>( model() );
+                IM5BunchEdit<IAtomicValue> bunch = new M5BunchEdit<>( model() );
                 bunch.fillFrom( aItem, true );
                 bunch.set( FID_NODE_STR, avStr( selNodes.first().getNodeId() ) );
                 aLifecycleManager.edit( bunch );
-                return NodeId.parse( selNodes.first().getNodeId() );
+                return AvUtils.avValobj( NodeId.parse( selNodes.first().getNodeId() ) );
               }
 
               @Override
-              protected boolean doRemoveItem( NodeId aItem ) {
+              protected boolean doRemoveItem( IAtomicValue aItem ) {
                 return super.doRemoveItem( aItem );
               }
 
@@ -214,7 +215,7 @@ public class NodesForCfgM5Model
   }
 
   @Override
-  protected IM5LifecycleManager<NodeId> doCreateDefaultLifecycleManager() {
+  protected IM5LifecycleManager<IAtomicValue> doCreateDefaultLifecycleManager() {
     ISkConnectionSupplier cs = tsContext().get( ISkConnectionSupplier.class );
     // TODO which connection to use?
     ISkConnection conn = cs.defConn();
@@ -222,12 +223,12 @@ public class NodesForCfgM5Model
   }
 
   @Override
-  protected IM5LifecycleManager<NodeId> doCreateLifecycleManager( Object aMaster ) {
+  protected IM5LifecycleManager<IAtomicValue> doCreateLifecycleManager( Object aMaster ) {
     return new NodesForCfgM5LifecycleManager( this, ISkConnection.class.cast( aMaster ) );
   }
 
   static class NodesForCfgM5LifecycleManager
-      extends M5LifecycleManager<NodeId, ISkConnection> {
+      extends M5LifecycleManager<IAtomicValue, ISkConnection> {
 
     /**
      * Constructor by m5 model and sk-connection as master-object.
@@ -235,7 +236,7 @@ public class NodesForCfgM5Model
      * @param aModel IM5Model - model
      * @param aMaster ISkConnection - sk-connection
      */
-    public NodesForCfgM5LifecycleManager( IM5Model<NodeId> aModel, ISkConnection aMaster ) {
+    public NodesForCfgM5LifecycleManager( IM5Model<IAtomicValue> aModel, ISkConnection aMaster ) {
       super( aModel, true, true, true, false, aMaster );
     }
 
@@ -249,7 +250,7 @@ public class NodesForCfgM5Model
      * @return {@link ValidationResult} - the validation result
      */
     @Override
-    protected ValidationResult doBeforeCreate( IM5Bunch<NodeId> aValues ) {
+    protected ValidationResult doBeforeCreate( IM5Bunch<IAtomicValue> aValues ) {
       return ValidationResult.SUCCESS;
     }
 
@@ -262,9 +263,9 @@ public class NodesForCfgM5Model
      * @return &lt;IVtReportParam&gt; - created instance
      */
     @Override
-    protected NodeId doCreate( IM5Bunch<NodeId> aValues ) {
+    protected IAtomicValue doCreate( IM5Bunch<IAtomicValue> aValues ) {
       IAtomicValue nodeStr = aValues.get( NodesForCfgM5Model.FID_NODE_STR );
-      return NodeId.parse( nodeStr.asString() );
+      return AvUtils.avValobj( NodeId.parse( nodeStr.asString() ) );
     }
 
     /**
@@ -277,7 +278,7 @@ public class NodesForCfgM5Model
      * @return {@link ValidationResult} - the validation result
      */
     @Override
-    protected ValidationResult doBeforeEdit( IM5Bunch<NodeId> aValues ) {
+    protected ValidationResult doBeforeEdit( IM5Bunch<IAtomicValue> aValues ) {
       return ValidationResult.SUCCESS;
     }
 
@@ -292,9 +293,9 @@ public class NodesForCfgM5Model
      * @return &lt;IVtReportParam&gt; - created instance
      */
     @Override
-    protected NodeId doEdit( IM5Bunch<NodeId> aValues ) {
+    protected IAtomicValue doEdit( IM5Bunch<IAtomicValue> aValues ) {
       IAtomicValue nodeStr = aValues.get( NodesForCfgM5Model.FID_NODE_STR );
-      return NodeId.parse( nodeStr.asString() );
+      return AvUtils.avValobj( NodeId.parse( nodeStr.asString() ) );
     }
 
     /**
@@ -307,7 +308,7 @@ public class NodesForCfgM5Model
      * @return {@link ValidationResult} - the validation result
      */
     @Override
-    protected ValidationResult doBeforeRemove( NodeId aEntity ) {
+    protected ValidationResult doBeforeRemove( IAtomicValue aEntity ) {
       return ValidationResult.SUCCESS;
     }
 
@@ -319,7 +320,7 @@ public class NodesForCfgM5Model
      * @param aEntity &lt;IVtReportParam&gt; - the entity to be removed, never is <code>null</code>
      */
     @Override
-    protected void doRemove( NodeId aEntity ) {
+    protected void doRemove( IAtomicValue aEntity ) {
       // nop
     }
 
@@ -331,7 +332,7 @@ public class NodesForCfgM5Model
      * @return {@link IList}&lt;IVtReportParam&gt; - list of entities in the scope of maetr object
      */
     @Override
-    protected IList<NodeId> doListEntities() {
+    protected IList<IAtomicValue> doListEntities() {
       return IList.EMPTY;
     }
 
@@ -346,7 +347,7 @@ public class NodesForCfgM5Model
      *         means
      */
     @Override
-    protected IListReorderer<NodeId> doGetItemsReorderer() {
+    protected IListReorderer<IAtomicValue> doGetItemsReorderer() {
       return null;
     }
   }

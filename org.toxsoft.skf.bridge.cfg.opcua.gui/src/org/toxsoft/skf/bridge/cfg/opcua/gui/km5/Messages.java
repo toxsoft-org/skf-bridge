@@ -13,13 +13,11 @@ public class Messages
   public static String        MSG_SELECT_OPC_UA_SERVER;
   public static String        STR_D_ADD_AS_STRING;
   public static String        STR_D_ADD_MISSED_NODES;
-  public static String        STR_D_AUTO_LINK;
   public static String        STR_D_CONFIG_DESCR;
   public static String        STR_D_CONFIG_NAME;
   public static String        STR_D_DATA_TYPE;
   public static String        STR_D_EDIT_AS_STRING;
   public static String        STR_D_GENERATE_DEVCFG;
-  public static String        STR_D_GENERATE_DLMCFG;
   public static String        STR_D_NODE_2READ;
   public static String        STR_D_NODE_2WRITE;
   public static String        STR_D_NODE_ID;
@@ -43,13 +41,11 @@ public class Messages
   public static String        STR_LINK_PREFIX;
   public static String        STR_N_ADD_AS_STRING;
   public static String        STR_N_ADD_MISSED_NODES;
-  public static String        STR_N_AUTO_LINK;
   public static String        STR_N_CONFIG_DESCR;
   public static String        STR_N_CONFIG_NAME;
   public static String        STR_N_DATA_TYPE;
   public static String        STR_N_EDIT_AS_STRING;
   public static String        STR_N_GENERATE_DEVCFG;
-  public static String        STR_N_GENERATE_DLMCFG;
   public static String        STR_N_NODE_2READ;
   public static String        STR_N_NODE_2WRITE;
   public static String        STR_N_NODE_ID;
@@ -73,6 +69,7 @@ public class Messages
   public static String        STR_SELECT_FILE_SAVE_DEVCFG;
   public static String        STR_SELECT_FILE_SAVE_DLMCFG;
   public static String        STR_WRITE_NODE_CONFIRM;
+
   static {
     // initialize resource bundle
     NLS.initializeMessages( BUNDLE_NAME, Messages.class );

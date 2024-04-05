@@ -84,4 +84,9 @@ public interface ISkResources {
   String STR_USE_OPC_UA_CACHE_CREATED       = Messages.STR_USE_OPC_UA_CACHE_CREATED;
   String STR_USE_OPC_UA_CACHE_CREATION_FAIL = Messages.STR_USE_OPC_UA_CACHE_CREATION_FAIL;
   String STR_DEFAULT_WORKROOM_SK_CONN       = Messages.STR_DEFAULT_WORKROOM_SK_CONN;
+  String STR_N_AUTO_LINK                    = Messages.STR_N_AUTO_LINK;
+  String STR_D_AUTO_LINK                    = Messages.STR_D_AUTO_LINK;
+  String STR_N_GENERATE_DLMCFG              = Messages.STR_N_GENERATE_DLMCFG;
+  String STR_D_GENERATE_DLMCFG              = Messages.STR_D_GENERATE_DLMCFG;
+
 }
