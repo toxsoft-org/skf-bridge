@@ -20,6 +20,10 @@ public class ModbusNode {
     requestType = aRequestType;
   }
 
+  public String getId() {
+    return requestType.name() + "_" + register + "_" + wordsCount;
+  }
+
   public int getRegister() {
     return register;
   }

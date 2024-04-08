@@ -27,6 +27,7 @@ public class QuantBridgeCfgModbus
 
     TsValobjUtils.registerKeeperIfNone( ECfgUnitType.KEEPER_ID, ECfgUnitType.KEEPER );
     TsValobjUtils.registerKeeperIfNone( ModbusNodeKeeper.KEEPER_ID, ModbusNodeKeeper.KEEPER );
+    TsValobjUtils.registerKeeperIfNone( ERequestType.KEEPER_ID, ERequestType.KEEPER );
     // TsValobjUtils.registerKeeperIfNone( ETimeUnit.KEEPER_ID, ETimeUnit.KEEPER );
     // TsValobjUtils.registerKeeperIfNone( VtGraphParamsList.KEEPER_ID, VtGraphParamsList.KEEPER );
 

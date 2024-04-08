@@ -14,14 +14,13 @@ import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.avtree.*;
 import org.toxsoft.core.tslib.av.list.*;
 import org.toxsoft.core.tslib.av.opset.*;
-import org.toxsoft.core.tslib.av.opset.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
-import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
+import org.toxsoft.skf.bridge.cfg.modbus.gui.type.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.utils.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
@@ -132,7 +131,10 @@ public class ModbusToS5CfgUnitM5LifecycleManager
       TsInternalErrorRtException.checkNull( cs );
       ISkConnection conn = cs.defConn();
       TsInternalErrorRtException.checkNull( conn );
-      IAvTree avTree = AvTree.createSingleAvTree( "tmp", new OptionSet(), new StringMap<>() );
+      IAvTree avTree = OpcToS5DataCfgConverter.convertToDlmCfgTree( master().dataUnits(), conn, aNodeEntity -> {
+        ModbusNode nodeid = aNodeEntity.asValobj();
+        return nodeid.getId();
+      } );
       String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
       AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
 

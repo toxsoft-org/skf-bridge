@@ -99,12 +99,14 @@ public class ModbusNodesForCfgM5Model
   public final M5AttributeFieldDef<IAtomicValue> REQUEST_TYPE =
       new M5AttributeFieldDef<>( FID_REQUEST_TYPE, EAtomicType.VALOBJ, //
           TSID_NAME, "Тип запроса modbus", //
-          TSID_DESCRIPTION, "Тип запроса modbus" //
+          TSID_DESCRIPTION, "Тип запроса modbus", //
+          TSID_KEEPER_ID, ERequestType.KEEPER_ID //
       ) {
 
         @Override
         protected void doInit() {
           setFlags( M5FF_COLUMN );
+          setDefaultValue( avValobj( ERequestType.DI ) );
           // setFlags( M5FF_COLUMN | M5FF_READ_ONLY | M5FF_HIDDEN );
           // setFlags( M5FF_COLUMN | M5FF_HIDDEN );
         }
@@ -120,7 +122,7 @@ public class ModbusNodesForCfgM5Model
    */
   public ModbusNodesForCfgM5Model() {
     super( MODEL_ID, IAtomicValue.class );
-    addFieldDefs( REGISTER, WORDS_COUNT );
+    addFieldDefs( REGISTER, WORDS_COUNT, REQUEST_TYPE );
   }
 
   @Override
@@ -175,7 +177,7 @@ public class ModbusNodesForCfgM5Model
     protected IAtomicValue doCreate( IM5Bunch<IAtomicValue> aValues ) {
       int reg = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_REGISTER )).asInt();
       int count = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_WORDS_COUNT )).asInt();
-      ERequestType type = ERequestType.DI;
+      ERequestType type = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_REQUEST_TYPE )).asValobj();
 
       return AvUtils.avValobj( new ModbusNode( reg, count, type ) );
     }
@@ -208,7 +210,7 @@ public class ModbusNodesForCfgM5Model
     protected IAtomicValue doEdit( IM5Bunch<IAtomicValue> aValues ) {
       int reg = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_REGISTER )).asInt();
       int count = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_WORDS_COUNT )).asInt();
-      ERequestType type = ERequestType.DI;
+      ERequestType type = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_REQUEST_TYPE )).asValobj();
 
       return AvUtils.avValobj( new ModbusNode( reg, count, type ) );
     }

@@ -311,10 +311,10 @@ public class OpcToS5DataCfgConverter {
   /**
    * Из описания {@link OpcToS5DataCfgDoc} создает дерево {@link IAvTree} конфигурации DLM
    *
-   * @param aDoc описание конфигурации
+   * @param aCfgUnits IList - набор единиц конфигурации
    * @return дерево для конфигурирования модуля DLM
    */
-  public static IAvTree convertToDlmCfgTree( OpcToS5DataCfgDoc aDoc, ISkConnection aConn,
+  public static IAvTree convertToDlmCfgTree( IList<OpcToS5DataCfgUnit> aCfgUnits, ISkConnection aConn,
       INodeIdConvertor aConvertor ) {
     complexTagsContetnt.clear();
     complexTagsIdsBySkidsContetnt.clear();
@@ -324,23 +324,23 @@ public class OpcToS5DataCfgConverter {
     StringMap<IAvTree> nodes = new StringMap<>();
 
     // перечисление возможных команд по классам
-    IAvTree commandInfoesMassivTree = createCommandInfoes( aDoc );
+    IAvTree commandInfoesMassivTree = createCommandInfoes( aCfgUnits );
     nodes.put( CMD_CLASS_DEFS, commandInfoesMassivTree );
 
     // команды
-    IAvTree commandsMassivTree = createCommands( aDoc );
+    IAvTree commandsMassivTree = createCommands( aCfgUnits );
     nodes.put( CMD_DEFS, commandsMassivTree );
 
     // данные
-    IAvTree datasMassivTree = createDatas( aDoc );
+    IAvTree datasMassivTree = createDatas( aCfgUnits );
     nodes.put( DATA_DEFS, datasMassivTree );
 
     // атрибуты НСИ
-    IAvTree rriAttrsArrayTree = createRriAttrs( aDoc, aConn );
+    IAvTree rriAttrsArrayTree = createRriAttrs( aCfgUnits, aConn );
     nodes.put( RRI_DEFS, rriAttrsArrayTree );
 
     // события
-    IAvTree eventsMassivTree = createEvents( aDoc );
+    IAvTree eventsMassivTree = createEvents( aCfgUnits );
     nodes.put( EVENT_DEFS, eventsMassivTree );
 
     // сложные теги
@@ -392,16 +392,14 @@ public class OpcToS5DataCfgConverter {
   /**
    * Создаёт конфигурацию всех данных для подмодуля данных базового DLM.
    *
-   * @param aDoc OpcToS5DataCfgDoc - набор единиц конфигурации
+   * @param aCfgUnits IList - набор единиц конфигурации
    * @return IAvTree - конфигурация в стандартном виде.
    */
-  private static IAvTree createDatas( OpcToS5DataCfgDoc aDoc ) {
+  private static IAvTree createDatas( IList<OpcToS5DataCfgUnit> aCfgUnits ) {
     AvTree pinsMassivTree = AvTree.createArrayAvTree();
 
-    IList<OpcToS5DataCfgUnit> cfgUnits = aDoc.dataUnits();
-
-    for( int i = 0; i < cfgUnits.size(); i++ ) {
-      OpcToS5DataCfgUnit unit = cfgUnits.get( i );
+    for( int i = 0; i < aCfgUnits.size(); i++ ) {
+      OpcToS5DataCfgUnit unit = aCfgUnits.get( i );
 
       if( unit.getTypeOfCfgUnit() == ECfgUnitType.DATA ) {
         pinsMassivTree.addElement( createDataPin( unit ) );
@@ -414,18 +412,16 @@ public class OpcToS5DataCfgConverter {
   /**
    * Создаёт конфигурацию всех НСИ атрибутов для подмодуля данных базового DLM.
    *
-   * @param aDoc OpcToS5DataCfgDoc - набор единиц конфигурации
+   * @param aCfgUnits IList - набор единиц конфигурации
    * @param aConnection - соединение с сервером
    * @return IAvTree - конфигурация в стандартном виде.
    */
-  private static IAvTree createRriAttrs( OpcToS5DataCfgDoc aDoc, ISkConnection aConnection ) {
+  private static IAvTree createRriAttrs( IList<OpcToS5DataCfgUnit> aCfgUnits, ISkConnection aConnection ) {
 
     AvTree rriDefsTree = AvTree.createArrayAvTree();
 
-    IList<OpcToS5DataCfgUnit> cfgUnits = aDoc.dataUnits();
-
-    for( int i = 0; i < cfgUnits.size(); i++ ) {
-      OpcToS5DataCfgUnit unit = cfgUnits.get( i );
+    for( int i = 0; i < aCfgUnits.size(); i++ ) {
+      OpcToS5DataCfgUnit unit = aCfgUnits.get( i );
 
       if( unit.getTypeOfCfgUnit() == ECfgUnitType.RRI ) {
         rriDefsTree.addElement( createRriAttrPin( unit, aConnection ) );
@@ -701,16 +697,14 @@ public class OpcToS5DataCfgConverter {
   /**
    * Создаёт и возвращает конфигурацию всех событий.
    *
-   * @param aDoc OpcToS5DataCfgDoc - набор единиц конфигурации
+   * @param aCfgUnits IList - набор единиц конфигурации
    * @return IAvTree - конфигурация в стандартном виде.
    */
-  private static IAvTree createCommands( OpcToS5DataCfgDoc aDoc ) {
+  private static IAvTree createCommands( IList<OpcToS5DataCfgUnit> aCfgUnits ) {
     AvTree commandsMassivTree = AvTree.createArrayAvTree();
 
-    IList<OpcToS5DataCfgUnit> cfgUnits = aDoc.dataUnits();
-
-    for( int i = 0; i < cfgUnits.size(); i++ ) {
-      OpcToS5DataCfgUnit unit = cfgUnits.get( i );
+    for( int i = 0; i < aCfgUnits.size(); i++ ) {
+      OpcToS5DataCfgUnit unit = aCfgUnits.get( i );
 
       if( unit.getTypeOfCfgUnit() == ECfgUnitType.COMMAND ) {
         commandsMassivTree.addElement( createCommand( unit ) );
@@ -899,19 +893,19 @@ public class OpcToS5DataCfgConverter {
   /**
    * Создаёт и возвращает перечисление возможных команд по классам.
    *
-   * @param aDoc OpcToS5DataCfgDoc - набор единиц конфигурации
+   * @param aCfgUnits IList - набор единиц конфигурации
    * @return IAvTree - конфигурация в стандартном виде.
    */
-  private static IAvTree createCommandInfoes( OpcToS5DataCfgDoc aDoc ) {
+  private static IAvTree createCommandInfoes( IList<OpcToS5DataCfgUnit> aCfgUnits ) {
     AvTree commandInfoesMassivTree = AvTree.createArrayAvTree();
 
     IMapEdit<String, IListEdit<String>> objsByClass = new ElemMap<>();
     IMapEdit<String, IListEdit<String>> cmdsByClass = new ElemMap<>();
 
-    IList<OpcToS5DataCfgUnit> cfgUnits = aDoc.dataUnits();
+    // IList<OpcToS5DataCfgUnit> cfgUnits = aDoc.dataUnits();
 
-    for( int i = 0; i < cfgUnits.size(); i++ ) {
-      OpcToS5DataCfgUnit unit = cfgUnits.get( i );
+    for( int i = 0; i < aCfgUnits.size(); i++ ) {
+      OpcToS5DataCfgUnit unit = aCfgUnits.get( i );
 
       if( unit.getTypeOfCfgUnit() == ECfgUnitType.COMMAND ) {
         IList<Gwid> gwids = unit.getDataGwids();
@@ -996,16 +990,14 @@ public class OpcToS5DataCfgConverter {
   /**
    * Создаёт и возвращает конфигурацию всех событий.
    *
-   * @param aDoc OpcToS5DataCfgDoc - набор единиц конфигурации
+   * @param aCfgUnits IList - набор единиц конфигурации
    * @return IAvTree - конфигурация в стандартном виде.
    */
-  private static IAvTree createEvents( OpcToS5DataCfgDoc aDoc ) {
+  private static IAvTree createEvents( IList<OpcToS5DataCfgUnit> aCfgUnits ) {
     AvTree eventsMassivTree = AvTree.createArrayAvTree();
 
-    IList<OpcToS5DataCfgUnit> cfgUnits = aDoc.dataUnits();
-
-    for( int i = 0; i < cfgUnits.size(); i++ ) {
-      OpcToS5DataCfgUnit unit = cfgUnits.get( i );
+    for( int i = 0; i < aCfgUnits.size(); i++ ) {
+      OpcToS5DataCfgUnit unit = aCfgUnits.get( i );
 
       if( unit.getTypeOfCfgUnit() == ECfgUnitType.EVENT ) {
         eventsMassivTree.addElement( createEvent( unit ) );

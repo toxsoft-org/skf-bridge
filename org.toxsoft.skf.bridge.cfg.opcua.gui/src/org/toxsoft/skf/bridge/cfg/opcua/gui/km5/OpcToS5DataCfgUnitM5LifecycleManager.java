@@ -128,7 +128,7 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
       TsInternalErrorRtException.checkNull( cs );
       ISkConnection conn = cs.defConn();
       TsInternalErrorRtException.checkNull( conn );
-      IAvTree avTree = OpcToS5DataCfgConverter.convertToDlmCfgTree( master(), conn, aNodeEntity -> {
+      IAvTree avTree = OpcToS5DataCfgConverter.convertToDlmCfgTree( master().dataUnits(), conn, aNodeEntity -> {
         NodeId nodeid = aNodeEntity.asValobj();
         return nodeid.toParseableString();
       } );
