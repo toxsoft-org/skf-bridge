@@ -266,7 +266,8 @@ public class ModbusToS5CfgDocEditorPanel
 
             switch( aActionId ) {
               case OpcToS5DataCfgDocEditorPanel.ACTID_GENERATE_FILE:
-                ((ModbusToS5CfgUnitM5LifecycleManager)lifecycleManager()).generateFileFromCurrState( ctx );
+                ((ModbusToS5CfgUnitM5LifecycleManager)lifecycleManager()).generateDlmFileFromCurrState( ctx );
+                ((ModbusToS5CfgUnitM5LifecycleManager)lifecycleManager()).generateDevFileFromCurrState( ctx );
                 break;
 
               default:

@@ -1,5 +1,7 @@
 package org.toxsoft.skf.bridge.cfg.modbus.gui.type;
 
+import org.toxsoft.core.tslib.utils.*;
+
 /**
  * Описание одного участка адресного пространства Modbus (аналог NodeId в opc ua)
  *
@@ -13,6 +15,8 @@ public class ModbusNode {
 
   private ERequestType requestType;
 
+  private boolean isOutput = false;
+
   public ModbusNode( int aRegister, int aWordsCount, ERequestType aRequestType ) {
     super();
     register = aRegister;
@@ -21,7 +25,7 @@ public class ModbusNode {
   }
 
   public String getId() {
-    return requestType.name() + "_" + register + "_" + wordsCount;
+    return requestType.name() + "_" + register + "_" + wordsCount + (isOutput ? "_output" : TsLibUtils.EMPTY_STRING);
   }
 
   public int getRegister() {
@@ -48,4 +52,11 @@ public class ModbusNode {
     requestType = aRequestType;
   }
 
+  public boolean isOutput() {
+    return isOutput;
+  }
+
+  public void setOutput( boolean aIsOutput ) {
+    isOutput = aIsOutput;
+  }
 }

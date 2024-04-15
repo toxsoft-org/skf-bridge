@@ -514,7 +514,7 @@ public class OpcToS5DataCfgConverter {
     // идентификатор OPC-устройства (драйвера)
     pinOpSet1.setStr( TAG_DEVICE_ID, OPC_TAG_DEVICE );
 
-    IList<String> nodes = conertToNodesList2( aUnit.getDataNodes2(), idConvertor );
+    IList<String> nodes = convertToNodesList2( aUnit.getDataNodes2(), idConvertor );
 
     for( int i = 0; i < nodes.size(); i++ ) {
       String node = nodes.get( i );
@@ -596,7 +596,7 @@ public class OpcToS5DataCfgConverter {
     // идентификатор OPC-устройства (драйвера)
     rriAttrOpSet.setStr( TAG_DEVICE_ID, OPC_TAG_DEVICE );
 
-    IList<String> nodes = conertToNodesList2( aUnit.getDataNodes2(), idConvertor );
+    IList<String> nodes = convertToNodesList2( aUnit.getDataNodes2(), idConvertor );
 
     for( int i = 0; i < nodes.size(); i++ ) {
       String node = nodes.get( i );
@@ -767,7 +767,7 @@ public class OpcToS5DataCfgConverter {
             }
         }
         String complexNodeId =
-            createIfNeedAndGetComplexNodeId( conertToNodesList2( aUnit.getDataNodes2(), idConvertor ), cmdArgType );
+            createIfNeedAndGetComplexNodeId( convertToNodesList2( aUnit.getDataNodes2(), idConvertor ), cmdArgType );
         OP_COMPLEX_TAG_ID.setValue( pinOpSet1, avStr( complexNodeId ) );
 
         // специально для ДИМЫ:
@@ -794,7 +794,7 @@ public class OpcToS5DataCfgConverter {
     AvTree tagsTree = AvTree.createArrayAvTree();
     cmdTreeNodes.put( COMMAND_TAGS_ARRAY, tagsTree );
 
-    IList<String> nodes = conertToNodesList2( aUnit.getDataNodes2(), idConvertor );
+    IList<String> nodes = convertToNodesList2( aUnit.getDataNodes2(), idConvertor );
 
     for( int i = 0; i < nodes.size(); i++ ) {
       String node = nodes.get( i );
@@ -1029,7 +1029,7 @@ public class OpcToS5DataCfgConverter {
     pinOpSet1.setStr( OBJ_NAME, objName );
     pinOpSet1.setStr( EVENT_ID, evntId );
 
-    IList<String> nodes = conertToNodesList2( aUnit.getDataNodes2(), idConvertor );
+    IList<String> nodes = convertToNodesList2( aUnit.getDataNodes2(), idConvertor );
     String node = nodes.first();
 
     pinOpSet1.setStr( TAG_DEVICE_ID, OPC_TAG_DEVICE );

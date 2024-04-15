@@ -315,7 +315,7 @@ public class CfgOpcUaNodeM5Model
       IStringMapEdit<CfgOpcUaNode> actualNodesCfgs = new StringMap<>();
 
       for( OpcToS5DataCfgUnit unit : dataCfgUnits ) {
-        IList<NodeId> nodes = OpcUaUtils.conertToNodesList( unit.getDataNodes2() );
+        IList<NodeId> nodes = OpcUaUtils.convertToNodesList( unit.getDataNodes2() );
 
         for( int i = 0; i < nodes.size(); i++ ) {
           NodeId node = nodes.get( i );
@@ -420,7 +420,7 @@ public class CfgOpcUaNodeM5Model
       }
 
       for( OpcToS5DataCfgUnit unit : dataCfgUnits ) {
-        IList<NodeId> nodes = OpcUaUtils.conertToNodesList( unit.getDataNodes2() );
+        IList<NodeId> nodes = OpcUaUtils.convertToNodesList( unit.getDataNodes2() );
 
         String relizationTypeId = unit.getRelizationTypeId();
         CfgUnitRealizationTypeRegister typeReg2 =

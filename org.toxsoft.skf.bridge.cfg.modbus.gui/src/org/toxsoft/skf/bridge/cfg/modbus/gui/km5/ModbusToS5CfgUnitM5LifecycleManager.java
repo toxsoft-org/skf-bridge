@@ -115,7 +115,7 @@ public class ModbusToS5CfgUnitM5LifecycleManager
     service.saveCfgDoc( master() );
   }
 
-  public void generateFileFromCurrState( ITsGuiContext aContext ) {
+  public void generateDlmFileFromCurrState( ITsGuiContext aContext ) {
     Shell shell = aContext.find( Shell.class );
     FileDialog fd = new FileDialog( shell, SWT.SAVE );
     fd.setText( STR_SELECT_FILE_SAVE_DLMCFG );
@@ -142,6 +142,37 @@ public class ModbusToS5CfgUnitM5LifecycleManager
       PinsConfigFileFormatter.format( TMP_DEST_FILE, selected, DLM_CONFIG_STR );
 
       TsDialogUtils.info( shell, MSG_CONFIG_FILE_DLMCFG_CREATED, selected );
+    }
+    catch( Exception e ) {
+      LoggerUtils.errorLogger().error( e );
+      TsDialogUtils.error( shell, e );
+    }
+  }
+
+  public void generateDevFileFromCurrState( ITsGuiContext aContext ) {
+    Shell shell = aContext.find( Shell.class );
+    FileDialog fd = new FileDialog( shell, SWT.SAVE );
+    fd.setText( STR_SELECT_FILE_SAVE_DEVCFG );
+    fd.setFilterPath( TsLibUtils.EMPTY_STRING );
+    String[] filterExt = { ".devcfg" }; //$NON-NLS-1$
+    fd.setFilterExtensions( filterExt );
+    String selected = fd.open();
+    if( selected == null ) {
+      return;
+    }
+    try {
+      ISkConnectionSupplier cs = aContext.get( ISkConnectionSupplier.class );
+      TsInternalErrorRtException.checkNull( cs );
+      ISkConnection conn = cs.defConn();
+      TsInternalErrorRtException.checkNull( conn );
+      IAvTree avTree = ModbusCfgDocConverter.convertToDevCfgTree( aContext, master() );
+      String TMP_DEST_FILE = "destDevFile.tmp"; //$NON-NLS-1$
+      AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
+
+      String DEV_CONFIG_STR = "DeviceConfig = "; //$NON-NLS-1$
+      PinsConfigFileFormatter.format( TMP_DEST_FILE, selected, DEV_CONFIG_STR );
+
+      TsDialogUtils.info( shell, MSG_CONFIG_FILE_DEVCFG_CREATED, selected );
     }
     catch( Exception e ) {
       LoggerUtils.errorLogger().error( e );

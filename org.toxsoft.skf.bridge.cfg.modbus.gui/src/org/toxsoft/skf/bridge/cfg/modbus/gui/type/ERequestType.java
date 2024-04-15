@@ -54,4 +54,13 @@ public enum ERequestType {
         }
 
       };
+
+  /**
+   * Determines if the item presents discret type.
+   *
+   * @return true - item presents discret type, false - overwise.
+   */
+  public boolean isDiscret() {
+    return this == DO || this == DI;
+  }
 }

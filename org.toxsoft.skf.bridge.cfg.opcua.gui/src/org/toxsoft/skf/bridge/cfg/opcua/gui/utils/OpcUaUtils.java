@@ -302,7 +302,7 @@ public class OpcUaUtils {
     return new AnonymousProvider();
   }
 
-  public static IList<String> conertToNodesList2( IAvList aAtomicList, INodeIdConvertor aConvertor ) {
+  public static IList<String> convertToNodesList2( IAvList aAtomicList, INodeIdConvertor aConvertor ) {
     IListEdit<String> result = new ElemArrayList<>();
     for( IAtomicValue val : aAtomicList ) {
       result.add( aConvertor.converToNodeId( val ) );
@@ -310,15 +310,15 @@ public class OpcUaUtils {
     return result;
   }
 
-  public static IList<NodeId> conertToNodesList( IAvList aAtomicList ) {
-    IListEdit<NodeId> result = new ElemArrayList<>();
+  public static <T> IList<T> convertToNodesList( IAvList aAtomicList ) {
+    IListEdit<T> result = new ElemArrayList<>();
     for( IAtomicValue val : aAtomicList ) {
       result.add( val.asValobj() );
     }
     return result;
   }
 
-  public static IAvList conertToAtomicList( IList<NodeId> aNodeList ) {
+  public static IAvList convertToAtomicList( IList<NodeId> aNodeList ) {
     IAvListEdit result = new AvList( new ElemArrayList<>() );
     for( NodeId node : aNodeList ) {
       result.add( avValobj( node ) );

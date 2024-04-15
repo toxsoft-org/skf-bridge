@@ -11,6 +11,8 @@ import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.type.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 
 /**
  * A hole configuration of modbus <-> s5 bridge, contains several devisions (data, commands, events) each contains units
@@ -203,4 +205,18 @@ public class ModbusToS5CfgDoc
     }
   }
 
+  public void ensureNodesCfgs() {
+    nodesCfgs.clear();
+    for( OpcToS5DataCfgUnit unit : dataCfgUnits ) {
+      IList<ModbusNode> nodes = OpcUaUtils.convertToNodesList( unit.getDataNodes2() );
+      ECfgUnitType type = unit.getTypeOfCfgUnit();
+
+      for( int i = 0; i < nodes.size(); i++ ) {
+        ModbusNode node = nodes.get( i );
+        node.setOutput( type == ECfgUnitType.COMMAND );
+
+        nodesCfgs.put( node.getId(), node );
+      }
+    }
+  }
 }
