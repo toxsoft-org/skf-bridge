@@ -3,10 +3,12 @@ package org.toxsoft.skf.bridge.cfg.opcua.skide.main;
 import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tsgui.bricks.ctx.impl.*;
+import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tsgui.utils.layout.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.panels.*;
 import org.toxsoft.skide.core.api.*;
 import org.toxsoft.skide.core.api.impl.*;
+import org.toxsoft.uskat.core.gui.conn.*;
 
 /**
  * {@link AbstractSkideUnitPanel} implementation.
@@ -28,7 +30,10 @@ public class SkideUnitPanelBridgeCfgOpcUaToS5
 
   @Override
   protected Control doCreateControl( Composite aParent ) {
-    TsGuiContext reportContext = new TsGuiContext( tsContext() );
+    ISkConnectionSupplier connSup = tsContext().get( ISkConnectionSupplier.class );
+
+    IM5Domain m5 = connSup.defConn().scope().get( IM5Domain.class );
+    TsGuiContext reportContext = new TsGuiContext( m5.tsContext() );
 
     OpcToS5DataCfgDocEditorPanel panel = new OpcToS5DataCfgDocEditorPanel( aParent, reportContext );
     panel.setLayoutData( BorderLayout.CENTER );

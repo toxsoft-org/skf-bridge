@@ -11,9 +11,12 @@ import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tsgui.dialogs.*;
 import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tsgui.m5.model.impl.*;
+import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.avtree.*;
+import org.toxsoft.core.tslib.av.list.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.coll.*;
+import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
@@ -24,7 +27,7 @@ import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.gui.conn.*;
 
 /**
- * Lifecycle Manager of {@link UaTreeNode} entities.
+ * Lifecycle Manager of {@link OpcToS5DataCfgUnit} entities.
  *
  * @author max
  */
@@ -62,13 +65,13 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
     ECfgUnitType type = m().TYPE.getFieldValue( aValues ).asValobj();
     // aValues ).asString();
     IList<Gwid> gwids = m().GWIDS.getFieldValue( aValues );
-    IList<NodeId> nodes = m().NODES.getFieldValue( aValues );
+    IList<IAtomicValue> nodes = m().NODES.getFieldValue( aValues );
 
     ICfgUnitRealizationType realType = m().REALIZATION_TYPE.getFieldValue( aValues );
     IOptionSet realization = m().REALIZATION.getFieldValue( aValues );
 
     OpcToS5DataCfgUnit result = new OpcToS5DataCfgUnit( strid, name );
-    result.setDataNodes( nodes );
+    result.setDataNodes2( new AvList( new ElemArrayList<>( nodes ) ) );
     result.setDataGwids( gwids );
     result.setTypeOfCfgUnit( type );
     result.setRelizationTypeId( realType.id() );
@@ -83,13 +86,13 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
     // String strid= m().STRID.getFieldValue( aValues ).asString();
     IList<Gwid> gwids = m().GWIDS.getFieldValue( aValues );
     ECfgUnitType type = m().TYPE.getFieldValue( aValues ).asValobj();
-    IList<NodeId> nodes = m().NODES.getFieldValue( aValues );
+    IList<IAtomicValue> nodes = m().NODES.getFieldValue( aValues );
 
     ICfgUnitRealizationType realType = m().REALIZATION_TYPE.getFieldValue( aValues );
     IOptionSet realization = m().REALIZATION.getFieldValue( aValues );
 
     OpcToS5DataCfgUnit result = aValues.originalEntity();
-    result.setDataNodes( nodes );
+    result.setDataNodes2( new AvList( new ElemArrayList<>( nodes ) ) );
     result.setName( name );
     result.setDataGwids( gwids );
     result.setTypeOfCfgUnit( type );
@@ -109,7 +112,7 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
     service.saveCfgDoc( master() );
   }
 
-  void generateFileFromCurrState( ITsGuiContext aContext ) {
+  public void generateFileFromCurrState( ITsGuiContext aContext ) {
     Shell shell = aContext.find( Shell.class );
     FileDialog fd = new FileDialog( shell, SWT.SAVE );
     fd.setText( STR_SELECT_FILE_SAVE_DLMCFG );
@@ -125,7 +128,10 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
       TsInternalErrorRtException.checkNull( cs );
       ISkConnection conn = cs.defConn();
       TsInternalErrorRtException.checkNull( conn );
-      IAvTree avTree = OpcToS5DataCfgConverter.convertToDlmCfgTree( master(), conn );
+      IAvTree avTree = OpcToS5DataCfgConverter.convertToDlmCfgTree( master().dataUnits(), conn, aNodeEntity -> {
+        NodeId nodeid = aNodeEntity.asValobj();
+        return nodeid.toParseableString();
+      } );
       String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
       AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
 
@@ -143,7 +149,14 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
   /**
    * @param aResult config unit
    */
-  public void addCfgUnit( OpcToS5DataCfgUnit aResult ) {
-    master().addDataUnit( aResult );
+  public void addCfgUnit( OpcToS5DataCfgUnit aCfgUnit ) {
+    master().addDataUnit( aCfgUnit );
+  }
+
+  /**
+   * @param aResult config unit
+   */
+  public void addCfgUnits( IList<OpcToS5DataCfgUnit> aCfgUnits ) {
+    master().addDataUnits( aCfgUnits );
   }
 }

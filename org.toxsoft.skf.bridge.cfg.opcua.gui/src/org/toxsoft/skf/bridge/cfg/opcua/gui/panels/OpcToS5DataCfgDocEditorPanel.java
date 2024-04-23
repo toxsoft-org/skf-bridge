@@ -5,7 +5,6 @@ import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
-import org.eclipse.jface.action.*;
 import org.eclipse.milo.opcua.sdk.client.*;
 import org.eclipse.milo.opcua.stack.core.*;
 import org.eclipse.swt.*;
@@ -50,6 +49,16 @@ public class OpcToS5DataCfgDocEditorPanel
   final static String ACTID_EDIT_UNITS = SK_ID + ".users.gui.EditUnits"; //$NON-NLS-1$
 
   final static String ACTID_EDIT_NODES = SK_ID + ".users.gui.EditNodes"; //$NON-NLS-1$
+
+  final static String ACTID_AUTO_LINK = SK_ID + "bridge.cfg.opcua.to.s5.auto.link"; //$NON-NLS-1$
+
+  public final static String ACTID_GENERATE_FILE = SK_ID + "bridge.cfg.opcua.to.s5.generate.file"; //$NON-NLS-1$
+
+  final static TsActionDef ACDEF_AUTO_LINK =
+      TsActionDef.ofPush2( ACTID_AUTO_LINK, STR_N_AUTO_LINK, STR_D_AUTO_LINK, ICONID_AUTO_LINK );
+
+  public final static TsActionDef ACDEF_GENERATE_FILE = TsActionDef.ofPush2( ACTID_GENERATE_FILE, STR_N_GENERATE_DLMCFG,
+      STR_D_GENERATE_DLMCFG, ICONID_SHOW_GENERATE_DLMCFG );
 
   final static TsActionDef ACDEF_EDIT_UNITS =
       TsActionDef.ofPush2( ACTID_EDIT_UNITS, STR_N_EDIT_CONFIG_SET, STR_D_EDIT_CONFIG_SET, ICONID_EDIT_UNITS );
@@ -316,7 +325,8 @@ public class OpcToS5DataCfgDocEditorPanel
     textContr1.setText( STR_SK_CONN_DESCR + defConnName );
 
     // Связи
-    IM5Model<OpcToS5DataCfgUnit> model = m5.getModel( OpcToS5DataCfgUnitM5Model.MODEL_ID, OpcToS5DataCfgUnit.class );
+    IM5Model<OpcToS5DataCfgUnit> model =
+        m5.getModel( OpcToS5DataCfgUnitM5Model.MODEL_ID_TEMPLATE + ".opcua", OpcToS5DataCfgUnit.class );
 
     // IMultiPaneComponentConstants.OPDEF_IS_DETAILS_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
     // IMultiPaneComponentConstants.OPDEF_DETAILS_PANE_PLACE.setValue( ctx.params(),
@@ -327,8 +337,73 @@ public class OpcToS5DataCfgDocEditorPanel
     IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
 
     IM5LifecycleManager<OpcToS5DataCfgUnit> lm = new OpcToS5DataCfgUnitM5LifecycleManager( model, aSelDoc );
+    // IM5CollectionPanel<OpcToS5DataCfgUnit> opcToS5DataCfgUnitPanel =
+    // model.panelCreator().createCollEditPanel( ctx, lm.itemsProvider(), lm );
+
+    MultiPaneComponentModown<OpcToS5DataCfgUnit> mpc =
+        new MultiPaneComponentModown<>( ctx, model, lm.itemsProvider(), lm ) {
+
+          @Override
+          protected ITsToolbar doCreateToolbar( ITsGuiContext aaContext, String aName, EIconSize aIconSize,
+              IListEdit<ITsActionDef> aActs ) {
+            aActs.add( ACDEF_SEPARATOR );
+            aActs.add( ACDEF_AUTO_LINK );
+            aActs.add( ACDEF_GENERATE_FILE );
+
+            ITsToolbar toolbar =
+
+                super.doCreateToolbar( aaContext, aName, aIconSize, aActs );
+
+            toolbar.addListener( aActionId -> {
+              // nop
+            } );
+
+            toolbar.setIconSize( EIconSize.IS_24X24 );
+            return toolbar;
+          }
+
+          @Override
+          protected void doProcessAction( String aActionId ) {
+
+            switch( aActionId ) {
+              case ACTID_GENERATE_FILE:
+                ((OpcToS5DataCfgUnitM5LifecycleManager)lifecycleManager()).generateFileFromCurrState( ctx );
+                break;
+
+              case ACTID_AUTO_LINK:
+
+                // вынести в отделный класс реализации
+                IdChain connIdChain =
+                    (IdChain)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_S5_CONNECTION );
+                ISkConnectionSupplier connSup = ctx.get( ISkConnectionSupplier.class );
+
+                // dima 06.02.24 работаем теперь через справочник
+                ISkConnection currConn = connSup.getConn( connIdChain );
+
+                OpcUaServerConnCfg conConf =
+                    (OpcUaServerConnCfg)ctx.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
+                if( conConf == null ) {
+                  OpcUaUtils.selectOpcConfigAndOpenConnection( ctx );
+                  conConf = (OpcUaServerConnCfg)ctx.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
+                }
+
+                // TODO - процессор брать из контекста
+                IList<OpcToS5DataCfgUnit> cfgUnits = new StoredMetaInfoAutoLinkConfigurationProcess()
+                    .formCfgUnitsFromAutoElements( ctx, currConn, conConf );
+
+                ((OpcToS5DataCfgUnitM5LifecycleManager)lifecycleManager()).addCfgUnits( cfgUnits );
+
+                doFillTree();
+                break;
+
+              default:
+                throw new TsNotAllEnumsUsedRtException( aActionId );
+            }
+          }
+        };
+
     IM5CollectionPanel<OpcToS5DataCfgUnit> opcToS5DataCfgUnitPanel =
-        model.panelCreator().createCollEditPanel( ctx, lm.itemsProvider(), lm );
+        new M5CollectionPanelMpcModownWrapper<>( mpc, false );
 
     tabCfgUnitsItem.setControl( opcToS5DataCfgUnitPanel.createControl( tabSubFolder ) );
 
@@ -353,69 +428,6 @@ public class OpcToS5DataCfgDocEditorPanel
     tabCfgNodesItem.setControl( cfgNodesPanel.createControl( tabSubFolder ) );
 
     tabSubFolder.setSelection( tabCfgUnitsItem );
-  }
-
-  static class TextControlContribution
-      extends ControlContribution {
-
-    private final int width;
-    private final int swtStyle;
-    private String    text;
-    CLabel            label;
-
-    /**
-     * Конструктор.
-     *
-     * @param aId String - ИД элемента
-     * @param aWidth int - ширина текстового поля
-     * @param aText String - текст
-     * @param aSwtStyle int - swt стиль
-     */
-    public TextControlContribution( String aId, int aWidth, String aText, int aSwtStyle ) {
-      super( aId );
-      width = aWidth;
-      swtStyle = aSwtStyle;
-      text = aText;
-    }
-
-    // ------------------------------------------------------------------------------------
-    // ControlContribution
-    //
-
-    @Override
-    protected Control createControl( Composite aParent ) {
-      label = new CLabel( aParent, swtStyle );
-      label.setText( text );
-      label.setAlignment( SWT.LEFT );
-      return label;
-    }
-
-    @Override
-    protected int computeWidth( Control aControl ) {
-      if( width == SWT.DEFAULT ) {
-        return super.computeWidth( aControl );
-      }
-      return width;
-    }
-
-    // ------------------------------------------------------------------------------------
-    // API
-    //
-
-    /**
-     * Возвращает текстовое поле.
-     *
-     * @return CLabel - текстовое поле
-     */
-    public CLabel label() {
-      return label;
-    }
-
-    void setText( String aText ) {
-      label.setText( aText );
-      label.redraw();
-    }
-
   }
 
 }

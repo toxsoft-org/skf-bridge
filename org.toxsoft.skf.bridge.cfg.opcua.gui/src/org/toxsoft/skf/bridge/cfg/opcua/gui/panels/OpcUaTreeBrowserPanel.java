@@ -17,7 +17,6 @@ import org.eclipse.milo.opcua.sdk.core.nodes.*;
 import org.eclipse.milo.opcua.stack.core.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
-import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.tsgui.bricks.actions.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
@@ -100,7 +99,7 @@ public class OpcUaTreeBrowserPanel
   /**
    * карта id класса - > его BitIdx2DtoEvent
    */
-  private StringMap<StringMap<IList<BitIdx2DtoEvent>>> clsId2EventInfoes = new StringMap<>(); // TODO требует реализации
+  private StringMap<StringMap<IList<BitIdx2DtoEvent>>> clsId2EventInfoes = null;
 
   private final IOpcUaServerConnCfg opcUaServerConnCfg;
   /**
@@ -214,10 +213,9 @@ public class OpcUaTreeBrowserPanel
   static class OpcUANode2SkObjectItemsProvider
       implements IM5ItemsProvider<IDtoObject> {
 
-    private IListEdit<IDtoObject> items = new ElemArrayList<>();
+    private IListEdit<IDtoObject> items         = new ElemArrayList<>();
     private final ISkCoreApi      coreApi;
-    // private Map<String, UaTreeNode> id2Node = new HashMap<>();
-    IListEdit<UaNode2Skid> node2SkidList = new ElemArrayList<>();
+    IListEdit<UaNode2Skid>        node2SkidList = new ElemArrayList<>();
 
     // Создаем IDpuObject и инициализируем его значениями из узла
     private IDtoObject makeObjDto( String aClassId, UaTreeNode aObjNode ) {
@@ -235,8 +233,6 @@ public class OpcUaTreeBrowserPanel
       for( UaTreeNode objNode : aSelectedNodes ) {
         IDtoObject dtoObj = makeObjDto( aSelectedClassInfo.id(), objNode );
         items.add( dtoObj );
-        // запоминаем привязку узла к Skid
-        // id2Node.put( dtoObj.id(), objNode );
         Skid skid = new Skid( aSelectedClassInfo.id(), dtoObj.id() );
         node2SkidList.add( new UaNode2Skid( objNode.getNodeId(), objNode.getDisplayName(), skid ) );
       }
@@ -429,15 +425,10 @@ public class OpcUaTreeBrowserPanel
   }
 
   protected void ensureBitMaskDescription() {
-
-    // dima 07.02.24 работаем через файл
-    // TODO реализовать события
-    if( clsId2RtDataInfoes == null || clsId2RriAttrInfoes == null ) {
-      // if( clsId2RtDataInfoes == null || clsId2EventInfoes == null || clsId2RriAttrInfoes == null ) {
-      // loadBitMaskDescrFile();
+    if( clsId2RtDataInfoes == null || clsId2EventInfoes == null || clsId2RriAttrInfoes == null ) {
       clsId2RtDataInfoes = OpcUaUtils.readRtDataInfoes( conn );
       clsId2RriAttrInfoes = OpcUaUtils.readRriAttrInfoes( conn );
-
+      clsId2EventInfoes = OpcUaUtils.readEventInfoes( conn );
     }
   }
 
@@ -463,26 +454,6 @@ public class OpcUaTreeBrowserPanel
     return retVal;
   }
 
-  /**
-   * Load ask user and load file with mask descriptions
-   */
-  // private void loadBitMaskDescrFile() {
-  // String bitRtdataFileDescr = getDescrFile( SELECT_FILE_4_IMPORT_BIT_RTDATA );
-  // if( bitRtdataFileDescr != null ) {
-  // File file = new File( bitRtdataFileDescr );
-  // try {
-  // Ods2DtoRtDataInfoParser.parse( file );
-  // clsId2RtDataInfoes = Ods2DtoRtDataInfoParser.getRtdataInfoesMap();
-  // clsId2EventInfoes = Ods2DtoRtDataInfoParser.getEventInfoesMap();
-  // clsId2RriAttrInfoes = Ods2DtoRtDataInfoParser.getRriAttrInfoesMap();
-  // TsDialogUtils.info( getShell(), STR_BITMASK_FILE_LOADED, bitRtdataFileDescr );
-  // }
-  // catch( IOException ex ) {
-  // LoggerUtils.errorLogger().error( ex );
-  // }
-  // }
-  // }
-
   private static boolean isCheckLinkEnable( UaTreeNode aSelectedItem ) {
     boolean enable = false;
     // узел у которого тип Variable
@@ -492,16 +463,6 @@ public class OpcUaTreeBrowserPanel
       }
     }
     return enable;
-  }
-
-  private String getDescrFile( String aTitle ) {
-    FileDialog fd = new FileDialog( getShell(), SWT.OPEN );
-    fd.setText( aTitle );// SELECT_FILE_4_IMPORT_CMD
-    fd.setFilterPath( DEFAULT_PATH_STR );
-    String[] filterExt = { ODS_EXT };
-    fd.setFilterExtensions( filterExt );
-    String selected = fd.open();
-    return selected;
   }
 
   private static boolean isCtreateObjEnable( UaTreeNode aSelectedItem ) {
@@ -659,26 +620,25 @@ public class OpcUaTreeBrowserPanel
           if( rriDtoClassInfo != null ) {
             defineRriParams( aContext, rriDtoClassInfo );
           }
-
-          // чистим список привязок ClassGwid -> NodeId
-          node2ClassGwidList = filterNode2ClassGwidList( dtoClassInfo, rriDtoClassInfo, node2ClassGwidList );
-          // заливаем в хранилище
-          OpcUaUtils.updateNodes2GwidsInStore( aContext, node2ClassGwidList,
-              OpcUaUtils.SECTID_OPC_UA_NODES_2_CLS_GWIDS_TEMPLATE, UaNode2Gwid.KEEPER, opcUaServerConnCfg );
-
-          ISkidList skids2Remove = conn.coreApi().objService().listSkids( dtoClassInfo.id(), false );
-          // перепривязываем объекты
-          ISkClassInfo updatedClassInfo = conn.coreApi().sysdescr().getClassInfo( dtoClassInfo.id() );
-          IListEdit<IDtoObject> listObj2Update = new ElemArrayList<>();
-          for( Skid skid : skids2Remove ) {
-            ISkObject obj2Update = conn.coreApi().objService().find( skid );
-            listObj2Update.add( DtoObject.createFromSk( obj2Update, conn.coreApi() ) );
-          }
-          OpcUaUtils.clearCache( opcUaServerConnCfg );
-          generateNode2GwidLinks( aContext, updatedClassInfo, listObj2Update, aTreeType,
-              rriSection == null ? IStridablesList.EMPTY : rriSection.listParamInfoes( updatedClassInfo.id() ) );
-          TsDialogUtils.info( getShell(), STR_SUCCESS_CLASS_UPDATED, dtoClassInfo.id() );
         }
+        // чистим список привязок ClassGwid -> NodeId
+        node2ClassGwidList = filterNode2ClassGwidList( dtoClassInfo, rriDtoClassInfo, node2ClassGwidList );
+        // заливаем в хранилище
+        OpcUaUtils.updateNodes2GwidsInStore( aContext, node2ClassGwidList,
+            OpcUaUtils.SECTID_OPC_UA_NODES_2_CLS_GWIDS_TEMPLATE, UaNode2Gwid.KEEPER, opcUaServerConnCfg );
+
+        ISkidList skids2Remove = conn.coreApi().objService().listSkids( currDtoClassInfo.id(), false );
+        // перепривязываем объекты
+        ISkClassInfo updatedClassInfo = conn.coreApi().sysdescr().getClassInfo( currDtoClassInfo.id() );
+        IListEdit<IDtoObject> listObj2Update = new ElemArrayList<>();
+        for( Skid skid : skids2Remove ) {
+          ISkObject obj2Update = conn.coreApi().objService().find( skid );
+          listObj2Update.add( DtoObject.createFromSk( obj2Update, conn.coreApi() ) );
+        }
+        OpcUaUtils.clearCache( opcUaServerConnCfg );
+        generateNode2GwidLinks( aContext, updatedClassInfo, listObj2Update, aTreeType,
+            rriSection == null ? IStridablesList.EMPTY : rriSection.listParamInfoes( updatedClassInfo.id() ) );
+        TsDialogUtils.info( getShell(), STR_SUCCESS_CLASS_UPDATED, currDtoClassInfo.id() );
       }
       else {
         // создаем пучок из модели
@@ -745,7 +705,8 @@ public class OpcUaTreeBrowserPanel
     for( IDtoRtdataInfo rtData : aDtoClassInfo.rtdataInfos() ) {
       String nodeName = rtData.id().substring( 3 );
       for( IDtoAttrInfo attr : aRriDtoClassInfo.attrInfos() ) {
-        if( attr.id().indexOf( nodeName ) >= 0 ) {
+        String rriAttrId = attr.id().substring( 3 );
+        if( rriAttrId.compareTo( nodeName ) == 0 ) {
           retVal.attrInfos().remove( attr );
         }
       }
@@ -801,46 +762,34 @@ public class OpcUaTreeBrowserPanel
     else {
       dtoClass = new DtoClassInfo( aDtoClassInfo.id(), aDtoClassInfo.parentId(), aDtoClassInfo.params() );
     }
-    // копируем свойства исходного
+    // копируем свойства нового
     dtoClass.attrInfos().setAll( aDtoClassInfo.attrInfos() );
     dtoClass.rtdataInfos().setAll( aDtoClassInfo.rtdataInfos() );
     dtoClass.cmdInfos().setAll( aDtoClassInfo.cmdInfos() );
     dtoClass.eventInfos().setAll( aDtoClassInfo.eventInfos() );
 
     // обновляем атрибуты
-    for( IDtoAttrInfo attrInfo : aDtoClassInfo.attrInfos() ) {
-      if( aCurrDtoClassInfo.attrInfos().hasKey( attrInfo.id() ) ) {
-        // если такой атрибут есть в существующем классе, то заменяем его в результирующем
-        IDtoAttrInfo removeAttr = aDtoClassInfo.attrInfos().getByKey( attrInfo.id() );
-        dtoClass.attrInfos().remove( removeAttr );
-        dtoClass.attrInfos().add( aCurrDtoClassInfo.attrInfos().getByKey( attrInfo.id() ) );
+    for( IDtoAttrInfo attrInfo : aCurrDtoClassInfo.attrInfos() ) {
+      if( !dtoClass.attrInfos().hasKey( attrInfo.id() ) ) {
+        dtoClass.attrInfos().add( attrInfo );
       }
     }
     // обновляем rtData
-    for( IDtoRtdataInfo rtDataInfo : aDtoClassInfo.rtdataInfos() ) {
-      if( aCurrDtoClassInfo.rtdataInfos().hasKey( rtDataInfo.id() ) ) {
-        // если такой rtData есть в существующем классе, то заменяем его в результирующем
-        IDtoRtdataInfo removeRtData = aDtoClassInfo.rtdataInfos().getByKey( rtDataInfo.id() );
-        dtoClass.rtdataInfos().remove( removeRtData );
-        dtoClass.rtdataInfos().add( aCurrDtoClassInfo.rtdataInfos().getByKey( rtDataInfo.id() ) );
+    for( IDtoRtdataInfo rtDataInfo : aCurrDtoClassInfo.rtdataInfos() ) {
+      if( !dtoClass.rtdataInfos().hasKey( rtDataInfo.id() ) ) {
+        dtoClass.rtdataInfos().add( rtDataInfo );
       }
     }
     // обновляем cmds
-    for( IDtoCmdInfo cmdInfo : aDtoClassInfo.cmdInfos() ) {
-      if( aCurrDtoClassInfo.cmdInfos().hasKey( cmdInfo.id() ) ) {
-        // если такой cmd есть в существующем классе, то заменяем его в результирующем
-        IDtoCmdInfo removeCmd = aDtoClassInfo.cmdInfos().getByKey( cmdInfo.id() );
-        dtoClass.cmdInfos().remove( removeCmd );
-        dtoClass.cmdInfos().add( aCurrDtoClassInfo.cmdInfos().getByKey( cmdInfo.id() ) );
+    for( IDtoCmdInfo cmdInfo : aCurrDtoClassInfo.cmdInfos() ) {
+      if( !dtoClass.cmdInfos().hasKey( cmdInfo.id() ) ) {
+        dtoClass.cmdInfos().add( cmdInfo );
       }
     }
     // обновляем events
-    for( IDtoEventInfo evtInfo : aDtoClassInfo.eventInfos() ) {
-      if( aCurrDtoClassInfo.eventInfos().hasKey( evtInfo.id() ) ) {
-        // если такой event есть в существующем классе, то заменяем его в результирующем
-        IDtoEventInfo removeEvent = aDtoClassInfo.eventInfos().getByKey( evtInfo.id() );
-        dtoClass.eventInfos().remove( removeEvent );
-        dtoClass.eventInfos().add( aCurrDtoClassInfo.eventInfos().getByKey( evtInfo.id() ) );
+    for( IDtoEventInfo evtInfo : aCurrDtoClassInfo.eventInfos() ) {
+      if( !dtoClass.eventInfos().hasKey( evtInfo.id() ) ) {
+        dtoClass.eventInfos().add( evtInfo );
       }
     }
     return dtoClass;
@@ -914,7 +863,8 @@ public class OpcUaTreeBrowserPanel
           readDataInfo( cinf, varNode, aNode2ClassGwidList );
           // НСИ атрибут
           readRriAttrInfo( rriCinf, varNode, aNode2ClassGwidList );
-          readEventInfo( cinf, varNode, aNode2ClassGwidList );
+          // dima 05.03.24 не генерим автоматически события из узлов. Только из справочника см. код ниже
+          // readEventInfo( cinf, varNode, aNode2ClassGwidList );
         }
         catch( UaRuntimeException | UaException ex ) {
           LoggerUtils.errorLogger().error( ex );
@@ -984,7 +934,7 @@ public class OpcUaTreeBrowserPanel
   }
 
   /**
-   * Читает описание Rt данного и добавляет его в описание класса {@link IDtoClassInfo}
+   * Читает описание НСИ атрибута и добавляет его в описание класса {@link IDtoClassInfo}
    *
    * @param aDtoClass текущее описание класса
    * @param aVariableNode описание узла типа переменная
@@ -1004,7 +954,7 @@ public class OpcUaTreeBrowserPanel
     // название
     String name = aVariableNode.getDisplayName().getText();
     // описание
-    String descr = aVariableNode.getDescription().getText();
+    String descr = aVariableNode.getDescription() == null ? name : aVariableNode.getDescription().getText();
     // описание
     if( (descr == null) || descr.isBlank() ) {
       descr = name;
@@ -1050,7 +1000,7 @@ public class OpcUaTreeBrowserPanel
     // название
     String name = aVariableNode.getDisplayName().getText();
     // описание
-    String descr = aVariableNode.getDescription().getText();
+    String descr = aVariableNode.getDescription() == null ? name : aVariableNode.getDescription().getText();
     // описание
     if( (descr == null) || descr.isBlank() ) {
       descr = name;
@@ -1170,7 +1120,7 @@ public class OpcUaTreeBrowserPanel
     // название
     String name = aVariableNode.getDisplayName().getText();
     // описание
-    String descr = aVariableNode.getDescription().getText();
+    String descr = aVariableNode.getDescription() == null ? name : aVariableNode.getDescription().getText();
     // описание
     if( descr == null ) {
       descr = name;
@@ -1278,6 +1228,7 @@ public class OpcUaTreeBrowserPanel
     IListEdit<UaNode2Gwid> node2RriGwidList = new ElemArrayList<>();
     IListEdit<UaNode2EventGwid> node2EvtGwidList = new ElemArrayList<>();
     IListEdit<CmdGwid2UaNodes> cmdGwid2UaNodesList = new ElemArrayList<>();
+    IListEdit<CmdGwid2UaNodes> rriAttrCmdGwid2UaNodesList = new ElemArrayList<>();
     // в этом месте у нас 100% уже загружено дерево узлов OPC UA
     IList<UaTreeNode> treeNodes = ((OpcUaNodeM5LifecycleManager)componentModown.lifecycleManager()).getCached();
     // идем по списку объектов
@@ -1289,7 +1240,7 @@ public class OpcUaTreeBrowserPanel
 
       NodeId parentNodeId = OpcUaUtils.nodeBySkid( aContext, parentSkid, opcUaServerConnCfg );
       TsIllegalStateRtException.checkNull( parentNodeId,
-          "Can't find nodeId for Skid: %s .\n Check section %s in file data-storage.kt", parentSkid.toString(),
+          "Can't find nodeId for Skid: %s .\n Check section %s in file data-storage.ktor", parentSkid.toString(),
           OpcUaUtils.getTreeSectionNameByConfig( OpcUaUtils.SECTID_OPC_UA_NODES_2_SKIDS_TEMPLATE,
               opcUaServerConnCfg ) );
       UaTreeNode parentNode = findParentNode( treeNodes, parentNodeId );
@@ -1332,6 +1283,10 @@ public class OpcUaTreeBrowserPanel
           continue;
         }
         IDtoAttrInfo attrInfo = aParamInfo.attrInfo();
+        // привязываем атрибуты к командным тегам
+        CmdGwid2UaNodes rriAttrCmdGwid2UaNodes = findAttrCmdNodes( obj, attrInfo, parentNode, aTreeType );
+        rriAttrCmdGwid2UaNodesList.add( rriAttrCmdGwid2UaNodes );
+
         // находим свой UaNode
         // сначала ищем в данных битовой маски
         UaTreeNode uaNode = tryBitMaskRriAttr( aClassInfo, parentNode, attrInfo, aTreeType );
@@ -1398,6 +1353,7 @@ public class OpcUaTreeBrowserPanel
     OpcUaUtils.updateNodes2GwidsInStore( aContext, node2EvtGwidList,
         OpcUaUtils.SECTID_OPC_UA_NODES_2_EVT_GWIDS_TEMPLATE, UaNode2EventGwid.KEEPER, opcUaServerConnCfg );
     OpcUaUtils.updateCmdGwid2NodesInStore( aContext, cmdGwid2UaNodesList, opcUaServerConnCfg );
+    OpcUaUtils.updateRriAttrGwid2NodesInStore( aContext, rriAttrCmdGwid2UaNodesList, opcUaServerConnCfg );
   }
 
   private static IList<UaTreeNode> getVariableNodes( UaTreeNode aObjectNode, EOPCUATreeType aTreeType ) {
@@ -1472,7 +1428,7 @@ public class OpcUaTreeBrowserPanel
 
   private UaTreeNode tryBitMaskEvent( ISkClassInfo aClassInfo, UaTreeNode aParentNode, IDtoEventInfo aEvtInfo,
       EOPCUATreeType aTreeType ) {
-    if( clsId2RtDataInfoes != null && clsId2EventInfoes.hasKey( aClassInfo.id() ) ) {
+    if( clsId2EventInfoes != null && clsId2EventInfoes.hasKey( aClassInfo.id() ) ) {
       StringMap<IList<BitIdx2DtoEvent>> strid2Bits = clsId2EventInfoes.getByKey( aClassInfo.id() );
       for( String strid : strid2Bits.keys() ) {
         IList<BitIdx2DtoEvent> eventBits = strid2Bits.getByKey( strid );
@@ -1570,6 +1526,58 @@ public class OpcUaTreeBrowserPanel
   }
 
   /**
+   * По описанию атрибута ищем подходящие командные UaNodes
+   *
+   * @param aObj описание объекта
+   * @param aAttrInfo описание атрибута
+   * @param aObjNode родительский узел описывающий объект
+   * @param aTreeType тип дерева
+   * @return контейнер с описание узлов или null
+   */
+  private static CmdGwid2UaNodes findAttrCmdNodes( IDtoObject aObj, IDtoAttrInfo aAttrInfo, UaTreeNode aObjNode,
+      EOPCUATreeType aTreeType ) {
+    CmdGwid2UaNodes retVal = null;
+    Gwid gwid = Gwid.createCmd( aObj.classId(), aObj.id(), aAttrInfo.id() );
+    String nodeDescr = aObjNode.getBrowseName();
+    String niCmdId = null;
+    String niCmdArgInt = null; // может и не быть
+    String niCmdArgFlt = null;
+    String niCmdFeedback = null;
+    // получаем тип
+    EAtomicType argType = aAttrInfo.dataType().atomicType();
+    // получаем список узлов в котором описаны переменные класса
+    IList<UaTreeNode> variableNodes = getVariableNodes( aObjNode, aTreeType );
+    // перебираем все узлы и заполняем нужные нам для описания связи
+    for( UaTreeNode varNode : variableNodes ) {
+      if( varNode.getNodeClass().equals( NodeClass.Variable ) ) {
+        String candidateBrowseName = varNode.getBrowseName();
+        if( nodeCmdIdBrowseName.compareTo( candidateBrowseName ) == 0 ) {
+          niCmdId = varNode.getNodeId();
+          continue;
+        }
+        if( nodeCmdArgInt.compareTo( candidateBrowseName ) == 0 ) {
+          niCmdArgInt = varNode.getNodeId();
+          continue;
+        }
+        if( nodeCmdArgFlt.compareTo( candidateBrowseName ) == 0 ) {
+          niCmdArgFlt = varNode.getNodeId();
+          continue;
+        }
+        if( nodeCmdFeedback.compareTo( candidateBrowseName ) == 0 ) {
+          niCmdFeedback = varNode.getNodeId();
+          continue;
+        }
+      }
+    }
+    retVal = switch( argType ) {
+      case BOOLEAN, INTEGER, FLOATING, NONE -> new CmdGwid2UaNodes( gwid, nodeDescr, niCmdId, niCmdArgInt, niCmdArgFlt,
+          niCmdFeedback, argType );
+      case STRING, TIMESTAMP, VALOBJ -> throw new TsNotAllEnumsUsedRtException( argType.name() );
+    };
+    return retVal;
+  }
+
+  /**
    * По описанию параметра ищем подходящий UaNode
    *
    * @param aPropInfo описание свойства класса
@@ -1604,15 +1612,26 @@ public class OpcUaTreeBrowserPanel
   private UaTreeNode findVarNodeByClassGwid( ITsGuiContext aContext, Gwid aClassGwid, IList<UaTreeNode> aVarNodes ) {
     UaTreeNode retVal = null;
     NodeId classNodeId = OpcUaUtils.classGwid2uaNode( aContext, aClassGwid, opcUaServerConnCfg );
-    TsIllegalStateRtException.checkNull( classNodeId, "Can't find nodeId for Gwid: %s", aClassGwid.asString() ); //$NON-NLS-1$
-    int classNamespace = classNodeId.getNamespaceIndex().intValue();
-    for( UaTreeNode varNode : aVarNodes ) {
-      NodeId nodeId = NodeId.parse( varNode.getNodeId() );
-      int ns = nodeId.getNamespaceIndex().intValue();
+    if( classNodeId != null ) {
+      // отрабатываем вариант когда 1 класс - 1 объект, в таком случае ищем полное совпадение nodeId
+      for( UaTreeNode varNode : aVarNodes ) {
+        NodeId nodeId = NodeId.parse( varNode.getNodeId() );
+        if( nodeId.equals( classNodeId ) ) {
+          return varNode;
+        }
+      }
+      // здесь отрабатываем вариант когда класс отдельно, объекты отдельно. В этом варианте опираемся на правило
+      // равенства
+      // namespace у узлов описания класса и объекта
+      int classNamespace = classNodeId.getNamespaceIndex().intValue();
+      for( UaTreeNode varNode : aVarNodes ) {
+        NodeId nodeId = NodeId.parse( varNode.getNodeId() );
+        int ns = nodeId.getNamespaceIndex().intValue();
 
-      if( ns == classNamespace ) {
-        retVal = varNode;
-        break;
+        if( ns == classNamespace ) {
+          retVal = varNode;
+          break;
+        }
       }
     }
     return retVal;

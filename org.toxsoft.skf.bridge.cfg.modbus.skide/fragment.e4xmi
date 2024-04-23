@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ASCII"?>
+<fragment:ModelFragments xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:application="http://www.eclipse.org/ui/2010/UIModel/application" xmlns:fragment="http://www.eclipse.org/ui/2010/UIModel/fragment" xmi:id="_BxaXACerEeWxCPrV0pAZQQ">
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_opkR8OwwEe6lpZyKONlKTg" featurename="addons" parentElementId="org.toxsoft.mws.app.main">
+    <elements xsi:type="application:Addon" xmi:id="_z2FNsOwwEe6lpZyKONlKTg" elementId="org.toxsoft.skf.bridge.cfg.modbus.skide.addon.0" contributionURI="bundleclass://org.toxsoft.skf.bridge.cfg.modbus.skide/org.toxsoft.skf.bridge.cfg.modbus.skide.e4.addons.AddonSkidePluginBridgeCfgModbus"/>
+  </fragments>
+</fragment:ModelFragments>

@@ -9,20 +9,15 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 public class OpcToS5DataCfgDocM5LifecycleManager
     extends M5LifecycleManager<OpcToS5DataCfgDoc, OpcToS5DataCfgDocService> {
 
-  private static final String SECTID_OPC_CFG_DOCS = "opc.bridge.cfg.doc"; //$NON-NLS-1$
-
-  // private IListEdit<OpcToS5DataCfgDoc> docs = new ElemArrayList<>();
-
   public OpcToS5DataCfgDocM5LifecycleManager( IM5Model<OpcToS5DataCfgDoc> aModel, OpcToS5DataCfgDocService aMaster ) {
     super( aModel, true, true, true, true, aMaster );
-    // TODO Auto-generated constructor stub
 
   }
 
   @Override
   protected OpcToS5DataCfgDoc doCreate( IM5Bunch<OpcToS5DataCfgDoc> aValues ) {
-    IAtomicValue nameVal = aValues.get( OpcToS5DataCfgDocM5Model.FID_NAME );
-    IAtomicValue descrVal = aValues.get( OpcToS5DataCfgDocM5Model.FID_DESCR );
+    IAtomicValue nameVal = aValues.get( OpcToS5DataCfgDocM5Model.NAME );
+    IAtomicValue descrVal = aValues.get( OpcToS5DataCfgDocM5Model.DESCRIPTION );
     String strid = "opctos5.bridge.cfg.doc.id" + System.currentTimeMillis(); //$NON-NLS-1$
     OpcToS5DataCfgDoc newDoc = new OpcToS5DataCfgDoc( strid, nameVal.asString(), descrVal.asString() );
 
@@ -36,8 +31,8 @@ public class OpcToS5DataCfgDocM5LifecycleManager
 
   @Override
   protected OpcToS5DataCfgDoc doEdit( IM5Bunch<OpcToS5DataCfgDoc> aValues ) {
-    IAtomicValue nameVal = aValues.get( OpcToS5DataCfgDocM5Model.FID_NAME );
-    IAtomicValue descrVal = aValues.get( OpcToS5DataCfgDocM5Model.FID_DESCR );
+    IAtomicValue nameVal = aValues.get( OpcToS5DataCfgDocM5Model.NAME );
+    IAtomicValue descrVal = aValues.get( OpcToS5DataCfgDocM5Model.DESCRIPTION );
 
     OpcToS5DataCfgDoc origDoc = aValues.originalEntity();
 

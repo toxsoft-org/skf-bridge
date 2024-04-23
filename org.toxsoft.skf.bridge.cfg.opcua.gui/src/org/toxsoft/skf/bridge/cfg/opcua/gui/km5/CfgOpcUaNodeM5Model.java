@@ -315,7 +315,7 @@ public class CfgOpcUaNodeM5Model
       IStringMapEdit<CfgOpcUaNode> actualNodesCfgs = new StringMap<>();
 
       for( OpcToS5DataCfgUnit unit : dataCfgUnits ) {
-        IList<NodeId> nodes = unit.getDataNodes();
+        IList<NodeId> nodes = OpcUaUtils.convertToNodesList( unit.getDataNodes2() );
 
         for( int i = 0; i < nodes.size(); i++ ) {
           NodeId node = nodes.get( i );
@@ -378,7 +378,7 @@ public class CfgOpcUaNodeM5Model
       }
 
       try {
-        IAvTree avTree = OpcToS5DataCfgConverter.convertToDevCfgTree( master() );
+        IAvTree avTree = OpcToS5DataCfgConverter.convertToDevCfgTree( aContext, master() );
 
         String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
         AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
@@ -420,7 +420,7 @@ public class CfgOpcUaNodeM5Model
       }
 
       for( OpcToS5DataCfgUnit unit : dataCfgUnits ) {
-        IList<NodeId> nodes = unit.getDataNodes();
+        IList<NodeId> nodes = OpcUaUtils.convertToNodesList( unit.getDataNodes2() );
 
         String relizationTypeId = unit.getRelizationTypeId();
         CfgUnitRealizationTypeRegister typeReg2 =

@@ -6,11 +6,13 @@ import static org.toxsoft.skf.bridge.cfg.opcua.gui.utils.OpcUaUtils.*;
 
 import java.util.*;
 
-import org.eclipse.milo.opcua.stack.core.types.builtin.*;
+//import org.eclipse.milo.opcua.stack.core.types.builtin.*;
+import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.avtree.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.*;
+import org.toxsoft.core.tslib.bricks.strid.coll.*;
 import org.toxsoft.core.tslib.bricks.validator.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
@@ -102,6 +104,68 @@ public class OpcToS5DataCfgConverter {
   private static final String PIN_TYPE_PARAM_NAME       = "pin.type";
   private static final String PIN_TYPE_EXTRA_PARAM_NAME = "pin.type.extra";
   private static final String PIN_TAG_NODE_ID_FORMAT    = "pin.tag.%s.def";
+
+  /**
+   * TODO найти правильное место <br>
+   * id device где node статуса НСИ.
+   */
+  private static final String RRI_STATUS_DEVICE_ID = "status.rri.tag.dev.id";
+
+  /**
+   * node id чтения статуса НСИ.
+   */
+  private static final String RRI_STATUS_READ_NODE_ID = "status.rri.read.tag.id";
+
+  /**
+   * аргумент aAddress в IComplexTag::setValue( int aAddress, IAtomicValue aValue ) для установки статуса НСИ.
+   */
+  private static final String RRI_STATUS_CMD_SET_ID = "status.rri.cmd.set.id";
+
+  /**
+   * аргумент aAddress в IComplexTag::setValue( int aAddress, IAtomicValue aValue ) для сброса статуса НСИ.
+   */
+  private static final String RRI_STATUS_CMD_RESET_ID = "status.rri.cmd.reset.id";
+
+  /**
+   * Complex node id записи статуса НСИ.
+   */
+  private static final String RRI_STATUS_COMPLEX_NODE_ID = "status.rri.complex.tag.id";
+
+  /**
+   * System Skid
+   */
+  private static final Skid ctrSystemSkid = new Skid( "CtrlSystem", "CtrlSystem" );
+
+  /**
+   * Gwid of rt data indicating RRI status
+   */
+  private static final Gwid gwidStatusRRI =
+      Gwid.createRtdata( ctrSystemSkid.classId(), ctrSystemSkid.strid(), "rtdStatusRRI" );
+
+  /**
+   * Strid of refbook item of set RRI comand
+   */
+  private static final String itemStridSetRRI = "CtrlSystem.SetRRI";
+
+  /**
+   * Strid of refbook item of reset RRI comand
+   */
+  private static final String itemStridResetRRI = "CtrlSystem.ResetRRI";
+
+  /**
+   * Default complex tag for system
+   */
+  private static final String defaultComplexTagForSystem = "ns=nsIndexSystem;i=indexSystem";// "ns=2;i=1832"
+
+  /**
+   * Default RRI status node id
+   */
+  private static final String defaultNodeIdStatusRRI = "ns=nsIndexRriStatus;i=indexRriStatus";
+
+  /**
+   * Default OPC UA Device id
+   */
+  private static final String defaultOpcUaDeviceId = "opc2s5.bridge.collection.id";
 
   /**
    * Начало блока, отвечающего за конфигурацию данных.
@@ -226,12 +290,19 @@ public class OpcToS5DataCfgConverter {
   /**
    * Хранилище комплексных тегов (идентификаторов и составляющих тегов) - очищать перед новой генерацией.
    */
-  private static IStringMapEdit<IStringMapEdit<NodeId>> complexTagsContetnt = new StringMap<>();
+  private static IStringMapEdit<IStringMapEdit<String>> complexTagsContetnt = new StringMap<>();
 
   /**
    * Хранилище идов комплексных тегов (мапированных по skid объектов) - очищать перед новой генерацией.
    */
   private static IMapEdit<Skid, String> complexTagsIdsBySkidsContetnt = new ElemMap<>();
+
+  /**
+   * Хранилище нодов чтение от gwid - заполняется при формировании простых данных - очищать перед новой генерацией.
+   */
+  private static IMapEdit<Gwid, String> tagsIdsByGwidContetnt = new ElemMap<>();
+
+  private static INodeIdConvertor idConvertor;
 
   private OpcToS5DataCfgConverter() {
 
@@ -240,33 +311,36 @@ public class OpcToS5DataCfgConverter {
   /**
    * Из описания {@link OpcToS5DataCfgDoc} создает дерево {@link IAvTree} конфигурации DLM
    *
-   * @param aDoc описание конфигурации
+   * @param aCfgUnits IList - набор единиц конфигурации
    * @return дерево для конфигурирования модуля DLM
    */
-  public static IAvTree convertToDlmCfgTree( OpcToS5DataCfgDoc aDoc, ISkConnection aConn ) {
+  public static IAvTree convertToDlmCfgTree( IList<OpcToS5DataCfgUnit> aCfgUnits, ISkConnection aConn,
+      INodeIdConvertor aConvertor ) {
     complexTagsContetnt.clear();
     complexTagsIdsBySkidsContetnt.clear();
+    tagsIdsByGwidContetnt.clear();
+    idConvertor = aConvertor;
 
     StringMap<IAvTree> nodes = new StringMap<>();
 
     // перечисление возможных команд по классам
-    IAvTree commandInfoesMassivTree = createCommandInfoes( aDoc );
+    IAvTree commandInfoesMassivTree = createCommandInfoes( aCfgUnits );
     nodes.put( CMD_CLASS_DEFS, commandInfoesMassivTree );
 
     // команды
-    IAvTree commandsMassivTree = createCommands( aDoc );
+    IAvTree commandsMassivTree = createCommands( aCfgUnits );
     nodes.put( CMD_DEFS, commandsMassivTree );
 
     // данные
-    IAvTree datasMassivTree = createDatas( aDoc );
+    IAvTree datasMassivTree = createDatas( aCfgUnits );
     nodes.put( DATA_DEFS, datasMassivTree );
 
     // атрибуты НСИ
-    IAvTree rriAttrsArrayTree = createRriAttrs( aDoc, aConn );
+    IAvTree rriAttrsArrayTree = createRriAttrs( aCfgUnits, aConn );
     nodes.put( RRI_DEFS, rriAttrsArrayTree );
 
     // события
-    IAvTree eventsMassivTree = createEvents( aDoc );
+    IAvTree eventsMassivTree = createEvents( aCfgUnits );
     nodes.put( EVENT_DEFS, eventsMassivTree );
 
     // сложные теги
@@ -296,10 +370,15 @@ public class OpcToS5DataCfgConverter {
       pinOpSet1.setStr( TAG_DEVICE_ID, OPC_TAG_DEVICE );
 
       // ссылки на составляющие теги
-      IStringMapEdit<NodeId> tags = complexTagsContetnt.getByKey( tagId );
+      IStringMapEdit<String> tags = complexTagsContetnt.getByKey( tagId );
 
       for( String tagKey : tags.keys() ) {
-        pinOpSet1.setStr( tagKey, tags.getByKey( tagKey ).toParseableString() );
+        // dima 12.02.24 пустые теги игнорируем
+        String nodeId = tags.getByKey( tagKey );
+        if( nodeId.isBlank() ) {
+          continue;
+        }
+        pinOpSet1.setStr( tagKey, tags.getByKey( tagKey ) );// .toParseableString() );
       }
 
       AvTree complexTagTree = AvTree.createSingleAvTree( tagId + ".def", pinOpSet1, IStringMap.EMPTY );
@@ -313,16 +392,14 @@ public class OpcToS5DataCfgConverter {
   /**
    * Создаёт конфигурацию всех данных для подмодуля данных базового DLM.
    *
-   * @param aDoc OpcToS5DataCfgDoc - набор единиц конфигурации
+   * @param aCfgUnits IList - набор единиц конфигурации
    * @return IAvTree - конфигурация в стандартном виде.
    */
-  private static IAvTree createDatas( OpcToS5DataCfgDoc aDoc ) {
+  private static IAvTree createDatas( IList<OpcToS5DataCfgUnit> aCfgUnits ) {
     AvTree pinsMassivTree = AvTree.createArrayAvTree();
 
-    IList<OpcToS5DataCfgUnit> cfgUnits = aDoc.dataUnits();
-
-    for( int i = 0; i < cfgUnits.size(); i++ ) {
-      OpcToS5DataCfgUnit unit = cfgUnits.get( i );
+    for( int i = 0; i < aCfgUnits.size(); i++ ) {
+      OpcToS5DataCfgUnit unit = aCfgUnits.get( i );
 
       if( unit.getTypeOfCfgUnit() == ECfgUnitType.DATA ) {
         pinsMassivTree.addElement( createDataPin( unit ) );
@@ -335,18 +412,16 @@ public class OpcToS5DataCfgConverter {
   /**
    * Создаёт конфигурацию всех НСИ атрибутов для подмодуля данных базового DLM.
    *
-   * @param aDoc OpcToS5DataCfgDoc - набор единиц конфигурации
+   * @param aCfgUnits IList - набор единиц конфигурации
    * @param aConnection - соединение с сервером
    * @return IAvTree - конфигурация в стандартном виде.
    */
-  private static IAvTree createRriAttrs( OpcToS5DataCfgDoc aDoc, ISkConnection aConnection ) {
+  private static IAvTree createRriAttrs( IList<OpcToS5DataCfgUnit> aCfgUnits, ISkConnection aConnection ) {
 
     AvTree rriDefsTree = AvTree.createArrayAvTree();
 
-    IList<OpcToS5DataCfgUnit> cfgUnits = aDoc.dataUnits();
-
-    for( int i = 0; i < cfgUnits.size(); i++ ) {
-      OpcToS5DataCfgUnit unit = cfgUnits.get( i );
+    for( int i = 0; i < aCfgUnits.size(); i++ ) {
+      OpcToS5DataCfgUnit unit = aCfgUnits.get( i );
 
       if( unit.getTypeOfCfgUnit() == ECfgUnitType.RRI ) {
         rriDefsTree.addElement( createRriAttrPin( unit, aConnection ) );
@@ -357,13 +432,42 @@ public class OpcToS5DataCfgConverter {
 
     rriDefNodes.put( "rriNodes", rriDefsTree );
 
+    String refbookName = RBID_CMD_OPCUA;
+    ISkRefbookService skRefServ = (ISkRefbookService)aConnection.coreApi().getService( ISkRefbookService.SERVICE_ID );
+    IStridablesList<ISkRefbookItem> rbItems = skRefServ.findRefbook( refbookName ).listItems();
+
+    ISkRefbookItem itemSetRRI = rbItems.findByKey( itemStridSetRRI );
+    ISkRefbookItem itemResetRRI = rbItems.findByKey( itemStridResetRRI );
+
+    int cmdIndexSetRRI = itemSetRRI != null ? itemSetRRI.attrs().getValue( RBATRID_CMD_OPCUA___INDEX ).asInt() : -1;
+    int cmdIndexResetRRI = itemSetRRI != null ? itemResetRRI.attrs().getValue( RBATRID_CMD_OPCUA___INDEX ).asInt() : -1;
+
     IOptionSetEdit opSet = new OptionSet();
-    // TODO заполним описание настройки для модуля вцелом
-    opSet.setStr( "status.rri.tag.dev.id", "opc2s5.bridge.collection.id" ); // device где node статуса НСИ
-    opSet.setStr( "status.rri.read.tag.id", "ns=32769;i=4955" ); // сам node статуса НСИ
-    opSet.setInt( "status.rri.cmd.opc.id", 13 ); // аргумент aAddress в IComplexTag::setValue( int aAddress,
-                                                 // IAtomicValue aValue ) для смены статуса НСИ
-    opSet.setStr( "status.rri.write.tag.id", "ns=32769;i=4955" );
+
+    // заполним описание настройки для модуля вцелом
+
+    // device где node статуса НСИ
+    opSet.setStr( RRI_STATUS_DEVICE_ID, defaultOpcUaDeviceId );
+
+    String nodeIdStatusRRI = tagsIdsByGwidContetnt.findByKey( gwidStatusRRI );
+    String strNodeIdStatusRRI = nodeIdStatusRRI != null ? nodeIdStatusRRI : defaultNodeIdStatusRRI;
+
+    // node статуса НСИ Gwid CtrlSystem[CtrlSystem]rtd(rtdStatusRRI)
+    opSet.setStr( RRI_STATUS_READ_NODE_ID, strNodeIdStatusRRI );
+
+    // справочника Cmd_OPCUA, strid CtrlSystem.SetRRI
+    opSet.setInt( RRI_STATUS_CMD_SET_ID, cmdIndexSetRRI );
+
+    // справочника Cmd_OPCUA, strid CtrlSystem.ResetRRI
+    opSet.setInt( RRI_STATUS_CMD_RESET_ID, cmdIndexResetRRI );
+
+    // для всех команд CtrlSystem[CtrlSystem]
+    String complexTagForSystem = complexTagsIdsBySkidsContetnt.findByKey( ctrSystemSkid );
+    if( complexTagForSystem == null ) {
+      complexTagForSystem = defaultComplexTagForSystem;
+    }
+
+    opSet.setStr( RRI_STATUS_COMPLEX_NODE_ID, complexTagForSystem );
 
     IAvTree retVal = AvTree.createSingleAvTree( DLM_CFG_NODE_ID_TEMPLATE, opSet, rriDefNodes );
 
@@ -410,14 +514,23 @@ public class OpcToS5DataCfgConverter {
     // идентификатор OPC-устройства (драйвера)
     pinOpSet1.setStr( TAG_DEVICE_ID, OPC_TAG_DEVICE );
 
-    IList<NodeId> nodes = aUnit.getDataNodes();
+    IList<String> nodes = convertToNodesList2( aUnit.getDataNodes2(), idConvertor );
 
     for( int i = 0; i < nodes.size(); i++ ) {
-      NodeId node = nodes.get( i );
+      String node = nodes.get( i );
 
       // сам идентфикатор тега
-      pinOpSet1.setStr( i == 0 ? TAG_ID : TAG_ID + i, node.toParseableString() );
+      pinOpSet1.setStr( i == 0 ? TAG_ID : TAG_ID + i, node );
 
+    }
+
+    // сохраняем соответствие для потомков (вдруг пригодится) - для каждого gwid
+    if( nodes.size() == 1 ) {
+      for( int i = 0; i < gwids.size(); i++ ) {
+        Gwid gwid = gwids.get( i );
+
+        tagsIdsByGwidContetnt.put( gwid, nodes.first() );
+      }
     }
 
     // if( aTagData.getCmdWordBitIndex() >= 0 ) {
@@ -483,16 +596,22 @@ public class OpcToS5DataCfgConverter {
     // идентификатор OPC-устройства (драйвера)
     rriAttrOpSet.setStr( TAG_DEVICE_ID, OPC_TAG_DEVICE );
 
-    IList<NodeId> nodes = aUnit.getDataNodes();
+    IList<String> nodes = convertToNodesList2( aUnit.getDataNodes2(), idConvertor );
 
     for( int i = 0; i < nodes.size(); i++ ) {
-      NodeId node = nodes.get( i );
+      String node = nodes.get( i );
 
       // сам идентфикатор тега
-      rriAttrOpSet.setStr( i == 0 ? TAG_ID : TAG_ID + i, node.toParseableString() );
+      rriAttrOpSet.setStr( i == 0 ? TAG_ID : TAG_ID + i, node );
     }
-    // TODO комплексный тег и индексы команд OPC
-    Skid attrSkid = new Skid( gwids.first().classId(), gwids.first().strid() );
+    // комплексный тег и индексы команд OPC
+    Skid attrSkid = gwids.first().skid();
+    if( !complexTagsIdsBySkidsContetnt.hasKey( attrSkid ) ) {
+      // создаем комплексный тег, его узлы описаны после 0 элемента
+      IList<String> cmdNodes = nodes.fetch( 1, nodes.size() - 1 );
+      String complexNodeId = createIfNeedAndGetComplexNodeId( cmdNodes, null );
+      complexTagsIdsBySkidsContetnt.put( attrSkid, complexNodeId );
+    }
     String complexTagId = complexTagsIdsBySkidsContetnt.findByKey( attrSkid );
     rriAttrOpSet.setStr( COMPLEX_TAG_ID, complexTagId );
     // индексы команды OPC получаем через справочник
@@ -578,16 +697,14 @@ public class OpcToS5DataCfgConverter {
   /**
    * Создаёт и возвращает конфигурацию всех событий.
    *
-   * @param aDoc OpcToS5DataCfgDoc - набор единиц конфигурации
+   * @param aCfgUnits IList - набор единиц конфигурации
    * @return IAvTree - конфигурация в стандартном виде.
    */
-  private static IAvTree createCommands( OpcToS5DataCfgDoc aDoc ) {
+  private static IAvTree createCommands( IList<OpcToS5DataCfgUnit> aCfgUnits ) {
     AvTree commandsMassivTree = AvTree.createArrayAvTree();
 
-    IList<OpcToS5DataCfgUnit> cfgUnits = aDoc.dataUnits();
-
-    for( int i = 0; i < cfgUnits.size(); i++ ) {
-      OpcToS5DataCfgUnit unit = cfgUnits.get( i );
+    for( int i = 0; i < aCfgUnits.size(); i++ ) {
+      OpcToS5DataCfgUnit unit = aCfgUnits.get( i );
 
       if( unit.getTypeOfCfgUnit() == ECfgUnitType.COMMAND ) {
         commandsMassivTree.addElement( createCommand( unit ) );
@@ -649,7 +766,8 @@ public class OpcToS5DataCfgConverter {
               cmdArgType = EAtomicType.FLOATING;
             }
         }
-        String complexNodeId = createIfNeedAndGetComplexNodeId( aUnit.getDataNodes(), cmdArgType );
+        String complexNodeId =
+            createIfNeedAndGetComplexNodeId( convertToNodesList2( aUnit.getDataNodes2(), idConvertor ), cmdArgType );
         OP_COMPLEX_TAG_ID.setValue( pinOpSet1, avStr( complexNodeId ) );
 
         // специально для ДИМЫ:
@@ -676,15 +794,15 @@ public class OpcToS5DataCfgConverter {
     AvTree tagsTree = AvTree.createArrayAvTree();
     cmdTreeNodes.put( COMMAND_TAGS_ARRAY, tagsTree );
 
-    IList<NodeId> nodes = aUnit.getDataNodes();
+    IList<String> nodes = convertToNodesList2( aUnit.getDataNodes2(), idConvertor );
 
     for( int i = 0; i < nodes.size(); i++ ) {
-      NodeId node = nodes.get( i );
+      String node = nodes.get( i );
 
       IOptionSetEdit nodeOpSet = new OptionSet();
 
       nodeOpSet.setStr( TAG_DEVICE_ID, OPC_TAG_DEVICE );
-      nodeOpSet.setStr( TAG_ID, node.toParseableString() );
+      nodeOpSet.setStr( TAG_ID, node );
       IAvTree nodeTree = AvTree.createSingleAvTree( "tag" + (i + 1), nodeOpSet, IStringMap.EMPTY );
       tagsTree.addElement( nodeTree );
     }
@@ -711,22 +829,22 @@ public class OpcToS5DataCfgConverter {
    * @return String - идентификатор сложного тега
    * @throws TsIllegalArgumentRtException - в случае несовпадения фидбаков при одинаковых командных тегов.
    */
-  private static String createIfNeedAndGetComplexNodeId( IList<NodeId> aDataNodes, EAtomicType aParamNodeType ) {
+  private static String createIfNeedAndGetComplexNodeId( IList<String> aDataNodes, EAtomicType aParamNodeType ) {
     // минимум 2 тега - командный и фидбак
     TsIllegalArgumentRtException.checkFalse( aDataNodes.size() > 1 );
 
     // первый node - командный (по нему же - мапирование)
-    NodeId cmdIdNode = aDataNodes.first();
+    String cmdIdNode = aDataNodes.first();
 
     // последний - фидбак
-    NodeId feedBackNode = aDataNodes.last();
+    String feedBackNode = aDataNodes.last();
 
     // генерим идентификатор
-    String compexTagId = "synthetic_" + cmdIdNode.toParseableString();
+    String compexTagId = "synthetic_" + cmdIdNode;
     compexTagId = compexTagId.replaceAll( ";", "_" ).replaceAll( "=", "_" );
 
     // проверка наличия этого сложного тега
-    IStringMapEdit<NodeId> cTagContent = complexTagsContetnt.findByKey( compexTagId );
+    IStringMapEdit<String> cTagContent = complexTagsContetnt.findByKey( compexTagId );
     if( cTagContent == null ) {
       cTagContent = new StringMap<>();
       // командный
@@ -753,16 +871,15 @@ public class OpcToS5DataCfgConverter {
 
     // проверка содержания тега
     // сначала фидбак
-    TsIllegalArgumentRtException.checkFalse( cTagContent.hasKey( СT_READ_FEEDBACK_TAG ) && cTagContent
-        .getByKey( СT_READ_FEEDBACK_TAG ).toParseableString().equals( feedBackNode.toParseableString() ) );
+    TsIllegalArgumentRtException.checkFalse( cTagContent.hasKey( СT_READ_FEEDBACK_TAG )
+        && cTagContent.getByKey( СT_READ_FEEDBACK_TAG ).equals( feedBackNode ) );
 
     // далее проверяем и добавляем теги параметров
     if( aDataNodes.size() > 2 && aParamNodeType != null ) {
       String paramTagId = String.format( СT_WRITE_VAL_TAG_FORMAT, aParamNodeType.id().toLowerCase() );
       if( cTagContent.hasKey( paramTagId ) ) {
         // проверка
-        TsIllegalArgumentRtException.checkFalse(
-            cTagContent.getByKey( paramTagId ).toParseableString().equals( aDataNodes.get( 1 ).toParseableString() ) );
+        TsIllegalArgumentRtException.checkFalse( cTagContent.getByKey( paramTagId ).equals( aDataNodes.get( 1 ) ) );
       }
       else {
         // добавление
@@ -776,19 +893,19 @@ public class OpcToS5DataCfgConverter {
   /**
    * Создаёт и возвращает перечисление возможных команд по классам.
    *
-   * @param aDoc OpcToS5DataCfgDoc - набор единиц конфигурации
+   * @param aCfgUnits IList - набор единиц конфигурации
    * @return IAvTree - конфигурация в стандартном виде.
    */
-  private static IAvTree createCommandInfoes( OpcToS5DataCfgDoc aDoc ) {
+  private static IAvTree createCommandInfoes( IList<OpcToS5DataCfgUnit> aCfgUnits ) {
     AvTree commandInfoesMassivTree = AvTree.createArrayAvTree();
 
     IMapEdit<String, IListEdit<String>> objsByClass = new ElemMap<>();
     IMapEdit<String, IListEdit<String>> cmdsByClass = new ElemMap<>();
 
-    IList<OpcToS5DataCfgUnit> cfgUnits = aDoc.dataUnits();
+    // IList<OpcToS5DataCfgUnit> cfgUnits = aDoc.dataUnits();
 
-    for( int i = 0; i < cfgUnits.size(); i++ ) {
-      OpcToS5DataCfgUnit unit = cfgUnits.get( i );
+    for( int i = 0; i < aCfgUnits.size(); i++ ) {
+      OpcToS5DataCfgUnit unit = aCfgUnits.get( i );
 
       if( unit.getTypeOfCfgUnit() == ECfgUnitType.COMMAND ) {
         IList<Gwid> gwids = unit.getDataGwids();
@@ -873,16 +990,14 @@ public class OpcToS5DataCfgConverter {
   /**
    * Создаёт и возвращает конфигурацию всех событий.
    *
-   * @param aDoc OpcToS5DataCfgDoc - набор единиц конфигурации
+   * @param aCfgUnits IList - набор единиц конфигурации
    * @return IAvTree - конфигурация в стандартном виде.
    */
-  private static IAvTree createEvents( OpcToS5DataCfgDoc aDoc ) {
+  private static IAvTree createEvents( IList<OpcToS5DataCfgUnit> aCfgUnits ) {
     AvTree eventsMassivTree = AvTree.createArrayAvTree();
 
-    IList<OpcToS5DataCfgUnit> cfgUnits = aDoc.dataUnits();
-
-    for( int i = 0; i < cfgUnits.size(); i++ ) {
-      OpcToS5DataCfgUnit unit = cfgUnits.get( i );
+    for( int i = 0; i < aCfgUnits.size(); i++ ) {
+      OpcToS5DataCfgUnit unit = aCfgUnits.get( i );
 
       if( unit.getTypeOfCfgUnit() == ECfgUnitType.EVENT ) {
         eventsMassivTree.addElement( createEvent( unit ) );
@@ -914,11 +1029,11 @@ public class OpcToS5DataCfgConverter {
     pinOpSet1.setStr( OBJ_NAME, objName );
     pinOpSet1.setStr( EVENT_ID, evntId );
 
-    IList<NodeId> nodes = aUnit.getDataNodes();
-    NodeId node = nodes.first();
+    IList<String> nodes = convertToNodesList2( aUnit.getDataNodes2(), idConvertor );
+    String node = nodes.first();
 
     pinOpSet1.setStr( TAG_DEVICE_ID, OPC_TAG_DEVICE );
-    pinOpSet1.setStr( TAG_ID, node.toParseableString() );
+    pinOpSet1.setStr( TAG_ID, node );
 
     IOptionSet opts = aUnit.getRealizationOpts();
     pinOpSet1.addAll( opts );
@@ -929,7 +1044,17 @@ public class OpcToS5DataCfgConverter {
     return triggerTree;
   }
 
-  public static IAvTree convertToDevCfgTree( OpcToS5DataCfgDoc aDoc ) {
+  public static IAvTree convertToDevCfgTree( ITsGuiContext aContext, OpcToS5DataCfgDoc aDoc ) {
+    String ipAddress = HOST_PARAM_VAL_TEMPLATE;
+    String user = USER_PARAM_VAL_TEMPLATE;
+    String pass = PASSWORD_PARAM_VAL_TEMPLATE;
+    OpcUaServerConnCfg conConf =
+        (OpcUaServerConnCfg)aContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
+    if( conConf != null ) {
+      ipAddress = conConf.host();
+      user = conConf.login();
+      pass = conConf.passward();
+    }
 
     IOptionSetEdit opSet = new OptionSet();
 
@@ -941,19 +1066,22 @@ public class OpcToS5DataCfgConverter {
 
     bridgeOps.setStr( ID_PARAM_NAME, OPC_TAG_DEVICE_UA );
     bridgeOps.setStr( DESCRIPTION_PARAM_NAME, DESCRIPTION_PARAM_VAL_TEMPLATE );
-    bridgeOps.setStr( HOST_PARAM_NAME, HOST_PARAM_VAL_TEMPLATE );
-    bridgeOps.setStr( USER_PARAM_NAME, USER_PARAM_VAL_TEMPLATE );
-    bridgeOps.setStr( PASSWORD_PARAM_NAME, PASSWORD_PARAM_VAL_TEMPLATE );
+    bridgeOps.setStr( HOST_PARAM_NAME, ipAddress );// host
+    bridgeOps.setStr( USER_PARAM_NAME, user );
+    bridgeOps.setStr( PASSWORD_PARAM_NAME, pass );
 
-    AvTree synchGroup = createGroup( aDoc, aCfgNode -> (aCfgNode.isRead() && aCfgNode.isSynch()), SYNC_TAGS_ARRAY_ID,
-        SYNC_GROUP_NODE_ID );
+    AvTree synchGroup =
+        createGroup( aDoc, aCfgNode -> (aCfgNode.isRead() && aCfgNode.isSynch() && !aCfgNode.isNodeIdNull()),
+            SYNC_TAGS_ARRAY_ID, SYNC_GROUP_NODE_ID );
 
     synchGroup.fieldsEdit().setInt( SYNCH_PERIOD_PARAM_NAME, 500 );
 
-    IAvTree asynchGroup = createGroup( aDoc, aCfgNode -> (aCfgNode.isRead() && !aCfgNode.isSynch()),
-        ASYNC_TAGS_ARRAY_ID, ASYNC_GROUP_NODE_ID );
+    IAvTree asynchGroup =
+        createGroup( aDoc, aCfgNode -> (aCfgNode.isRead() && !aCfgNode.isSynch()) && !aCfgNode.isNodeIdNull(),
+            ASYNC_TAGS_ARRAY_ID, ASYNC_GROUP_NODE_ID );
 
-    IAvTree outputGroup = createGroup( aDoc, CfgOpcUaNode::isWrite, OUTPUT_TAGS_ARRAY_ID, OUTPUT_GROUP_NODE_ID );
+    IAvTree outputGroup = createGroup( aDoc, aCfgNode -> (aCfgNode.isWrite() && !aCfgNode.isNodeIdNull()),
+        OUTPUT_TAGS_ARRAY_ID, OUTPUT_GROUP_NODE_ID );
 
     // массив групп
     AvTree groupsMassivTree = AvTree.createArrayAvTree();

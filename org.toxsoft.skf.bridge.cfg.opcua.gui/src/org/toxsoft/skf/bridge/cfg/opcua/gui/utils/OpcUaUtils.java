@@ -26,6 +26,7 @@ import org.eclipse.milo.opcua.sdk.client.nodes.*;
 import org.eclipse.milo.opcua.stack.core.security.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.*;
+import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
 import org.eclipse.milo.opcua.stack.core.types.structured.*;
 import org.eclipse.milo.opcua.stack.core.util.*;
 import org.eclipse.swt.widgets.*;
@@ -39,6 +40,7 @@ import org.toxsoft.core.tsgui.m5.gui.mpc.*;
 import org.toxsoft.core.tsgui.m5.model.*;
 import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.impl.*;
+import org.toxsoft.core.tslib.av.list.*;
 import org.toxsoft.core.tslib.av.metainfo.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.*;
@@ -56,6 +58,7 @@ import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.gw.skid.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.*;
+import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.core.txtproj.lib.storage.*;
 import org.toxsoft.core.txtproj.lib.workroom.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.*;
@@ -76,6 +79,13 @@ import org.toxsoft.uskat.core.impl.dto.*;
  * @author dima
  */
 public class OpcUaUtils {
+
+  /**
+   * Параметр события: включен.
+   * <p>
+   * Параметр имеет тип {@link EAtomicType#BOOLEAN}.
+   */
+  static String EVPID_ON = "on"; //$NON-NLS-1$
 
   public static final String COMMANDS_JAVA_CLASS_VALUE_COMMAND_BY_COMPLEX_TAG_EXEC =
       "ru.toxsoft.l2.dlm.opc_bridge.submodules.commands.ValCommandByComplexTagExec";
@@ -166,7 +176,11 @@ public class OpcUaUtils {
   /**
    * template for id secton for store links CmdGwid->UaNodes
    */
-  private static final String SECTID_CMD_GWIDS_2_OPC_UA_NODES_TEMPLATE = "cmd.gwid2opc.ua.nodes"; //$NON-NLS-1$
+  private static final String SECTID_CMD_GWIDS_2_OPC_UA_NODES_TEMPLATE      = "cmd.gwid2opc.ua.nodes";      //$NON-NLS-1$
+  /**
+   * template for id secton for store links RriAttrCmdGwid->UaNodes
+   */
+  private static final String SECTID_RRI_ATTR_GWIDS_2_OPC_UA_NODES_TEMPLATE = "rri.attr.gwid2opc.ua.nodes"; //$NON-NLS-1$
 
   private static final String                                    CLIENT_APP_NAME                            =
       "eclipse milo opc-ua client";
@@ -202,6 +216,32 @@ public class OpcUaUtils {
    * Журнал работы
    */
   private static ILogger logger = LoggerWrapper.getLogger( OpcUaUtils.class.getName() );
+
+  /**
+   * Выбор и подключение к OPC UA серверу
+   *
+   * @param aContext контекст приложения
+   * @return подключение
+   */
+  public static OpcUaClient selectOpcConfigAndOpenConnection( ITsGuiContext aContext ) {
+    IOpcUaServerConnCfg conConf = OpcUaUtils.selectOpcServerConfig( aContext );
+    // dima 13.10.23 сохраним в контекст
+    aContext.put( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG, conConf );
+    if( conConf == null ) {
+      return null;
+    }
+
+    try {
+      OpcUaClient client = OpcUaUtils.createClient( conConf );
+      client.connect().get();
+      return client;
+    }
+    catch( Exception ex ) {
+      LoggerUtils.errorLogger().error( ex );
+      return null;
+    }
+
+  }
 
   /**
    * Creates and returns opc ua client formed according to connection configuration.
@@ -262,31 +302,56 @@ public class OpcUaUtils {
     return new AnonymousProvider();
   }
 
+  public static IList<String> convertToNodesList2( IAvList aAtomicList, INodeIdConvertor aConvertor ) {
+    IListEdit<String> result = new ElemArrayList<>();
+    for( IAtomicValue val : aAtomicList ) {
+      result.add( aConvertor.converToNodeId( val ) );
+    }
+    return result;
+  }
+
+  public static <T> IList<T> convertToNodesList( IAvList aAtomicList ) {
+    IListEdit<T> result = new ElemArrayList<>();
+    for( IAtomicValue val : aAtomicList ) {
+      result.add( val.asValobj() );
+    }
+    return result;
+  }
+
+  public static IAvList convertToAtomicList( IList<NodeId> aNodeList ) {
+    IAvListEdit result = new AvList( new ElemArrayList<>() );
+    for( NodeId node : aNodeList ) {
+      result.add( avValobj( node ) );
+    }
+    return result;
+  }
+
   /**
    * @param aEntity узел значения переменной
    * @return класс типа данных значения узла
    */
   public static Class<?> getNodeDataTypeClass( UaVariableNode aEntity ) {
-    // old version of dima
-    // Class<?> retVal = null;
-    // // получение значения узла
-    // DataValue dataValue = aEntity.getValue();
-    // // тут получаем Variant
-    // Variant variant = dataValue.getValue();
-    // Optional<ExpandedNodeId> dataTypeNode = variant.getDataType();
-    // if( dataTypeNode.isPresent() ) {
-    // ExpandedNodeId expNodeId = dataTypeNode.get();
-    // // TODO разобраться с отображением не числовых типов
-    // if( expNodeId.getType() == IdType.Numeric ) {
-    // UInteger id = (UInteger)expNodeId.getIdentifier();
-    // NodeId nodeId = new NodeId( expNodeId.getNamespaceIndex(), id );
-    // Class<?> clazz = TypeUtil.getBackingClass( nodeId );
-    // retVal = clazz;
-    // }
-    // }
-
     // new verion of max
     Class<?> retVal = TypeUtil.getBackingClass( aEntity.getDataType() );
+    // dima 29.02.24 на Siemens верхний метод срабатывает не всегда, а нижний работает
+    if( retVal == null ) {
+      // old version of dima
+      // получение значения узла
+      DataValue dataValue = aEntity.getValue();
+      // тут получаем Variant
+      Variant variant = dataValue.getValue();
+      Optional<ExpandedNodeId> dataTypeNode = variant.getDataType();
+      if( dataTypeNode.isPresent() ) {
+        ExpandedNodeId expNodeId = dataTypeNode.get();
+        // TODO разобраться с отображением не числовых типов
+        if( expNodeId.getType() == IdType.Numeric ) {
+          UInteger id = (UInteger)expNodeId.getIdentifier();
+          NodeId nodeId = new NodeId( expNodeId.getNamespaceIndex(), id );
+          Class<?> clazz = TypeUtil.getBackingClass( nodeId );
+          retVal = clazz;
+        }
+      }
+    }
     return retVal;
   }
 
@@ -422,10 +487,12 @@ public class OpcUaUtils {
     // для ускорения переложим в карту
     IStringMapEdit<IContainNodeId> tmpCach = new StringMap<>();
     for( T node : aNodes2Gwids ) {
-      tmpCach.put( node.getNodeId().toParseableString(), node );
+      String key = node.getNodeId().toParseableString();
+      tmpCach.put( key, node );
     }
     for( T oldItem : oldList ) {
-      if( !tmpCach.hasKey( oldItem.getNodeId().toParseableString() ) ) {
+      String key = oldItem.getNodeId().toParseableString();
+      if( !tmpCach.hasKey( key ) ) {
         newList.add( oldItem );
       }
     }
@@ -613,6 +680,31 @@ public class OpcUaUtils {
     storage.writeColl( sectId, newList, CmdGwid2UaNodes.KEEPER );
   }
 
+  /**
+   * Add in inner storage list of {@link CmdGwid2UaNodes} links CmdGwid->UaNodes
+   *
+   * @param aContext app context
+   * @param aRriAttrGwid2UaNodes list of links RriAttrGwid->UaNodes
+   * @param aOpcUaServerConnCfg OPC UA server connection params
+   */
+  public static void updateRriAttrGwid2NodesInStore( ITsGuiContext aContext,
+      IList<CmdGwid2UaNodes> aRriAttrGwid2UaNodes, IOpcUaServerConnCfg aOpcUaServerConnCfg ) {
+    ITsWorkroom workroom = aContext.eclipseContext().get( ITsWorkroom.class );
+    TsInternalErrorRtException.checkNull( workroom );
+    IList<CmdGwid2UaNodes> oldList = loadRriAttrGwid2Nodes( aContext, aOpcUaServerConnCfg );
+    // добавляем в список на запись только те элементы которых нет в новом списке
+    IListEdit<CmdGwid2UaNodes> newList = new ElemArrayList<>();
+    for( CmdGwid2UaNodes oldItem : oldList ) {
+      if( !containsGwidIn( aRriAttrGwid2UaNodes, oldItem ) ) {
+        newList.add( oldItem );
+      }
+    }
+    newList.addAll( aRriAttrGwid2UaNodes );
+    IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
+    String sectId = getTreeSectionNameByConfig( SECTID_RRI_ATTR_GWIDS_2_OPC_UA_NODES_TEMPLATE, aOpcUaServerConnCfg );
+    storage.writeColl( sectId, newList, CmdGwid2UaNodes.KEEPER );
+  }
+
   private static boolean containsGwidIn( IList<CmdGwid2UaNodes> aCmdGwid2UaNodes, CmdGwid2UaNodes aOldItem ) {
     for( CmdGwid2UaNodes item : aCmdGwid2UaNodes ) {
       if( item.gwid().equals( aOldItem.gwid() ) ) {
@@ -633,6 +725,21 @@ public class OpcUaUtils {
     TsInternalErrorRtException.checkNull( workroom );
     IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
     String sectId = getTreeSectionNameByConfig( SECTID_CMD_GWIDS_2_OPC_UA_NODES_TEMPLATE, aOpcUaServerConnCfg );
+    IList<CmdGwid2UaNodes> retVal = new ElemArrayList<>( storage.readColl( sectId, CmdGwid2UaNodes.KEEPER ) );
+    return retVal;
+  }
+
+  /**
+   * @param aContext app context
+   * @param aOpcUaServerConnCfg OPC UA server connection config
+   * @return list of links {@link CmdGwid2UaNodes } CmdGwid->UaNodes
+   */
+  public static IList<CmdGwid2UaNodes> loadRriAttrGwid2Nodes( ITsGuiContext aContext,
+      IOpcUaServerConnCfg aOpcUaServerConnCfg ) {
+    ITsWorkroom workroom = aContext.eclipseContext().get( ITsWorkroom.class );
+    TsInternalErrorRtException.checkNull( workroom );
+    IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
+    String sectId = getTreeSectionNameByConfig( SECTID_RRI_ATTR_GWIDS_2_OPC_UA_NODES_TEMPLATE, aOpcUaServerConnCfg );
     IList<CmdGwid2UaNodes> retVal = new ElemArrayList<>( storage.readColl( sectId, CmdGwid2UaNodes.KEEPER ) );
     return retVal;
   }
@@ -964,7 +1071,7 @@ public class OpcUaUtils {
   }
 
   @SuppressWarnings( "nls" )
-  private static String extractIP( IOpcUaServerConnCfg aSelConfig ) {
+  public static String extractIP( IOpcUaServerConnCfg aSelConfig ) {
     // выделяем из хоста IP, opc.tcp://192.168.12.61:4840
     Pattern p = Pattern.compile( "[a-z:\\.\\/]+([0-9\\.]+)" );
     String host = aSelConfig.host();
@@ -1334,6 +1441,41 @@ public class OpcUaUtils {
   }
 
   /**
+   * Считывает из справочника масочные events
+   *
+   * @param aConn - соединение с сервером
+   * @return карта класс->id битового массива -> список его events типа булевое
+   */
+  public static StringMap<StringMap<IList<BitIdx2DtoEvent>>> readEventInfoes( ISkConnection aConn ) {
+    StringMap<StringMap<IList<BitIdx2DtoEvent>>> retVal = new StringMap<>();
+    // открываем справочник битовых масок
+    String refbookName = RBID_BITMASK;
+    ISkRefbookService skRefServ = (ISkRefbookService)aConn.coreApi().getService( ISkRefbookService.SERVICE_ID );
+    IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( refbookName ).listItems();
+    for( ISkRefbookItem rbItem : rbItems ) {
+      String strid = rbItem.strid();
+      // выделяем id класса
+      String classId = extractClassId( strid );
+      if( !retVal.hasKey( classId ) ) {
+        StringMap<IList<BitIdx2DtoEvent>> rtDataMap = new StringMap<>();
+        retVal.put( classId, rtDataMap );
+      }
+      StringMap<IList<BitIdx2DtoEvent>> rtDataMap = retVal.getByKey( classId );
+      String bitArrayRtDataId = rbItem.attrs().getValue( RBATRID_BITMASK___IDW ).asString();
+      if( !rtDataMap.hasKey( bitArrayRtDataId ) ) {
+        rtDataMap.put( bitArrayRtDataId, new ElemArrayList<>() );
+      }
+
+      BitIdx2DtoEvent eventInfo = readBitIdx2DtoEvent( bitArrayRtDataId, rbItem );
+      if( eventInfo != null ) {
+        IListEdit<BitIdx2DtoEvent> bitList = (IListEdit<BitIdx2DtoEvent>)rtDataMap.getByKey( bitArrayRtDataId );
+        bitList.add( eventInfo );
+      }
+    }
+    return retVal;
+  }
+
+  /**
    * Считывает из справочника масочные НСИ атрибуты
    *
    * @param aConn - соединение с сервером
@@ -1404,6 +1546,63 @@ public class OpcUaUtils {
         ) );
 
     return new BitIdx2DtoRtData( aBitArrayRtDataId, bitIndex, dataInfo );
+
+  }
+
+  /**
+   * Читает описание BitIdx2DtoEvent
+   *
+   * @param aBitArrayRtDataId - id переменной битового массива
+   * @param aRefbookItem - элемент справочника масок
+   * @return {@link BitIdx2DtoEvent} описание события
+   */
+  private static BitIdx2DtoEvent readBitIdx2DtoEvent( String aBitArrayRtDataId, ISkRefbookItem aRefbookItem ) {
+    // id rt данного
+    String dataId = aRefbookItem.attrs().getValue( RBATRID_BITMASK___IDENTIFICATOR ).asString(); // ID;
+
+    // сочиняем evId
+    String evtId = EVT_PREFIX + dataId.substring( RTD_PREFIX.length() );
+
+    // bit index
+    int bitIndex = aRefbookItem.attrs().getValue( RBATRID_BITMASK___BITN ).asInt();
+    // название
+    String name = aRefbookItem.nmName();
+    // описание
+    String descr = aRefbookItem.description();
+    // 0->1
+    String upText = aRefbookItem.attrs().getValue( RBATRID_BITMASK___ON ).asString();
+    boolean up = false;
+    if( !upText.isBlank() ) {
+      up = true;
+    }
+    // 1->0
+    boolean dn = false;
+    String dnText = aRefbookItem.attrs().getValue( RBATRID_BITMASK___OFF ).asString();
+    if( !dnText.isBlank() ) {
+      dn = true;
+    }
+    if( up || dn ) {
+
+      // for example FMT_BOOL_CHECK = "%Б[-|✔]"
+      String FMT_ON = "%Б[" + dnText + "|" + upText + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+      // создаем описание параметра
+      DataDef EVPDD_ON = DataDef.create( EVPID_ON, EAtomicType.BOOLEAN, TSID_NAME, STR_N_EV_PARAM_ON, //
+          TSID_DESCRIPTION, STR_D_EV_PARAM_ON, //
+          TSID_IS_NULL_ALLOWED, AV_FALSE, //
+          TSID_FORMAT_STRING, FMT_ON, //
+          TSID_DEFAULT_VALUE, AV_FALSE );
+      StridablesList<IDataDef> evParams = new StridablesList<>( EVPDD_ON );
+
+      IDtoEventInfo evtInfo = DtoEventInfo.create1( evtId, true, //
+          evParams, //
+          OptionSetUtils.createOpSet( //
+              IAvMetaConstants.TSID_NAME, name, //
+              IAvMetaConstants.TSID_DESCRIPTION, descr //
+          ) ); //
+
+      return new BitIdx2DtoEvent( aBitArrayRtDataId, bitIndex, evtInfo, up, dn );
+    }
+    return null;
   }
 
   /**

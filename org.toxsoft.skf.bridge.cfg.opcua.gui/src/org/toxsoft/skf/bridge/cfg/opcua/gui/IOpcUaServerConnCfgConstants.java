@@ -10,6 +10,7 @@ import org.eclipse.e4.core.contexts.*;
 import org.toxsoft.core.tsgui.bricks.actions.*;
 import org.toxsoft.core.tsgui.graphics.icons.*;
 import org.toxsoft.core.tslib.av.metainfo.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 
 /**
  * Константы пакета.
@@ -88,6 +89,12 @@ public interface IOpcUaServerConnCfgConstants {
       TSID_DEFAULT_VALUE, avStr( "361" ) // по умолчанию //$NON-NLS-1$
                                          // Poligon'овкие
                                          // настройки
+  );
+
+  IDataDef NODE_ID_DATA_DEF = create( "opc.ua.node", VALOBJ, //$NON-NLS-1$
+      TSID_NAME, "LL_NODE", //
+      TSID_DESCRIPTION, "LL_NODE", //
+      TSID_KEEPER_ID, NodeIdDateKeeper.KEEPER_ID //
   );
 
   /**

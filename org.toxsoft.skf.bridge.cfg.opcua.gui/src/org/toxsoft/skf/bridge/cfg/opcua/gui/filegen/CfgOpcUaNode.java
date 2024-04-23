@@ -203,6 +203,14 @@ public class CfgOpcUaNode {
   }
 
   /**
+   * @return true - synch node
+   */
+  public boolean isNodeIdNull() {
+    NodeId myNodeId = NodeId.parse( nodeId );
+    return myNodeId.isNull();
+  }
+
+  /**
    * @param aSynch true - synch node
    */
   public void setSynch( boolean aSynch ) {

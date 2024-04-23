@@ -27,7 +27,11 @@ Bundle-RequiredExecutionEnvironment: JavaSE-17
 Automatic-Module-Name: org.toxsoft.skf.bridge.cfg.opcua.gui
 Bundle-ActivationPolicy: lazy
 Export-Package: org.toxsoft.skf.bridge.cfg.opcua.gui,
+ org.toxsoft.skf.bridge.cfg.opcua.gui.filegen,
  org.toxsoft.skf.bridge.cfg.opcua.gui.km5,
  org.toxsoft.skf.bridge.cfg.opcua.gui.panels,
+ org.toxsoft.skf.bridge.cfg.opcua.gui.skide,
+ org.toxsoft.skf.bridge.cfg.opcua.gui.types,
+ org.toxsoft.skf.bridge.cfg.opcua.gui.utils,
  org.toxsoft.skf.bridge.cfg.opcua.service,
  org.toxsoft.skf.bridge.cfg.opcua.service.impl
