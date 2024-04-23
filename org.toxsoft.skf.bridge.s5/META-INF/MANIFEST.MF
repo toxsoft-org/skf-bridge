@@ -1,0 +1,27 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: uskat s5 extension: IGatewayService
+Bundle-SymbolicName: org.toxsoft.skf.bridge.s5
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: ToxSoft Ltd.
+Eclipse-RegisterBuddy: org.toxsoft.uskat.s5
+Eclipse-BuddyPolicy: registered
+Require-Bundle: org.toxsoft.extlibs.log4j,
+ org.toxsoft.extlibs.wildfly,
+ org.toxsoft.core.tslib,
+ org.toxsoft.core.log4j,
+ org.toxsoft.uskat.core,
+ org.toxsoft.uskat.s5,
+ org.toxsoft.skf.dq.lib,
+ org.toxsoft.skf.dq.s5
+Automatic-Module-Name: org.toxsoft.skf.bridge.s5
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Export-Package: org.toxsoft.skf.bridge.s5,
+ org.toxsoft.skf.bridge.s5.addons,
+ org.toxsoft.skf.bridge.s5.lib,
+ org.toxsoft.skf.bridge.s5.lib.impl,
+ org.toxsoft.skf.bridge.s5.supports,
+ src.org.toxsoft.skf.bridge.s5.addons,
+ src.org.toxsoft.skf.bridge.s5.lib,
+ src.org.toxsoft.skf.bridge.s5.lib.impl,
+ src.org.toxsoft.skf.bridge.s5.supports
