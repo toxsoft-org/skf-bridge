@@ -85,6 +85,11 @@ class S5Gateway
   private final ISkConnection remoteConnection;
 
   /**
+   * Исполнитель потоков uskat-соединений (один на весь шлюз)
+   */
+  private final ITsThreadExecutor threadExecutor;
+
+  /**
    * Поставщик удаленного backend
    */
   private final ISkBackendProvider remoteBackendProvider;
@@ -224,6 +229,8 @@ class S5Gateway
     // Создание соединения с удаленным сервером
     remoteBackendProvider = aOwner.remoteConnectionProvider();
     remoteConnection = SkCoreUtils.createConnection();
+    // Исполнитель потоков
+    threadExecutor = SkThreadExecutorService.getExecutor( localConnection.coreApi() );
     // Попытка открыть соединение с удаленном сервером
     // 2021-01-19 mvk tryOpenRemote должна работать под блокировкой
     tryOpenRemote();
@@ -273,23 +280,20 @@ class S5Gateway
 
   @Override
   public void doJob() {
-    ITsThreadExecutor threadExecutor = SkThreadExecutorService.getExecutor( localConnection.coreApi() );
-    threadExecutor.asyncExec( () -> {
-      if( remoteConnection.state() == ESkConnState.CLOSED && !completed ) {
-        // Повторная попытка открыть соединение с удаленном сервером
-        tryOpenRemote();
-      }
-      if( remoteConnection.state() != ESkConnState.ACTIVE ) {
-        // Нет связи с удаленным сервером
-        logger.error( ERR_DOJOB_NOT_CONNECTION, remoteConnection );
-      }
-      if( remoteConnection.state() == ESkConnState.ACTIVE && needSynchronize ) {
-        // Попытка запуска отложенной синхронизации из doJob
-        logger.warning( ERR_TRY_SYNCH_FROM_DOJOB );
-        // Синхронизация данных с удаленным сервером
-        synchronize( paused );
-      }
-    } );
+    if( remoteConnection.state() == ESkConnState.CLOSED && !completed ) {
+      // Повторная попытка открыть соединение с удаленном сервером
+      tryOpenRemote();
+    }
+    if( remoteConnection.state() != ESkConnState.ACTIVE ) {
+      // Нет связи с удаленным сервером
+      logger.error( ERR_DOJOB_NOT_CONNECTION, remoteConnection );
+    }
+    if( remoteConnection.state() == ESkConnState.ACTIVE && needSynchronize ) {
+      // Попытка запуска отложенной синхронизации из doJob
+      logger.warning( ERR_TRY_SYNCH_FROM_DOJOB );
+      // Синхронизация данных с удаленным сервером
+      synchronize( paused );
+    }
   }
 
   @Override
@@ -436,7 +440,6 @@ class S5Gateway
   //
   @Override
   public boolean beforeWriteHistData( IMap<Gwid, Pair<ITimeInterval, ITimedList<ITemporalAtomicValue>>> aValues ) {
-    // public boolean beforeWriteHistData( DpuWriteHistData aValues ) {
     if( paused ) {
       // Передача данных через шлюз временно приостановлена
       logger.info( MSG_GW_PAUSED, this );
@@ -447,27 +450,30 @@ class S5Gateway
     Gwid first = aValues.keys().first();
     // Передача текущих данных
     logger.debug( MSG_GW_HISTDATA_TRANSFER, count, first );
-    try {
-      for( Gwid gwid : aValues.keys() ) {
-        ISkWriteHistDataChannel writeChannel = writeHistData.findByKey( gwid );
-        if( writeChannel == null ) {
-          // Не найден канал записи хранимых данных
-          logger.warning( ERR_HISTDATA_WRITE_CHANNEL_NOT_FOUND, gwid );
-          continue;
+    // Передача данных синхронизируется через исполнитель потоков соединения
+    threadExecutor.asyncExec( () -> {
+      try {
+        for( Gwid gwid : aValues.keys() ) {
+          ISkWriteHistDataChannel writeChannel = writeHistData.findByKey( gwid );
+          if( writeChannel == null ) {
+            // Не найден канал записи хранимых данных
+            logger.warning( ERR_HISTDATA_WRITE_CHANNEL_NOT_FOUND, gwid );
+            continue;
+          }
+          Pair<ITimeInterval, ITimedList<ITemporalAtomicValue>> sequence = aValues.getByKey( gwid );
+          ITimeInterval interval = sequence.left();
+          ITimedList<ITemporalAtomicValue> values = sequence.right();
+          writeChannel.writeValues( interval, values );
         }
-        Pair<ITimeInterval, ITimedList<ITemporalAtomicValue>> sequence = aValues.getByKey( gwid );
-        ITimeInterval interval = sequence.left();
-        ITimedList<ITemporalAtomicValue> values = sequence.right();
-        writeChannel.writeValues( interval, values );
+        // Завершение передачи хранимых данных
+        logger.debug( MSG_GW_HISTDATA_TRANSFER_FINISH, count, first );
       }
-      // Завершение передачи хранимых данных
-      logger.debug( MSG_GW_HISTDATA_TRANSFER_FINISH, count, first );
-    }
-    catch( Throwable e ) {
-      // Ошибка передачи хранимых данных. Запланирована синхронизация
-      logger.error( e, ERR_SEND_HISTDATA, cause( e ) );
-      needSynchronize = true;
-    }
+      catch( Throwable e ) {
+        // Ошибка передачи хранимых данных. Запланирована синхронизация
+        logger.error( e, ERR_SEND_HISTDATA, cause( e ) );
+        needSynchronize = true;
+      }
+    } );
     // Разрешить дальшейшее выполнение операции
     return true;
   }
@@ -486,23 +492,26 @@ class S5Gateway
     logger.info( MSG_GW_COMMAND_TRANSFER, aCmd );
     // Время начала запроса
     long traceStartTime = System.currentTimeMillis();
-    // Передача запроса
-    try {
-      ISkCommand cmd = localCmdService.sendCommand( aCmd.cmdGwid(), aCmd.authorSkid(), aCmd.argValues() );
-      cmd.stateEventer().addListener( executingCommandsListener );
-      executingCommands.put( aCmd.cmdGwid(), aCmd );
-      // Время выполнения
-      Long traceTime = Long.valueOf( System.currentTimeMillis() - traceStartTime );
-      // Завершение передачи команды исполнителю
-      logger.info( MSG_GW_COMMAND_TRANSFER_FINISH, aCmd, traceTime );
-    }
-    catch( Throwable e ) {
-      // Время выполнения
-      Long traceTime = Long.valueOf( System.currentTimeMillis() - traceStartTime );
-      // Ошибка передачи команды. Запланирована синхронизация
-      logger.error( e, ERR_SEND_CMD, traceTime, cause( e ) );
-      needSynchronize = true;
-    }
+    // Передача команды синхронизируется через исполнитель потоков соединения
+    threadExecutor.asyncExec( () -> {
+      // Передача запроса
+      try {
+        ISkCommand cmd = localCmdService.sendCommand( aCmd.cmdGwid(), aCmd.authorSkid(), aCmd.argValues() );
+        cmd.stateEventer().addListener( executingCommandsListener );
+        executingCommands.put( aCmd.cmdGwid(), aCmd );
+        // Время выполнения
+        Long traceTime = Long.valueOf( System.currentTimeMillis() - traceStartTime );
+        // Завершение передачи команды исполнителю
+        logger.info( MSG_GW_COMMAND_TRANSFER_FINISH, aCmd, traceTime );
+      }
+      catch( Throwable e ) {
+        // Время выполнения
+        Long traceTime = Long.valueOf( System.currentTimeMillis() - traceStartTime );
+        // Ошибка передачи команды. Запланирована синхронизация
+        logger.error( e, ERR_SEND_CMD, traceTime, cause( e ) );
+        needSynchronize = true;
+      }
+    } );
   }
 
   // ------------------------------------------------------------------------------------
@@ -518,35 +527,38 @@ class S5Gateway
             "S5GateWay.InternalCommandStateChangedListener: incorrect logic (aSource instanceof SkCommand == false)" ); //$NON-NLS-1$
         return;
       }
-      ISkCommand aCommand = (SkCommand)aSource;
-      // Передача состояния команды отправителю
-      logger.info( MSG_GW_COMMAND_STATE_TRANSFER, aCommand );
-      // Признак завершения выполнения команды
-      boolean complete = aCommand.state().state().isComplete();
-      // Команда полученная от удаленного сервера
-      Gwid gwid = aCommand.cmdGwid();
-      IDtoCommand cmd = (complete ? executingCommands.removeByKey( gwid ) : executingCommands.findByKey( gwid ));
-      if( cmd == null ) {
-        // Команда не отправлялась шлюзом (отправил другой клиент?)
-        logger.warning( MSG_GW_ALIEN_COMMAND, this );
-        return;
-      }
-      // Время начала запроса
-      long traceStartTime = System.currentTimeMillis();
-      try {
-        remoteCmdService.changeCommandState( new DtoCommandStateChangeInfo( cmd.instanceId(), aCommand.state() ) );
-        // Время выполнения
-        Long traceTime = Long.valueOf( System.currentTimeMillis() - traceStartTime );
-        // Завершение передачи состояния команды отправителю
-        logger.info( mSG_GW_COMMAND_STATE_TRANSFER_FINISH, aCommand, traceTime );
-      }
-      catch( Throwable e ) {
-        // Время выполнения
-        Long traceTime = Long.valueOf( System.currentTimeMillis() - traceStartTime );
-        // Ошибка передачи команды. Запланирована синхронизация
-        logger.error( e, ERR_SEND_CMD_STATE, traceTime, cause( e ) );
-        needSynchronize = true;
-      }
+      // Передача состояния команды синхронизируется через исполнитель потоков соединения
+      threadExecutor.asyncExec( () -> {
+        ISkCommand aCommand = (SkCommand)aSource;
+        // Передача состояния команды отправителю
+        logger.info( MSG_GW_COMMAND_STATE_TRANSFER, aCommand );
+        // Признак завершения выполнения команды
+        boolean complete = aCommand.state().state().isComplete();
+        // Команда полученная от удаленного сервера
+        Gwid gwid = aCommand.cmdGwid();
+        IDtoCommand cmd = (complete ? executingCommands.removeByKey( gwid ) : executingCommands.findByKey( gwid ));
+        if( cmd == null ) {
+          // Команда не отправлялась шлюзом (отправил другой клиент?)
+          logger.warning( MSG_GW_ALIEN_COMMAND, this );
+          return;
+        }
+        // Время начала запроса
+        long traceStartTime = System.currentTimeMillis();
+        try {
+          remoteCmdService.changeCommandState( new DtoCommandStateChangeInfo( cmd.instanceId(), aCommand.state() ) );
+          // Время выполнения
+          Long traceTime = Long.valueOf( System.currentTimeMillis() - traceStartTime );
+          // Завершение передачи состояния команды отправителю
+          logger.info( mSG_GW_COMMAND_STATE_TRANSFER_FINISH, aCommand, traceTime );
+        }
+        catch( Throwable e ) {
+          // Время выполнения
+          Long traceTime = Long.valueOf( System.currentTimeMillis() - traceStartTime );
+          // Ошибка передачи команды. Запланирована синхронизация
+          logger.error( e, ERR_SEND_CMD_STATE, traceTime, cause( e ) );
+          needSynchronize = true;
+        }
+      } );
     }
   }
 
@@ -578,8 +590,11 @@ class S5Gateway
         // Изменение списка исполнителей команд
         logger.debug( MSG_CHANGE_CMD_EXECUTORS, Boolean.valueOf( paused ), cmdGwidsString );
       }
-      // Сихнонизация исполнителей команды
-      synchronizeCmdExecutors( cmdGwids );
+      // Исполнители команд синхронизируются через исполнитель потоков соединения
+      threadExecutor.asyncExec( () -> {
+        // Сихнонизация исполнителей команды
+        synchronizeCmdExecutors( cmdGwids );
+      } );
     }
   }
 
@@ -593,15 +608,18 @@ class S5Gateway
       logger.info( MSG_GW_PAUSED, this );
       return;
     }
-    Integer count = Integer.valueOf( aEvents.size() );
-    SkEvent first = aEvents.first();
-    // Передача событий
-    logger.info( MSG_GW_EVENT_TRANSFER, count, first );
-    for( SkEvent event : aEvents ) {
-      remoteEventService.fireEvent( event );
-    }
-    // Завершение передачи событий
-    logger.info( MSG_GW_EVENT_TRANSFER_FINISH, count, first );
+    // Передача событий синхронизируется через исполнитель потоков соединения
+    threadExecutor.asyncExec( () -> {
+      Integer count = Integer.valueOf( aEvents.size() );
+      SkEvent first = aEvents.first();
+      // Передача событий
+      logger.info( MSG_GW_EVENT_TRANSFER, count, first );
+      for( SkEvent event : aEvents ) {
+        remoteEventService.fireEvent( event );
+      }
+      // Завершение передачи событий
+      logger.info( MSG_GW_EVENT_TRANSFER_FINISH, count, first );
+    } );
   }
 
   // ------------------------------------------------------------------------------------
@@ -698,7 +716,6 @@ class S5Gateway
     IGwidList ignored = null;
 
     try {
-      ITsThreadExecutor threadExecutor = SkThreadExecutorService.getExecutor( localConnection.coreApi() );
       // Установка слушателя соединения
       remoteConnection.addConnectionListener( this );
       // Попытка открыть удаленное соединение
@@ -822,6 +839,22 @@ class S5Gateway
    *          сервером;<b>false</b> мост работает в штатном режиме, но возможна потеря связи с удаленным сервером
    */
   private void synchronize( boolean aPaused ) {
+    if( Thread.currentThread().equals( threadExecutor.thread() ) ) {
+      // Вызов уже в синхронизированном потоке
+      synchronizeRun( aPaused );
+      return;
+    }
+    // Синхронизация вызова
+    threadExecutor.syncExec( () -> synchronizeRun( aPaused ) );
+  }
+
+  /**
+   * Запуск задачи синхронизации наборов данных, слушателей подключенных соединений
+   *
+   * @param aPaused boolean <b>true</b> мост приостановил работу, но возможно установлена связь с удаленным
+   *          сервером;<b>false</b> мост работает в штатном режиме, но возможна потеря связи с удаленным сервером
+   */
+  private void synchronizeRun( boolean aPaused ) {
     if( !readyForSynchronize ) {
       // Нет готовности к синхронизации соединений
       logger.warning( ERR_NOT_READY_FOR_SYNC, this );
