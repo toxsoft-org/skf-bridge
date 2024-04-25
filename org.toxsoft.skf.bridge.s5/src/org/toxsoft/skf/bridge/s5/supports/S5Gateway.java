@@ -358,25 +358,28 @@ class S5Gateway
   @SuppressWarnings( "nls" )
   @Override
   public void afterCloseSession( Skid aSessionID ) {
-    // Данные игнорируемые для чтения. null: настройка не требуется
-    IGwidList ignored = null;
-    // От локального сервера отключился один клиентов. Требуется перенастроить порт
-    // приема текущих данных от сервера,
-    // так как совокупный список получаемых данных может быть изменен (нет больше
-    // необходимости в некоторых данных)
-    logger.debug( "afterCloseSession(...). remoteToLocalCurrdataPort = %s", remoteToLocalCurrdataPort );
-    logger.debug( "afterCloseSession(...). get connLock (write). remoteToLocalCurrdataPort = %s",
-        remoteToLocalCurrdataPort );
-    // Конфигурация порта передачи текущих данных от удаленного сервера на локальный
-    if( remoteToLocalCurrdataPort != null ) {
-      // Настройка порта текущих данных для импорта значений
-      ignored = (localDataQualityService != null ? localToRemoteCurrdataPort.dataIds() : IGwidList.EMPTY);
-    }
-    logger.debug( "afterCloseSession(...): is completed" );
-    // 2021-01-19 mvk настройка импорта делается вне блокировки
-    if( ignored != null ) {
-      configureCurrdataPortForImport( owner.currdataBackend(), remoteToLocalCurrdataPort, ignored, logger );
-    }
+    // Синхронизация вызова
+    threadExecutor.syncExec( () -> {
+      // Данные игнорируемые для чтения. null: настройка не требуется
+      IGwidList ignored = null;
+      // От локального сервера отключился один клиентов. Требуется перенастроить порт
+      // приема текущих данных от сервера,
+      // так как совокупный список получаемых данных может быть изменен (нет больше
+      // необходимости в некоторых данных)
+      logger.debug( "afterCloseSession(...). remoteToLocalCurrdataPort = %s", remoteToLocalCurrdataPort );
+      logger.debug( "afterCloseSession(...). get connLock (write). remoteToLocalCurrdataPort = %s",
+          remoteToLocalCurrdataPort );
+      // Конфигурация порта передачи текущих данных от удаленного сервера на локальный
+      if( remoteToLocalCurrdataPort != null ) {
+        // Настройка порта текущих данных для импорта значений
+        ignored = (localDataQualityService != null ? localToRemoteCurrdataPort.dataIds() : IGwidList.EMPTY);
+      }
+      logger.debug( "afterCloseSession(...): is completed" );
+      // 2021-01-19 mvk настройка импорта делается вне блокировки
+      if( ignored != null ) {
+        configureCurrdataPortForImport( owner.currdataBackend(), remoteToLocalCurrdataPort, ignored, logger );
+      }
+    } );
   }
 
   // ------------------------------------------------------------------------------------
@@ -400,17 +403,20 @@ class S5Gateway
 
   @Override
   public void afterConfigureCurrDataReader( IS5FrontendRear aFrontend, IGwidList aToRemove, IGwidList aToAdd ) {
-    // Данные игнорируемые для чтения. null: настройка не требуется
-    IGwidList ignored = null;
-    // Конфигурация порта передачи текущих данных от удаленного сервера на локальный
-    if( remoteToLocalCurrdataPort != null ) {
-      // Настройка порта текущих данных для импорта значений
-      ignored = (localDataQualityService != null ? localToRemoteCurrdataPort.dataIds() : IGwidList.EMPTY);
-    }
-    // 2021-01-19 mvk настройка импорта делается вне блокировки
-    if( ignored != null ) {
-      configureCurrdataPortForImport( owner.currdataBackend(), remoteToLocalCurrdataPort, ignored, logger );
-    }
+    // Синхронизация вызова
+    threadExecutor.syncExec( () -> {
+      // Данные игнорируемые для чтения. null: настройка не требуется
+      IGwidList ignored = null;
+      // Конфигурация порта передачи текущих данных от удаленного сервера на локальный
+      if( remoteToLocalCurrdataPort != null ) {
+        // Настройка порта текущих данных для импорта значений
+        ignored = (localDataQualityService != null ? localToRemoteCurrdataPort.dataIds() : IGwidList.EMPTY);
+      }
+      // 2021-01-19 mvk настройка импорта делается вне блокировки
+      if( ignored != null ) {
+        configureCurrdataPortForImport( owner.currdataBackend(), remoteToLocalCurrdataPort, ignored, logger );
+      }
+    } );
   }
 
   @Override
@@ -712,9 +718,6 @@ class S5Gateway
       logger.warning( ERR_GATEWAY_ALREADY_INITED, this );
       return;
     }
-    // Данные игнорируемые для чтения. null: настройка не требуется
-    IGwidList ignored = null;
-
     try {
       // Установка слушателя соединения
       remoteConnection.addConnectionListener( this );
@@ -763,10 +766,14 @@ class S5Gateway
         // Попытка синхронизации наборов данных, слушателей подключенных соединений
         synchronize( paused );
       } );
-
-      // Настройка порта текущих данных для импорта значений
-      ignored = (localDataQualityService != null ? localToRemoteCurrdataPort.dataIds() : IGwidList.EMPTY);
-
+      threadExecutor.syncExec( () -> {
+        // Данные игнорируемые для чтения. null: настройка не требуется
+        IGwidList ignored = (localDataQualityService != null ? localToRemoteCurrdataPort.dataIds() : IGwidList.EMPTY);
+        // Настройка импорта
+        if( ignored != null ) {
+          configureCurrdataPortForImport( owner.currdataBackend(), remoteToLocalCurrdataPort, ignored, logger );
+        }
+      } );
       // Шлюз завершил инициализацию
       logger.info( MSG_GW_INIT_FINISH, this );
     }
@@ -775,10 +782,6 @@ class S5Gateway
       logger.error( e );
       // Требуется повторная инициализация
       remoteConnection.close();
-    }
-    // Настройка импорта
-    if( ignored != null ) {
-      configureCurrdataPortForImport( owner.currdataBackend(), remoteToLocalCurrdataPort, ignored, logger );
     }
   }
 
@@ -839,11 +842,6 @@ class S5Gateway
    *          сервером;<b>false</b> мост работает в штатном режиме, но возможна потеря связи с удаленным сервером
    */
   private void synchronize( boolean aPaused ) {
-    if( Thread.currentThread().equals( threadExecutor.thread() ) ) {
-      // Вызов уже в синхронизированном потоке
-      synchronizeRun( aPaused );
-      return;
-    }
     // Синхронизация вызова
     threadExecutor.syncExec( () -> synchronizeRun( aPaused ) );
   }
