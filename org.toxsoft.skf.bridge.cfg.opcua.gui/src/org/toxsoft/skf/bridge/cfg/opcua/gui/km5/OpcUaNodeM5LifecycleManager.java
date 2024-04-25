@@ -1,6 +1,9 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
 
+import static org.eclipse.milo.opcua.stack.core.util.ConversionUtil.*;
+
 import java.util.*;
+import java.util.concurrent.*;
 
 import org.eclipse.milo.opcua.sdk.client.*;
 import org.eclipse.milo.opcua.sdk.client.nodes.*;
@@ -116,21 +119,35 @@ public class OpcUaNodeM5LifecycleManager
     if( stopBrowse ) {
       return;
     }
-    BrowseDescription browse =
-        new BrowseDescription( aParent.getUaNode().getNodeId(), BrowseDirection.Forward, Identifiers.References,
-            Boolean.TRUE, UInteger.valueOf( NodeClass.Object.getValue() | NodeClass.Variable.getValue() ),
-            UInteger.valueOf( BrowseResultMask.All.getValue() ) );
+    BrowseDescription browse = new BrowseDescription( aParent.getUaNode().getNodeId(), //
+        BrowseDirection.Forward, //
+        Identifiers.References, //
+        Boolean.TRUE, //
+        UInteger.valueOf( //
+            NodeClass.Object.getValue() //
+                | NodeClass.Variable.getValue() // off for Siemens
+        ), //
+        UInteger.valueOf( BrowseResultMask.All.getValue() ) );
 
     try {
 
       BrowseResult browseResult = client.browse( browse ).get();
+      // dima, 25.04.24 old version
+      // ReferenceDescription[] descrs = browseResult.getReferences();
+      // List<ReferenceDescription> references = descrs != null ? Arrays.asList( descrs ) : Collections.emptyList();
+      // new version see link: https://github.com/eclipse/milo/issues/227
+      List<ReferenceDescription> references = new CopyOnWriteArrayList<>();
+      references.addAll( toList( browseResult.getReferences() ) );
 
-      ReferenceDescription[] descrs = browseResult.getReferences();
-      List<ReferenceDescription> references = descrs != null ? Arrays.asList( descrs ) : Collections.emptyList();
+      ByteString continuationPoint = browseResult.getContinuationPoint();
+
+      while( continuationPoint != null && continuationPoint.isNotNull() ) {
+        BrowseResult nextResult = client.browseNext( false, continuationPoint ).get();
+        references.addAll( toList( nextResult.getReferences() ) );
+        continuationPoint = nextResult.getContinuationPoint();
+      }
 
       for( ReferenceDescription rd : references ) {
-        ExpandedNodeId eNodeId = rd.getNodeId();
-
         // recursively browse to children
         Optional<NodeId> oNodeId = rd.getNodeId().toNodeId( client.getNamespaceTable() );
 
@@ -140,7 +157,6 @@ public class OpcUaNodeM5LifecycleManager
           UaTreeNode treeNode = new UaTreeNode( aParent, uaNode );
           rNodes.add( treeNode );
           // dima 01.08.23 останавливаемся когда текущий node это node типа VariableNode
-
           // if( uaNode instanceof UaObjectNode ) {
           if( uaNode instanceof UaVariableNode ) {
             System.out.println( String.format( "%s Node=%s, display=%s", indent, rd.getBrowseName().toString(), //$NON-NLS-1$
