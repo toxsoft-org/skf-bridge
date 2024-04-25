@@ -359,7 +359,7 @@ class S5Gateway
   @Override
   public void afterCloseSession( Skid aSessionID ) {
     // Синхронизация вызова
-    threadExecutor.syncExec( () -> {
+    threadExecutor.asyncExec( () -> {
       // Данные игнорируемые для чтения. null: настройка не требуется
       IGwidList ignored = null;
       // От локального сервера отключился один клиентов. Требуется перенастроить порт
@@ -403,8 +403,8 @@ class S5Gateway
 
   @Override
   public void afterConfigureCurrDataReader( IS5FrontendRear aFrontend, IGwidList aToRemove, IGwidList aToAdd ) {
-    // Синхронизация вызова
-    threadExecutor.syncExec( () -> {
+    // Синхронизация вызова (вызов должен быть асинхронным, иначе возможны проблемы при запуске сервера)
+    threadExecutor.asyncExec( () -> {
       // Данные игнорируемые для чтения. null: настройка не требуется
       IGwidList ignored = null;
       // Конфигурация порта передачи текущих данных от удаленного сервера на локальный
