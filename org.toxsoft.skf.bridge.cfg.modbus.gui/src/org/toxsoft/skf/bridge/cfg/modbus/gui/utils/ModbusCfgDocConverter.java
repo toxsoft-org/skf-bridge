@@ -22,7 +22,7 @@ public class ModbusCfgDocConverter {
   private static final String CONNECTIONS_ARRAY_NAME = "connections";
   private static final String DEVICES_ARRAY_NAME     = "devices";
 
-  private static final String OPC_TAG_DEVICE_UA = "modbus.bridge.common";
+  private static final String MODBUS_DEVICE_ID = "modbus.bridge.common";
 
   private static final String DESCRIPTION_PARAM_NAME         = "description";
   private static final String DESCRIPTION_PARAM_VAL_TEMPLATE = "modbus common apparat producer";
@@ -51,7 +51,7 @@ public class ModbusCfgDocConverter {
   private static final String PIN_DESCR_PARAM_NAME        = "descr";
   private static final String PIN_REQUEST_TYPE_PARAM_NAME = "request.type";
   private static final String PIN_REGISTER_PARAM_NAME     = "register";
-  private static final String PIN_WORD_COUNT_PARAM_NAME   = "register";
+  private static final String PIN_WORD_COUNT_PARAM_NAME   = "words.count";
   private static final String PIN_IS_OUTPUT_PARAM_NAME    = "is.output";
   private static final String PIN_TRANSLATOR_PARAM_NAME   = "translator";
 
@@ -93,7 +93,7 @@ public class ModbusCfgDocConverter {
     IOptionSetEdit opSet = new OptionSet();
 
     opSet.setStr( JAVA_CLASS_PARAM_NAME, JAVA_CLASS_PARAM_VAL_TEMPLATE );
-    opSet.setStr( ID_PARAM_NAME, OPC_TAG_DEVICE_UA );
+    opSet.setStr( ID_PARAM_NAME, MODBUS_DEVICE_ID );
     opSet.setStr( DESCRIPTION_PARAM_NAME, DESCRIPTION_PARAM_VAL_TEMPLATE );
     opSet.setInt( SYNCH_PERIOD_PARAM_NAME, 1000 );
 
