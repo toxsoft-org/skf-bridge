@@ -299,7 +299,7 @@ public class OpcUaUtils {
       return new UsernameProvider( aCfg.login(), aCfg.passward() );
     }
 
-    return new AnonymousProvider();
+    return new AnonymousProvider();// Siemens
   }
 
   public static IList<String> convertToNodesList2( IAvList aAtomicList, INodeIdConvertor aConvertor ) {
