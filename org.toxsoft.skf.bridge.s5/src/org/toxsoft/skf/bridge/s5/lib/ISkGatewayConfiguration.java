@@ -1,16 +1,9 @@
 package org.toxsoft.skf.bridge.s5.lib;
 
 import org.toxsoft.core.tslib.bricks.strid.IStridable;
-import org.toxsoft.core.tslib.gw.gwid.Gwid;
-import org.toxsoft.core.tslib.gw.gwid.IGwidList;
 import org.toxsoft.core.tslib.utils.errors.TsIllegalArgumentRtException;
 import org.toxsoft.core.tslib.utils.errors.TsNullArgumentRtException;
 import org.toxsoft.core.tslib.utils.login.ILoginInfo;
-import org.toxsoft.uskat.core.api.cmdserv.ISkCommandExecutor;
-import org.toxsoft.uskat.core.api.cmdserv.ISkCommandService;
-import org.toxsoft.uskat.core.api.evserv.ISkEventHandler;
-import org.toxsoft.uskat.core.api.evserv.ISkEventService;
-import org.toxsoft.uskat.core.backend.api.IBaRtdata;
 import org.toxsoft.uskat.s5.client.remote.connection.IS5ConnectionInfo;
 
 /**
@@ -43,17 +36,32 @@ public interface ISkGatewayConfiguration
   ILoginInfo loginInfo();
 
   /**
-   * Возвращает {@link Gwid}-идентификаторы сущностей обрабатываемых шлюзом.
-   * <ul>
-   * <li>Текущие данные: смотри {@link IBaRtdata#configureCurrDataReader(IGwidList)},
-   * {@link IBaRtdata#configureCurrDataWriter(IGwidList)};</li>
-   * <li>Принимаемые команды: {@link ISkCommandService#registerExecutor(ISkCommandExecutor, IGwidList)};</li>
-   * <li>Передаваемые события: {@link ISkEventService#registerHandler(IGwidList, ISkEventHandler)}.</li>
-   * </ul>
+   * Конфигурация идентификаторов по экспортируемым текущим данным
    *
-   * @return {@link IGwidList} список идентификторов.
+   * @return {@link ISkGatewayGwidConfigs} конфигурация идентификаторов
    */
-  IGwidList gwids();
+  ISkGatewayGwidConfigs exportCurrData();
+
+  /**
+   * Конфигурация идентификаторов по экспортируемым хранимым данным
+   *
+   * @return {@link ISkGatewayGwidConfigs} конфигурация идентификаторов
+   */
+  ISkGatewayGwidConfigs exportHistData();
+
+  /**
+   * Конфигурация идентификаторов по экспортируемым событиям
+   *
+   * @return {@link ISkGatewayGwidConfigs} конфигурация идентификаторов
+   */
+  ISkGatewayGwidConfigs exportEvents();
+
+  /**
+   * Конфигурация идентификаторов по экспортируемым исполнителям команд
+   *
+   * @return {@link ISkGatewayGwidConfigs} конфигурация идентификаторов
+   */
+  ISkGatewayGwidConfigs exportCmdExecutors();
 
   /**
    * Возвращает признак того, что передача данных через шлюз временно приостановлена клиентом

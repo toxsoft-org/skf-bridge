@@ -4,8 +4,6 @@ import org.toxsoft.core.tslib.bricks.keeper.AbstractEntityKeeper;
 import org.toxsoft.core.tslib.bricks.keeper.IEntityKeeper;
 import org.toxsoft.core.tslib.bricks.strio.IStrioReader;
 import org.toxsoft.core.tslib.bricks.strio.IStrioWriter;
-import org.toxsoft.core.tslib.gw.gwid.GwidList;
-import org.toxsoft.core.tslib.gw.gwid.IGwidList;
 import org.toxsoft.core.tslib.utils.login.ILoginInfo;
 import org.toxsoft.core.tslib.utils.login.LoginInfo;
 import org.toxsoft.core.tslib.utils.valobj.TsValobjUtils;
@@ -54,7 +52,13 @@ public class SkGatewayConfigurationKeeper
     aSw.writeSeparatorChar();
     aSw.writeQuotedString( aEntity.loginInfo().password() );
     aSw.writeSeparatorChar();
-    GwidList.KEEPER.write( aSw, aEntity.gwids() );
+    SkGatewayGwidConfigs.KEEPER.write( aSw, aEntity.exportCurrData() );
+    aSw.writeSeparatorChar();
+    SkGatewayGwidConfigs.KEEPER.write( aSw, aEntity.exportHistData() );
+    aSw.writeSeparatorChar();
+    SkGatewayGwidConfigs.KEEPER.write( aSw, aEntity.exportEvents() );
+    aSw.writeSeparatorChar();
+    SkGatewayGwidConfigs.KEEPER.write( aSw, aEntity.exportCmdExecutors() );
     aSw.writeSeparatorChar();
     aSw.writeInt( aEntity.isPaused() ? 1 : 0 );
   }
@@ -74,13 +78,17 @@ public class SkGatewayConfigurationKeeper
     String passwd = aSr.readQuotedString();
     aSr.ensureSeparatorChar();
     ILoginInfo loginInfo = new LoginInfo( login, passwd );
-    IGwidList gwids = GwidList.KEEPER.read( aSr );
-    aSr.ensureSeparatorChar();
-    boolean isPaused = (aSr.readInt() != 0);
-
     SkGatewayConfiguration retValue = new SkGatewayConfiguration( id, descr, name, connectionInfo, loginInfo );
-    retValue.setGwids( gwids );
-    retValue.setPaused( isPaused );
+    retValue.setExportCurrData( SkGatewayGwidConfigs.KEEPER.read( aSr ) );
+    aSr.ensureSeparatorChar();
+    retValue.setExportHistData( SkGatewayGwidConfigs.KEEPER.read( aSr ) );
+    aSr.ensureSeparatorChar();
+    retValue.setExportEvents( SkGatewayGwidConfigs.KEEPER.read( aSr ) );
+    aSr.ensureSeparatorChar();
+    retValue.setExportCmdExecutors( SkGatewayGwidConfigs.KEEPER.read( aSr ) );
+    aSr.ensureSeparatorChar();
+    retValue.setPaused( aSr.readInt() != 0 );
+
     return retValue;
   }
 }

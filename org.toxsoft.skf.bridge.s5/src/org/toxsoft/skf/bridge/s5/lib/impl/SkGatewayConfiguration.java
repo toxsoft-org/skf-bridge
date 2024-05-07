@@ -2,18 +2,13 @@ package org.toxsoft.skf.bridge.s5.lib.impl;
 
 import org.toxsoft.core.tslib.av.opset.IOptionSet;
 import org.toxsoft.core.tslib.bricks.strid.impl.StridableParameterizedSer;
-import org.toxsoft.core.tslib.gw.gwid.GwidList;
-import org.toxsoft.core.tslib.gw.gwid.IGwidList;
+import org.toxsoft.core.tslib.gw.gwid.EGwidKind;
 import org.toxsoft.core.tslib.utils.TsLibUtils;
 import org.toxsoft.core.tslib.utils.errors.TsIllegalArgumentRtException;
 import org.toxsoft.core.tslib.utils.errors.TsNullArgumentRtException;
 import org.toxsoft.core.tslib.utils.login.ILoginInfo;
 import org.toxsoft.skf.bridge.s5.lib.ISkGatewayConfiguration;
-import org.toxsoft.skf.dq.lib.ISkDataQualityService;
-import org.toxsoft.uskat.core.api.cmdserv.ISkCommandExecutor;
-import org.toxsoft.uskat.core.api.cmdserv.ISkCommandService;
-import org.toxsoft.uskat.core.api.evserv.ISkEventService;
-import org.toxsoft.uskat.core.backend.api.IBaRtdata;
+import org.toxsoft.skf.bridge.s5.lib.ISkGatewayGwidConfigs;
 import org.toxsoft.uskat.s5.client.remote.connection.IS5ConnectionInfo;
 
 /**
@@ -25,16 +20,20 @@ public class SkGatewayConfiguration
     extends StridableParameterizedSer
     implements ISkGatewayConfiguration {
 
-  private static final long   serialVersionUID = 157157L;
+  private static final long serialVersionUID = 157157L;
+
   /**
    * Формат текстового представления {@link SkGatewayConfiguration}
    */
-  private static final String TO_STRING_FORMAT = "%s [%s@%s]. gwids = %d"; //$NON-NLS-1$
+  private static final String TO_STRING_FORMAT = "%s [%s@%s]. currdata{%s}, histdata{%s}, events{%s}, executors{%s}"; //$NON-NLS-1$
 
-  private IS5ConnectionInfo connectionInfo;
-  private ILoginInfo        loginInfo;
-  private GwidList          gwids  = new GwidList();
-  private boolean           paused = false;
+  private IS5ConnectionInfo     connectionInfo;
+  private ILoginInfo            loginInfo;
+  private ISkGatewayGwidConfigs exportCurrData     = new SkGatewayGwidConfigs( EGwidKind.GW_RTDATA );
+  private ISkGatewayGwidConfigs exportHistData     = new SkGatewayGwidConfigs( EGwidKind.GW_RTDATA );
+  private ISkGatewayGwidConfigs exportEvents       = new SkGatewayGwidConfigs( EGwidKind.GW_EVENT );
+  private ISkGatewayGwidConfigs exportCmdExecutors = new SkGatewayGwidConfigs( EGwidKind.GW_CMD );
+  private boolean               paused             = false;
 
   /**
    * Конструктор
@@ -82,21 +81,51 @@ public class SkGatewayConfiguration
   }
 
   /**
-   * Установить идентификаторы данных передаваемых через шлюз
-   * <ul>
-   * <li>Текущие данные: смотри {@link IBaRtdata#configureCurrDataReader(IGwidList)},
-   * {@link IBaRtdata#configureCurrDataWriter(IGwidList)};</li>
-   * <li>Команды: смотри {@link ISkCommandService#registerExecutor(ISkCommandExecutor, IGwidList)};</li>
-   * <li>События: смотри {@link ISkEventService};</li>
-   * <li>Качество данных: смотри {@link ISkDataQualityService}.</li>
-   * </ul>
+   * Установить идентификаторы текущих данных передаваемых через шлюз
    *
-   * @param aGwids {@link IGwidList} список идентификаторов данных
+   * @param aGwidConfigs {@link ISkGatewayGwidConfigs} конфигурация идентификаторов
    * @throws TsNullArgumentRtException любой аргумент = null
    */
-  public void setGwids( IGwidList aGwids ) {
-    TsNullArgumentRtException.checkNull( aGwids );
-    gwids.setAll( aGwids );
+  public void setExportCurrData( ISkGatewayGwidConfigs aGwidConfigs ) {
+    TsNullArgumentRtException.checkNull( aGwidConfigs );
+    TsIllegalArgumentRtException.checkFalse( aGwidConfigs.gwidKind() == EGwidKind.GW_RTDATA );
+    exportCurrData = aGwidConfigs;
+  }
+
+  /**
+   * Установить идентификаторы текущих данных передаваемых через шлюз
+   *
+   * @param aGwidConfigs {@link ISkGatewayGwidConfigs} конфигурация идентификаторов
+   * @throws TsNullArgumentRtException любой аргумент = null
+   */
+  public void setExportHistData( ISkGatewayGwidConfigs aGwidConfigs ) {
+    TsNullArgumentRtException.checkNull( aGwidConfigs );
+    TsIllegalArgumentRtException.checkFalse( aGwidConfigs.gwidKind() == EGwidKind.GW_RTDATA );
+    exportHistData = aGwidConfigs;
+  }
+
+  /**
+   * Установить идентификаторы текущих данных передаваемых через шлюз
+   *
+   * @param aGwidConfigs {@link ISkGatewayGwidConfigs} конфигурация идентификаторов
+   * @throws TsNullArgumentRtException любой аргумент = null
+   */
+  public void setExportEvents( ISkGatewayGwidConfigs aGwidConfigs ) {
+    TsNullArgumentRtException.checkNull( aGwidConfigs );
+    TsIllegalArgumentRtException.checkFalse( aGwidConfigs.gwidKind() == EGwidKind.GW_EVENT );
+    exportEvents = aGwidConfigs;
+  }
+
+  /**
+   * Установить идентификаторы текущих данных передаваемых через шлюз
+   *
+   * @param aGwidConfigs {@link ISkGatewayGwidConfigs} конфигурация идентификаторов
+   * @throws TsNullArgumentRtException любой аргумент = null
+   */
+  public void setExportCmdExecutors( ISkGatewayGwidConfigs aGwidConfigs ) {
+    TsNullArgumentRtException.checkNull( aGwidConfigs );
+    TsIllegalArgumentRtException.checkFalse( aGwidConfigs.gwidKind() == EGwidKind.GW_CMD );
+    exportCmdExecutors = aGwidConfigs;
   }
 
   /**
@@ -124,8 +153,23 @@ public class SkGatewayConfiguration
   }
 
   @Override
-  public IGwidList gwids() {
-    return gwids;
+  public ISkGatewayGwidConfigs exportCurrData() {
+    return exportCurrData;
+  }
+
+  @Override
+  public ISkGatewayGwidConfigs exportHistData() {
+    return exportHistData;
+  }
+
+  @Override
+  public ISkGatewayGwidConfigs exportEvents() {
+    return exportEvents;
+  }
+
+  @Override
+  public ISkGatewayGwidConfigs exportCmdExecutors() {
+    return exportCmdExecutors;
   }
 
   @Override
@@ -138,7 +182,8 @@ public class SkGatewayConfiguration
   //
   @Override
   public String toString() {
-    return String.format( TO_STRING_FORMAT, id(), loginInfo.login(), connectionInfo, Integer.valueOf( gwids.size() ) );
+    return String.format( TO_STRING_FORMAT, id(), loginInfo.login(), connectionInfo, exportCurrData, exportHistData,
+        exportEvents, exportCmdExecutors );
   }
 
   @Override
@@ -149,7 +194,10 @@ public class SkGatewayConfiguration
     result = TsLibUtils.PRIME * result + loginInfo.login().hashCode();
     result = TsLibUtils.PRIME * result + loginInfo.password().hashCode();
     result = TsLibUtils.PRIME * result + loginInfo.role().hashCode();
-    result = TsLibUtils.PRIME * result + gwids.hashCode();
+    result = TsLibUtils.PRIME * result + exportCurrData.hashCode();
+    result = TsLibUtils.PRIME * result + exportHistData.hashCode();
+    result = TsLibUtils.PRIME * result + exportEvents.hashCode();
+    result = TsLibUtils.PRIME * result + exportCmdExecutors.hashCode();
     return result;
   }
 
@@ -181,7 +229,16 @@ public class SkGatewayConfiguration
     if( !loginInfo.role().equals( other.loginInfo().role() ) ) {
       return false;
     }
-    if( !gwids.equals( other.gwids() ) ) {
+    if( !exportCurrData.equals( other.exportCurrData() ) ) {
+      return false;
+    }
+    if( !exportHistData.equals( other.exportHistData() ) ) {
+      return false;
+    }
+    if( !exportEvents.equals( other.exportEvents() ) ) {
+      return false;
+    }
+    if( !exportCmdExecutors.equals( other.exportCmdExecutors() ) ) {
       return false;
     }
     return true;

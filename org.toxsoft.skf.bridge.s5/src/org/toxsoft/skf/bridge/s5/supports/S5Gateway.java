@@ -1,6 +1,7 @@
 package org.toxsoft.skf.bridge.s5.supports;
 
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
+import static org.toxsoft.skf.bridge.s5.lib.impl.SkGatewayGwidConfigs.*;
 import static org.toxsoft.skf.bridge.s5.supports.IS5Resources.*;
 import static org.toxsoft.uskat.s5.common.IS5CommonResources.*;
 
@@ -32,6 +33,7 @@ import org.toxsoft.skf.dq.lib.impl.SkDataQualityService;
 import org.toxsoft.uskat.core.ISkCoreApi;
 import org.toxsoft.uskat.core.api.cmdserv.*;
 import org.toxsoft.uskat.core.api.evserv.*;
+import org.toxsoft.uskat.core.api.gwids.ISkGwidService;
 import org.toxsoft.uskat.core.api.rtdserv.*;
 import org.toxsoft.uskat.core.backend.ISkBackendProvider;
 import org.toxsoft.uskat.core.connection.*;
@@ -149,6 +151,11 @@ class S5Gateway
    * Список идентификаторов команд поддерживаемых локальными исполнителями и зарегистрированные на удаленном сервере
    */
   private GwidList remoteCmdGwids = new GwidList();
+
+  /**
+   * Служба идентификаторов (чтение)
+   */
+  private ISkGwidService localGwidService;
 
   /**
    * Служба событий (чтение)
@@ -730,6 +737,8 @@ class S5Gateway
       ISkCoreApi remoteApi = remoteConnection.coreApi();
       // Начало инициализации шлюза
       logger.info( MSG_GW_INIT_START, this );
+      // Служба идентификаторов
+      localGwidService = localApi.gwidService();
       // Службы текущих данных: чтение/запись
       localRtDataService = localApi.rtdService();
       remoteRtDataService = remoteApi.rtdService();
@@ -743,10 +752,6 @@ class S5Gateway
       // Служба качества данных: чтение/запись
       localDataQualityService = localApi.getService( ISkDataQualityService.SERVICE_ID );
       remoteDataQualityService = remoteApi.getService( ISkDataQualityService.SERVICE_ID );
-      IGwidList eventGwids = getEventGwids( configuration.gwids() );
-      Integer eventCount = Integer.valueOf( eventGwids.size() );
-      logger.info( MSG_GW_GWIDS_LIST, this, eventCount );
-
       // Создание портов передачи текущих данных
       localToRemoteCurrdataPort = new S5GatewayCurrDataPort( "localToRemote", localRtDataService, //$NON-NLS-1$
           remoteRtDataService, logger );
@@ -756,9 +761,7 @@ class S5Gateway
       // Регистрация слушателей служб
       threadExecutor.syncExec( () -> {
         localCmdService.globallyHandledGwidsEventer().addListener( new InternalGloballyHandledGwidsListener() );
-        localEventService.registerHandler( getEventGwids( configuration.gwids() ), this );
         localDataQualityService.eventer().addListener( this );
-
         // Признак готовности для синхронизации
         readyForSynchronize = true;
         // Выставление признака необходимости синхронизации
@@ -803,11 +806,10 @@ class S5Gateway
       IS5InitialImplementation aInitialImplementaion ) {
     TsNullArgumentRtException.checkNulls( aConnection, aProvider, aTreadExecutor, aConfiguration );
 
-    // TODO:
-    long connectionTimeout = 10000;
-    long failureTimeout = 3000;
-    long currdataTimeout = -1;
-    long histdataTimeout = -1;
+    long connectionTimeout = aConfiguration.connectionInfo().connectTimeout();
+    long failureTimeout = aConfiguration.connectionInfo().failureTimeout();
+    long currdataTimeout = aConfiguration.connectionInfo().currDataTimeout();
+    long histdataTimeout = aConfiguration.connectionInfo().histDataTimeout();
 
     IS5ConnectionInfo connectionInfo = aConfiguration.connectionInfo();
     ILoginInfo loginInfo = aConfiguration.loginInfo();
@@ -864,23 +866,29 @@ class S5Gateway
     synchronizeCmdExecutors( getExecutableCmdGwids() );
     // Завершение работы предыдущих каналов
     closeRtdataChannels();
+    // Отписываемся от всех событий
+    localEventService.unregisterHandler( this );
     // Синхронизация данных в зависимости от режима
     if( !aPaused ) {
       // Синхронизация в "штатном режиме"
-      // Данные для передачи через шлюз
-      IGwidList dataGwids = owner.dataQualityBackend().getConnectedResources( Skid.NONE );
+      // Данные по которым предоставляется качество
+      IGwidList qualityGwids = owner.dataQualityBackend().getConnectedResources( Skid.NONE );
       // Количество данных
-      Integer dataCount = Integer.valueOf( dataGwids.size() );
+      Integer dataCount = Integer.valueOf( qualityGwids.size() );
       // Регистрация данных в удаленном сервере
       logger.info( MSG_REGISTER_DATA_ON_REMOTE, dataCount );
       // Передача списка целевой службе качества данных
-      remoteDataQualityService.setConnectedResources( dataGwids );
+      remoteDataQualityService.setConnectedResources( qualityGwids );
       // Завершение регистрации в удаленной службе качества данных
       logger.info( MSG_REGISTER_QUALITY_COMPLETED, dataCount );
       // Создание каналов передачи данных
-      createRtdataChannels( dataGwids );
+      createRtdataChannels( qualityGwids );
       // Завершение регистрации каналов передачи данных
       logger.info( MSG_REGISTER_CHANNELS_COMPLETED, dataCount );
+      // Подписка на события
+      IGwidList eventGwids = getConfigGwids( localGwidService, configuration.exportEvents(), qualityGwids );
+      logger.info( MSG_GW_GWIDS_LIST, this, Integer.valueOf( eventGwids.size() ) );
+      localEventService.registerHandler( eventGwids, this );
       // Сброс признака необходимости синхронизации
       needSynchronize = false;
       // Время выполнения синхронизации
@@ -943,27 +951,26 @@ class S5Gateway
   /**
    * Настройка конфигурации передаваемых данных
    *
-   * @param aDataGwids {@link IGwidList} список идентификаторов данных
+   * @param aQualityGwids {@link IGwidList} список идентификаторов данных по которым предоставляется качество
    * @throws TsNullArgumentRtException аргумент = null
    */
-  private void createRtdataChannels( IGwidList aDataGwids ) {
-    TsNullArgumentRtException.checkNull( aDataGwids );
-    if( writeHistData.size() > 0 ) {
-      // Каналы уже созданы
-      return;
-    }
+  private void createRtdataChannels( IGwidList aQualityGwids ) {
+    TsNullArgumentRtException.checkNull( aQualityGwids );
+    // Завершение текущих каналов
+    closeRtdataChannels();
+    // Идентификаторы для текущих данных
+    IGwidList currdataGwids = getConfigGwids( localGwidService, configuration.exportCurrData(), aQualityGwids );
     // Добавление вновь добавленных каналов
-    if( aDataGwids.size() > 0 ) {
+    if( currdataGwids.size() > 0 ) {
       // Текущие данные (прием/передача)
-      localToRemoteCurrdataPort.setDataIds( aDataGwids );
-      // Завершение работы старых каналов данных
-      for( ISkWriteHistDataChannel channel : writeHistData.values() ) {
-        channel.close();
-      }
-      writeHistData.clear();
-      // Создание новых каналов хранимых данных. localToRemoteCurrdataPort возвращает
-      // только уникальные, без дублей
-      writeHistData.putAll( remoteRtDataService.createWriteHistDataChannels( localToRemoteCurrdataPort.dataIds() ) );
+      localToRemoteCurrdataPort.setDataIds( currdataGwids );
+    }
+    // Идентификаторы для хранимых данных
+    IGwidList histdataGwids = getConfigGwids( localGwidService, configuration.exportHistData(), aQualityGwids );
+    // Добавление вновь добавленных каналов
+    if( histdataGwids.size() > 0 ) {
+      // Создание новых каналов хранимых данных.
+      writeHistData.putAll( remoteRtDataService.createWriteHistDataChannels( histdataGwids ) );
     }
   }
 
@@ -979,30 +986,6 @@ class S5Gateway
       channel.close();
     }
     writeHistData.clear();
-  }
-
-  /**
-   * Возвращает список {@link Gwid}-идентификаторов событий которые принимаются клиентами соединения
-   * <p>
-   * Все {@link Gwid} которые не являются {@link EGwidKind#GW_EVENT} молча игнорируются
-   * <p>
-   * Правила формирования {@link Gwid} событий смотри
-   * {@link ISkEventService#registerHandler(IGwidList, ISkEventHandler)}
-   *
-   * @param aGwids {@link IGwidList} список идентификаторов
-   * @return {@link IGwidList} список {@link Gwid}-идентификаторов событий
-   * @throws TsNullArgumentRtException любой аргумент = null
-   */
-  private static IGwidList getEventGwids( IGwidList aGwids ) {
-    TsNullArgumentRtException.checkNull( aGwids );
-    GwidList retValue = new GwidList();
-    for( Gwid gwid : aGwids ) {
-      if( gwid.kind() != EGwidKind.GW_EVENT ) {
-        continue;
-      }
-      retValue.add( gwid );
-    }
-    return retValue;
   }
 
   /**
