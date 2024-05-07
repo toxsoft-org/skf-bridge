@@ -27,6 +27,7 @@ import org.toxsoft.core.tslib.bricks.strid.more.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.km5.*;
+import org.toxsoft.skf.bridge.cfg.modbus.gui.type.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.utils.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.panels.*;
@@ -182,6 +183,10 @@ public class ModbusToS5CfgDocEditorPanel
     CTabItem tabCfgUnitsItem = new CTabItem( tabSubFolder, SWT.NONE );
     tabCfgUnitsItem.setText( STR_LINKS );
 
+    // Создаём закладку IP адресов
+    CTabItem tabIPAddrsItem = new CTabItem( tabSubFolder, SWT.NONE );
+    tabIPAddrsItem.setText( "IP адреса" );
+
     ITsGuiContext ctx = new TsGuiContext( tsContext() );
     ctx.params().addAll( tsContext().params() );
 
@@ -228,9 +233,9 @@ public class ModbusToS5CfgDocEditorPanel
     String defConnName = defaultConnIdChain.first() != null ? defaultConnIdChain.first() : STR_DEFAULT_WORKROOM_SK_CONN;
     textContr1.setText( STR_SK_CONN_DESCR + defConnName );
 
-    // Связи
-    IM5Model<OpcToS5DataCfgUnit> model =
-        m5.getModel( OpcToS5DataCfgUnitM5Model.MODEL_ID_TEMPLATE + ".modbus", OpcToS5DataCfgUnit.class );
+    // Модель cвязи Gwid -> Modbus register
+    IM5Model<OpcToS5DataCfgUnit> linksModel =
+        m5.getModel( OpcToS5DataCfgUnitM5Model.MODEL_ID_TEMPLATE + ".modbus", OpcToS5DataCfgUnit.class ); //$NON-NLS-1$
 
     // IMultiPaneComponentConstants.OPDEF_IS_DETAILS_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
     // IMultiPaneComponentConstants.OPDEF_DETAILS_PANE_PLACE.setValue( ctx.params(),
@@ -239,11 +244,10 @@ public class ModbusToS5CfgDocEditorPanel
     IMultiPaneComponentConstants.OPDEF_IS_ACTIONS_CRUD.setValue( ctx.params(), AvUtils.AV_TRUE );
     // добавляем в панель фильтр
     IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
+    IM5LifecycleManager<OpcToS5DataCfgUnit> linksLm = new ModbusToS5CfgUnitM5LifecycleManager( linksModel, aSelDoc );
 
-    IM5LifecycleManager<OpcToS5DataCfgUnit> lm = new ModbusToS5CfgUnitM5LifecycleManager( model, aSelDoc );
-
-    MultiPaneComponentModown<OpcToS5DataCfgUnit> mpc =
-        new MultiPaneComponentModown<>( ctx, model, lm.itemsProvider(), lm ) {
+    MultiPaneComponentModown<OpcToS5DataCfgUnit> linksMpc =
+        new MultiPaneComponentModown<>( ctx, linksModel, linksLm.itemsProvider(), linksLm ) {
 
           @Override
           protected ITsToolbar doCreateToolbar( ITsGuiContext aaContext, String aName, EIconSize aIconSize,
@@ -277,12 +281,53 @@ public class ModbusToS5CfgDocEditorPanel
         };
 
     IM5CollectionPanel<OpcToS5DataCfgUnit> opcToS5DataCfgUnitPanel =
-        new M5CollectionPanelMpcModownWrapper<>( mpc, false );
+        new M5CollectionPanelMpcModownWrapper<>( linksMpc, false );
+
+    // Model of IP address
+    IM5Model<TCPAddress> ipAddresessModel = m5.getModel( TCPAddressM5Model.MODEL_ID, TCPAddress.class );
+    ModbusToS5CfgDocService service = ctx.get( ModbusToS5CfgDocService.class );
+    IM5LifecycleManager<TCPAddress> ipAddressLm = new TCPAddressM5LifecycleManager( ipAddresessModel, service );
 
     tabCfgUnitsItem.setControl( opcToS5DataCfgUnitPanel.createControl( tabSubFolder ) );
 
-    // Узлы
+    // create IP adddreses panel
+    MultiPaneComponentModown<TCPAddress> ipAddrsMpc =
+        new MultiPaneComponentModown<>( ctx, ipAddresessModel, ipAddressLm.itemsProvider(), ipAddressLm ) {
 
+          @Override
+          protected ITsToolbar doCreateToolbar( ITsGuiContext aaContext, String aName, EIconSize aIconSize,
+              IListEdit<ITsActionDef> aActs ) {
+            aActs.add( ACDEF_SEPARATOR );
+            // пока пусто;
+
+            ITsToolbar toolbar = super.doCreateToolbar( aaContext, aName, aIconSize, aActs );
+
+            toolbar.addListener( aActionId -> {
+              // nop
+            } );
+
+            toolbar.setIconSize( EIconSize.IS_24X24 );
+            return toolbar;
+          }
+
+          @Override
+          protected void doProcessAction( String aActionId ) {
+
+            switch( aActionId ) {
+              case OpcToS5DataCfgDocEditorPanel.ACTID_GENERATE_FILE:
+                // nop
+                break;
+
+              default:
+                throw new TsNotAllEnumsUsedRtException( aActionId );
+            }
+          }
+        };
+
+    IM5CollectionPanel<TCPAddress> ipAddrsPanel = new M5CollectionPanelMpcModownWrapper<>( ipAddrsMpc, false );
+    tabIPAddrsItem.setControl( ipAddrsPanel.createControl( tabSubFolder ) );
+
+    // select links tab
     tabSubFolder.setSelection( tabCfgUnitsItem );
   }
 

@@ -24,19 +24,6 @@ public class KM5ModbusContributor
    */
   public static final IKM5ContributorCreator CREATOR = KM5ModbusContributor::new;
 
-  // private static final IStringList CONRTIBUTED_MODEL_IDS = new StringArrayList( //
-  // ModbusToS5CfgDocM5Model.MODEL_ID, //
-  // ModbusNodesForCfgM5Model.MODEL_ID, //
-  // // DtoObjectM5Model.MODEL_ID, //
-  // // UaVariableNodeM5Model.MODEL_ID, //
-  // GwidsForCfgM5Model.MODEL_ID, //
-  // OpcToS5DataCfgUnitM5Model.MODEL_ID_TEMPLATE + ".modbus", //
-  // // OpcToS5DataCfgDocM5Model.MODEL_ID, //
-  // // NodesForCfgM5Model.MODEL_ID, //
-  // CfgUnitRealizationTypeM5Model.MODEL_ID //
-  // // CfgOpcUaNodeM5Model.MODEL_ID
-  // );
-
   private final IStringListEdit myModels = new StringArrayList();
 
   /**
@@ -55,45 +42,12 @@ public class KM5ModbusContributor
     OpcUaUtils.registerCfgUnitRealizationTypes( m5().tsContext() );
 
     addIfNotAlreadyAdded( new ModbusToS5CfgDocM5Model() );
-    // myModels.add( modbusToS5CfgDocM5Model.id() );
-    // m5().addModel( modbusToS5CfgDocM5Model );
-
-    // OpcUaNodeModel opcUaModel = new OpcUaNodeModel();
-    // myModels.add( opcUaModel.id() );
-    // m5().addModel( opcUaModel );
-    //
-    // UaVariableNodeM5Model uaVariableNodeM5Model = new UaVariableNodeM5Model();
-    // myModels.add( uaVariableNodeM5Model.id() );
-    // m5().addModel( uaVariableNodeM5Model );
-    //
-    // DtoObjectM5Model dtoObjectM5Model = new DtoObjectM5Model( skConn() );
-    // myModels.add( dtoObjectM5Model.id() );
-    // m5().addModel( dtoObjectM5Model );
-
     addIfNotAlreadyAdded( new GwidsForCfgM5Model() );
-    // myModels.add( gwidsForCfgM5Model.id() );
-    // m5().addModel( gwidsForCfgM5Model );
-
-    addIfNotAlreadyAdded( new OpcToS5DataCfgUnitM5Model( OpcToS5DataCfgUnitM5Model.MODEL_ID_TEMPLATE + ".modbus",
+    addIfNotAlreadyAdded( new OpcToS5DataCfgUnitM5Model( OpcToS5DataCfgUnitM5Model.MODEL_ID_TEMPLATE + ".modbus", //$NON-NLS-1$
         ModbusNodesForCfgM5Model.MODEL_ID ) );
-    // myModels.add( opcToS5DataCfgUnitM5Model.id() );
-    // m5().addModel( opcToS5DataCfgUnitM5Model );
-
-    // OpcToS5DataCfgDocM5Model opcToS5DataCfgDocM5Model = new OpcToS5DataCfgDocM5Model();
-    // myModels.add( opcToS5DataCfgDocM5Model.id() );
-    // m5().addModel( opcToS5DataCfgDocM5Model );
-
     addIfNotAlreadyAdded( new ModbusNodesForCfgM5Model() );
-    // myModels.add( modbusNodesForCfgM5Model.id() );
-    // m5().addModel( modbusNodesForCfgM5Model );
-
     addIfNotAlreadyAdded( new CfgUnitRealizationTypeM5Model() );
-    // myModels.add( cfgUnitRealizationTypeM5Model.id() );
-    // m5().addModel( cfgUnitRealizationTypeM5Model );
-
-    // CfgOpcUaNodeM5Model cfgOpcUaNodeM5Model = new CfgOpcUaNodeM5Model();
-    // myModels.add( cfgOpcUaNodeM5Model.id() );
-    // m5().addModel( cfgOpcUaNodeM5Model );
+    addIfNotAlreadyAdded( new TCPAddressM5Model() );
 
     return myModels;
   }

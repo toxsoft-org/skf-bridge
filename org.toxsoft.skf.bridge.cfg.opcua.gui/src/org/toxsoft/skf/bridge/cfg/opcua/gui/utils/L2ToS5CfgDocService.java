@@ -11,6 +11,12 @@ import org.toxsoft.core.txtproj.lib.storage.*;
 import org.toxsoft.core.txtproj.lib.workroom.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.*;
 
+/**
+ * Service base class for SkIDE bridge editors
+ *
+ * @author max
+ * @param <T>
+ */
 public class L2ToS5CfgDocService<T extends IStridable> {
 
   private String sectIdCfgDocs;
@@ -19,16 +25,23 @@ public class L2ToS5CfgDocService<T extends IStridable> {
 
   // private IStridablesListEdit<OpcToS5DataCfgDoc> initial = new StridablesList<>();
 
-  private ITsGuiContext context;
+  protected ITsGuiContext context;
 
+  private IStridablesListEdit<T> workCopy = new StridablesList<>();
+
+  /**
+   * Constructor
+   *
+   * @param aContext - app context {@link ITsGuiContext}
+   * @param aSectIdCfgDocs - section id
+   * @param aEntityKeeper - entity keeper
+   */
   public L2ToS5CfgDocService( ITsGuiContext aContext, String aSectIdCfgDocs, IEntityKeeper<T> aEntityKeeper ) {
     super();
     context = aContext;
     sectIdCfgDocs = aSectIdCfgDocs;
     entityKeeper = aEntityKeeper;
   }
-
-  private IStridablesListEdit<T> workCopy = new StridablesList<>();
 
   public IList<T> getCfgDocs() {
     if( workCopy.size() == 0 ) {
