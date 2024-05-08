@@ -11,11 +11,13 @@ import org.toxsoft.core.tsgui.bricks.actions.*;
 import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tsgui.m5.model.*;
 import org.toxsoft.core.tsgui.m5.model.impl.*;
+import org.toxsoft.core.tsgui.valed.api.*;
 import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.impl.*;
 import org.toxsoft.core.tslib.bricks.validator.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.helpers.*;
+import org.toxsoft.skf.bridge.cfg.modbus.gui.panels.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.type.*;
 import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.gui.conn.*;
@@ -44,19 +46,45 @@ public class ModbusNodesForCfgM5Model
       TsActionDef.ofPush2( ACTID_EDIT_AS_STR, STR_N_EDIT_AS_STRING, STR_D_EDIT_AS_STRING, ICONID_DOCUMENT_EDIT );
 
   /**
-   * Canonical str node
+   * address
+   */
+  public static final String FID_ADDRESS = "address"; //$NON-NLS-1$
+
+  /**
+   * register
    */
   public static final String FID_REGISTER = "register"; //$NON-NLS-1$
 
   /**
-   * Canonical str node
+   * words count
    */
   public static final String FID_WORDS_COUNT = "words.count"; //$NON-NLS-1$
 
   /**
-   * Canonical str node
+   * request type
    */
   public static final String FID_REQUEST_TYPE = "request.type"; //$NON-NLS-1$
+
+  /**
+   * Структура для описания IP адреса которые хранятся ВМЕСТЕ с сущностью. Ключевое отличие от связи с объектам в том
+   * что по связи объекты хранятся отдельно от сущности.
+   */
+  public final IM5SingleModownFieldDef<IAtomicValue, TCPAddress> TCP_ADDRESS =
+      new M5SingleModownFieldDef<>( FID_ADDRESS, TCPAddressM5Model.MODEL_ID ) {
+
+        @Override
+        protected void doInit() {
+          setNameAndDescription( "адрес", " TCP/IP адрес" );
+          params().setStr( IValedControlConstants.OPID_EDITOR_FACTORY_NAME,
+              ValedAvValobjTCPAddressEditor.FACTORY_NAME );
+          setFlags( M5FF_DETAIL );
+        }
+
+        protected TCPAddress doGetFieldValue( IAtomicValue aEntity ) {
+          return ((ModbusNode)aEntity.asValobj()).getAddress();
+        }
+
+      };
 
   public final M5AttributeFieldDef<IAtomicValue> REGISTER =
       new M5AttributeFieldDef<>( FID_REGISTER, EAtomicType.INTEGER, //
@@ -122,7 +150,7 @@ public class ModbusNodesForCfgM5Model
    */
   public ModbusNodesForCfgM5Model() {
     super( MODEL_ID, IAtomicValue.class );
-    addFieldDefs( REGISTER, WORDS_COUNT, REQUEST_TYPE );
+    addFieldDefs( TCP_ADDRESS, REGISTER, WORDS_COUNT, REQUEST_TYPE );
   }
 
   @Override
@@ -175,11 +203,14 @@ public class ModbusNodesForCfgM5Model
      */
     @Override
     protected IAtomicValue doCreate( IM5Bunch<IAtomicValue> aValues ) {
+
+      TCPAddress address = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_ADDRESS )).asValobj();
       int reg = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_REGISTER )).asInt();
       int count = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_WORDS_COUNT )).asInt();
       ERequestType type = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_REQUEST_TYPE )).asValobj();
 
-      return AvUtils.avValobj( new ModbusNode( reg, count, type ) );
+      // return AvUtils.avValobj( new ModbusNode( reg, count, type ) );
+      return AvUtils.avValobj( new ModbusNode( address, reg, count, type ) );
     }
 
     /**
@@ -208,11 +239,14 @@ public class ModbusNodesForCfgM5Model
      */
     @Override
     protected IAtomicValue doEdit( IM5Bunch<IAtomicValue> aValues ) {
+
+      TCPAddress address = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_ADDRESS )).asValobj();
       int reg = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_REGISTER )).asInt();
       int count = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_WORDS_COUNT )).asInt();
       ERequestType type = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_REQUEST_TYPE )).asValobj();
 
-      return AvUtils.avValobj( new ModbusNode( reg, count, type ) );
+      // return AvUtils.avValobj( new ModbusNode( reg, count, type ) );
+      return AvUtils.avValobj( new ModbusNode( address, reg, count, type ) );
     }
 
     /**

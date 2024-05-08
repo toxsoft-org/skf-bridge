@@ -21,6 +21,11 @@ public class TCPAddress
     extends Stridable {
 
   /**
+   * Singleton of the no address.
+   */
+  public static final TCPAddress NONE = new TCPAddress();
+
+  /**
    * IP address
    */
   private InetAddress ip;
@@ -95,6 +100,17 @@ public class TCPAddress
     TsNullArgumentRtException.checkNull( aInetAddress );
     ip = aInetAddress;
     port = aPort;
+  }
+
+  private TCPAddress() {
+    super( "empty.tcp.address.id", "empty IP address", TsLibUtils.EMPTY_STRING );
+    try {
+      ip = InetAddress.getByName( "192.168.0.1" );
+    }
+    catch( UnknownHostException ex ) {
+      LoggerUtils.errorLogger().error( ex );
+    }
+    port = 502;
   }
 
   /**
