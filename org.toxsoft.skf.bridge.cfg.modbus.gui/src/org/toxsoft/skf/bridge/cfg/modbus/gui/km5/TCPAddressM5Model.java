@@ -106,6 +106,7 @@ public class TCPAddressM5Model
    */
   public TCPAddressM5Model() {
     super( MODEL_ID, TCPAddress.class );
+    ID.setFlags( M5FF_HIDDEN | M5FF_INVARIANT );
     addFieldDefs( ID, NAME, IP_ADDRESS, PORT_NUM );
   }
 

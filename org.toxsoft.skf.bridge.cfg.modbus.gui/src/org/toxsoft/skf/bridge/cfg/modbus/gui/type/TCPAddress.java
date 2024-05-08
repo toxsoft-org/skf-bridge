@@ -67,7 +67,6 @@ public class TCPAddress
           aSr.ensureSeparatorChar();
           String name = aSr.readQuotedString();
           aSr.ensureSeparatorChar();
-          aSr.ensureChar( CHAR_ITEM_SEPARATOR );
           String ipStr = aSr.readQuotedString();
           InetAddress ip;
           try {
