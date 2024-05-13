@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.ejb.*;
 
+import org.toxsoft.core.tslib.bricks.strid.coll.IStridablesList;
 import org.toxsoft.core.tslib.utils.errors.TsNullArgumentRtException;
 import org.toxsoft.skf.bridge.s5.lib.*;
 import org.toxsoft.skf.bridge.s5.supports.IS5BackendGatewaySingleton;
@@ -68,6 +69,11 @@ public class S5BaGatewaySession
   // ------------------------------------------------------------------------------------
   // Реализация IBaGateway
   //
+  @Override
+  public IStridablesList<ISkGatewayConfiguration> gatewayConfigs() {
+    return gatewaysSupport.gatewayConfigs();
+  }
+
   @Override
   public void defineGateway( ISkGatewayConfiguration aGatewayConfig ) {
     TsNullArgumentRtException.checkNull( aGatewayConfig );

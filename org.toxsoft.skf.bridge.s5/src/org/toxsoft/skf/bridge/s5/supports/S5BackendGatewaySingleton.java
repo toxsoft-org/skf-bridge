@@ -196,6 +196,21 @@ public class S5BackendGatewaySingleton
   // ------------------------------------------------------------------------------------
   // IS5BackendGatewaySingleton
   //
+  @Override
+  public IStridablesList<ISkGatewayConfiguration> gatewayConfigs() {
+    IStridablesListEdit<ISkGatewayConfiguration> retValue = new StridablesList<>();
+    lockRead( gatewaysLock );
+    try {
+      for( S5Gateway gateway : gateways ) {
+        retValue.add( gateway.configuration() );
+      }
+    }
+    finally {
+      unlockRead( gatewaysLock );
+    }
+    return retValue;
+  }
+
   @Lock( LockType.WRITE )
   @Override
   public void defineGateway( ISkGatewayConfiguration aGatewayConfig ) {
