@@ -23,8 +23,10 @@ import org.toxsoft.core.tsgui.panels.toolbar.*;
 import org.toxsoft.core.tsgui.utils.layout.*;
 import org.toxsoft.core.tsgui.widgets.*;
 import org.toxsoft.core.tslib.av.impl.*;
+import org.toxsoft.core.tslib.bricks.filter.*;
 import org.toxsoft.core.tslib.bricks.strid.more.*;
 import org.toxsoft.core.tslib.coll.*;
+import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.type.*;
@@ -40,6 +42,7 @@ import org.toxsoft.uskat.core.gui.conn.*;
  * Editor panel for creating, editing, deleting modbus to s5 cfg docs.
  *
  * @author max
+ * @author dima
  */
 public class ModbusToS5CfgDocEditorPanel
     extends TsPanel {
@@ -59,12 +62,17 @@ public class ModbusToS5CfgDocEditorPanel
   final static TsActionDef ACDEF_SAVE_DOC =
       TsActionDef.ofPush2( ACTID_SAVE_DOC, STR_N_SAVE_CONFIG, STR_D_SAVE_CONFIG, ICONID_SAVE_DOC );
 
-  final static String ACTID_S5_SERVER_SELECT = SK_ID + "bridge.cfg.opcua.to.s5.s5.server.select"; //$NON-NLS-1$
+  final static String ACTID_S5_SERVER_SELECT = SK_ID + "bridge.cfg.opcua.to.s5.server.select"; //$NON-NLS-1$
 
   final static String ACTID_OPC_SERVER_SELECT = SK_ID + "bridge.cfg.opcua.to.s5.opc.server.select"; //$NON-NLS-1$
 
+  final static String ACTID_IP_ADDRESS_SELECT = SK_ID + "bridge.cfg.modbus.ip.address.select"; //$NON-NLS-1$
+
   final static TsActionDef ACDEF_S5_SERVER_SELECT = TsActionDef.ofPush2( ACTID_S5_SERVER_SELECT, STR_N_SELECT_S5_SERVER,
       STR_D_SELECT_S5_SERVER, ICONID_S5_SERVER_SELECT );
+
+  final static TsActionDef ACDEF_IP_ADDRESS_SELECT =
+      TsActionDef.ofCheck2( ACTID_IP_ADDRESS_SELECT, STR_N_SELECT_IP_ADDRESS, STR_D_SELECT_IP_ADDRESS, ICONID_FILTER );
 
   final static TsActionDef ACDEF_OPC_SERVER_SELECT = TsActionDef.ofPush2( ACTID_OPC_SERVER_SELECT,
       STR_N_SELECT_OPC_UA_SERVER, STR_D_SELECT_OPC_UA_SERVER, ICONID_OPC_SERVER_SELECT );
@@ -76,6 +84,12 @@ public class ModbusToS5CfgDocEditorPanel
   private CTabFolder tabFolder;
 
   private TextControlContribution textContr1;
+
+  /**
+   * Current selected IP address
+   */
+  private TCPAddress              selAddress = TCPAddress.NONE;
+  private TextControlContribution selAddressTextContr;
 
   /**
    * Конструктор панели.
@@ -250,18 +264,23 @@ public class ModbusToS5CfgDocEditorPanel
         new MultiPaneComponentModown<>( ctx, linksModel, linksLm.itemsProvider(), linksLm ) {
 
           @Override
-          protected ITsToolbar doCreateToolbar( ITsGuiContext aaContext, String aName, EIconSize aIconSize,
+          protected ITsToolbar doCreateToolbar( ITsGuiContext aContext, String aName, EIconSize aIconSize,
               IListEdit<ITsActionDef> aActs ) {
             aActs.add( ACDEF_SEPARATOR );
             aActs.add( OpcToS5DataCfgDocEditorPanel.ACDEF_GENERATE_FILE );
+            aActs.add( ACDEF_IP_ADDRESS_SELECT );
 
-            ITsToolbar toolbar = super.doCreateToolbar( aaContext, aName, aIconSize, aActs );
+            ITsToolbar toolbar = super.doCreateToolbar( aContext, aName, aIconSize, aActs );
 
             toolbar.addListener( aActionId -> {
               // nop
             } );
 
             toolbar.setIconSize( EIconSize.IS_24X24 );
+            // add label to dispale selected IP
+            selAddressTextContr =
+                new TextControlContribution( "selAddressTextContrId", 200, STR_SEL_IP_ADDRESS, SWT.NONE ); //$NON-NLS-1$
+            toolbar.addContributionItem( selAddressTextContr );
             return toolbar;
           }
 
@@ -272,6 +291,24 @@ public class ModbusToS5CfgDocEditorPanel
               case OpcToS5DataCfgDocEditorPanel.ACTID_GENERATE_FILE:
                 ((ModbusToS5CfgUnitM5LifecycleManager)lifecycleManager()).generateDlmFileFromCurrState( ctx );
                 ((ModbusToS5CfgUnitM5LifecycleManager)lifecycleManager()).generateDevFileFromCurrState( ctx );
+                break;
+              case ACTID_IP_ADDRESS_SELECT:
+                boolean checked = toolbar().getAction( ACTID_IP_ADDRESS_SELECT ).isChecked();
+                if( checked ) {
+                  // select IP
+                  TCPAddress address = PanelTCPAddressSelector.selectTCPAddress( tsContext(), selAddress );
+                  if( address != null ) {
+                    // create new filter
+                    ITsFilter<OpcToS5DataCfgUnit> filter = new FilterByIPAddress( address );
+                    tree().filterManager().setFilter( filter );
+                    selAddress = address;
+                    selAddressTextContr.setText( STR_SEL_IP_ADDRESS + address.nmName() );
+                  }
+                }
+                else {
+                  tree().filterManager().setFilter( ITsFilter.ALL );
+                  selAddressTextContr.setText( TsLibUtils.EMPTY_STRING );
+                }
                 break;
 
               default:
@@ -314,9 +351,6 @@ public class ModbusToS5CfgDocEditorPanel
           protected void doProcessAction( String aActionId ) {
 
             switch( aActionId ) {
-              case OpcToS5DataCfgDocEditorPanel.ACTID_GENERATE_FILE:
-                // nop
-                break;
 
               default:
                 throw new TsNotAllEnumsUsedRtException( aActionId );

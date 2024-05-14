@@ -2,6 +2,8 @@ package org.toxsoft.skf.bridge.cfg.modbus.gui.km5;
 
 import static org.toxsoft.core.tsgui.graphics.icons.ITsStdIconIds.*;
 import static org.toxsoft.core.tsgui.m5.IM5Constants.*;
+import static org.toxsoft.core.tsgui.valed.api.IValedControlConstants.*;
+import static org.toxsoft.core.tslib.av.EAtomicType.*;
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.km5.ISkResources.*;
@@ -11,7 +13,6 @@ import org.toxsoft.core.tsgui.bricks.actions.*;
 import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tsgui.m5.model.*;
 import org.toxsoft.core.tsgui.m5.model.impl.*;
-import org.toxsoft.core.tsgui.valed.api.*;
 import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.impl.*;
 import org.toxsoft.core.tslib.bricks.validator.*;
@@ -69,22 +70,39 @@ public class ModbusNodesForCfgM5Model
    * Структура для описания IP адреса которые хранятся ВМЕСТЕ с сущностью. Ключевое отличие от связи с объектам в том
    * что по связи объекты хранятся отдельно от сущности.
    */
-  public final IM5SingleModownFieldDef<IAtomicValue, TCPAddress> TCP_ADDRESS =
-      new M5SingleModownFieldDef<>( FID_ADDRESS, TCPAddressM5Model.MODEL_ID ) {
+  // public final IM5SingleModownFieldDef<IAtomicValue, TCPAddress> TCP_ADDRESS =
+  // new M5SingleModownFieldDef<>( FID_ADDRESS, TCPAddressM5Model.MODEL_ID ) {
+  //
+  // @Override
+  // protected void doInit() {
+  // setNameAndDescription( "адрес", " TCP/IP адрес" );
+  // params().setStr( IValedControlConstants.OPID_EDITOR_FACTORY_NAME,
+  // ValedAvValobjTCPAddressEditor.FACTORY_NAME );
+  // setFlags( M5FF_DETAIL );
+  // }
+  //
+  // protected TCPAddress doGetFieldValue( IAtomicValue aEntity ) {
+  // return ((ModbusNode)aEntity.asValobj()).getAddress();
+  // }
+  //
+  // };
+  public M5AttributeFieldDef<IAtomicValue> TCP_ADDRESS = new M5AttributeFieldDef<>( FID_ADDRESS, VALOBJ, //
+      TSID_NAME, "адрес", //
+      TSID_DESCRIPTION, " TCP/IP адрес", //
+      TSID_KEEPER_ID, TCPAddress.KEEPER_ID, //
+      OPID_EDITOR_FACTORY_NAME, ValedAvValobjTCPAddressEditor.FACTORY_NAME //
+  ) {
 
-        @Override
-        protected void doInit() {
-          setNameAndDescription( "адрес", " TCP/IP адрес" );
-          params().setStr( IValedControlConstants.OPID_EDITOR_FACTORY_NAME,
-              ValedAvValobjTCPAddressEditor.FACTORY_NAME );
-          setFlags( M5FF_DETAIL );
-        }
+    @Override
+    protected void doInit() {
+      setFlags( M5FF_DETAIL );
+    }
 
-        protected TCPAddress doGetFieldValue( IAtomicValue aEntity ) {
-          return ((ModbusNode)aEntity.asValobj()).getAddress();
-        }
+    protected IAtomicValue doGetFieldValue( IAtomicValue aEntity ) {
+      return AvUtils.avValobj( ((ModbusNode)aEntity.asValobj()).getAddress() );
+    }
 
-      };
+  };
 
   public final M5AttributeFieldDef<IAtomicValue> REGISTER =
       new M5AttributeFieldDef<>( FID_REGISTER, EAtomicType.INTEGER, //

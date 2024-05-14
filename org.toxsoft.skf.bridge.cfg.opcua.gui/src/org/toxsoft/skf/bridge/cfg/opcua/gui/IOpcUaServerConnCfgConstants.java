@@ -56,6 +56,7 @@ public interface IOpcUaServerConnCfgConstants {
   String ICONID_REMOVE_NODE          = "remove_node";          //$NON-NLS-1$
   String ICONID_LOAD_TREE            = "open-tree";            //$NON-NLS-1$
   String ICONID_CLEAR_CASH           = "clear-cash";           //$NON-NLS-1$
+  String ICONID_FILTER               = "filter";               //$NON-NLS-1$
 
   //
   // -------------------------------------------------------------------------------------

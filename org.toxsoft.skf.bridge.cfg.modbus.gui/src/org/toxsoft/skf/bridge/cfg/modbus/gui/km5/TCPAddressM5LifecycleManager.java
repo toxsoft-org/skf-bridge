@@ -7,7 +7,6 @@ import java.net.*;
 
 import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tsgui.m5.model.impl.*;
-import org.toxsoft.core.tslib.bricks.strid.impl.*;
 import org.toxsoft.core.tslib.bricks.validator.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
@@ -32,10 +31,11 @@ public class TCPAddressM5LifecycleManager
 
   @Override
   protected ValidationResult doBeforeCreate( IM5Bunch<TCPAddress> aValues ) {
-    String id = aValues.getAsAv( FID_ID ).asString();
-    if( !StridUtils.isValidIdPath( id ) ) {
-      return ValidationResult.error( MSG_ERR_NOT_IDPATH );
-    }
+    // String id = aValues.getAsAv( FID_ID ).asString();
+    // if( !StridUtils.isValidIdPath( id ) ) {
+    // return ValidationResult.error( MSG_ERR_NOT_IDPATH );
+    // }
+
     String addrStr = aValues.getAsAv( TCPAddressM5Model.FID_IP_ADDRESS ).asString();
     try {
       InetAddress.getByName( addrStr );
@@ -48,7 +48,9 @@ public class TCPAddressM5LifecycleManager
 
   @Override
   protected TCPAddress doCreate( IM5Bunch<TCPAddress> aValues ) {
-    String id = aValues.getAsAv( FID_ID ).asString();
+    // String id = aValues.getAsAv( FID_ID ).asString();
+    String strid = "bridge.cfg.modbus" + System.currentTimeMillis();
+
     String name = aValues.getAsAv( FID_NAME ).asString();
     String addrStr = aValues.getAsAv( TCPAddressM5Model.FID_IP_ADDRESS ).asString();
     InetAddress addr = null;
@@ -59,7 +61,7 @@ public class TCPAddressM5LifecycleManager
       LoggerUtils.errorLogger().error( ex );
     }
     int portNum = aValues.getAsAv( TCPAddressM5Model.FID_PORT_NUM ).asInt();
-    TCPAddress newAddr = new TCPAddress( id, name, addr, portNum );
+    TCPAddress newAddr = new TCPAddress( strid, name, addr, portNum );
     master().saveIPAddress( newAddr );
 
     return newAddr;

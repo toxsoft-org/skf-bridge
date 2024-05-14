@@ -67,10 +67,11 @@ public class ValedTCPAddressEditor
   @Override
   protected boolean doProcessButtonPress() {
     // create and dispaly TCPAddress selector
-    TCPAddress gwid = PanelTCPAddressSelector.selectTCPAddress( tsContext(), canGetValue().isOk() ? getValue() : null );
+    TCPAddress address =
+        PanelTCPAddressSelector.selectTCPAddress( tsContext(), canGetValue().isOk() ? getValue() : null );
 
-    if( gwid != null ) {
-      doSetUnvalidatedValue( gwid );
+    if( address != null ) {
+      doSetUnvalidatedValue( address );
       return true;
     }
     return false;
