@@ -30,6 +30,11 @@ public class ModbusNodeKeeper
 
   @Override
   protected void doWrite( IStrioWriter aSw, ModbusNode aEntity ) {
+    TCPAddress.KEEPER.write( aSw, aEntity.getAddress() );
+    aSw.writeSeparatorChar();
+    aSw.writeEol();
+    aSw.writeInt( aEntity.getRegister() );
+    aSw.writeSeparatorChar();
     aSw.writeInt( aEntity.getRegister() );
     aSw.writeSeparatorChar();
     aSw.writeEol();
@@ -42,13 +47,15 @@ public class ModbusNodeKeeper
 
   @Override
   protected ModbusNode doRead( IStrioReader aSr ) {
+    TCPAddress address = TCPAddress.KEEPER.read( aSr );
+    aSr.ensureSeparatorChar();
     int register = aSr.readInt();
     aSr.ensureSeparatorChar();
     int wordsCount = aSr.readInt();
     aSr.ensureSeparatorChar();
     ERequestType type = ERequestType.valueOf( aSr.readQuotedString() );
 
-    return new ModbusNode( register, wordsCount, type );
+    return new ModbusNode( address, register, wordsCount, type );
   }
 
 }

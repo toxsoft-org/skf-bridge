@@ -3,7 +3,7 @@ package org.toxsoft.skf.bridge.cfg.modbus.gui.type;
 import org.toxsoft.core.tslib.utils.*;
 
 /**
- * Описание одного участка адресного пространства Modbus (аналог NodeId в opc ua)
+ * Описание одного участка адресного пространства Modbus (аналог NodeId в OPC UA)
  *
  * @author max
  * @author dima
@@ -131,4 +131,15 @@ public class ModbusNode {
   public void setOutput( boolean aIsOutput ) {
     isOutput = aIsOutput;
   }
+
+  /**
+   * @return string
+   */
+  @SuppressWarnings( "boxing" )
+  @Override
+  public String toString() {
+    return String.format( "%s : %d : %d : %s", address.getIP().getHostAddress(), register, wordsCount, //$NON-NLS-1$
+        requestType.name() );
+  }
+
 }

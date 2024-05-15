@@ -2,6 +2,7 @@ package org.toxsoft.skf.bridge.cfg.modbus.gui.km5;
 
 import static org.toxsoft.core.tsgui.graphics.icons.ITsStdIconIds.*;
 import static org.toxsoft.core.tsgui.m5.IM5Constants.*;
+import static org.toxsoft.core.tsgui.m5.gui.mpc.IMultiPaneComponentConstants.*;
 import static org.toxsoft.core.tsgui.valed.api.IValedControlConstants.*;
 import static org.toxsoft.core.tslib.av.EAtomicType.*;
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
@@ -10,7 +11,12 @@ import static org.toxsoft.skf.bridge.cfg.opcua.gui.km5.ISkResources.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
 import org.toxsoft.core.tsgui.bricks.actions.*;
+import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tsgui.m5.*;
+import org.toxsoft.core.tsgui.m5.gui.mpc.*;
+import org.toxsoft.core.tsgui.m5.gui.mpc.impl.*;
+import org.toxsoft.core.tsgui.m5.gui.panels.*;
+import org.toxsoft.core.tsgui.m5.gui.panels.impl.*;
 import org.toxsoft.core.tsgui.m5.model.*;
 import org.toxsoft.core.tsgui.m5.model.impl.*;
 import org.toxsoft.core.tslib.av.*;
@@ -169,6 +175,34 @@ public class ModbusNodesForCfgM5Model
   public ModbusNodesForCfgM5Model() {
     super( MODEL_ID, IAtomicValue.class );
     addFieldDefs( TCP_ADDRESS, REGISTER, WORDS_COUNT, REQUEST_TYPE );
+    // переопределяю только для того чтобы отключить панель фильтра
+    setPanelCreator( new M5DefaultPanelCreator<>() {
+
+      protected IM5EntityPanel<IAtomicValue> doCreateEntityEditorPanel( ITsGuiContext aContext,
+          IM5LifecycleManager<IAtomicValue> aLifecycleManager ) {
+        IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( aContext.params(), AvUtils.AV_FALSE );
+        return new M5DefaultEntityControlledPanel<>( aContext, model(), aLifecycleManager, null );
+      }
+
+      protected IM5CollectionPanel<IAtomicValue> doCreateCollViewerPanel( ITsGuiContext aContext,
+          IM5ItemsProvider<IAtomicValue> aItemsProvider ) {
+        OPDEF_IS_ACTIONS_CRUD.setValue( aContext.params(), AV_FALSE );
+        IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( aContext.params(), AvUtils.AV_FALSE );
+        MultiPaneComponentModown<IAtomicValue> mpc =
+            new MultiPaneComponentModown<>( aContext, model(), aItemsProvider );
+        return new M5CollectionPanelMpcModownWrapper<>( mpc, true );
+      }
+
+      protected IM5CollectionPanel<IAtomicValue> doCreateCollEditPanel( ITsGuiContext aContext,
+          IM5ItemsProvider<IAtomicValue> aItemsProvider, IM5LifecycleManager<IAtomicValue> aLifecycleManager ) {
+        IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( aContext.params(), AvUtils.AV_FALSE );
+        MultiPaneComponentModown<IAtomicValue> mpc =
+            new MultiPaneComponentModown<>( aContext, model(), aItemsProvider, aLifecycleManager );
+        return new M5CollectionPanelMpcModownWrapper<>( mpc, false );
+      }
+
+    } );
+
   }
 
   @Override

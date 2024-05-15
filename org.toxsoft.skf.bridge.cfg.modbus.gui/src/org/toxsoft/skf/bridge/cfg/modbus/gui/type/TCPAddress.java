@@ -153,4 +153,13 @@ public class TCPAddress
     port = aPortNum;
   }
 
+  /**
+   * @return string
+   */
+  @SuppressWarnings( "boxing" )
+  @Override
+  public String toString() {
+    return String.format( "%s - %s:%d", nmName(), getIP().getHostAddress(), port ); //$NON-NLS-1$
+  }
+
 }

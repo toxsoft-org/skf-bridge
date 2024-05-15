@@ -1,6 +1,8 @@
 package org.toxsoft.skf.bridge.cfg.modbus.gui.panels;
 
 import static org.toxsoft.core.tsgui.bricks.actions.ITsStdActionDefs.*;
+import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
+import static org.toxsoft.skf.bridge.cfg.modbus.gui.panels.ISkResources.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
@@ -11,21 +13,29 @@ import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.tsgui.bricks.actions.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tsgui.bricks.ctx.impl.*;
+import org.toxsoft.core.tsgui.dialogs.datarec.*;
 import org.toxsoft.core.tsgui.graphics.icons.*;
 import org.toxsoft.core.tsgui.m5.*;
+import org.toxsoft.core.tsgui.m5.gui.*;
 import org.toxsoft.core.tsgui.m5.gui.mpc.*;
 import org.toxsoft.core.tsgui.m5.gui.mpc.impl.*;
 import org.toxsoft.core.tsgui.m5.gui.panels.*;
 import org.toxsoft.core.tsgui.m5.gui.panels.impl.*;
 import org.toxsoft.core.tsgui.m5.model.*;
+import org.toxsoft.core.tsgui.m5.model.impl.*;
 import org.toxsoft.core.tsgui.panels.*;
 import org.toxsoft.core.tsgui.panels.toolbar.*;
 import org.toxsoft.core.tsgui.utils.layout.*;
 import org.toxsoft.core.tsgui.widgets.*;
 import org.toxsoft.core.tslib.av.impl.*;
+import org.toxsoft.core.tslib.av.list.*;
 import org.toxsoft.core.tslib.bricks.filter.*;
 import org.toxsoft.core.tslib.bricks.strid.more.*;
 import org.toxsoft.core.tslib.coll.*;
+import org.toxsoft.core.tslib.coll.impl.*;
+import org.toxsoft.core.tslib.coll.notifier.*;
+import org.toxsoft.core.tslib.gw.gwid.*;
+import org.toxsoft.core.tslib.gw.skid.*;
 import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.km5.*;
@@ -35,8 +45,10 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.panels.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 import org.toxsoft.skide.plugin.exconn.service.*;
+import org.toxsoft.uskat.core.api.objserv.*;
 import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.gui.conn.*;
+import org.toxsoft.uskat.core.gui.km5.sded.*;
 
 /**
  * Editor panel for creating, editing, deleting modbus to s5 cfg docs.
@@ -266,6 +278,9 @@ public class ModbusToS5CfgDocEditorPanel
           @Override
           protected ITsToolbar doCreateToolbar( ITsGuiContext aContext, String aName, EIconSize aIconSize,
               IListEdit<ITsActionDef> aActs ) {
+            // add func create copy
+            int index = 1 + aActs.indexOf( ACDEF_ADD );
+            aActs.insert( index, ACDEF_ADD_COPY );
             aActs.add( ACDEF_SEPARATOR );
             aActs.add( OpcToS5DataCfgDocEditorPanel.ACDEF_GENERATE_FILE );
             aActs.add( ACDEF_IP_ADDRESS_SELECT );
@@ -277,10 +292,6 @@ public class ModbusToS5CfgDocEditorPanel
             } );
 
             toolbar.setIconSize( EIconSize.IS_24X24 );
-            // add label to dispale selected IP
-            selAddressTextContr =
-                new TextControlContribution( "selAddressTextContrId", 200, STR_SEL_IP_ADDRESS, SWT.NONE ); //$NON-NLS-1$
-            toolbar.addContributionItem( selAddressTextContr );
             return toolbar;
           }
 
@@ -310,6 +321,52 @@ public class ModbusToS5CfgDocEditorPanel
                   selAddressTextContr.setText( TsLibUtils.EMPTY_STRING );
                 }
                 break;
+              case ACTID_ADD_COPY: {
+                INotifierListEdit<OpcToS5DataCfgUnit> list2Copy = tree().items();
+                if( list2Copy.size() == 0 ) {
+                  break;
+                }
+                // popup dialogs to select new IP
+                TCPAddress newAddress = PanelTCPAddressSelector.selectTCPAddress( ctx, selAddress );
+                for( OpcToS5DataCfgUnit sel : list2Copy ) {
+                  ITsDialogInfo cdi = doCreateDialogInfoToAddItem();
+                  IM5BunchEdit<OpcToS5DataCfgUnit> initVals = new M5BunchEdit<>( model() );
+                  initVals.fillFrom( sel, false );
+                  // новый strid
+                  initVals.set( OpcToS5DataCfgUnitM5Model.FID_STRID,
+                      avStr( ModbusToS5CfgUnitM5LifecycleManager.generateStrid() ) );
+                  // обновляем gwid
+                  IList<Gwid> gwids = initVals.get( OpcToS5DataCfgUnitM5Model.FID_GWIDS );
+                  Skid initSkid = null;
+                  if( !gwids.isEmpty() ) {
+                    initSkid = gwids.first().skid();
+                  }
+                  Skid newSkid = selectSkid( initSkid, ctx );
+                  IListEdit<Gwid> newGwids = new ElemArrayList<>();
+                  for( Gwid gwid4Copy : gwids ) {
+                    Gwid newGwid = Gwid.createRtdata( newSkid.classId(), newSkid.strid(), gwid4Copy.propId() );
+                    newGwids.add( newGwid );
+                  }
+                  initVals.set( OpcToS5DataCfgUnitM5Model.FID_GWIDS, newGwids );
+                  // обновляем IP
+                  IList<ModbusNode> nodes = OpcUaUtils.convertToNodesList( sel.getDataNodes2() );
+                  IListEdit<ModbusNode> newNodes = new ElemArrayList<>();
+                  for( ModbusNode node : nodes ) {
+                    ModbusNode newNode =
+                        new ModbusNode( newAddress, node.getRegister(), node.getWordsCount(), node.getRequestType() );
+                    newNodes.add( newNode );
+                  }
+                  initVals.set( OpcToS5DataCfgUnitM5Model.FID_NODES, convertToAtomicList( newNodes ) );
+
+                  OpcToS5DataCfgUnit item =
+                      M5GuiUtils.askCreate( tsContext(), model(), initVals, cdi, lifecycleManager() );
+                  // TODO uncomment to create copy
+                  // if( item != null ) {
+                  // fillViewer( item );
+                  // }
+                }
+                break;
+              }
 
               default:
                 throw new TsNotAllEnumsUsedRtException( aActionId );
@@ -326,6 +383,9 @@ public class ModbusToS5CfgDocEditorPanel
     IM5LifecycleManager<TCPAddress> ipAddressLm = new TCPAddressM5LifecycleManager( ipAddresessModel, service );
 
     tabCfgUnitsItem.setControl( opcToS5DataCfgUnitPanel.createControl( tabSubFolder ) );
+    // add label to dispale selected IP
+    selAddressTextContr = new TextControlContribution( "selAddressTextContrId", 200, STR_SEL_IP_ADDRESS, SWT.NONE ); //$NON-NLS-1$
+    linksMpc.toolbar().addContributionItem( selAddressTextContr );
 
     // create IP adddreses panel
     MultiPaneComponentModown<TCPAddress> ipAddrsMpc =
@@ -363,6 +423,38 @@ public class ModbusToS5CfgDocEditorPanel
 
     // select links tab
     tabSubFolder.setSelection( tabCfgUnitsItem );
+  }
+
+  static IAvList convertToAtomicList( IList<ModbusNode> aNodeList ) {
+    IAvListEdit result = new AvList( new ElemArrayList<>() );
+    for( ModbusNode node : aNodeList ) {
+      result.add( avValobj( node ) );
+    }
+    return result;
+  }
+
+  /**
+   * FIXME copy paste из класса Выводит диалог выбора Skid.
+   * <p>
+   *
+   * @param aInitSkid {@link Skid} для инициализации
+   * @param aContext {@link ITsGuiContext} - контекст
+   * @return Skid - выбранный объект или <b>null</b> в случает отказа от выбора
+   */
+  Skid selectSkid( Skid aInitSkid, ITsGuiContext aContext ) {
+    TsNullArgumentRtException.checkNull( aContext );
+    IM5Domain m5 = conn.scope().get( IM5Domain.class );
+
+    IM5Model<ISkObject> modelSk = m5.getModel( IKM5SdedConstants.MID_SDED_SK_OBJECT, ISkObject.class );
+    IM5LifecycleManager<ISkObject> lmSk = modelSk.getLifecycleManager( conn );
+    ITsGuiContext ctx = new TsGuiContext( aContext );
+    TsDialogInfo di = new TsDialogInfo( ctx, DLG_T_SKID_SEL, STR_MSG_SKID_SELECTION );
+    ISkObject initObj = aInitSkid == null ? null : conn.coreApi().objService().get( aInitSkid );
+    ISkObject selObj = M5GuiUtils.askSelectItem( di, modelSk, initObj, lmSk.itemsProvider(), lmSk );
+    if( selObj != null ) {
+      return selObj.skid();
+    }
+    return Skid.NONE;
   }
 
 }

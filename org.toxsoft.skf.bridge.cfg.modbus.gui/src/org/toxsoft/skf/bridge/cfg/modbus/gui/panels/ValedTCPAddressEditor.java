@@ -26,6 +26,11 @@ public class ValedTCPAddressEditor
   public static final String FACTORY_NAME = VALED_EDNAME_PREFIX + ".TCPAddressEditor"; //$NON-NLS-1$
 
   /**
+   * selected value
+   */
+  private TCPAddress value = TCPAddress.NONE;
+
+  /**
    * The factory class.
    *
    * @author dima
@@ -72,6 +77,7 @@ public class ValedTCPAddressEditor
 
     if( address != null ) {
       doSetUnvalidatedValue( address );
+      value = address;
       return true;
     }
     return false;
@@ -89,9 +95,7 @@ public class ValedTCPAddressEditor
 
   @Override
   protected TCPAddress doGetUnvalidatedValue() {
-    // TODO
-    // return TCPAddress.of( getTextControl().getText() );
-    return TCPAddress.NONE;
+    return value;
   }
 
   @Override
