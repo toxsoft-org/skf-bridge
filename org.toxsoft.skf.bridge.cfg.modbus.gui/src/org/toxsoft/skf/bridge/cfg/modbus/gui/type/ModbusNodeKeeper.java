@@ -35,8 +35,6 @@ public class ModbusNodeKeeper
     aSw.writeEol();
     aSw.writeInt( aEntity.getRegister() );
     aSw.writeSeparatorChar();
-    aSw.writeInt( aEntity.getRegister() );
-    aSw.writeSeparatorChar();
     aSw.writeEol();
     aSw.writeInt( aEntity.getWordsCount() );
     aSw.writeSeparatorChar();
