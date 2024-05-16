@@ -30,9 +30,10 @@ import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.gui.conn.*;
 
 /**
- * M5 model realization for {@link ModbusNode} entities using for cfg of map uanodes-gwids
+ * M5 model realization for {@link ModbusNode} entities using for cfg of map OPC UA Nodes <-> Gwids
  *
  * @author max
+ * @author dima
  */
 public class ModbusNodesForCfgM5Model
     extends M5Model<IAtomicValue> {

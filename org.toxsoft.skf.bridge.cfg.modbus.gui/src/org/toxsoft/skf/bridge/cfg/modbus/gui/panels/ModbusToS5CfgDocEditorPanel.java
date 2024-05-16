@@ -21,6 +21,7 @@ import org.toxsoft.core.tsgui.m5.gui.mpc.*;
 import org.toxsoft.core.tsgui.m5.gui.mpc.impl.*;
 import org.toxsoft.core.tsgui.m5.gui.panels.*;
 import org.toxsoft.core.tsgui.m5.gui.panels.impl.*;
+import org.toxsoft.core.tsgui.m5.gui.viewers.*;
 import org.toxsoft.core.tsgui.m5.model.*;
 import org.toxsoft.core.tsgui.m5.model.impl.*;
 import org.toxsoft.core.tsgui.panels.*;
@@ -80,6 +81,8 @@ public class ModbusToS5CfgDocEditorPanel
 
   final static String ACTID_IP_ADDRESS_SELECT = SK_ID + "bridge.cfg.modbus.ip.address.select"; //$NON-NLS-1$
 
+  final static String ACTID_COPY_ALL = SK_ID + "bridge.cfg.modbus.copy.all"; //$NON-NLS-1$
+
   final static TsActionDef ACDEF_S5_SERVER_SELECT = TsActionDef.ofPush2( ACTID_S5_SERVER_SELECT, STR_N_SELECT_S5_SERVER,
       STR_D_SELECT_S5_SERVER, ICONID_S5_SERVER_SELECT );
 
@@ -88,6 +91,9 @@ public class ModbusToS5CfgDocEditorPanel
 
   final static TsActionDef ACDEF_OPC_SERVER_SELECT = TsActionDef.ofPush2( ACTID_OPC_SERVER_SELECT,
       STR_N_SELECT_OPC_UA_SERVER, STR_D_SELECT_OPC_UA_SERVER, ICONID_OPC_SERVER_SELECT );
+
+  final static TsActionDef ACDEF_COPY_ALL =
+      TsActionDef.ofPush2( ACTID_COPY_ALL, STR_N_COPY_ALL, STR_D_COPY_ALL, ITsStdIconIds.ICONID_LIST_ADD_ALL );
 
   final ISkConnection conn;
 
@@ -283,6 +289,8 @@ public class ModbusToS5CfgDocEditorPanel
             aActs.insert( index, ACDEF_ADD_COPY );
             aActs.add( ACDEF_SEPARATOR );
             aActs.add( OpcToS5DataCfgDocEditorPanel.ACDEF_GENERATE_FILE );
+            aActs.add( ACDEF_SEPARATOR );
+            aActs.add( ACDEF_COPY_ALL );
             aActs.add( ACDEF_IP_ADDRESS_SELECT );
 
             ITsToolbar toolbar = super.doCreateToolbar( aContext, aName, aIconSize, aActs );
@@ -308,40 +316,35 @@ public class ModbusToS5CfgDocEditorPanel
                 if( checked ) {
                   // select IP
                   TCPAddress address = PanelTCPAddressSelector.selectTCPAddress( tsContext(), selAddress );
-                  if( address != null ) {
-                    // create new filter
-                    ITsFilter<OpcToS5DataCfgUnit> filter = new FilterByIPAddress( address );
-                    tree().filterManager().setFilter( filter );
-                    selAddress = address;
-                    selAddressTextContr.setText( STR_SEL_IP_ADDRESS + address.nmName() );
-                  }
+                  setNewIPAddress( tree(), address );
                 }
                 else {
                   tree().filterManager().setFilter( ITsFilter.ALL );
                   selAddressTextContr.setText( TsLibUtils.EMPTY_STRING );
                 }
                 break;
-              case ACTID_ADD_COPY: {
+              case ACTID_COPY_ALL: {
                 INotifierListEdit<OpcToS5DataCfgUnit> list2Copy = tree().items();
+                IListEdit<OpcToS5DataCfgUnit> newItems = new ElemArrayList<>();
                 if( list2Copy.size() == 0 ) {
                   break;
                 }
                 // popup dialogs to select new IP
                 TCPAddress newAddress = PanelTCPAddressSelector.selectTCPAddress( ctx, selAddress );
+                if( newAddress == null ) {
+                  break;
+                }
+                Skid newSkid = selectSkid( list2Copy.first().getDataGwids().first().skid(), ctx );
+                if( newSkid == null ) {
+                  break;
+                }
                 for( OpcToS5DataCfgUnit sel : list2Copy ) {
-                  ITsDialogInfo cdi = doCreateDialogInfoToAddItem();
                   IM5BunchEdit<OpcToS5DataCfgUnit> initVals = new M5BunchEdit<>( model() );
                   initVals.fillFrom( sel, false );
                   // новый strid
                   initVals.set( OpcToS5DataCfgUnitM5Model.FID_STRID,
                       avStr( ModbusToS5CfgUnitM5LifecycleManager.generateStrid() ) );
-                  // обновляем gwid
                   IList<Gwid> gwids = initVals.get( OpcToS5DataCfgUnitM5Model.FID_GWIDS );
-                  Skid initSkid = null;
-                  if( !gwids.isEmpty() ) {
-                    initSkid = gwids.first().skid();
-                  }
-                  Skid newSkid = selectSkid( initSkid, ctx );
                   IListEdit<Gwid> newGwids = new ElemArrayList<>();
                   for( Gwid gwid4Copy : gwids ) {
                     Gwid newGwid = Gwid.createRtdata( newSkid.classId(), newSkid.strid(), gwid4Copy.propId() );
@@ -357,13 +360,28 @@ public class ModbusToS5CfgDocEditorPanel
                     newNodes.add( newNode );
                   }
                   initVals.set( OpcToS5DataCfgUnitM5Model.FID_NODES, convertToAtomicList( newNodes ) );
+                  // create new item
+                  OpcToS5DataCfgUnit item = lifecycleManager().create( initVals );
+                  newItems.add( item );
+                }
+                // добавляем в список и переключаем в новый фильтр
+                fillViewer( newItems.first() );
+                setNewIPAddress( tree(), newAddress );
+                break;
+              }
+              case ACTID_ADD_COPY: {
+                OpcToS5DataCfgUnit selected = tree().selectedItem();
+                ITsDialogInfo cdi = doCreateDialogInfoToAddItem();
+                IM5BunchEdit<OpcToS5DataCfgUnit> initVals = new M5BunchEdit<>( model() );
+                initVals.fillFrom( selected, false );
+                // новый strid
+                initVals.set( OpcToS5DataCfgUnitM5Model.FID_STRID,
+                    avStr( ModbusToS5CfgUnitM5LifecycleManager.generateStrid() ) );
 
-                  OpcToS5DataCfgUnit item =
-                      M5GuiUtils.askCreate( tsContext(), model(), initVals, cdi, lifecycleManager() );
-                  // TODO uncomment to create copy
-                  // if( item != null ) {
-                  // fillViewer( item );
-                  // }
+                OpcToS5DataCfgUnit item =
+                    M5GuiUtils.askCreate( tsContext(), model(), initVals, cdi, lifecycleManager() );
+                if( item != null ) {
+                  fillViewer( item );
                 }
                 break;
               }
@@ -455,6 +473,16 @@ public class ModbusToS5CfgDocEditorPanel
       return selObj.skid();
     }
     return Skid.NONE;
+  }
+
+  void setNewIPAddress( IM5TreeViewer<OpcToS5DataCfgUnit> aIm5TreeViewer, TCPAddress address ) {
+    if( address != null ) {
+      // create new filter
+      ITsFilter<OpcToS5DataCfgUnit> filter = new FilterByIPAddress( address );
+      aIm5TreeViewer.filterManager().setFilter( filter );
+      selAddress = address;
+      selAddressTextContr.setText( STR_SEL_IP_ADDRESS + address.nmName() );
+    }
   }
 
 }
