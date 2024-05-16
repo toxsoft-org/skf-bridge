@@ -1,6 +1,7 @@
 package org.toxsoft.skf.bridge.cfg.modbus.gui.type;
 
 import static org.toxsoft.core.tslib.bricks.strio.IStrioHardConstants.*;
+import static org.toxsoft.core.tslib.utils.TsLibUtils.*;
 
 import java.net.*;
 
@@ -102,6 +103,7 @@ public class TCPAddress
     port = aPort;
   }
 
+  @SuppressWarnings( "nls" )
   private TCPAddress() {
     super( "empty.tcp.address.id", "empty IP address", TsLibUtils.EMPTY_STRING );
     try {
@@ -153,6 +155,10 @@ public class TCPAddress
     port = aPortNum;
   }
 
+  // ------------------------------------------------------------------------------------
+  // Object
+  //
+
   /**
    * @return string
    */
@@ -160,6 +166,25 @@ public class TCPAddress
   @Override
   public String toString() {
     return String.format( "%s - %s:%d", nmName(), getIP().getHostAddress(), port ); //$NON-NLS-1$
+  }
+
+  @Override
+  public boolean equals( Object aThat ) {
+    if( aThat == this ) {
+      return true;
+    }
+    if( aThat instanceof TCPAddress that ) {
+      return ip.equals( that.ip ) && port == that.port;
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = INITIAL_HASH_CODE;
+    result = PRIME * result + ip.hashCode();
+    result = PRIME * result + port;
+    return result;
   }
 
 }

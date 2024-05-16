@@ -151,6 +151,11 @@ public class ModbusToS5CfgUnitM5LifecycleManager
     }
   }
 
+  /**
+   * Generate config file *.devcfg
+   *
+   * @param aContext - app context {@link ITsGuiContext}
+   */
   public void generateDevFileFromCurrState( ITsGuiContext aContext ) {
     Shell shell = aContext.find( Shell.class );
     FileDialog fd = new FileDialog( shell, SWT.SAVE );

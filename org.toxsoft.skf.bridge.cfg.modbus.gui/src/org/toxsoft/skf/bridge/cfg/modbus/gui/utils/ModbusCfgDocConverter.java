@@ -11,6 +11,13 @@ import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.type.*;
 
+/**
+ * Utility class for devcfg tree creation
+ *
+ * @author max
+ * @author dima
+ */
+@SuppressWarnings( "nls" )
 public class ModbusCfgDocConverter {
 
   private static final String PIN_NODE_ID_FORMAT = "pin.%s.def";
@@ -45,6 +52,8 @@ public class ModbusCfgDocConverter {
 
   private static final String CONNECTION_1_NODE_ID = "connection1.def";
 
+  private static final String CONNECTION_TEMP_FMT_STR = "connection.number%d.def";
+
   private static final String MODBUS_CFG_NODE_ID = "modbus.common.cfg";
 
   private static final String PIN_ID_PARAM_NAME           = "id";
@@ -60,32 +69,73 @@ public class ModbusCfgDocConverter {
   private static final String PIN_DEFAULT_ANALOG_TRANSLATOR_VAL  =
       "org.toxsoft.l2.thd.modbus.common.translators.AnalogTowBytesTranslator";
 
+  /**
+   * Create config file *.devcfg
+   *
+   * @param aContext - app context
+   * @param aDoc - config data for editor
+   * @return tree {@link IAvTree} to store in file
+   */
   public static IAvTree convertToDevCfgTree( ITsGuiContext aContext, ModbusToS5CfgDoc aDoc ) {
-    String type = TYPE_PARAM_VAL_TEMPLATE;
-    String ipAddress = IP_PARAM_VAL_TEMPLATE;
-    String port = PORT_PARAM_VAL_TEMPLATE;
-
-    AvTree deviceRegistersGroup = createGroup( aDoc, SYNC_TAGS_ARRAY_ID, SYNC_GROUP_NODE_ID );
-
-    // массив устройств
-    AvTree devicesMassivTree = AvTree.createArrayAvTree();
-
-    devicesMassivTree.addElement( deviceRegistersGroup );
-
-    StringMap<IAvTree> devicesNodes = new StringMap<>();
-    devicesNodes.put( DEVICES_ARRAY_NAME, devicesMassivTree );
-
-    IOptionSetEdit connection1Ops = new OptionSet();
-
-    connection1Ops.setStr( TYPE_PARAM_NAME, type );
-    connection1Ops.setStr( IP_PARAM_NAME, ipAddress );
-    connection1Ops.setStr( PORT_PARAM_NAME, port );
-
+    // new version
+    // get used IP addresses
+    ModbusToS5CfgDocService docService = new ModbusToS5CfgDocService( aContext );
+    IList<TCPAddress> ipAddresses = docService.getIPAddresses();
     // массив соединений
     AvTree connectionsMassivTree = AvTree.createArrayAvTree();
+    int connNumber = 1;
+    for( TCPAddress ipAddress : ipAddresses ) {
+      String type = TYPE_PARAM_VAL_TEMPLATE;
+      String ipAddressStr = ipAddress.getIP().getHostAddress();
+      int port = ipAddress.getPort();
 
-    IAvTree singleConnection = AvTree.createSingleAvTree( CONNECTION_1_NODE_ID, connection1Ops, devicesNodes );
-    connectionsMassivTree.addElement( singleConnection );
+      AvTree deviceRegistersGroup = createGroup( aDoc, ipAddress, SYNC_TAGS_ARRAY_ID, SYNC_GROUP_NODE_ID );
+      // массив устройств
+      AvTree devicesMassivTree = AvTree.createArrayAvTree();
+      devicesMassivTree.addElement( deviceRegistersGroup );
+
+      StringMap<IAvTree> devicesNodes = new StringMap<>();
+      devicesNodes.put( DEVICES_ARRAY_NAME, devicesMassivTree );
+
+      IOptionSetEdit connOps = new OptionSet();
+
+      connOps.setStr( TYPE_PARAM_NAME, type );
+      connOps.setStr( IP_PARAM_NAME, ipAddressStr );
+      connOps.setInt( PORT_PARAM_NAME, port );
+      // id next section
+      String connNodeId = String.format( CONNECTION_TEMP_FMT_STR, Integer.valueOf( connNumber++ ) );
+
+      IAvTree singleConnection = AvTree.createSingleAvTree( connNodeId, connOps, devicesNodes );
+      connectionsMassivTree.addElement( singleConnection );
+
+    }
+
+    // old version
+    // String type = TYPE_PARAM_VAL_TEMPLATE;
+    // String ipAddress = IP_PARAM_VAL_TEMPLATE;
+    // String port = PORT_PARAM_VAL_TEMPLATE;
+    //
+    // AvTree deviceRegistersGroup = createGroup( aDoc, SYNC_TAGS_ARRAY_ID, SYNC_GROUP_NODE_ID );
+    //
+    // // массив устройств
+    // AvTree devicesMassivTree = AvTree.createArrayAvTree();
+    //
+    // devicesMassivTree.addElement( deviceRegistersGroup );
+    //
+    // StringMap<IAvTree> devicesNodes = new StringMap<>();
+    // devicesNodes.put( DEVICES_ARRAY_NAME, devicesMassivTree );
+    //
+    // IOptionSetEdit connection1Ops = new OptionSet();
+    //
+    // connection1Ops.setStr( TYPE_PARAM_NAME, type );
+    // connection1Ops.setStr( IP_PARAM_NAME, ipAddress );
+    // connection1Ops.setStr( PORT_PARAM_NAME, port );
+
+    // массив соединений
+    // AvTree connectionsMassivTree = AvTree.createArrayAvTree();
+
+    // IAvTree singleConnection = AvTree.createSingleAvTree( CONNECTION_1_NODE_ID, connection1Ops, devicesNodes );
+    // connectionsMassivTree.addElement( singleConnection );
 
     StringMap<IAvTree> nodes = new StringMap<>();
     nodes.put( CONNECTIONS_ARRAY_NAME, connectionsMassivTree );
@@ -102,7 +152,8 @@ public class ModbusCfgDocConverter {
     return tree;
   }
 
-  private static AvTree createGroup( ModbusToS5CfgDoc aDoc, String aArrayId, String aGroupNodeId ) {
+  private static AvTree createGroup( ModbusToS5CfgDoc aDoc, TCPAddress aSelAddress, String aArrayId,
+      String aGroupNodeId ) {
 
     // массив тегов группы
     AvTree tagsMassivTree = AvTree.createArrayAvTree();
@@ -111,10 +162,10 @@ public class ModbusCfgDocConverter {
     IList<ModbusNode> cfgNodes = aDoc.getNodesCfgs();
 
     for( ModbusNode tagData : cfgNodes ) {
-
-      IAvTree tag = createTag( tagData );
-
-      tagsMassivTree.addElement( tag );
+      if( tagData.getAddress().equals( aSelAddress ) ) {
+        IAvTree tag = createTag( tagData );
+        tagsMassivTree.addElement( tag );
+      }
     }
 
     StringMap<IAvTree> nodes = new StringMap<>();

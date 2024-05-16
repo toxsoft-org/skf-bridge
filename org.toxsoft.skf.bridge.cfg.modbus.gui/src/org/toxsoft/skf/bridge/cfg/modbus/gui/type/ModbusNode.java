@@ -51,7 +51,13 @@ public class ModbusNode {
    */
   @SuppressWarnings( "nls" )
   public String getId() {
-    return requestType.name() + "_" + register + "_" + wordsCount + (isOutput ? "_output" : TsLibUtils.EMPTY_STRING);
+    // old version
+    // return requestType.name() + "_" + register + "_" + wordsCount + (isOutput ? "_output" : TsLibUtils.EMPTY_STRING);
+    String flattenIP = address.getIP().getHostAddress().replace( '.', '_' );
+    String ID_FMT_STR = "modbus_node_id_%s_%d_%s_%d_%d";
+    String retVal = String.format( ID_FMT_STR, flattenIP, Integer.valueOf( address.getPort() ), requestType.name(),
+        Integer.valueOf( register ), Integer.valueOf( wordsCount ) );
+    return retVal + (isOutput ? "_output" : TsLibUtils.EMPTY_STRING);
   }
 
   /**

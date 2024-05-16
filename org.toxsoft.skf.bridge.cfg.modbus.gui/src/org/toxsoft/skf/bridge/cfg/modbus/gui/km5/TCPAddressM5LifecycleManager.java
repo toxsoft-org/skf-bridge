@@ -31,10 +31,6 @@ public class TCPAddressM5LifecycleManager
 
   @Override
   protected ValidationResult doBeforeCreate( IM5Bunch<TCPAddress> aValues ) {
-    // String id = aValues.getAsAv( FID_ID ).asString();
-    // if( !StridUtils.isValidIdPath( id ) ) {
-    // return ValidationResult.error( MSG_ERR_NOT_IDPATH );
-    // }
 
     String addrStr = aValues.getAsAv( TCPAddressM5Model.FID_IP_ADDRESS ).asString();
     try {
