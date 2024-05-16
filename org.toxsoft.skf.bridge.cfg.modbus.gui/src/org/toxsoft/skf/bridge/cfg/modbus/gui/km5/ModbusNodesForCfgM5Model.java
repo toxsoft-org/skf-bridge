@@ -73,26 +73,6 @@ public class ModbusNodesForCfgM5Model
    */
   public static final String FID_REQUEST_TYPE = "request.type"; //$NON-NLS-1$
 
-  /**
-   * Структура для описания IP адреса которые хранятся ВМЕСТЕ с сущностью. Ключевое отличие от связи с объектам в том
-   * что по связи объекты хранятся отдельно от сущности.
-   */
-  // public final IM5SingleModownFieldDef<IAtomicValue, TCPAddress> TCP_ADDRESS =
-  // new M5SingleModownFieldDef<>( FID_ADDRESS, TCPAddressM5Model.MODEL_ID ) {
-  //
-  // @Override
-  // protected void doInit() {
-  // setNameAndDescription( "адрес", " TCP/IP адрес" );
-  // params().setStr( IValedControlConstants.OPID_EDITOR_FACTORY_NAME,
-  // ValedAvValobjTCPAddressEditor.FACTORY_NAME );
-  // setFlags( M5FF_DETAIL );
-  // }
-  //
-  // protected TCPAddress doGetFieldValue( IAtomicValue aEntity ) {
-  // return ((ModbusNode)aEntity.asValobj()).getAddress();
-  // }
-  //
-  // };
   public M5AttributeFieldDef<IAtomicValue> TCP_ADDRESS = new M5AttributeFieldDef<>( FID_ADDRESS, VALOBJ, //
       TSID_NAME, "адрес", //
       TSID_DESCRIPTION, " TCP/IP адрес", //
@@ -102,7 +82,7 @@ public class ModbusNodesForCfgM5Model
 
     @Override
     protected void doInit() {
-      setFlags( M5FF_DETAIL );
+      setFlags( M5FF_COLUMN );
     }
 
     protected IAtomicValue doGetFieldValue( IAtomicValue aEntity ) {
@@ -114,14 +94,13 @@ public class ModbusNodesForCfgM5Model
   public final M5AttributeFieldDef<IAtomicValue> REGISTER =
       new M5AttributeFieldDef<>( FID_REGISTER, EAtomicType.INTEGER, //
           TSID_NAME, "Регистр modbus", //
-          TSID_DESCRIPTION, "Регистр modbus" //
+          TSID_DESCRIPTION, "Регистр modbus", //
+          TSID_DEFAULT_VALUE, avInt( 100 ) //
       ) {
 
         @Override
         protected void doInit() {
           setFlags( M5FF_COLUMN );
-          // setFlags( M5FF_COLUMN | M5FF_READ_ONLY | M5FF_HIDDEN );
-          // setFlags( M5FF_COLUMN | M5FF_HIDDEN );
         }
 
         protected IAtomicValue doGetFieldValue( IAtomicValue aEntity ) {
@@ -133,14 +112,13 @@ public class ModbusNodesForCfgM5Model
   public final M5AttributeFieldDef<IAtomicValue> WORDS_COUNT =
       new M5AttributeFieldDef<>( FID_WORDS_COUNT, EAtomicType.INTEGER, //
           TSID_NAME, "Количество слов modbus", //
-          TSID_DESCRIPTION, "Количество слов modbus" //
+          TSID_DESCRIPTION, "Количество слов modbus", //
+          TSID_DEFAULT_VALUE, avInt( 1 ) //
       ) {
 
         @Override
         protected void doInit() {
           setFlags( M5FF_COLUMN );
-          // setFlags( M5FF_COLUMN | M5FF_READ_ONLY | M5FF_HIDDEN );
-          // setFlags( M5FF_COLUMN | M5FF_HIDDEN );
         }
 
         protected IAtomicValue doGetFieldValue( IAtomicValue aEntity ) {

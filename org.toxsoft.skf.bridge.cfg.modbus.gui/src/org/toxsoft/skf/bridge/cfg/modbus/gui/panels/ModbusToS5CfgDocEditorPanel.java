@@ -34,7 +34,6 @@ import org.toxsoft.core.tslib.bricks.filter.*;
 import org.toxsoft.core.tslib.bricks.strid.more.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
-import org.toxsoft.core.tslib.coll.notifier.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.gw.skid.*;
 import org.toxsoft.core.tslib.utils.*;
@@ -319,12 +318,12 @@ public class ModbusToS5CfgDocEditorPanel
                   setNewIPAddress( tree(), address );
                 }
                 else {
-                  tree().filterManager().setFilter( ITsFilter.ALL );
-                  selAddressTextContr.setText( TsLibUtils.EMPTY_STRING );
+                  clearFilter( tree() );
                 }
                 break;
               case ACTID_COPY_ALL: {
-                INotifierListEdit<OpcToS5DataCfgUnit> list2Copy = tree().items();
+                // получим отфильтрованные элементы
+                IList<OpcToS5DataCfgUnit> list2Copy = tree().filterManager().items();
                 IListEdit<OpcToS5DataCfgUnit> newItems = new ElemArrayList<>();
                 if( list2Copy.size() == 0 ) {
                   break;
@@ -390,6 +389,7 @@ public class ModbusToS5CfgDocEditorPanel
                 throw new TsNotAllEnumsUsedRtException( aActionId );
             }
           }
+
         };
 
     IM5CollectionPanel<OpcToS5DataCfgUnit> opcToS5DataCfgUnitPanel =
@@ -404,6 +404,7 @@ public class ModbusToS5CfgDocEditorPanel
     // add label to dispale selected IP
     selAddressTextContr = new TextControlContribution( "selAddressTextContrId", 200, STR_SEL_IP_ADDRESS, SWT.NONE ); //$NON-NLS-1$
     linksMpc.toolbar().addContributionItem( selAddressTextContr );
+    clearFilter( linksMpc.tree() );
 
     // create IP adddreses panel
     MultiPaneComponentModown<TCPAddress> ipAddrsMpc =
@@ -483,6 +484,12 @@ public class ModbusToS5CfgDocEditorPanel
       selAddress = address;
       selAddressTextContr.setText( STR_SEL_IP_ADDRESS + address.nmName() );
     }
+
+  }
+
+  void clearFilter( IM5TreeViewer<OpcToS5DataCfgUnit> aTreeViewer ) {
+    aTreeViewer.filterManager().setFilter( ITsFilter.ALL );
+    selAddressTextContr.setText( TsLibUtils.EMPTY_STRING );
   }
 
 }
