@@ -413,9 +413,10 @@ public class ModbusToS5CfgDocEditorPanel
           @Override
           protected ITsToolbar doCreateToolbar( ITsGuiContext aaContext, String aName, EIconSize aIconSize,
               IListEdit<ITsActionDef> aActs ) {
-            aActs.add( ACDEF_SEPARATOR );
-            // пока пусто;
+            int index = 1 + aActs.indexOf( ACDEF_ADD );
+            aActs.insert( index, ACDEF_ADD_COPY );
 
+            aActs.add( ACDEF_SEPARATOR );
             ITsToolbar toolbar = super.doCreateToolbar( aaContext, aName, aIconSize, aActs );
 
             toolbar.addListener( aActionId -> {
@@ -430,6 +431,20 @@ public class ModbusToS5CfgDocEditorPanel
           protected void doProcessAction( String aActionId ) {
 
             switch( aActionId ) {
+              case ACTID_ADD_COPY: {
+                TCPAddress selected = tree().selectedItem();
+                ITsDialogInfo cdi = doCreateDialogInfoToAddItem();
+                IM5BunchEdit<TCPAddress> initVals = new M5BunchEdit<>( model() );
+                initVals.fillFrom( selected, false );
+                // новый strid
+                initVals.set( TCPAddressM5Model.ID.id(), avStr( TCPAddressM5LifecycleManager.generateStrid() ) );
+
+                TCPAddress item = M5GuiUtils.askCreate( tsContext(), model(), initVals, cdi, lifecycleManager() );
+                if( item != null ) {
+                  fillViewer( item );
+                }
+                break;
+              }
 
               default:
                 throw new TsNotAllEnumsUsedRtException( aActionId );

@@ -121,28 +121,6 @@ public class TCPAddressM5Model
           IM5LifecycleManager<TCPAddress> aLifecycleManager ) {
         IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( aContext.params(), AvUtils.AV_FALSE );
         return new M5DefaultEntityControlledPanel<>( aContext, model(), aLifecycleManager, null );
-
-        // MultiPaneComponentModown<TCPAddress> mpc =
-        // new MultiPaneComponentModown<>( aContext, model(), aItemsProvider, aLifecycleManager ) {
-        //
-        // @Override
-        // protected TCPAddress doAddItem() {
-        // TCPAddress selected = PanelTCPAddressSelector.selectTCPAddress( tsContext(), TCPAddress.NONE );
-        // return selected;
-        // }
-        //
-        // @Override
-        // protected TCPAddress doEditItem( TCPAddress aItem ) {
-        // TCPAddress selected = PanelTCPAddressSelector.selectTCPAddress( tsContext(), aItem );
-        // return selected;
-        // }
-        //
-        // protected boolean doRemoveItem( TCPAddress aItem ) {
-        // return super.doRemoveItem( aItem );
-        // }
-        //
-        // };
-        // return new M5CollectionPanelMpcModownWrapper<>( mpc, false );
       }
 
     } );

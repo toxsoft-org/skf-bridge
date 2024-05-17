@@ -21,7 +21,7 @@ import org.toxsoft.skf.bridge.cfg.modbus.gui.utils.*;
 public class TCPAddressM5LifecycleManager
     extends M5LifecycleManager<TCPAddress, ModbusToS5CfgDocService> {
 
-  private String TCP_ADDRESS_ID_TEMPL = "bridge.cfg.modbus.tcp.address.id"; //$NON-NLS-1$
+  private static String TCP_ADDRESS_ID_TEMPL = "bridge.cfg.modbus.tcp.address.id"; //$NON-NLS-1$
 
   /**
    * @param aModel - m5 model
@@ -46,7 +46,7 @@ public class TCPAddressM5LifecycleManager
 
   @Override
   protected TCPAddress doCreate( IM5Bunch<TCPAddress> aValues ) {
-    String strid = TCP_ADDRESS_ID_TEMPL + System.currentTimeMillis();
+    String strid = generateStrid();
 
     String name = aValues.getAsAv( FID_NAME ).asString();
     String addrStr = aValues.getAsAv( TCPAddressM5Model.FID_IP_ADDRESS ).asString();
@@ -62,6 +62,13 @@ public class TCPAddressM5LifecycleManager
     master().saveIPAddress( newAddr );
 
     return newAddr;
+  }
+
+  /**
+   * @return generated strid for {@link TCPAddress}
+   */
+  public static String generateStrid() {
+    return TCP_ADDRESS_ID_TEMPL + System.currentTimeMillis();
   }
 
   @Override
