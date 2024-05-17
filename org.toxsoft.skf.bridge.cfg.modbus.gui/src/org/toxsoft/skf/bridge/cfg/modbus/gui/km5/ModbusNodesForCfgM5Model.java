@@ -7,6 +7,7 @@ import static org.toxsoft.core.tsgui.valed.api.IValedControlConstants.*;
 import static org.toxsoft.core.tslib.av.EAtomicType.*;
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
+import static org.toxsoft.skf.bridge.cfg.modbus.gui.km5.ISkResources.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.km5.ISkResources.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
@@ -73,9 +74,12 @@ public class ModbusNodesForCfgM5Model
    */
   public static final String FID_REQUEST_TYPE = "request.type"; //$NON-NLS-1$
 
-  public M5AttributeFieldDef<IAtomicValue> TCP_ADDRESS = new M5AttributeFieldDef<>( FID_ADDRESS, VALOBJ, //
-      TSID_NAME, "адрес", //
-      TSID_DESCRIPTION, " TCP/IP адрес", //
+  /**
+   * Attribute {@link ModbusNode#getAddress()}.
+   */
+  public final M5AttributeFieldDef<IAtomicValue> TCP_ADDRESS = new M5AttributeFieldDef<>( FID_ADDRESS, VALOBJ, //
+      TSID_NAME, STR_N_IP_ADDRESS, //
+      TSID_DESCRIPTION, STR_D_IP_ADDRESS, //
       TSID_KEEPER_ID, TCPAddress.KEEPER_ID, //
       OPID_EDITOR_FACTORY_NAME, ValedAvValobjTCPAddressEditor.FACTORY_NAME //
   ) {
@@ -91,10 +95,13 @@ public class ModbusNodesForCfgM5Model
 
   };
 
+  /**
+   * Attribute {@link ModbusNode#getRegister()}.
+   */
   public final M5AttributeFieldDef<IAtomicValue> REGISTER =
       new M5AttributeFieldDef<>( FID_REGISTER, EAtomicType.INTEGER, //
-          TSID_NAME, "Регистр modbus", //
-          TSID_DESCRIPTION, "Регистр modbus", //
+          TSID_NAME, STR_N_MODBUS_REGISTER, //
+          TSID_DESCRIPTION, STR_N_MODBUS_REGISTER, //
           TSID_DEFAULT_VALUE, avInt( 100 ) //
       ) {
 
@@ -109,10 +116,13 @@ public class ModbusNodesForCfgM5Model
 
       };
 
+  /**
+   * Attribute {@link ModbusNode#getWordsCount()}.
+   */
   public final M5AttributeFieldDef<IAtomicValue> WORDS_COUNT =
       new M5AttributeFieldDef<>( FID_WORDS_COUNT, EAtomicType.INTEGER, //
-          TSID_NAME, "Количество слов modbus", //
-          TSID_DESCRIPTION, "Количество слов modbus", //
+          TSID_NAME, STR_N_MODBUS_WORDS_COUNT, //
+          TSID_DESCRIPTION, STR_D_MODBUS_WORDS_COUNT, //
           TSID_DEFAULT_VALUE, avInt( 1 ) //
       ) {
 
@@ -127,10 +137,13 @@ public class ModbusNodesForCfgM5Model
 
       };
 
+  /**
+   * Attribute {@link ModbusNode#getRequestType()}.
+   */
   public final M5AttributeFieldDef<IAtomicValue> REQUEST_TYPE =
       new M5AttributeFieldDef<>( FID_REQUEST_TYPE, EAtomicType.VALOBJ, //
-          TSID_NAME, "Тип запроса modbus", //
-          TSID_DESCRIPTION, "Тип запроса modbus", //
+          TSID_NAME, STR_N_MODBUS_REQUEST_TYPE, //
+          TSID_DESCRIPTION, STR_D_MODBUS_REQUEST_TYPE, //
           TSID_KEEPER_ID, ERequestType.KEEPER_ID //
       ) {
 
@@ -138,8 +151,6 @@ public class ModbusNodesForCfgM5Model
         protected void doInit() {
           setFlags( M5FF_COLUMN );
           setDefaultValue( avValobj( ERequestType.DI ) );
-          // setFlags( M5FF_COLUMN | M5FF_READ_ONLY | M5FF_HIDDEN );
-          // setFlags( M5FF_COLUMN | M5FF_HIDDEN );
         }
 
         protected IAtomicValue doGetFieldValue( IAtomicValue aEntity ) {

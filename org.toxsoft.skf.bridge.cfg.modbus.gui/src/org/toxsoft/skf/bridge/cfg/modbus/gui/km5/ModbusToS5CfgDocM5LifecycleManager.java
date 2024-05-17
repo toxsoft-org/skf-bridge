@@ -6,9 +6,20 @@ import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.utils.*;
 
+/**
+ * Life cycle maneger for {@link ModbusToS5CfgDoc }
+ *
+ * @author max
+ */
 public class ModbusToS5CfgDocM5LifecycleManager
     extends M5LifecycleManager<ModbusToS5CfgDoc, ModbusToS5CfgDocService> {
 
+  /**
+   * Constructor
+   *
+   * @param aModel - m5 model {@link IM5Model}
+   * @param aDocService - service {@link ModbusToS5CfgDocService}
+   */
   public ModbusToS5CfgDocM5LifecycleManager( IM5Model<ModbusToS5CfgDoc> aModel, ModbusToS5CfgDocService aDocService ) {
     super( aModel, true, true, true, true, aDocService );
   }

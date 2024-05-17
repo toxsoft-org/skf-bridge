@@ -44,13 +44,7 @@ public class ModbusCfgDocConverter {
   private static final String IP_PARAM_NAME   = "ip";
   private static final String PORT_PARAM_NAME = "port";
 
-  private static final String IP_PARAM_VAL_TEMPLATE = "localhost";
-
   private static final String TYPE_PARAM_VAL_TEMPLATE = "tcp";
-
-  private static final String PORT_PARAM_VAL_TEMPLATE = "502";
-
-  private static final String CONNECTION_1_NODE_ID = "connection1.def";
 
   private static final String CONNECTION_TEMP_FMT_STR = "connection.number%d.def";
 

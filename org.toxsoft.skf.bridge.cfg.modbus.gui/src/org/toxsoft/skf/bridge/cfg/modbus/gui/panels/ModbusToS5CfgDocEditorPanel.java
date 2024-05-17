@@ -216,7 +216,7 @@ public class ModbusToS5CfgDocEditorPanel
 
     // Создаём закладку IP адресов
     CTabItem tabIPAddrsItem = new CTabItem( tabSubFolder, SWT.NONE );
-    tabIPAddrsItem.setText( "IP адреса" );
+    tabIPAddrsItem.setText( STR_IP_ADDRESES );
 
     ITsGuiContext ctx = new TsGuiContext( tsContext() );
     ctx.params().addAll( tsContext().params() );

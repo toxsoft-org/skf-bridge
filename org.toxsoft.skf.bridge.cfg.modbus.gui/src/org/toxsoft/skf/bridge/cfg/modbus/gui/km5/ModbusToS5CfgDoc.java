@@ -1,5 +1,7 @@
 package org.toxsoft.skf.bridge.cfg.modbus.gui.km5;
 
+import static org.toxsoft.skf.bridge.cfg.modbus.gui.km5.ISkResources.*;
+
 import org.toxsoft.core.tslib.bricks.keeper.*;
 import org.toxsoft.core.tslib.bricks.keeper.AbstractEntityKeeper.*;
 import org.toxsoft.core.tslib.bricks.strid.impl.*;
@@ -9,6 +11,7 @@ import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.utils.errors.*;
+import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.type.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
@@ -128,7 +131,7 @@ public class ModbusToS5CfgDoc
           // count = " + nodes.size() );
 
           if( !aSr.readQuotedString().equals( CHECK_DOC ) ) {
-            System.out.println( "Error Doc Read" );
+            LoggerUtils.errorLogger().error( STR_ERR_DOC_READ );
           }
 
           ModbusToS5CfgDoc result = new ModbusToS5CfgDoc( id, name, descr );
@@ -181,18 +184,30 @@ public class ModbusToS5CfgDoc
     super.setDescription( aDescription );
   }
 
+  /**
+   * @return list of {@link OpcToS5DataCfgUnit}
+   */
   public IList<OpcToS5DataCfgUnit> dataUnits() {
     return dataCfgUnits;
   }
 
+  /**
+   * @param aDataUnit - add data unit {@link OpcToS5DataCfgUnit}
+   */
   public void addDataUnit( OpcToS5DataCfgUnit aDataUnit ) {
     dataCfgUnits.add( aDataUnit );
   }
 
+  /**
+   * @param aDataUnits - add list of {@link OpcToS5DataCfgUnit}
+   */
   public void addDataUnits( IList<OpcToS5DataCfgUnit> aDataUnits ) {
     dataCfgUnits.addAll( aDataUnits );
   }
 
+  /**
+   * @param aDataUnit -remove data unit {@link OpcToS5DataCfgUnit}
+   */
   public void removeDataUnit( OpcToS5DataCfgUnit aDataUnit ) {
     dataCfgUnits.remove( aDataUnit );
   }

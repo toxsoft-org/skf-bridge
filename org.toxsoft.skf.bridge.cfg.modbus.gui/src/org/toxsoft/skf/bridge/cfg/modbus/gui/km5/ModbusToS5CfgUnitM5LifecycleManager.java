@@ -46,10 +46,6 @@ public class ModbusToS5CfgUnitM5LifecycleManager
     super( aModel, true, true, true, true, aCfgDoc );
   }
 
-  private OpcToS5DataCfgUnitM5Model m() {
-    return (OpcToS5DataCfgUnitM5Model)model();
-  }
-
   @Override
   protected IList<OpcToS5DataCfgUnit> doListEntities() {
     return master().dataUnits();
@@ -117,6 +113,11 @@ public class ModbusToS5CfgUnitM5LifecycleManager
     service.saveCfgDoc( master() );
   }
 
+  /**
+   * Generate l2 config file *.dlmcfg
+   *
+   * @param aContext - app context
+   */
   public void generateDlmFileFromCurrState( ITsGuiContext aContext ) {
     Shell shell = aContext.find( Shell.class );
     FileDialog fd = new FileDialog( shell, SWT.SAVE );
@@ -188,14 +189,14 @@ public class ModbusToS5CfgUnitM5LifecycleManager
   }
 
   /**
-   * @param aResult config unit
+   * @param aCfgUnit config unit
    */
   public void addCfgUnit( OpcToS5DataCfgUnit aCfgUnit ) {
     master().addDataUnit( aCfgUnit );
   }
 
   /**
-   * @param aResult config unit
+   * @param aCfgUnits config units
    */
   public void addCfgUnits( IList<OpcToS5DataCfgUnit> aCfgUnits ) {
     master().addDataUnits( aCfgUnits );
