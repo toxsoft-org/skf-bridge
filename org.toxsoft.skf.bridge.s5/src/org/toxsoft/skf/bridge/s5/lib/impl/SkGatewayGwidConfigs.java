@@ -179,9 +179,6 @@ public class SkGatewayGwidConfigs
     if( getClass() != aObject.getClass() ) {
       return false;
     }
-    if( !super.equals( aObject ) ) {
-      return false;
-    }
     ISkGatewayGwidConfigs other = (ISkGatewayGwidConfigs)aObject;
     if( !gwidKind.equals( other.gwidKind() ) ) {
       return false;
@@ -221,7 +218,6 @@ public class SkGatewayGwidConfigs
           retValue.add( gwid );
         }
       }
-      retValue.addAll( aQualityGwids );
     }
     // Вырезание идентификаторов из результата
     if( aConfig.excludeGwids().size() > 0 ) {

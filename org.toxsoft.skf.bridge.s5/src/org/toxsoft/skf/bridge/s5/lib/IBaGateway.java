@@ -1,5 +1,6 @@
 package org.toxsoft.skf.bridge.s5.lib;
 
+import org.toxsoft.core.tslib.bricks.strid.coll.IStridablesList;
 import org.toxsoft.core.tslib.utils.errors.TsIllegalArgumentRtException;
 import org.toxsoft.core.tslib.utils.errors.TsNullArgumentRtException;
 import org.toxsoft.uskat.core.backend.api.IBackendAddon;
@@ -16,6 +17,13 @@ public interface IBaGateway
    * ID of this backend addon.
    */
   String ADDON_ID = ISkGatewayHardConstants.BAID_GATEWAYS;
+
+  /**
+   * Возвращает список конфигураций мостов зарегистрированных службой
+   *
+   * @return {@link IStridablesList}&lt;{@link ISkGatewayConfiguration}&gt; список конфигураций мостов
+   */
+  IStridablesList<ISkGatewayConfiguration> gatewayConfigs();
 
   /**
    * Регистрация шлюза.

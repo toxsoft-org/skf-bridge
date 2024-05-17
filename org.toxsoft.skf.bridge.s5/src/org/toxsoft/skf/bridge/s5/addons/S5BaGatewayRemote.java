@@ -1,6 +1,7 @@
 package org.toxsoft.skf.bridge.s5.addons;
 
 import org.toxsoft.core.tslib.bricks.events.msg.GtMessage;
+import org.toxsoft.core.tslib.bricks.strid.coll.IStridablesList;
 import org.toxsoft.core.tslib.utils.errors.TsNullArgumentRtException;
 import org.toxsoft.skf.bridge.s5.lib.*;
 import org.toxsoft.uskat.s5.server.backend.addons.IS5BackendRemote;
@@ -48,6 +49,11 @@ public final class S5BaGatewayRemote
   // ------------------------------------------------------------------------------------
   // Реализация IBaGateway
   //
+  @Override
+  public IStridablesList<ISkGatewayConfiguration> gatewayConfigs() {
+    return session().gatewayConfigs();
+  }
+
   @Override
   public void defineGateway( ISkGatewayConfiguration aGatewayConfig ) {
     TsNullArgumentRtException.checkNull( aGatewayConfig );

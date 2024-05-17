@@ -3,6 +3,7 @@ package org.toxsoft.skf.bridge.s5.lib.impl;
 import static org.toxsoft.skf.bridge.s5.lib.impl.ISkResources.*;
 
 import org.toxsoft.core.tslib.bricks.ctx.ITsContextRo;
+import org.toxsoft.core.tslib.bricks.strid.coll.IStridablesList;
 import org.toxsoft.core.tslib.utils.errors.TsIllegalStateRtException;
 import org.toxsoft.core.tslib.utils.errors.TsNullArgumentRtException;
 import org.toxsoft.skf.bridge.s5.lib.*;
@@ -53,6 +54,11 @@ public class SkGatewayService
   // ------------------------------------------------------------------------------------
   // Реализация методов класса IBaGateway
   //
+  @Override
+  public IStridablesList<ISkGatewayConfiguration> gatewayConfigs() {
+    return remote().gatewayConfigs();
+  }
+
   @Override
   public void defineGateway( ISkGatewayConfiguration aGatewayConfig ) {
     TsNullArgumentRtException.checkNull( aGatewayConfig );

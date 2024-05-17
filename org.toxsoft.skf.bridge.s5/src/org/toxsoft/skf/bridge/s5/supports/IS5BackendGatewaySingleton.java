@@ -2,6 +2,7 @@ package org.toxsoft.skf.bridge.s5.supports;
 
 import javax.ejb.Local;
 
+import org.toxsoft.core.tslib.bricks.strid.coll.IStridablesList;
 import org.toxsoft.core.tslib.utils.errors.TsIllegalArgumentRtException;
 import org.toxsoft.core.tslib.utils.errors.TsNullArgumentRtException;
 import org.toxsoft.skf.bridge.s5.lib.IBaGateway;
@@ -16,6 +17,13 @@ import org.toxsoft.uskat.s5.server.backend.IS5BackendSupportSingleton;
 @Local
 public interface IS5BackendGatewaySingleton
     extends IS5BackendSupportSingleton {
+
+  /**
+   * Возвращает список конфигураций мостов зарегистрированных службой
+   *
+   * @return {@link IStridablesList}&lt;{@link ISkGatewayConfiguration}&gt; список конфигураций мостов
+   */
+  IStridablesList<ISkGatewayConfiguration> gatewayConfigs();
 
   /**
    * Регистрация шлюза.

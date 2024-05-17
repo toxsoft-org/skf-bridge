@@ -594,8 +594,10 @@ class S5Gateway
       Integer count = Integer.valueOf( listGloballyHandledCommandGwids.size() );
       Gwid firstCmdGwid = listGloballyHandledCommandGwids.first();
       logger.info( MSG_TRANSFER_EXECUTORS_START, count, firstCmdGwid );
+      // Данные по которым предоставляется качество
+      IGwidList qualityGwids = owner.dataQualityBackend().getConnectedResources( Skid.NONE );
       // Список команд которые могут быть выполнены службой команд
-      IGwidList cmdGwids = getExecutableCmdGwids();
+      IGwidList cmdGwids = getExecutableCmdGwids( qualityGwids );
       // Вывод в журнал в отладке
       if( logger.isSeverityOn( ELogSeverity.DEBUG ) ) {
         // Текстовое представление идентификаторов для журнала
@@ -862,8 +864,8 @@ class S5Gateway
     }
     // Время начала синхронизации
     long traceStartTime = System.currentTimeMillis();
-    // Регистрация исполнителей
-    synchronizeCmdExecutors( getExecutableCmdGwids() );
+    // Дерегистрация исполнителей команд
+    remoteCmdService.unregisterExecutor( this );
     // Завершение работы предыдущих каналов
     closeRtdataChannels();
     // Отписываемся от всех событий
@@ -885,9 +887,17 @@ class S5Gateway
       createRtdataChannels( qualityGwids );
       // Завершение регистрации каналов передачи данных
       logger.info( MSG_REGISTER_CHANNELS_COMPLETED, dataCount );
+      // Регистрация исполнителей команд
+      IGwidList cmdGwids = getExecutableCmdGwids( qualityGwids );
+      synchronizeCmdExecutors( cmdGwids );
       // Подписка на события
       IGwidList eventGwids = getConfigGwids( localGwidService, configuration.exportEvents(), qualityGwids );
-      logger.info( MSG_GW_GWIDS_LIST, this, Integer.valueOf( eventGwids.size() ) );
+      // Запись в протокол
+      logger.info( MSG_GW_GWIDS_LIST, this, //
+          Integer.valueOf( localToRemoteCurrdataPort.dataIds().size() ), //
+          Integer.valueOf( writeHistData.size() ), //
+          Integer.valueOf( cmdGwids.size() ), //
+          Integer.valueOf( eventGwids.size() ) );
       localEventService.registerHandler( eventGwids, this );
       // Сброс признака необходимости синхронизации
       needSynchronize = false;
@@ -991,11 +1001,32 @@ class S5Gateway
   /**
    * Возвращает список идентификаторов команд которые могут быть выполнены службой команд
    *
+   * @param aQualityGwids {@link IGwidList} список идентификаторов предоставляемых службой качества
    * @return {@link IGwidList} список идентификаторов команд
+   * @throws TsNullArgumentRtException аргумент = null
    */
-  private IGwidList getExecutableCmdGwids() {
-    IGwidList cmdGwids = owner.commandBackend().listGloballyHandledCommandGwids();
-    return new GwidList( cmdGwids );
+  private IGwidList getExecutableCmdGwids( IGwidList aQualityGwids ) {
+    TsNullArgumentRtException.checkNull( aQualityGwids );
+    // Получение полного списка идентификаторов исключени
+    GwidList allExecutorGwids = new GwidList();
+    for( Gwid gwid : owner.commandBackend().listGloballyHandledCommandGwids() ) {
+      allExecutorGwids.addAll( localGwidService.expandGwid( gwid ) );
+    }
+    GwidList allConfigGwids = new GwidList();
+    for( Gwid gwid : getConfigGwids( localGwidService, configuration.exportCmdExecutors(), aQualityGwids ) ) {
+      allConfigGwids.addAll( localGwidService.expandGwid( gwid ) );
+    }
+    if( allConfigGwids.size() == 0 && configuration.exportCmdExecutors().excludeGwids().size() == 0 ) {
+      // Если конфигурация исполнителей не настроена, то по умолчанию регистрируются все локальные исполнители
+      return allExecutorGwids;
+    }
+    GwidList retValue = new GwidList();
+    for( Gwid gwid : allExecutorGwids ) {
+      if( allConfigGwids.hasElem( gwid ) ) {
+        retValue.add( gwid );
+      }
+    }
+    return retValue;
   }
 
   /**

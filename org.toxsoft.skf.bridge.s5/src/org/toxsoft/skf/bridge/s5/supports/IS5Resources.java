@@ -33,7 +33,8 @@ interface IS5Resources
   String MSG_GW_QUERY_LOCAL_OJBS                        =
       "%s. Запрос локальных объектов шлюза. Количество объектов: %d";
   String MSG_GW_QUERY_CLASSES                           = "%s. Запрос классов объектов шлюза. Количество классов: %d";
-  String MSG_GW_GWIDS_LIST                              = "%s. Сформированы списки данных шлюза. events = %d.";
+  String MSG_GW_GWIDS_LIST                              =
+      "%s. Сформированы списки данных шлюза. currdata = %d, histdata = %d, executors = %d, events = %d.";
   String MSG_GW_SYNC_HISTDATA                           =
       "%s. Синхронизация хранимых данных. Метка времени последних значений приемника: %s";
   String MSG_GW_SYNC_EVENTS                             =

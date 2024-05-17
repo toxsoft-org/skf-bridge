@@ -2,6 +2,7 @@ package org.toxsoft.skf.bridge.s5.lib;
 
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
+import org.toxsoft.core.tslib.bricks.strid.coll.IStridablesList;
 import org.toxsoft.core.tslib.utils.errors.TsIllegalArgumentRtException;
 import org.toxsoft.core.tslib.utils.errors.TsNullArgumentRtException;
 import org.toxsoft.uskat.core.api.ISkService;
@@ -18,6 +19,13 @@ public interface ISkGatewayService
    * Идентификатор службы.
    */
   String SERVICE_ID = SK_SYSEXT_SERVICE_ID_PREFIX + "GatewayService"; //$NON-NLS-1$
+
+  /**
+   * Возвращает список конфигураций мостов зарегистрированных службой
+   *
+   * @return {@link IStridablesList}&lt;{@link ISkGatewayConfiguration}&gt; список конфигураций мостов
+   */
+  IStridablesList<ISkGatewayConfiguration> gatewayConfigs();
 
   /**
    * Регистрация шлюза.

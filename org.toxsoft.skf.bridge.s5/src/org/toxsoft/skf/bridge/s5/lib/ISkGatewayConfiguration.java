@@ -1,8 +1,6 @@
 package org.toxsoft.skf.bridge.s5.lib;
 
 import org.toxsoft.core.tslib.bricks.strid.IStridable;
-import org.toxsoft.core.tslib.utils.errors.TsIllegalArgumentRtException;
-import org.toxsoft.core.tslib.utils.errors.TsNullArgumentRtException;
 import org.toxsoft.core.tslib.utils.login.ILoginInfo;
 import org.toxsoft.uskat.s5.client.remote.connection.IS5ConnectionInfo;
 
@@ -67,8 +65,6 @@ public interface ISkGatewayConfiguration
    * Возвращает признак того, что передача данных через шлюз временно приостановлена клиентом
    *
    * @return boolean <b>true</b> передача данных приостановлена;<b>false</b> шлюз работает в штатном режиме
-   * @throws TsNullArgumentRtException любой аргумент = null
-   * @throws TsIllegalArgumentRtException шлюз не существует
    */
   boolean isPaused();
 }
