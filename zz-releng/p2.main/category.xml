@@ -10,6 +10,7 @@
    <bundle id="org.toxsoft.skf.bridge.cfg.opcua.gui"/>
    <bundle id="org.toxsoft.skf.bridge.cfg.opcua.skide"/>
    <bundle id="org.toxsoft.skf.bridge.s5"/>
+   <bundle id="org.toxsoft.skf.bridge.s5.skadmin"/>
 
    <!-- sources -->
    <bundle id="org.toxsoft.skf.bridge.lib.source"/>
@@ -17,5 +18,6 @@
    <bundle id="org.toxsoft.skf.bridge.cfg.opcua.gui.source"/>
    <bundle id="org.toxsoft.skf.bridge.cfg.opcua.skide.source"/>
    <bundle id="org.toxsoft.skf.bridge.s5.source"/>
+   <bundle id="org.toxsoft.skf.bridge.s5.skadmin.source"/>
 
 </site>

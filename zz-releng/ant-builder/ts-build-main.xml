@@ -21,6 +21,7 @@
     <ant dir="../../org.toxsoft.skf.bridge.cfg.opcua.gui" antfile="${ts-scripts-dir}/ts-build-lib.xml" target="build-lib-jar" />
     <ant dir="../../org.toxsoft.skf.bridge.cfg.opcua.skide" antfile="${ts-scripts-dir}/ts-build-lib.xml" target="build-lib-jar" />
     <ant dir="../../org.toxsoft.skf.bridge.s5" antfile="${ts-scripts-dir}/ts-build-lib.xml" target="build-lib-jar" />
+    <ant dir="../../org.toxsoft.skf.bridge.s5.skadmin" antfile="${ts-scripts-dir}/ts-build-lib.xml" target="build-lib-jar" />
 
   </target>
 
@@ -36,7 +37,8 @@
                                 org.toxsoft.skf.bridge.gui,
                                 org.toxsoft.skf.bridge.cfg.opcua.gui,
                                 org.toxsoft.skf.bridge.cfg.opcua.skide,
-                                org.toxsoft.skf.bridge.s5"
+                                org.toxsoft.skf.bridge.s5,
+                                org.toxsoft.skf.bridge.s5.skadmin"
                        useworkspacecompiledclasses="true"
                        useJARFormat="true" />
   </target>
