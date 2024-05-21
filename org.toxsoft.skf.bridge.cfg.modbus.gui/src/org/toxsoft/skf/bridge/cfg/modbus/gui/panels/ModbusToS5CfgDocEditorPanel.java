@@ -1,6 +1,8 @@
 package org.toxsoft.skf.bridge.cfg.modbus.gui.panels;
 
 import static org.toxsoft.core.tsgui.bricks.actions.ITsStdActionDefs.*;
+import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
+import static org.toxsoft.skf.bridge.cfg.modbus.gui.panels.ISkResources.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
@@ -11,34 +13,48 @@ import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.tsgui.bricks.actions.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tsgui.bricks.ctx.impl.*;
+import org.toxsoft.core.tsgui.dialogs.datarec.*;
 import org.toxsoft.core.tsgui.graphics.icons.*;
 import org.toxsoft.core.tsgui.m5.*;
+import org.toxsoft.core.tsgui.m5.gui.*;
 import org.toxsoft.core.tsgui.m5.gui.mpc.*;
 import org.toxsoft.core.tsgui.m5.gui.mpc.impl.*;
 import org.toxsoft.core.tsgui.m5.gui.panels.*;
 import org.toxsoft.core.tsgui.m5.gui.panels.impl.*;
+import org.toxsoft.core.tsgui.m5.gui.viewers.*;
 import org.toxsoft.core.tsgui.m5.model.*;
+import org.toxsoft.core.tsgui.m5.model.impl.*;
 import org.toxsoft.core.tsgui.panels.*;
 import org.toxsoft.core.tsgui.panels.toolbar.*;
 import org.toxsoft.core.tsgui.utils.layout.*;
 import org.toxsoft.core.tsgui.widgets.*;
 import org.toxsoft.core.tslib.av.impl.*;
+import org.toxsoft.core.tslib.av.list.*;
+import org.toxsoft.core.tslib.bricks.filter.*;
 import org.toxsoft.core.tslib.bricks.strid.more.*;
 import org.toxsoft.core.tslib.coll.*;
+import org.toxsoft.core.tslib.coll.impl.*;
+import org.toxsoft.core.tslib.gw.gwid.*;
+import org.toxsoft.core.tslib.gw.skid.*;
+import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.km5.*;
+import org.toxsoft.skf.bridge.cfg.modbus.gui.type.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.utils.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.panels.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 import org.toxsoft.skide.plugin.exconn.service.*;
+import org.toxsoft.uskat.core.api.objserv.*;
 import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.gui.conn.*;
+import org.toxsoft.uskat.core.gui.km5.sded.*;
 
 /**
  * Editor panel for creating, editing, deleting modbus to s5 cfg docs.
  *
  * @author max
+ * @author dima
  */
 public class ModbusToS5CfgDocEditorPanel
     extends TsPanel {
@@ -58,15 +74,25 @@ public class ModbusToS5CfgDocEditorPanel
   final static TsActionDef ACDEF_SAVE_DOC =
       TsActionDef.ofPush2( ACTID_SAVE_DOC, STR_N_SAVE_CONFIG, STR_D_SAVE_CONFIG, ICONID_SAVE_DOC );
 
-  final static String ACTID_S5_SERVER_SELECT = SK_ID + "bridge.cfg.opcua.to.s5.s5.server.select"; //$NON-NLS-1$
+  final static String ACTID_S5_SERVER_SELECT = SK_ID + "bridge.cfg.opcua.to.s5.server.select"; //$NON-NLS-1$
 
   final static String ACTID_OPC_SERVER_SELECT = SK_ID + "bridge.cfg.opcua.to.s5.opc.server.select"; //$NON-NLS-1$
+
+  final static String ACTID_IP_ADDRESS_SELECT = SK_ID + "bridge.cfg.modbus.ip.address.select"; //$NON-NLS-1$
+
+  final static String ACTID_COPY_ALL = SK_ID + "bridge.cfg.modbus.copy.all"; //$NON-NLS-1$
 
   final static TsActionDef ACDEF_S5_SERVER_SELECT = TsActionDef.ofPush2( ACTID_S5_SERVER_SELECT, STR_N_SELECT_S5_SERVER,
       STR_D_SELECT_S5_SERVER, ICONID_S5_SERVER_SELECT );
 
+  final static TsActionDef ACDEF_IP_ADDRESS_SELECT =
+      TsActionDef.ofCheck2( ACTID_IP_ADDRESS_SELECT, STR_N_SELECT_IP_ADDRESS, STR_D_SELECT_IP_ADDRESS, ICONID_FILTER );
+
   final static TsActionDef ACDEF_OPC_SERVER_SELECT = TsActionDef.ofPush2( ACTID_OPC_SERVER_SELECT,
       STR_N_SELECT_OPC_UA_SERVER, STR_D_SELECT_OPC_UA_SERVER, ICONID_OPC_SERVER_SELECT );
+
+  final static TsActionDef ACDEF_COPY_ALL =
+      TsActionDef.ofPush2( ACTID_COPY_ALL, STR_N_COPY_ALL, STR_D_COPY_ALL, ITsStdIconIds.ICONID_LIST_ADD_ALL );
 
   final ISkConnection conn;
 
@@ -75,6 +101,12 @@ public class ModbusToS5CfgDocEditorPanel
   private CTabFolder tabFolder;
 
   private TextControlContribution textContr1;
+
+  /**
+   * Current selected IP address
+   */
+  private TCPAddress              selAddress = TCPAddress.NONE;
+  private TextControlContribution selAddressTextContr;
 
   /**
    * Конструктор панели.
@@ -182,6 +214,10 @@ public class ModbusToS5CfgDocEditorPanel
     CTabItem tabCfgUnitsItem = new CTabItem( tabSubFolder, SWT.NONE );
     tabCfgUnitsItem.setText( STR_LINKS );
 
+    // Создаём закладку IP адресов
+    CTabItem tabIPAddrsItem = new CTabItem( tabSubFolder, SWT.NONE );
+    tabIPAddrsItem.setText( STR_IP_ADDRESES );
+
     ITsGuiContext ctx = new TsGuiContext( tsContext() );
     ctx.params().addAll( tsContext().params() );
 
@@ -228,9 +264,9 @@ public class ModbusToS5CfgDocEditorPanel
     String defConnName = defaultConnIdChain.first() != null ? defaultConnIdChain.first() : STR_DEFAULT_WORKROOM_SK_CONN;
     textContr1.setText( STR_SK_CONN_DESCR + defConnName );
 
-    // Связи
-    IM5Model<OpcToS5DataCfgUnit> model =
-        m5.getModel( OpcToS5DataCfgUnitM5Model.MODEL_ID_TEMPLATE + ".modbus", OpcToS5DataCfgUnit.class );
+    // Модель cвязи Gwid -> Modbus register
+    IM5Model<OpcToS5DataCfgUnit> linksModel =
+        m5.getModel( OpcToS5DataCfgUnitM5Model.MODEL_ID_TEMPLATE + ".modbus", OpcToS5DataCfgUnit.class ); //$NON-NLS-1$
 
     // IMultiPaneComponentConstants.OPDEF_IS_DETAILS_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
     // IMultiPaneComponentConstants.OPDEF_DETAILS_PANE_PLACE.setValue( ctx.params(),
@@ -239,19 +275,24 @@ public class ModbusToS5CfgDocEditorPanel
     IMultiPaneComponentConstants.OPDEF_IS_ACTIONS_CRUD.setValue( ctx.params(), AvUtils.AV_TRUE );
     // добавляем в панель фильтр
     IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
+    IM5LifecycleManager<OpcToS5DataCfgUnit> linksLm = new ModbusToS5CfgUnitM5LifecycleManager( linksModel, aSelDoc );
 
-    IM5LifecycleManager<OpcToS5DataCfgUnit> lm = new ModbusToS5CfgUnitM5LifecycleManager( model, aSelDoc );
-
-    MultiPaneComponentModown<OpcToS5DataCfgUnit> mpc =
-        new MultiPaneComponentModown<>( ctx, model, lm.itemsProvider(), lm ) {
+    MultiPaneComponentModown<OpcToS5DataCfgUnit> linksMpc =
+        new MultiPaneComponentModown<>( ctx, linksModel, linksLm.itemsProvider(), linksLm ) {
 
           @Override
-          protected ITsToolbar doCreateToolbar( ITsGuiContext aaContext, String aName, EIconSize aIconSize,
+          protected ITsToolbar doCreateToolbar( ITsGuiContext aContext, String aName, EIconSize aIconSize,
               IListEdit<ITsActionDef> aActs ) {
+            // add func create copy
+            int index = 1 + aActs.indexOf( ACDEF_ADD );
+            aActs.insert( index, ACDEF_ADD_COPY );
             aActs.add( ACDEF_SEPARATOR );
             aActs.add( OpcToS5DataCfgDocEditorPanel.ACDEF_GENERATE_FILE );
+            aActs.add( ACDEF_SEPARATOR );
+            aActs.add( ACDEF_COPY_ALL );
+            aActs.add( ACDEF_IP_ADDRESS_SELECT );
 
-            ITsToolbar toolbar = super.doCreateToolbar( aaContext, aName, aIconSize, aActs );
+            ITsToolbar toolbar = super.doCreateToolbar( aContext, aName, aIconSize, aActs );
 
             toolbar.addListener( aActionId -> {
               // nop
@@ -269,6 +310,141 @@ public class ModbusToS5CfgDocEditorPanel
                 ((ModbusToS5CfgUnitM5LifecycleManager)lifecycleManager()).generateDlmFileFromCurrState( ctx );
                 ((ModbusToS5CfgUnitM5LifecycleManager)lifecycleManager()).generateDevFileFromCurrState( ctx );
                 break;
+              case ACTID_IP_ADDRESS_SELECT:
+                boolean checked = toolbar().getAction( ACTID_IP_ADDRESS_SELECT ).isChecked();
+                if( checked ) {
+                  // select IP
+                  TCPAddress address = PanelTCPAddressSelector.selectTCPAddress( tsContext(), selAddress );
+                  setNewIPAddress( tree(), address );
+                }
+                else {
+                  clearFilter( tree() );
+                }
+                break;
+              case ACTID_COPY_ALL: {
+                // получим отфильтрованные элементы
+                IList<OpcToS5DataCfgUnit> list2Copy = tree().filterManager().items();
+                IListEdit<OpcToS5DataCfgUnit> newItems = new ElemArrayList<>();
+                if( list2Copy.size() == 0 ) {
+                  break;
+                }
+                // popup dialogs to select new IP
+                TCPAddress newAddress = PanelTCPAddressSelector.selectTCPAddress( ctx, selAddress );
+                if( newAddress == null ) {
+                  break;
+                }
+                Skid newSkid = selectSkid( list2Copy.first().getDataGwids().first().skid(), ctx );
+                if( newSkid == null ) {
+                  break;
+                }
+                for( OpcToS5DataCfgUnit sel : list2Copy ) {
+                  IM5BunchEdit<OpcToS5DataCfgUnit> initVals = new M5BunchEdit<>( model() );
+                  initVals.fillFrom( sel, false );
+                  // новый strid
+                  initVals.set( OpcToS5DataCfgUnitM5Model.FID_STRID,
+                      avStr( ModbusToS5CfgUnitM5LifecycleManager.generateStrid() ) );
+                  IList<Gwid> gwids = initVals.get( OpcToS5DataCfgUnitM5Model.FID_GWIDS );
+                  IListEdit<Gwid> newGwids = new ElemArrayList<>();
+                  for( Gwid gwid4Copy : gwids ) {
+                    Gwid newGwid = Gwid.createRtdata( newSkid.classId(), newSkid.strid(), gwid4Copy.propId() );
+                    newGwids.add( newGwid );
+                  }
+                  initVals.set( OpcToS5DataCfgUnitM5Model.FID_GWIDS, newGwids );
+                  // обновляем IP
+                  IList<ModbusNode> nodes = OpcUaUtils.convertToNodesList( sel.getDataNodes2() );
+                  IListEdit<ModbusNode> newNodes = new ElemArrayList<>();
+                  for( ModbusNode node : nodes ) {
+                    ModbusNode newNode =
+                        new ModbusNode( newAddress, node.getRegister(), node.getWordsCount(), node.getRequestType() );
+                    newNodes.add( newNode );
+                  }
+                  initVals.set( OpcToS5DataCfgUnitM5Model.FID_NODES, convertToAtomicList( newNodes ) );
+                  // create new item
+                  OpcToS5DataCfgUnit item = lifecycleManager().create( initVals );
+                  newItems.add( item );
+                }
+                // добавляем в список и переключаем в новый фильтр
+                fillViewer( newItems.first() );
+                setNewIPAddress( tree(), newAddress );
+                break;
+              }
+              case ACTID_ADD_COPY: {
+                OpcToS5DataCfgUnit selected = tree().selectedItem();
+                ITsDialogInfo cdi = doCreateDialogInfoToAddItem();
+                IM5BunchEdit<OpcToS5DataCfgUnit> initVals = new M5BunchEdit<>( model() );
+                initVals.fillFrom( selected, false );
+                // новый strid
+                initVals.set( OpcToS5DataCfgUnitM5Model.FID_STRID,
+                    avStr( ModbusToS5CfgUnitM5LifecycleManager.generateStrid() ) );
+
+                OpcToS5DataCfgUnit item =
+                    M5GuiUtils.askCreate( tsContext(), model(), initVals, cdi, lifecycleManager() );
+                if( item != null ) {
+                  fillViewer( item );
+                }
+                break;
+              }
+
+              default:
+                throw new TsNotAllEnumsUsedRtException( aActionId );
+            }
+          }
+
+        };
+
+    IM5CollectionPanel<OpcToS5DataCfgUnit> opcToS5DataCfgUnitPanel =
+        new M5CollectionPanelMpcModownWrapper<>( linksMpc, false );
+
+    // Model of IP address
+    IM5Model<TCPAddress> ipAddresessModel = m5.getModel( TCPAddressM5Model.MODEL_ID, TCPAddress.class );
+    ModbusToS5CfgDocService service = ctx.get( ModbusToS5CfgDocService.class );
+    IM5LifecycleManager<TCPAddress> ipAddressLm = new TCPAddressM5LifecycleManager( ipAddresessModel, service );
+
+    tabCfgUnitsItem.setControl( opcToS5DataCfgUnitPanel.createControl( tabSubFolder ) );
+    // add label to dispale selected IP
+    selAddressTextContr = new TextControlContribution( "selAddressTextContrId", 200, STR_SEL_IP_ADDRESS, SWT.NONE ); //$NON-NLS-1$
+    linksMpc.toolbar().addContributionItem( selAddressTextContr );
+    clearFilter( linksMpc.tree() );
+
+    // create IP adddreses panel
+    MultiPaneComponentModown<TCPAddress> ipAddrsMpc =
+        new MultiPaneComponentModown<>( ctx, ipAddresessModel, ipAddressLm.itemsProvider(), ipAddressLm ) {
+
+          @Override
+          protected ITsToolbar doCreateToolbar( ITsGuiContext aaContext, String aName, EIconSize aIconSize,
+              IListEdit<ITsActionDef> aActs ) {
+            int index = 1 + aActs.indexOf( ACDEF_ADD );
+            aActs.insert( index, ACDEF_ADD_COPY );
+
+            aActs.add( ACDEF_SEPARATOR );
+            ITsToolbar toolbar = super.doCreateToolbar( aaContext, aName, aIconSize, aActs );
+
+            toolbar.addListener( aActionId -> {
+              // nop
+            } );
+
+            toolbar.setIconSize( EIconSize.IS_24X24 );
+            return toolbar;
+          }
+
+          @Override
+          protected void doProcessAction( String aActionId ) {
+
+            switch( aActionId ) {
+              case ACTID_ADD_COPY: {
+                TCPAddress selected = tree().selectedItem();
+                ITsDialogInfo cdi = doCreateDialogInfoToAddItem();
+                IM5BunchEdit<TCPAddress> initVals = new M5BunchEdit<>( model() );
+                initVals.fillFrom( selected, false );
+                // новый strid
+                initVals.set( TCPAddressM5Model.ID.id(), avStr( TCPAddressM5LifecycleManager.generateStrid() ) );
+
+                TCPAddress item = M5GuiUtils.askCreate( tsContext(), model(), initVals, cdi, lifecycleManager() );
+                if( item != null ) {
+                  fillViewer( item );
+                }
+                break;
+              }
 
               default:
                 throw new TsNotAllEnumsUsedRtException( aActionId );
@@ -276,14 +452,59 @@ public class ModbusToS5CfgDocEditorPanel
           }
         };
 
-    IM5CollectionPanel<OpcToS5DataCfgUnit> opcToS5DataCfgUnitPanel =
-        new M5CollectionPanelMpcModownWrapper<>( mpc, false );
+    IM5CollectionPanel<TCPAddress> ipAddrsPanel = new M5CollectionPanelMpcModownWrapper<>( ipAddrsMpc, false );
+    tabIPAddrsItem.setControl( ipAddrsPanel.createControl( tabSubFolder ) );
 
-    tabCfgUnitsItem.setControl( opcToS5DataCfgUnitPanel.createControl( tabSubFolder ) );
-
-    // Узлы
-
+    // select links tab
     tabSubFolder.setSelection( tabCfgUnitsItem );
+  }
+
+  static IAvList convertToAtomicList( IList<ModbusNode> aNodeList ) {
+    IAvListEdit result = new AvList( new ElemArrayList<>() );
+    for( ModbusNode node : aNodeList ) {
+      result.add( avValobj( node ) );
+    }
+    return result;
+  }
+
+  /**
+   * FIXME copy paste из класса Выводит диалог выбора Skid.
+   * <p>
+   *
+   * @param aInitSkid {@link Skid} для инициализации
+   * @param aContext {@link ITsGuiContext} - контекст
+   * @return Skid - выбранный объект или <b>null</b> в случает отказа от выбора
+   */
+  Skid selectSkid( Skid aInitSkid, ITsGuiContext aContext ) {
+    TsNullArgumentRtException.checkNull( aContext );
+    IM5Domain m5 = conn.scope().get( IM5Domain.class );
+
+    IM5Model<ISkObject> modelSk = m5.getModel( IKM5SdedConstants.MID_SDED_SK_OBJECT, ISkObject.class );
+    IM5LifecycleManager<ISkObject> lmSk = modelSk.getLifecycleManager( conn );
+    ITsGuiContext ctx = new TsGuiContext( aContext );
+    TsDialogInfo di = new TsDialogInfo( ctx, DLG_T_SKID_SEL, STR_MSG_SKID_SELECTION );
+    ISkObject initObj = aInitSkid == null ? null : conn.coreApi().objService().get( aInitSkid );
+    ISkObject selObj = M5GuiUtils.askSelectItem( di, modelSk, initObj, lmSk.itemsProvider(), lmSk );
+    if( selObj != null ) {
+      return selObj.skid();
+    }
+    return Skid.NONE;
+  }
+
+  void setNewIPAddress( IM5TreeViewer<OpcToS5DataCfgUnit> aIm5TreeViewer, TCPAddress address ) {
+    if( address != null ) {
+      // create new filter
+      ITsFilter<OpcToS5DataCfgUnit> filter = new FilterByIPAddress( address );
+      aIm5TreeViewer.filterManager().setFilter( filter );
+      selAddress = address;
+      selAddressTextContr.setText( STR_SEL_IP_ADDRESS + address.nmName() );
+    }
+
+  }
+
+  void clearFilter( IM5TreeViewer<OpcToS5DataCfgUnit> aTreeViewer ) {
+    aTreeViewer.filterManager().setFilter( ITsFilter.ALL );
+    selAddressTextContr.setText( TsLibUtils.EMPTY_STRING );
   }
 
 }

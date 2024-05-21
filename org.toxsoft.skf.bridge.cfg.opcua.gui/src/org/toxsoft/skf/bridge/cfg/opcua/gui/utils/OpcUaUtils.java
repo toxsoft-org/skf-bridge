@@ -778,21 +778,24 @@ public class OpcUaUtils {
    */
   public static final IDataDef OP_SYNCH_PERIOD = create( "synch.period", INTEGER, //$NON-NLS-1$
       TSID_NAME, "Период синхронизации", //
-      TSID_DESCRIPTION, "Период синхронизации данных" );
+      TSID_DESCRIPTION, "Период синхронизации данных", //
+      TSID_DEFAULT_VALUE, avInt( 1 ) );
 
   /**
    * Имя параметра - признак исторических данных
    */
   public static final IDataDef OP_IS_HIST = create( "is.hist", BOOLEAN, //$NON-NLS-1$
       TSID_NAME, "Исторические", //
-      TSID_DESCRIPTION, "Исторические данные" );
+      TSID_DESCRIPTION, "Исторические данные", //
+      TSID_DEFAULT_VALUE, avBool( true ) );
 
   /**
    * Имя параметра - признак исторических данных
    */
   public static final IDataDef OP_IS_CURR = create( "is.curr", BOOLEAN, //$NON-NLS-1$
       TSID_NAME, "Текущие", //
-      TSID_DESCRIPTION, "Текущие данные" );
+      TSID_DESCRIPTION, "Текущие данные", //
+      TSID_DEFAULT_VALUE, avBool( true ) );
 
   public static final IDataDef OP_EVENT_SENDER_JAVA_CLASS = create( "event.sender.java.class", STRING, //$NON-NLS-1$
       TSID_NAME, STR_N_EVENT_SENDER_JAVA_CLASS, //
@@ -815,11 +818,13 @@ public class OpcUaUtils {
 
   public static final IDataDef OP_CONDITION_SWITCH_ON = create( "condition.switch.on", BOOLEAN, //$NON-NLS-1$
       TSID_NAME, STR_N_FRONT, //
-      TSID_DESCRIPTION, STR_D_FRONT );
+      TSID_DESCRIPTION, STR_D_FRONT, //
+      TSID_DEFAULT_VALUE, avBool( true ) );
 
   public static final IDataDef OP_CONDITION_SWITCH_OFF = create( "condition.switch.off", BOOLEAN, //$NON-NLS-1$
       TSID_NAME, STR_N_DOWN, //
-      TSID_DESCRIPTION, STR_D_DOWN );
+      TSID_DESCRIPTION, STR_D_DOWN, //
+      TSID_DEFAULT_VALUE, avBool( false ) );
 
   /**
    * Registers cfg unit realization types in holder and adds it into context.
@@ -895,10 +900,14 @@ public class OpcUaUtils {
 
     defaultParams = new OptionSet();
     OP_DATA_JAVA_CLASS.setValue( defaultParams, avStr( DATA_JAVA_CLASS_ONE_TO_ONE_DATA_TRANSMITTER_FACTORY ) );
-
-    OP_SYNCH_PERIOD.setValue( defaultParams, avInt( -1 ) );
-    OP_IS_CURR.setValue( defaultParams, avBool( false ) );
-    OP_IS_HIST.setValue( defaultParams, avBool( false ) );
+    // old version
+    // OP_SYNCH_PERIOD.setValue( defaultParams, avInt( -1 ) );
+    // OP_IS_CURR.setValue( defaultParams, avBool( false ) );
+    // OP_IS_HIST.setValue( defaultParams, avBool( false ) );
+    // new version
+    OP_SYNCH_PERIOD.setValue( defaultParams, avInt( 1 ) );
+    OP_IS_CURR.setValue( defaultParams, avBool( true ) );
+    OP_IS_HIST.setValue( defaultParams, avBool( true ) );
 
     ICfgUnitRealizationType dataOneToOne = new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_ONT_TO_ONE_DATA,
         STR_ONE_2_ONE, ECfgUnitType.DATA, paramDefenitions, defaultParams );

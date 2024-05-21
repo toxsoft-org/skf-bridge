@@ -2,13 +2,22 @@ package org.toxsoft.skf.bridge.cfg.modbus.gui.km5;
 
 import static org.toxsoft.core.tsgui.graphics.icons.ITsStdIconIds.*;
 import static org.toxsoft.core.tsgui.m5.IM5Constants.*;
+import static org.toxsoft.core.tsgui.m5.gui.mpc.IMultiPaneComponentConstants.*;
+import static org.toxsoft.core.tsgui.valed.api.IValedControlConstants.*;
+import static org.toxsoft.core.tslib.av.EAtomicType.*;
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
+import static org.toxsoft.skf.bridge.cfg.modbus.gui.km5.ISkResources.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.km5.ISkResources.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
 import org.toxsoft.core.tsgui.bricks.actions.*;
+import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tsgui.m5.*;
+import org.toxsoft.core.tsgui.m5.gui.mpc.*;
+import org.toxsoft.core.tsgui.m5.gui.mpc.impl.*;
+import org.toxsoft.core.tsgui.m5.gui.panels.*;
+import org.toxsoft.core.tsgui.m5.gui.panels.impl.*;
 import org.toxsoft.core.tsgui.m5.model.*;
 import org.toxsoft.core.tsgui.m5.model.impl.*;
 import org.toxsoft.core.tslib.av.*;
@@ -16,14 +25,16 @@ import org.toxsoft.core.tslib.av.impl.*;
 import org.toxsoft.core.tslib.bricks.validator.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.helpers.*;
+import org.toxsoft.skf.bridge.cfg.modbus.gui.panels.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.type.*;
 import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.gui.conn.*;
 
 /**
- * M5 model realization for {@link ModbusNode} entities using for cfg of map uanodes-gwids
+ * M5 model realization for {@link ModbusNode} entities using for cfg of map OPC UA Nodes <-> Gwids
  *
  * @author max
+ * @author dima
  */
 public class ModbusNodesForCfgM5Model
     extends M5Model<IAtomicValue> {
@@ -44,31 +55,59 @@ public class ModbusNodesForCfgM5Model
       TsActionDef.ofPush2( ACTID_EDIT_AS_STR, STR_N_EDIT_AS_STRING, STR_D_EDIT_AS_STRING, ICONID_DOCUMENT_EDIT );
 
   /**
-   * Canonical str node
+   * address
+   */
+  public static final String FID_ADDRESS = "address"; //$NON-NLS-1$
+
+  /**
+   * register
    */
   public static final String FID_REGISTER = "register"; //$NON-NLS-1$
 
   /**
-   * Canonical str node
+   * words count
    */
   public static final String FID_WORDS_COUNT = "words.count"; //$NON-NLS-1$
 
   /**
-   * Canonical str node
+   * request type
    */
   public static final String FID_REQUEST_TYPE = "request.type"; //$NON-NLS-1$
 
+  /**
+   * Attribute {@link ModbusNode#getAddress()}.
+   */
+  public final M5AttributeFieldDef<IAtomicValue> TCP_ADDRESS = new M5AttributeFieldDef<>( FID_ADDRESS, VALOBJ, //
+      TSID_NAME, STR_N_IP_ADDRESS, //
+      TSID_DESCRIPTION, STR_D_IP_ADDRESS, //
+      TSID_KEEPER_ID, TCPAddress.KEEPER_ID, //
+      OPID_EDITOR_FACTORY_NAME, ValedAvValobjTCPAddressEditor.FACTORY_NAME //
+  ) {
+
+    @Override
+    protected void doInit() {
+      setFlags( M5FF_COLUMN );
+    }
+
+    protected IAtomicValue doGetFieldValue( IAtomicValue aEntity ) {
+      return AvUtils.avValobj( ((ModbusNode)aEntity.asValobj()).getAddress() );
+    }
+
+  };
+
+  /**
+   * Attribute {@link ModbusNode#getRegister()}.
+   */
   public final M5AttributeFieldDef<IAtomicValue> REGISTER =
       new M5AttributeFieldDef<>( FID_REGISTER, EAtomicType.INTEGER, //
-          TSID_NAME, "Регистр modbus", //
-          TSID_DESCRIPTION, "Регистр modbus" //
+          TSID_NAME, STR_N_MODBUS_REGISTER, //
+          TSID_DESCRIPTION, STR_N_MODBUS_REGISTER, //
+          TSID_DEFAULT_VALUE, avInt( 100 ) //
       ) {
 
         @Override
         protected void doInit() {
           setFlags( M5FF_COLUMN );
-          // setFlags( M5FF_COLUMN | M5FF_READ_ONLY | M5FF_HIDDEN );
-          // setFlags( M5FF_COLUMN | M5FF_HIDDEN );
         }
 
         protected IAtomicValue doGetFieldValue( IAtomicValue aEntity ) {
@@ -77,17 +116,19 @@ public class ModbusNodesForCfgM5Model
 
       };
 
+  /**
+   * Attribute {@link ModbusNode#getWordsCount()}.
+   */
   public final M5AttributeFieldDef<IAtomicValue> WORDS_COUNT =
       new M5AttributeFieldDef<>( FID_WORDS_COUNT, EAtomicType.INTEGER, //
-          TSID_NAME, "Количество слов modbus", //
-          TSID_DESCRIPTION, "Количество слов modbus" //
+          TSID_NAME, STR_N_MODBUS_WORDS_COUNT, //
+          TSID_DESCRIPTION, STR_D_MODBUS_WORDS_COUNT, //
+          TSID_DEFAULT_VALUE, avInt( 1 ) //
       ) {
 
         @Override
         protected void doInit() {
           setFlags( M5FF_COLUMN );
-          // setFlags( M5FF_COLUMN | M5FF_READ_ONLY | M5FF_HIDDEN );
-          // setFlags( M5FF_COLUMN | M5FF_HIDDEN );
         }
 
         protected IAtomicValue doGetFieldValue( IAtomicValue aEntity ) {
@@ -96,10 +137,13 @@ public class ModbusNodesForCfgM5Model
 
       };
 
+  /**
+   * Attribute {@link ModbusNode#getRequestType()}.
+   */
   public final M5AttributeFieldDef<IAtomicValue> REQUEST_TYPE =
       new M5AttributeFieldDef<>( FID_REQUEST_TYPE, EAtomicType.VALOBJ, //
-          TSID_NAME, "Тип запроса modbus", //
-          TSID_DESCRIPTION, "Тип запроса modbus", //
+          TSID_NAME, STR_N_MODBUS_REQUEST_TYPE, //
+          TSID_DESCRIPTION, STR_D_MODBUS_REQUEST_TYPE, //
           TSID_KEEPER_ID, ERequestType.KEEPER_ID //
       ) {
 
@@ -107,8 +151,6 @@ public class ModbusNodesForCfgM5Model
         protected void doInit() {
           setFlags( M5FF_COLUMN );
           setDefaultValue( avValobj( ERequestType.DI ) );
-          // setFlags( M5FF_COLUMN | M5FF_READ_ONLY | M5FF_HIDDEN );
-          // setFlags( M5FF_COLUMN | M5FF_HIDDEN );
         }
 
         protected IAtomicValue doGetFieldValue( IAtomicValue aEntity ) {
@@ -122,7 +164,35 @@ public class ModbusNodesForCfgM5Model
    */
   public ModbusNodesForCfgM5Model() {
     super( MODEL_ID, IAtomicValue.class );
-    addFieldDefs( REGISTER, WORDS_COUNT, REQUEST_TYPE );
+    addFieldDefs( TCP_ADDRESS, REGISTER, WORDS_COUNT, REQUEST_TYPE );
+    // переопределяю только для того чтобы отключить панель фильтра
+    setPanelCreator( new M5DefaultPanelCreator<>() {
+
+      protected IM5EntityPanel<IAtomicValue> doCreateEntityEditorPanel( ITsGuiContext aContext,
+          IM5LifecycleManager<IAtomicValue> aLifecycleManager ) {
+        IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( aContext.params(), AvUtils.AV_FALSE );
+        return new M5DefaultEntityControlledPanel<>( aContext, model(), aLifecycleManager, null );
+      }
+
+      protected IM5CollectionPanel<IAtomicValue> doCreateCollViewerPanel( ITsGuiContext aContext,
+          IM5ItemsProvider<IAtomicValue> aItemsProvider ) {
+        OPDEF_IS_ACTIONS_CRUD.setValue( aContext.params(), AV_FALSE );
+        IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( aContext.params(), AvUtils.AV_FALSE );
+        MultiPaneComponentModown<IAtomicValue> mpc =
+            new MultiPaneComponentModown<>( aContext, model(), aItemsProvider );
+        return new M5CollectionPanelMpcModownWrapper<>( mpc, true );
+      }
+
+      protected IM5CollectionPanel<IAtomicValue> doCreateCollEditPanel( ITsGuiContext aContext,
+          IM5ItemsProvider<IAtomicValue> aItemsProvider, IM5LifecycleManager<IAtomicValue> aLifecycleManager ) {
+        IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( aContext.params(), AvUtils.AV_FALSE );
+        MultiPaneComponentModown<IAtomicValue> mpc =
+            new MultiPaneComponentModown<>( aContext, model(), aItemsProvider, aLifecycleManager );
+        return new M5CollectionPanelMpcModownWrapper<>( mpc, false );
+      }
+
+    } );
+
   }
 
   @Override
@@ -175,11 +245,14 @@ public class ModbusNodesForCfgM5Model
      */
     @Override
     protected IAtomicValue doCreate( IM5Bunch<IAtomicValue> aValues ) {
+
+      TCPAddress address = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_ADDRESS )).asValobj();
       int reg = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_REGISTER )).asInt();
       int count = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_WORDS_COUNT )).asInt();
       ERequestType type = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_REQUEST_TYPE )).asValobj();
 
-      return AvUtils.avValobj( new ModbusNode( reg, count, type ) );
+      // return AvUtils.avValobj( new ModbusNode( reg, count, type ) );
+      return AvUtils.avValobj( new ModbusNode( address, reg, count, type ) );
     }
 
     /**
@@ -208,11 +281,14 @@ public class ModbusNodesForCfgM5Model
      */
     @Override
     protected IAtomicValue doEdit( IM5Bunch<IAtomicValue> aValues ) {
+
+      TCPAddress address = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_ADDRESS )).asValobj();
       int reg = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_REGISTER )).asInt();
       int count = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_WORDS_COUNT )).asInt();
       ERequestType type = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_REQUEST_TYPE )).asValobj();
 
-      return AvUtils.avValobj( new ModbusNode( reg, count, type ) );
+      // return AvUtils.avValobj( new ModbusNode( reg, count, type ) );
+      return AvUtils.avValobj( new ModbusNode( address, reg, count, type ) );
     }
 
     /**

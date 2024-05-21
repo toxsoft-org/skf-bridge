@@ -1,5 +1,7 @@
 package org.toxsoft.skf.bridge.cfg.modbus.gui.km5;
 
+import static org.toxsoft.skf.bridge.cfg.modbus.gui.km5.ISkResources.*;
+
 import org.toxsoft.core.tslib.bricks.keeper.*;
 import org.toxsoft.core.tslib.bricks.keeper.AbstractEntityKeeper.*;
 import org.toxsoft.core.tslib.bricks.strid.impl.*;
@@ -9,6 +11,7 @@ import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.utils.errors.*;
+import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.type.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
@@ -26,6 +29,8 @@ public class ModbusToS5CfgDoc
     extends Stridable {
 
   private static final String CHECK_DOC = "CheckDoc"; //$NON-NLS-1$
+
+  private static String MAP_KEY_FORMAT_STR = "%s:%d %s_%d"; //$NON-NLS-1$
 
   /**
    * The keeper singleton.
@@ -61,7 +66,8 @@ public class ModbusToS5CfgDoc
             aSw.writeEol();
           }
 
-          // IList<CfgOpcUaNode> nodes = aEntity.getNodesCfgs();
+          // IList<CfgOpcUaNode> nodes =
+          // aEntity.getNodesCfgs();
 
           // Nodes
           // nodes count
@@ -69,9 +75,11 @@ public class ModbusToS5CfgDoc
           // aSw.writeSeparatorChar();
           // aSw.writeEol();
           //
-          // for( int i = 0; i < nodes.size(); i++ ) {
+          // for( int i = 0; i < nodes.size();
+          // i++ ) {
           // // one node
-          // CfgOpcUaNode.KEEPER.write( aSw, nodes.get( i ) );
+          // CfgOpcUaNode.KEEPER.write( aSw,
+          // nodes.get( i ) );
           // aSw.writeSeparatorChar();
           // aSw.writeEol();
           // }
@@ -108,18 +116,22 @@ public class ModbusToS5CfgDoc
           // int nodesCount = aSr.readInt();
           // aSr.ensureSeparatorChar();
           //
-          // IStringMapEdit<CfgOpcUaNode> nodes = new StringMap<>();
-          // for( int i = 0; i < nodesCount; i++ ) {
+          // IStringMapEdit<CfgOpcUaNode> nodes =
+          // new StringMap<>();
+          // for( int i = 0; i < nodesCount; i++
+          // ) {
           // // one node
-          // CfgOpcUaNode node = CfgOpcUaNode.KEEPER.read( aSr );
+          // CfgOpcUaNode node =
+          // CfgOpcUaNode.KEEPER.read( aSr );
           // aSr.ensureSeparatorChar();
           // nodes.put( node.getNodeId(), node );
           // }
           //
-          // System.out.println( "Loaded nodes count = " + nodes.size() );
+          // System.out.println( "Loaded nodes
+          // count = " + nodes.size() );
 
           if( !aSr.readQuotedString().equals( CHECK_DOC ) ) {
-            System.out.println( "Error Doc Read" );
+            LoggerUtils.errorLogger().error( STR_ERR_DOC_READ );
           }
 
           ModbusToS5CfgDoc result = new ModbusToS5CfgDoc( id, name, descr );
@@ -172,18 +184,30 @@ public class ModbusToS5CfgDoc
     super.setDescription( aDescription );
   }
 
+  /**
+   * @return list of {@link OpcToS5DataCfgUnit}
+   */
   public IList<OpcToS5DataCfgUnit> dataUnits() {
     return dataCfgUnits;
   }
 
+  /**
+   * @param aDataUnit - add data unit {@link OpcToS5DataCfgUnit}
+   */
   public void addDataUnit( OpcToS5DataCfgUnit aDataUnit ) {
     dataCfgUnits.add( aDataUnit );
   }
 
+  /**
+   * @param aDataUnits - add list of {@link OpcToS5DataCfgUnit}
+   */
   public void addDataUnits( IList<OpcToS5DataCfgUnit> aDataUnits ) {
     dataCfgUnits.addAll( aDataUnits );
   }
 
+  /**
+   * @param aDataUnit -remove data unit {@link OpcToS5DataCfgUnit}
+   */
   public void removeDataUnit( OpcToS5DataCfgUnit aDataUnit ) {
     dataCfgUnits.remove( aDataUnit );
   }
@@ -198,13 +222,26 @@ public class ModbusToS5CfgDoc
     return nodesCfgs.values();
   }
 
+  /**
+   * Update map of nodes
+   *
+   * @param aNodesCfgs - added nodes {@link ModbusNode}
+   */
   public void setNodesCfgs( IList<ModbusNode> aNodesCfgs ) {
     nodesCfgs.clear();
     for( ModbusNode cfg : aNodesCfgs ) {
-      nodesCfgs.put( cfg.getRequestType().name() + "_" + cfg.getRegister(), cfg );
+      String mapKey = String.format( MAP_KEY_FORMAT_STR, cfg.getAddress().getIP().getHostAddress(),
+          Integer.valueOf( cfg.getAddress().getPort() ), cfg.getRequestType().name(),
+          Integer.valueOf( cfg.getRegister() ) );
+      nodesCfgs.put( mapKey, cfg );
+      // old version
+      // nodesCfgs.put( cfg.getRequestType().name() + "_" + cfg.getRegister(), cfg );
     }
   }
 
+  /**
+   * Ensured node map
+   */
   public void ensureNodesCfgs() {
     nodesCfgs.clear();
     for( OpcToS5DataCfgUnit unit : dataCfgUnits ) {

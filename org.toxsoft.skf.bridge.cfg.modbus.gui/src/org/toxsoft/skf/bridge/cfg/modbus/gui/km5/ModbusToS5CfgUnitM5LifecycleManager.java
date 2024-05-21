@@ -37,11 +37,6 @@ public class ModbusToS5CfgUnitM5LifecycleManager
     extends M5LifecycleManager<OpcToS5DataCfgUnit, ModbusToS5CfgDoc> {
 
   /**
-   * тестовый список конфигураций
-   */
-  // private OpcToS5DataCfgDoc cfgDoc = new OpcToS5DataCfgDoc( "id", "name", "descr" );
-
-  /**
    * Constructor by M5 model and context
    *
    * @param aModel IM5Model - model
@@ -49,10 +44,6 @@ public class ModbusToS5CfgUnitM5LifecycleManager
    */
   public ModbusToS5CfgUnitM5LifecycleManager( IM5Model<OpcToS5DataCfgUnit> aModel, ModbusToS5CfgDoc aCfgDoc ) {
     super( aModel, true, true, true, true, aCfgDoc );
-  }
-
-  private OpcToS5DataCfgUnitM5Model m() {
-    return (OpcToS5DataCfgUnitM5Model)model();
   }
 
   @Override
@@ -64,7 +55,7 @@ public class ModbusToS5CfgUnitM5LifecycleManager
   protected OpcToS5DataCfgUnit doCreate( IM5Bunch<OpcToS5DataCfgUnit> aValues ) {
     String name = aValues.getAsAv( OpcToS5DataCfgUnitM5Model.FID_DISPLAY_NAME ).asString();
 
-    String strid = "opctos5.bridge.cfg.unit.id" + System.currentTimeMillis();// OpcToS5DataCfgUnitM5Model.STRID.getFieldValue( //$NON-NLS-1$
+    String strid = generateStrid();
     ECfgUnitType type = aValues.getAsAv( OpcToS5DataCfgUnitM5Model.FID_TYPE ).asValobj();
     // aValues ).asString();
     IList<Gwid> gwids = aValues.get( OpcToS5DataCfgUnitM5Model.FID_GWIDS );
@@ -81,6 +72,13 @@ public class ModbusToS5CfgUnitM5LifecycleManager
     result.setRealizationOpts( realization );
     master().addDataUnit( result );
     return result;
+  }
+
+  /**
+   * @return generate strid
+   */
+  public static String generateStrid() {
+    return "opctos5.bridge.cfg.unit.id" + System.currentTimeMillis(); //$NON-NLS-1$
   }
 
   @Override
@@ -115,6 +113,11 @@ public class ModbusToS5CfgUnitM5LifecycleManager
     service.saveCfgDoc( master() );
   }
 
+  /**
+   * Generate l2 config file *.dlmcfg
+   *
+   * @param aContext - app context
+   */
   public void generateDlmFileFromCurrState( ITsGuiContext aContext ) {
     Shell shell = aContext.find( Shell.class );
     FileDialog fd = new FileDialog( shell, SWT.SAVE );
@@ -149,6 +152,11 @@ public class ModbusToS5CfgUnitM5LifecycleManager
     }
   }
 
+  /**
+   * Generate config file *.devcfg
+   *
+   * @param aContext - app context {@link ITsGuiContext}
+   */
   public void generateDevFileFromCurrState( ITsGuiContext aContext ) {
     Shell shell = aContext.find( Shell.class );
     FileDialog fd = new FileDialog( shell, SWT.SAVE );
@@ -181,14 +189,14 @@ public class ModbusToS5CfgUnitM5LifecycleManager
   }
 
   /**
-   * @param aResult config unit
+   * @param aCfgUnit config unit
    */
   public void addCfgUnit( OpcToS5DataCfgUnit aCfgUnit ) {
     master().addDataUnit( aCfgUnit );
   }
 
   /**
-   * @param aResult config unit
+   * @param aCfgUnits config units
    */
   public void addCfgUnits( IList<OpcToS5DataCfgUnit> aCfgUnits ) {
     master().addDataUnits( aCfgUnits );

@@ -88,5 +88,10 @@ public interface ISkResources {
   String STR_D_AUTO_LINK                    = Messages.STR_D_AUTO_LINK;
   String STR_N_GENERATE_DLMCFG              = Messages.STR_N_GENERATE_DLMCFG;
   String STR_D_GENERATE_DLMCFG              = Messages.STR_D_GENERATE_DLMCFG;
-
+  String STR_N_SELECT_IP_ADDRESS            = "IP адрес";
+  String STR_D_SELECT_IP_ADDRESS            = "Фильтр на выбранный IP адрес";
+  String STR_SEL_IP_ADDRESS                 = "IP: ";
+  String STR_N_COPY_ALL                     = "скопировать все";
+  String STR_D_COPY_ALL                     = "Создать новые элементы сделав копии из всех отображающихся";
+  String STR_IP_ADDRESES                    = "IP адреса";
 }

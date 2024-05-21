@@ -1,5 +1,7 @@
 package org.toxsoft.skf.bridge.cfg.modbus.gui.km5;
 
+import static org.toxsoft.core.tsgui.m5.IM5Constants.*;
+
 import org.toxsoft.core.tsgui.m5.model.impl.*;
 import org.toxsoft.core.tsgui.m5.std.fields.*;
 
@@ -36,7 +38,8 @@ public class ModbusToS5CfgDocM5Model
    */
   public ModbusToS5CfgDocM5Model() {
     super( MODEL_ID, ModbusToS5CfgDoc.class );
-
+    // прячем никому не нужный ID
+    ID.setFlags( M5FF_HIDDEN | M5FF_INVARIANT );
     addFieldDefs( ID, NAME, DESCRIPTION );
 
   }

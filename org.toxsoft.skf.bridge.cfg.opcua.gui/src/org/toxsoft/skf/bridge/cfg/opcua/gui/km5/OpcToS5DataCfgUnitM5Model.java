@@ -300,7 +300,7 @@ public class OpcToS5DataCfgUnitM5Model
         StringBuilder result = new StringBuilder();
 
         if( nodes.size() > 0 ) {
-          result.append( nodes.get( 0 ).asString() );
+          result.append( nodes.get( 0 ).asValobj().toString() );
         }
 
         if( nodes.size() > 1 ) {
