@@ -1,6 +1,6 @@
 package org.toxsoft.skf.bridge.s5.skadmin;
 
-import org.toxsoft.skf.bridge.s5.skadmin.gateways.AdminCmdListConfigs;
+import org.toxsoft.skf.bridge.s5.skadmin.gateways.*;
 import org.toxsoft.uskat.skadmin.core.plugins.AbstractPluginCmdLibrary;
 
 /**
@@ -28,6 +28,8 @@ public class AdminPluginGateways
   protected void doInit() {
     // Шлюзы
     addCmd( new AdminCmdListConfigs() );
+    addCmd( new AdminCmdRemoveConfig() );
+    addCmd( new AdminCmdAddConfig() );
   }
 
   @Override
