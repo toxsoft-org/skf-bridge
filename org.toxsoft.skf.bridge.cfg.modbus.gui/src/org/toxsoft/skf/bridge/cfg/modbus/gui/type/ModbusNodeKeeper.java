@@ -1,5 +1,6 @@
 package org.toxsoft.skf.bridge.cfg.modbus.gui.type;
 
+import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.bricks.keeper.*;
 import org.toxsoft.core.tslib.bricks.strio.*;
 import org.toxsoft.core.tslib.utils.valobj.*;
@@ -39,7 +40,13 @@ public class ModbusNodeKeeper
     aSw.writeInt( aEntity.getWordsCount() );
     aSw.writeSeparatorChar();
     aSw.writeEol();
+    aSw.writeQuotedString( aEntity.getValueType().name() );
+    aSw.writeSeparatorChar();
+    aSw.writeEol();
     aSw.writeQuotedString( aEntity.getRequestType().name() );
+    aSw.writeSeparatorChar();
+    aSw.writeEol();
+    aSw.writeQuotedString( aEntity.getParams() );
     aSw.decNewLine();
   }
 
@@ -51,9 +58,13 @@ public class ModbusNodeKeeper
     aSr.ensureSeparatorChar();
     int wordsCount = aSr.readInt();
     aSr.ensureSeparatorChar();
+    EAtomicType valueType = EAtomicType.valueOf( aSr.readQuotedString() );
+    aSr.ensureSeparatorChar();
     ERequestType type = ERequestType.valueOf( aSr.readQuotedString() );
+    aSr.ensureSeparatorChar();
+    String params = aSr.readQuotedString();
 
-    return new ModbusNode( address, register, wordsCount, type );
+    return new ModbusNode( address, register, wordsCount, valueType, type, params );
   }
 
 }

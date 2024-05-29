@@ -12,6 +12,8 @@ public class Messages
   public static String        STR_D_IP_ADDRESS;
   public static String        STR_D_MODBUS_REGISTER;
   public static String        STR_D_MODBUS_REQUEST_TYPE;
+  public static String        STR_D_MODBUS_VALUE_TYPE;
+  public static String        STR_D_MODBUS_PARAMETERS_STR;
   public static String        STR_D_MODBUS_WORDS_COUNT;
   public static String        STR_D_PORT_NUMBER;
   public static String        STR_ERR_DOC_READ;
@@ -19,6 +21,8 @@ public class Messages
   public static String        STR_N_IP_ADDRESS;
   public static String        STR_N_MODBUS_REGISTER;
   public static String        STR_N_MODBUS_REQUEST_TYPE;
+  public static String        STR_N_MODBUS_VALUE_TYPE;
+  public static String        STR_N_MODBUS_PARAMETERS_STR;
   public static String        STR_N_MODBUS_WORDS_COUNT;
   public static String        STR_N_PORT_NUMBER;
   static {

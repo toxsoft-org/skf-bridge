@@ -1,5 +1,6 @@
 package org.toxsoft.skf.bridge.cfg.modbus.gui.type;
 
+import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.utils.*;
 
 /**
@@ -16,7 +17,11 @@ public class ModbusNode {
 
   private int wordsCount;
 
+  private EAtomicType valueType;
+
   private ERequestType requestType;
+
+  private String params;
 
   private boolean isOutput = false;
 
@@ -39,11 +44,35 @@ public class ModbusNode {
    * @param aRequestType - request type {@link ERequestType}
    */
   public ModbusNode( TCPAddress aAddress, int aRegister, int aWordsCount, ERequestType aRequestType ) {
-    super();
+    this( aRegister, aWordsCount, aRequestType );
     address = aAddress;
-    register = aRegister;
-    wordsCount = aWordsCount;
-    requestType = aRequestType;
+  }
+
+  /**
+   * @param aAddress - TCP/IP address {@link TCPAddress}
+   * @param aRegister - modbus register
+   * @param aWordsCount - count of words
+   * @param aValueType - type of node value
+   * @param aRequestType - request type {@link ERequestType}
+   */
+  public ModbusNode( TCPAddress aAddress, int aRegister, int aWordsCount, EAtomicType aValueType,
+      ERequestType aRequestType ) {
+    this( aAddress, aRegister, aWordsCount, aRequestType );
+    valueType = aValueType;
+  }
+
+  /**
+   * @param aAddress - TCP/IP address {@link TCPAddress}
+   * @param aRegister - modbus register
+   * @param aWordsCount - count of words
+   * @param aValueType - type of node value
+   * @param aRequestType - request type {@link ERequestType}
+   * @param aParameters - параметры в строковом представлении
+   */
+  public ModbusNode( TCPAddress aAddress, int aRegister, int aWordsCount, EAtomicType aValueType,
+      ERequestType aRequestType, String aParameters ) {
+    this( aAddress, aRegister, aWordsCount, aValueType, aRequestType );
+    params = aParameters;
   }
 
   /**
@@ -136,6 +165,42 @@ public class ModbusNode {
    */
   public void setOutput( boolean aIsOutput ) {
     isOutput = aIsOutput;
+  }
+
+  /**
+   * Returns type of node value
+   *
+   * @return EAtomicType - type of node value
+   */
+  public EAtomicType getValueType() {
+    return valueType;
+  }
+
+  /**
+   * Sets type of node value
+   *
+   * @param aValueType - type of node value
+   */
+  public void setValueType( EAtomicType aValueType ) {
+    valueType = aValueType;
+  }
+
+  /**
+   * Returns params of node as string
+   *
+   * @return String - params of node as string
+   */
+  public String getParams() {
+    return params;
+  }
+
+  /**
+   * Sets params of node as string
+   *
+   * @param aParams - params of node as strin
+   */
+  public void setParams( String aParams ) {
+    params = aParams;
   }
 
   /**

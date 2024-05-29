@@ -61,7 +61,7 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
   @Override
   protected OpcToS5DataCfgUnit doCreate( IM5Bunch<OpcToS5DataCfgUnit> aValues ) {
     String name = m().DISPLAY_NAME.getFieldValue( aValues ).asString();
-    String strid = "opctos5.bridge.cfg.unit.id" + System.currentTimeMillis();// OpcToS5DataCfgUnitM5Model.STRID.getFieldValue( //$NON-NLS-1$
+    String strid = generateStrid();
     ECfgUnitType type = m().TYPE.getFieldValue( aValues ).asValobj();
     // aValues ).asString();
     IList<Gwid> gwids = m().GWIDS.getFieldValue( aValues );
@@ -78,6 +78,13 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
     result.setRealizationOpts( realization );
     master().addDataUnit( result );
     return result;
+  }
+  
+  /**
+   * @return generate strid
+   */
+  public static String generateStrid() {
+    return "opctos5.bridge.cfg.unit.id" + System.currentTimeMillis(); //$NON-NLS-1$
   }
 
   @Override

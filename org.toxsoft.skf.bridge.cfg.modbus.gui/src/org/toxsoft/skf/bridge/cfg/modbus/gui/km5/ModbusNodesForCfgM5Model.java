@@ -25,6 +25,7 @@ import org.toxsoft.core.tslib.av.impl.*;
 import org.toxsoft.core.tslib.bricks.validator.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.helpers.*;
+import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.panels.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.type.*;
 import org.toxsoft.uskat.core.connection.*;
@@ -70,9 +71,19 @@ public class ModbusNodesForCfgM5Model
   public static final String FID_WORDS_COUNT = "words.count"; //$NON-NLS-1$
 
   /**
+   * value type
+   */
+  public static final String FID_VALUE_TYPE = "value.type"; //$NON-NLS-1$
+
+  /**
    * request type
    */
   public static final String FID_REQUEST_TYPE = "request.type"; //$NON-NLS-1$
+
+  /**
+   * parameters string
+   */
+  public static final String FID_PARAMETERS_STR = "params.str"; //$NON-NLS-1$
 
   /**
    * Attribute {@link ModbusNode#getAddress()}.
@@ -138,6 +149,28 @@ public class ModbusNodesForCfgM5Model
       };
 
   /**
+   * Attribute {@link ModbusNode#getValueType()}.
+   */
+  public final M5AttributeFieldDef<IAtomicValue> VALUE_TYPE =
+      new M5AttributeFieldDef<>( FID_VALUE_TYPE, EAtomicType.VALOBJ, //
+          TSID_NAME, STR_N_MODBUS_VALUE_TYPE, //
+          TSID_DESCRIPTION, STR_D_MODBUS_VALUE_TYPE, //
+          TSID_KEEPER_ID, EAtomicType.KEEPER_ID //
+      ) {
+
+        @Override
+        protected void doInit() {
+          setFlags( M5FF_COLUMN );
+          setDefaultValue( avValobj( EAtomicType.INTEGER ) );
+        }
+
+        protected IAtomicValue doGetFieldValue( IAtomicValue aEntity ) {
+          return avValobj( ((ModbusNode)aEntity.asValobj()).getValueType() );
+        }
+
+      };
+
+  /**
    * Attribute {@link ModbusNode#getRequestType()}.
    */
   public final M5AttributeFieldDef<IAtomicValue> REQUEST_TYPE =
@@ -160,11 +193,32 @@ public class ModbusNodesForCfgM5Model
       };
 
   /**
+   * Attribute {@link ModbusNode#getParams()}.
+   */
+  public final M5AttributeFieldDef<IAtomicValue> PARAMETERS_STR =
+      new M5AttributeFieldDef<>( FID_PARAMETERS_STR, EAtomicType.STRING, //
+          TSID_NAME, STR_N_MODBUS_PARAMETERS_STR, //
+          TSID_DESCRIPTION, STR_D_MODBUS_PARAMETERS_STR //
+      ) {
+
+        @Override
+        protected void doInit() {
+          setFlags( M5FF_COLUMN );
+          setDefaultValue( avStr( TsLibUtils.EMPTY_STRING ) );
+        }
+
+        protected IAtomicValue doGetFieldValue( IAtomicValue aEntity ) {
+          return avStr( ((ModbusNode)aEntity.asValobj()).getParams() );
+        }
+
+      };
+
+  /**
    * Constructor
    */
   public ModbusNodesForCfgM5Model() {
     super( MODEL_ID, IAtomicValue.class );
-    addFieldDefs( TCP_ADDRESS, REGISTER, WORDS_COUNT, REQUEST_TYPE );
+    addFieldDefs( TCP_ADDRESS, REGISTER, WORDS_COUNT, VALUE_TYPE, REQUEST_TYPE, PARAMETERS_STR );
     // переопределяю только для того чтобы отключить панель фильтра
     setPanelCreator( new M5DefaultPanelCreator<>() {
 
@@ -249,10 +303,12 @@ public class ModbusNodesForCfgM5Model
       TCPAddress address = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_ADDRESS )).asValobj();
       int reg = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_REGISTER )).asInt();
       int count = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_WORDS_COUNT )).asInt();
+      EAtomicType valueType = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_VALUE_TYPE )).asValobj();
       ERequestType type = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_REQUEST_TYPE )).asValobj();
+      String params = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_PARAMETERS_STR )).asString();
 
       // return AvUtils.avValobj( new ModbusNode( reg, count, type ) );
-      return AvUtils.avValobj( new ModbusNode( address, reg, count, type ) );
+      return AvUtils.avValobj( new ModbusNode( address, reg, count, valueType, type, params ) );
     }
 
     /**
@@ -285,10 +341,12 @@ public class ModbusNodesForCfgM5Model
       TCPAddress address = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_ADDRESS )).asValobj();
       int reg = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_REGISTER )).asInt();
       int count = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_WORDS_COUNT )).asInt();
+      EAtomicType valueType = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_VALUE_TYPE )).asValobj();
       ERequestType type = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_REQUEST_TYPE )).asValobj();
+      String params = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_PARAMETERS_STR )).asString();
 
       // return AvUtils.avValobj( new ModbusNode( reg, count, type ) );
-      return AvUtils.avValobj( new ModbusNode( address, reg, count, type ) );
+      return AvUtils.avValobj( new ModbusNode( address, reg, count, valueType, type, params ) );
     }
 
     /**

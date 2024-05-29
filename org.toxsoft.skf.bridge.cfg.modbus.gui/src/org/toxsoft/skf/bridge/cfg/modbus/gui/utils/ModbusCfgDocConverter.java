@@ -50,18 +50,19 @@ public class ModbusCfgDocConverter {
 
   private static final String MODBUS_CFG_NODE_ID = "modbus.common.cfg";
 
-  private static final String PIN_ID_PARAM_NAME           = "id";
-  private static final String PIN_DESCR_PARAM_NAME        = "descr";
-  private static final String PIN_REQUEST_TYPE_PARAM_NAME = "request.type";
-  private static final String PIN_REGISTER_PARAM_NAME     = "register";
-  private static final String PIN_WORD_COUNT_PARAM_NAME   = "words.count";
-  private static final String PIN_IS_OUTPUT_PARAM_NAME    = "is.output";
-  private static final String PIN_TRANSLATOR_PARAM_NAME   = "translator";
+  private static final String PIN_ID_PARAM_NAME              = "id";
+  private static final String PIN_DESCR_PARAM_NAME           = "descr";
+  private static final String PIN_REQUEST_TYPE_PARAM_NAME    = "request.type";
+  private static final String PIN_REGISTER_PARAM_NAME        = "register";
+  private static final String PIN_WORD_COUNT_PARAM_NAME      = "words.count";
+  private static final String PIN_IS_OUTPUT_PARAM_NAME       = "is.output";
+  private static final String PIN_TRANSLATOR_PARAM_NAME      = "translator";
+  private static final String PIN_TRANSLATOR_PARAMS_PARAM_ID = "translator.params";
 
-  private static final String PIN_DEFAULT_DISCRET_TRANSLATOR_VAL =
-      "org.toxsoft.l2.thd.modbus.common.translators.OneToOneDiscretTranslator";
-  private static final String PIN_DEFAULT_ANALOG_TRANSLATOR_VAL  =
-      "org.toxsoft.l2.thd.modbus.common.translators.AnalogTowBytesTranslator";
+  private static final String PIN_DEFAULT_DISCRET_TRANSLATOR_VAL = "BOOLEAN_DISCRETS";
+  private static final String PIN_DEFAULT_INTEGER_TRANSLATOR_VAL = "INTEGER_REGISTERS";
+  private static final String PIN_DEFAULT_FLOAT_TRANSLATOR_VAL   = "FLOAT_REGISTERS";
+  private static final String PIN_DEFAULT_BOOLEAN_TRANSLATOR_VAL = "BOOLEAN_REGISTERS";
 
   /**
    * Create config file *.devcfg
@@ -193,6 +194,9 @@ public class ModbusCfgDocConverter {
     else {
       pinOpSet1.setStr( PIN_TRANSLATOR_PARAM_NAME, getTranslator( aData ) );
     }
+    if( aData.getParams() != null && aData.getParams().length() > 0 ) {
+      pinOpSet1.setStr( PIN_TRANSLATOR_PARAMS_PARAM_ID, aData.getParams() );
+    }
 
     IAvTree pinTree1 = null;
     try {
@@ -212,6 +216,20 @@ public class ModbusCfgDocConverter {
 
     }
 
-    return PIN_DEFAULT_ANALOG_TRANSLATOR_VAL;
+    switch( aData.getValueType() ) {
+      case BOOLEAN:
+        return PIN_DEFAULT_BOOLEAN_TRANSLATOR_VAL;
+      case FLOATING:
+        return PIN_DEFAULT_FLOAT_TRANSLATOR_VAL;
+      case INTEGER:
+      case NONE:
+      case STRING:
+      case TIMESTAMP:
+      case VALOBJ:
+      default:
+        return PIN_DEFAULT_INTEGER_TRANSLATOR_VAL;
+
+    }
+
   }
 }

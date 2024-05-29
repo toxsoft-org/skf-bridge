@@ -78,7 +78,7 @@ public class ModbusToS5CfgUnitM5LifecycleManager
    * @return generate strid
    */
   public static String generateStrid() {
-    return "opctos5.bridge.cfg.unit.id" + System.currentTimeMillis(); //$NON-NLS-1$
+    return "modbus.bridge.cfg.unit.id" + System.currentTimeMillis(); //$NON-NLS-1$
   }
 
   @Override
