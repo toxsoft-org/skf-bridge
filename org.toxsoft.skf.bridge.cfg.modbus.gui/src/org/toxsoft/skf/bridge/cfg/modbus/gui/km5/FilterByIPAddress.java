@@ -1,7 +1,5 @@
 package org.toxsoft.skf.bridge.cfg.modbus.gui.km5;
 
-import java.net.*;
-
 import org.toxsoft.core.tslib.bricks.filter.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.type.*;
@@ -16,15 +14,15 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 public class FilterByIPAddress
     implements ITsFilter<OpcToS5DataCfgUnit> {
 
-  private final InetAddress selIP;
+  private final String selIP;
 
   /**
    * Construct filter by IP address
    *
    * @param aTCPAddress - IP address {@link TCPAddress}
    */
-  public FilterByIPAddress( TCPAddress aTCPAddress ) {
-    selIP = aTCPAddress.getIP();
+  public FilterByIPAddress( ModbusDevice aTCPAddress ) {
+    selIP = aTCPAddress.getDeviceConnectionId();
   }
 
   @Override
@@ -35,8 +33,8 @@ public class FilterByIPAddress
       return false;
     }
     ModbusNode firstNode = nodes.first();
-    TCPAddress address = firstNode.getAddress();
-    InetAddress ip = address.getIP();
+    ModbusDevice address = firstNode.getAddress();
+    String ip = address.getDeviceConnectionId();
     return selIP.equals( ip );
   }
 

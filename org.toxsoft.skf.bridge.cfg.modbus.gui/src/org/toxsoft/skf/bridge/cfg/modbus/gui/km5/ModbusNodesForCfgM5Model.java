@@ -58,7 +58,7 @@ public class ModbusNodesForCfgM5Model
   /**
    * address
    */
-  public static final String FID_ADDRESS = "address"; //$NON-NLS-1$
+  public static final String FID_MODBUS_DEVICE = "modbus.device"; //$NON-NLS-1$
 
   /**
    * register
@@ -85,13 +85,10 @@ public class ModbusNodesForCfgM5Model
    */
   public static final String FID_PARAMETERS_STR = "params.str"; //$NON-NLS-1$
 
-  /**
-   * Attribute {@link ModbusNode#getAddress()}.
-   */
-  public final M5AttributeFieldDef<IAtomicValue> TCP_ADDRESS = new M5AttributeFieldDef<>( FID_ADDRESS, VALOBJ, //
-      TSID_NAME, STR_N_IP_ADDRESS, //
-      TSID_DESCRIPTION, STR_D_IP_ADDRESS, //
-      TSID_KEEPER_ID, TCPAddress.KEEPER_ID, //
+  public final M5AttributeFieldDef<IAtomicValue> MODBUS_DEVICE = new M5AttributeFieldDef<>( FID_MODBUS_DEVICE, VALOBJ, //
+      TSID_NAME, "Устройство modbus", //
+      TSID_DESCRIPTION, "Устройство modbus (tcp или rtu)", //
+      TSID_KEEPER_ID, ModbusDevice.KEEPER_ID, //
       OPID_EDITOR_FACTORY_NAME, ValedAvValobjTCPAddressEditor.FACTORY_NAME //
   ) {
 
@@ -218,7 +215,7 @@ public class ModbusNodesForCfgM5Model
    */
   public ModbusNodesForCfgM5Model() {
     super( MODEL_ID, IAtomicValue.class );
-    addFieldDefs( TCP_ADDRESS, REGISTER, WORDS_COUNT, VALUE_TYPE, REQUEST_TYPE, PARAMETERS_STR );
+    addFieldDefs( MODBUS_DEVICE, REGISTER, WORDS_COUNT, VALUE_TYPE, REQUEST_TYPE, PARAMETERS_STR );
     // переопределяю только для того чтобы отключить панель фильтра
     setPanelCreator( new M5DefaultPanelCreator<>() {
 
@@ -300,7 +297,7 @@ public class ModbusNodesForCfgM5Model
     @Override
     protected IAtomicValue doCreate( IM5Bunch<IAtomicValue> aValues ) {
 
-      TCPAddress address = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_ADDRESS )).asValobj();
+      ModbusDevice address = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_MODBUS_DEVICE )).asValobj();
       int reg = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_REGISTER )).asInt();
       int count = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_WORDS_COUNT )).asInt();
       EAtomicType valueType = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_VALUE_TYPE )).asValobj();
@@ -337,8 +334,7 @@ public class ModbusNodesForCfgM5Model
      */
     @Override
     protected IAtomicValue doEdit( IM5Bunch<IAtomicValue> aValues ) {
-
-      TCPAddress address = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_ADDRESS )).asValobj();
+      ModbusDevice address = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_MODBUS_DEVICE )).asValobj();
       int reg = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_REGISTER )).asInt();
       int count = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_WORDS_COUNT )).asInt();
       EAtomicType valueType = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_VALUE_TYPE )).asValobj();

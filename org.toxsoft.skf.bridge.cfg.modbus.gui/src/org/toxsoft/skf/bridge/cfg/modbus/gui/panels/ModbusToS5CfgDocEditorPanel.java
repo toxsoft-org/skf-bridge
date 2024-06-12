@@ -105,7 +105,7 @@ public class ModbusToS5CfgDocEditorPanel
   /**
    * Current selected IP address
    */
-  private TCPAddress              selAddress = TCPAddress.NONE;
+  private ModbusDevice            selAddress = ModbusDevice.NONE;
   private TextControlContribution selAddressTextContr;
 
   /**
@@ -314,7 +314,7 @@ public class ModbusToS5CfgDocEditorPanel
                 boolean checked = toolbar().getAction( ACTID_IP_ADDRESS_SELECT ).isChecked();
                 if( checked ) {
                   // select IP
-                  TCPAddress address = PanelTCPAddressSelector.selectTCPAddress( tsContext(), selAddress );
+                  ModbusDevice address = PanelTCPAddressSelector.selectTCPAddress( tsContext(), selAddress );
                   setNewIPAddress( tree(), address );
                 }
                 else {
@@ -329,7 +329,7 @@ public class ModbusToS5CfgDocEditorPanel
                   break;
                 }
                 // popup dialogs to select new IP
-                TCPAddress newAddress = PanelTCPAddressSelector.selectTCPAddress( ctx, selAddress );
+                ModbusDevice newAddress = PanelTCPAddressSelector.selectTCPAddress( ctx, selAddress );
                 if( newAddress == null ) {
                   break;
                 }
@@ -396,9 +396,9 @@ public class ModbusToS5CfgDocEditorPanel
         new M5CollectionPanelMpcModownWrapper<>( linksMpc, false );
 
     // Model of IP address
-    IM5Model<TCPAddress> ipAddresessModel = m5.getModel( TCPAddressM5Model.MODEL_ID, TCPAddress.class );
+    IM5Model<ModbusDevice> ipAddresessModel = m5.getModel( ModbusDeviceM5Model.MODEL_ID, ModbusDevice.class );
     ModbusToS5CfgDocService service = ctx.get( ModbusToS5CfgDocService.class );
-    IM5LifecycleManager<TCPAddress> ipAddressLm = new TCPAddressM5LifecycleManager( ipAddresessModel, service );
+    IM5LifecycleManager<ModbusDevice> ipAddressLm = new ModbusDeviceM5LifecycleManager( ipAddresessModel, service );
 
     tabCfgUnitsItem.setControl( opcToS5DataCfgUnitPanel.createControl( tabSubFolder ) );
     // add label to dispale selected IP
@@ -407,7 +407,7 @@ public class ModbusToS5CfgDocEditorPanel
     clearFilter( linksMpc.tree() );
 
     // create IP adddreses panel
-    MultiPaneComponentModown<TCPAddress> ipAddrsMpc =
+    MultiPaneComponentModown<ModbusDevice> ipAddrsMpc =
         new MultiPaneComponentModown<>( ctx, ipAddresessModel, ipAddressLm.itemsProvider(), ipAddressLm ) {
 
           @Override
@@ -432,14 +432,14 @@ public class ModbusToS5CfgDocEditorPanel
 
             switch( aActionId ) {
               case ACTID_ADD_COPY: {
-                TCPAddress selected = tree().selectedItem();
+                ModbusDevice selected = tree().selectedItem();
                 ITsDialogInfo cdi = doCreateDialogInfoToAddItem();
-                IM5BunchEdit<TCPAddress> initVals = new M5BunchEdit<>( model() );
+                IM5BunchEdit<ModbusDevice> initVals = new M5BunchEdit<>( model() );
                 initVals.fillFrom( selected, false );
                 // новый strid
-                initVals.set( TCPAddressM5Model.ID.id(), avStr( TCPAddressM5LifecycleManager.generateStrid() ) );
+                initVals.set( ModbusDeviceM5Model.ID.id(), avStr( ModbusDeviceM5LifecycleManager.generateStrid() ) );
 
-                TCPAddress item = M5GuiUtils.askCreate( tsContext(), model(), initVals, cdi, lifecycleManager() );
+                ModbusDevice item = M5GuiUtils.askCreate( tsContext(), model(), initVals, cdi, lifecycleManager() );
                 if( item != null ) {
                   fillViewer( item );
                 }
@@ -452,7 +452,7 @@ public class ModbusToS5CfgDocEditorPanel
           }
         };
 
-    IM5CollectionPanel<TCPAddress> ipAddrsPanel = new M5CollectionPanelMpcModownWrapper<>( ipAddrsMpc, false );
+    IM5CollectionPanel<ModbusDevice> ipAddrsPanel = new M5CollectionPanelMpcModownWrapper<>( ipAddrsMpc, false );
     tabIPAddrsItem.setControl( ipAddrsPanel.createControl( tabSubFolder ) );
 
     // select links tab
@@ -491,7 +491,7 @@ public class ModbusToS5CfgDocEditorPanel
     return Skid.NONE;
   }
 
-  void setNewIPAddress( IM5TreeViewer<OpcToS5DataCfgUnit> aIm5TreeViewer, TCPAddress address ) {
+  void setNewIPAddress( IM5TreeViewer<OpcToS5DataCfgUnit> aIm5TreeViewer, ModbusDevice address ) {
     if( address != null ) {
       // create new filter
       ITsFilter<OpcToS5DataCfgUnit> filter = new FilterByIPAddress( address );

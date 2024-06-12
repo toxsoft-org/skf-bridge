@@ -230,10 +230,10 @@ public class ModbusToS5CfgDoc
   public void setNodesCfgs( IList<ModbusNode> aNodesCfgs ) {
     nodesCfgs.clear();
     for( ModbusNode cfg : aNodesCfgs ) {
-      String mapKey = String.format( MAP_KEY_FORMAT_STR, cfg.getAddress().getIP().getHostAddress(),
-          Integer.valueOf( cfg.getAddress().getPort() ), cfg.getRequestType().name(),
-          Integer.valueOf( cfg.getRegister() ) );
-      nodesCfgs.put( mapKey, cfg );
+      // String mapKey = String.format( MAP_KEY_FORMAT_STR, cfg.getAddress().getIP().getHostAddress(),
+      // Integer.valueOf( cfg.getAddress().getPort() ), cfg.getRequestType().name(),
+      // Integer.valueOf( cfg.getRegister() ) );
+      nodesCfgs.put( cfg.getId(), cfg );
       // old version
       // nodesCfgs.put( cfg.getRequestType().name() + "_" + cfg.getRegister(), cfg );
     }

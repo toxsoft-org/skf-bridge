@@ -18,7 +18,7 @@ import org.toxsoft.skf.bridge.cfg.modbus.gui.type.*;
  * @author dima
  */
 public class ValedTCPAddressEditor
-    extends AbstractValedTextAndButton<TCPAddress> {
+    extends AbstractValedTextAndButton<ModbusDevice> {
 
   /**
    * The factory name.
@@ -28,7 +28,7 @@ public class ValedTCPAddressEditor
   /**
    * selected value
    */
-  private TCPAddress value = TCPAddress.NONE;
+  private ModbusDevice value = ModbusDevice.NONE;
 
   /**
    * The factory class.
@@ -44,8 +44,8 @@ public class ValedTCPAddressEditor
 
     @SuppressWarnings( "unchecked" )
     @Override
-    protected IValedControl<TCPAddress> doCreateEditor( ITsGuiContext aContext ) {
-      AbstractValedControl<TCPAddress, ?> e = new ValedTCPAddressEditor( aContext );
+    protected IValedControl<ModbusDevice> doCreateEditor( ITsGuiContext aContext ) {
+      AbstractValedControl<ModbusDevice, ?> e = new ValedTCPAddressEditor( aContext );
       return e;
     }
 
@@ -72,7 +72,7 @@ public class ValedTCPAddressEditor
   @Override
   protected boolean doProcessButtonPress() {
     // create and dispaly TCPAddress selector
-    TCPAddress address =
+    ModbusDevice address =
         PanelTCPAddressSelector.selectTCPAddress( tsContext(), canGetValue().isOk() ? getValue() : null );
 
     if( address != null ) {
@@ -94,12 +94,12 @@ public class ValedTCPAddressEditor
   }
 
   @Override
-  protected TCPAddress doGetUnvalidatedValue() {
+  protected ModbusDevice doGetUnvalidatedValue() {
     return value;
   }
 
   @Override
-  protected void doDoSetUnvalidatedValue( TCPAddress aValue ) {
+  protected void doDoSetUnvalidatedValue( ModbusDevice aValue ) {
     String txt = TsLibUtils.EMPTY_STRING;
     if( aValue != null ) {
       txt = aValue.toString();

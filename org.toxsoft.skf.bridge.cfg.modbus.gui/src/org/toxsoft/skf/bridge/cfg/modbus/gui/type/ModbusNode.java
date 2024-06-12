@@ -11,7 +11,7 @@ import org.toxsoft.core.tslib.utils.*;
  */
 public class ModbusNode {
 
-  private TCPAddress address = TCPAddress.NONE;
+  private ModbusDevice address = ModbusDevice.NONE;
 
   private int register;
 
@@ -43,7 +43,7 @@ public class ModbusNode {
    * @param aWordsCount - count of words
    * @param aRequestType - request type {@link ERequestType}
    */
-  public ModbusNode( TCPAddress aAddress, int aRegister, int aWordsCount, ERequestType aRequestType ) {
+  public ModbusNode( ModbusDevice aAddress, int aRegister, int aWordsCount, ERequestType aRequestType ) {
     this( aRegister, aWordsCount, aRequestType );
     address = aAddress;
   }
@@ -55,7 +55,7 @@ public class ModbusNode {
    * @param aValueType - type of node value
    * @param aRequestType - request type {@link ERequestType}
    */
-  public ModbusNode( TCPAddress aAddress, int aRegister, int aWordsCount, EAtomicType aValueType,
+  public ModbusNode( ModbusDevice aAddress, int aRegister, int aWordsCount, EAtomicType aValueType,
       ERequestType aRequestType ) {
     this( aAddress, aRegister, aWordsCount, aRequestType );
     valueType = aValueType;
@@ -69,7 +69,7 @@ public class ModbusNode {
    * @param aRequestType - request type {@link ERequestType}
    * @param aParameters - параметры в строковом представлении
    */
-  public ModbusNode( TCPAddress aAddress, int aRegister, int aWordsCount, EAtomicType aValueType,
+  public ModbusNode( ModbusDevice aAddress, int aRegister, int aWordsCount, EAtomicType aValueType,
       ERequestType aRequestType, String aParameters ) {
     this( aAddress, aRegister, aWordsCount, aValueType, aRequestType );
     params = aParameters;
@@ -82,17 +82,19 @@ public class ModbusNode {
   public String getId() {
     // old version
     // return requestType.name() + "_" + register + "_" + wordsCount + (isOutput ? "_output" : TsLibUtils.EMPTY_STRING);
-    String flattenIP = address.getIP().getHostAddress().replace( '.', '_' );
-    String ID_FMT_STR = "modbus_node_id_%s_%d_%s_%d_%d";
-    String retVal = String.format( ID_FMT_STR, flattenIP, Integer.valueOf( address.getPort() ), requestType.name(),
-        Integer.valueOf( register ), Integer.valueOf( wordsCount ) );
+
+    // String flattenIP = address.getIP().getHostAddress().replace( '.', '_' );
+    String flattenIP = address.getDeviceConnectionId();
+    String ID_FMT_STR = "modbus_node_id_%s_%s_%d_%d";
+    String retVal = String.format( ID_FMT_STR, flattenIP, requestType.name(), Integer.valueOf( register ),
+        Integer.valueOf( wordsCount ) );
     return retVal + (isOutput ? "_output" : TsLibUtils.EMPTY_STRING);
   }
 
   /**
    * @return address {@link TCPAddress}
    */
-  public TCPAddress getAddress() {
+  public ModbusDevice getAddress() {
     return address;
   }
 
@@ -101,7 +103,7 @@ public class ModbusNode {
    *
    * @param aAddress - address {@link TCPAddress}
    */
-  public void setAddress( TCPAddress aAddress ) {
+  public void setAddress( ModbusDevice aAddress ) {
     address = aAddress;
   }
 
@@ -209,7 +211,7 @@ public class ModbusNode {
   @SuppressWarnings( "boxing" )
   @Override
   public String toString() {
-    return String.format( "%s : %d : %d : %s", address.getIP().getHostAddress(), register, wordsCount, //$NON-NLS-1$
+    return String.format( "%s : %d : %d : %s", address.getDeviceConnectionId(), register, wordsCount, //$NON-NLS-1$
         requestType.name() );
   }
 

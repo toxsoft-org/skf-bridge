@@ -6,6 +6,7 @@ import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.*;
 import org.toxsoft.core.tslib.bricks.validator.impl.*;
 import org.toxsoft.core.tslib.coll.*;
+import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.km5.*;
@@ -23,7 +24,7 @@ public class ModbusCfgDocConverter {
   private static final String PIN_NODE_ID_FORMAT = "pin.%s.def";
 
   private static final String SYNC_TAGS_ARRAY_ID      = "tags";
-  private static final String SYNC_GROUP_NODE_ID      = "device.def";
+  private static final String DEVICE_DEF_ID_FORMAT    = "device%s.def";
   private static final String SYNCH_PERIOD_PARAM_NAME = "period";
 
   private static final String CONNECTIONS_ARRAY_NAME = "connections";
@@ -40,11 +41,15 @@ public class ModbusCfgDocConverter {
   private static final String JAVA_CLASS_PARAM_VAL_TEMPLATE =
       "org.toxsoft.l2.thd.modbus.common.CommonModbusDeviceProducer";
 
-  private static final String TYPE_PARAM_NAME = "type";
-  private static final String IP_PARAM_NAME   = "ip";
-  private static final String PORT_PARAM_NAME = "port";
+  private static final String TYPE_PARAM_NAME    = "type";
+  private static final String TYPE_PARAM_VAL_TCP = "tcp";
+  private static final String IP_PARAM_NAME      = "ip";
+  private static final String PORT_PARAM_NAME    = "port";
 
-  private static final String TYPE_PARAM_VAL_TEMPLATE = "tcp";
+  private static final String TYPE_PARAM_VAL_RTU          = "rtu";
+  private static final String PORT_NAME_PARAM_NAME        = "port.name";
+  private static final String BAUD_RATE_PARAM_NAME        = "baud.rate";
+  private static final String DEV_ADDRESS_RATE_PARAM_NAME = "dev.address";
 
   private static final String CONNECTION_TEMP_FMT_STR = "connection.number%d.def";
 
@@ -75,34 +80,74 @@ public class ModbusCfgDocConverter {
     // new version
     // get used IP addresses
     ModbusToS5CfgDocService docService = new ModbusToS5CfgDocService( aContext );
-    IList<TCPAddress> ipAddresses = docService.getIPAddresses();
+    IListEdit<ModbusDevice> modbusDevices = new ElemArrayList<>( docService.getModbusDevices() );
+
+    IStringMapEdit<IListEdit<ModbusDevice>> modbusDevicesTree = new StringMap<>();
+
+    for( ModbusDevice device : modbusDevices ) {
+
+      if( device.isTcp() ) {
+        modbusDevicesTree.put( device.id(), new ElemArrayList<>( device ) );
+      }
+      else {
+        String portName = ModbusDeviceOptionsUtils.OP_RTU_PORT_NAME.getValue( device.getDeviceOptValues() ).asString();
+        IListEdit<ModbusDevice> devicesOnPort = modbusDevicesTree.findByKey( portName );
+        if( devicesOnPort == null ) {
+          devicesOnPort = new ElemArrayList<>();
+          modbusDevicesTree.put( portName, devicesOnPort );
+        }
+        devicesOnPort.add( device );
+      }
+    }
+
     // массив соединений
     AvTree connectionsMassivTree = AvTree.createArrayAvTree();
     int connNumber = 1;
-    for( TCPAddress ipAddress : ipAddresses ) {
-      String type = TYPE_PARAM_VAL_TEMPLATE;
-      String ipAddressStr = ipAddress.getIP().getHostAddress();
-      int port = ipAddress.getPort();
+    int devieNumber = 1;
 
-      AvTree deviceRegistersGroup = createGroup( aDoc, ipAddress, SYNC_TAGS_ARRAY_ID, SYNC_GROUP_NODE_ID );
+    for( IListEdit<ModbusDevice> devicesOnConnect : modbusDevicesTree.values() ) {
       // массив устройств
       AvTree devicesMassivTree = AvTree.createArrayAvTree();
-      devicesMassivTree.addElement( deviceRegistersGroup );
+      for( ModbusDevice device : devicesOnConnect ) {
 
-      StringMap<IAvTree> devicesNodes = new StringMap<>();
-      devicesNodes.put( DEVICES_ARRAY_NAME, devicesMassivTree );
+        AvTree modbusDeviceTree =
+            createDevice( aDoc, device, String.format( DEVICE_DEF_ID_FORMAT, String.valueOf( devieNumber++ ) ) );
+
+        devicesMassivTree.addElement( modbusDeviceTree );
+
+      }
+
+      StringMap<IAvTree> connectionNodes = new StringMap<>();
+      connectionNodes.put( DEVICES_ARRAY_NAME, devicesMassivTree );
 
       IOptionSetEdit connOps = new OptionSet();
 
+      ModbusDevice deviceToDefineConnection = devicesOnConnect.first();
+
+      String type = deviceToDefineConnection.isTcp() ? TYPE_PARAM_VAL_TCP : TYPE_PARAM_VAL_RTU;
       connOps.setStr( TYPE_PARAM_NAME, type );
-      connOps.setStr( IP_PARAM_NAME, ipAddressStr );
-      connOps.setInt( PORT_PARAM_NAME, port );
+      if( deviceToDefineConnection.isTcp() ) {
+        String ipAddressStr = ModbusDeviceOptionsUtils.OP_TCP_IP_ADDRESS
+            .getValue( deviceToDefineConnection.getDeviceOptValues() ).asString();
+        int port =
+            ModbusDeviceOptionsUtils.OP_TCP_PORT.getValue( deviceToDefineConnection.getDeviceOptValues() ).asInt();
+
+        connOps.setStr( IP_PARAM_NAME, ipAddressStr );
+        connOps.setInt( PORT_PARAM_NAME, port );
+      }
+      else {
+
+        String portName = ModbusDeviceOptionsUtils.OP_RTU_PORT_NAME
+            .getValue( deviceToDefineConnection.getDeviceOptValues() ).asString();
+        connOps.setInt( BAUD_RATE_PARAM_NAME, 9600 );
+        connOps.setStr( PORT_NAME_PARAM_NAME, portName );
+      }
+
       // id next section
       String connNodeId = String.format( CONNECTION_TEMP_FMT_STR, Integer.valueOf( connNumber++ ) );
 
-      IAvTree singleConnection = AvTree.createSingleAvTree( connNodeId, connOps, devicesNodes );
+      IAvTree singleConnection = AvTree.createSingleAvTree( connNodeId, connOps, connectionNodes );
       connectionsMassivTree.addElement( singleConnection );
-
     }
 
     // old version
@@ -147,8 +192,7 @@ public class ModbusCfgDocConverter {
     return tree;
   }
 
-  private static AvTree createGroup( ModbusToS5CfgDoc aDoc, TCPAddress aSelAddress, String aArrayId,
-      String aGroupNodeId ) {
+  private static AvTree createDevice( ModbusToS5CfgDoc aDoc, ModbusDevice device, String aDeviceNodeId ) {
 
     // массив тегов группы
     AvTree tagsMassivTree = AvTree.createArrayAvTree();
@@ -157,18 +201,22 @@ public class ModbusCfgDocConverter {
     IList<ModbusNode> cfgNodes = aDoc.getNodesCfgs();
 
     for( ModbusNode tagData : cfgNodes ) {
-      if( tagData.getAddress().equals( aSelAddress ) ) {
+      if( isSameConnection( tagData.getAddress(), device ) ) {
         IAvTree tag = createTag( tagData );
         tagsMassivTree.addElement( tag );
       }
     }
 
     StringMap<IAvTree> nodes = new StringMap<>();
-    nodes.put( aArrayId, tagsMassivTree );
+    nodes.put( SYNC_TAGS_ARRAY_ID, tagsMassivTree );
+
+    int devAddress =
+        device.isTcp() ? 1 : ModbusDeviceOptionsUtils.OP_RTU_ADDRESS.getValue( device.getDeviceOptValues() ).asInt();
 
     IOptionSetEdit pinOpSet1 = new OptionSet();
+    pinOpSet1.setInt( DEV_ADDRESS_RATE_PARAM_NAME, devAddress );
 
-    AvTree groupTree = AvTree.createSingleAvTree( aGroupNodeId, pinOpSet1, nodes );
+    AvTree groupTree = AvTree.createSingleAvTree( device.getDeviceConnectionId() + ".def", pinOpSet1, nodes );
     return groupTree;
   }
 
@@ -231,5 +279,26 @@ public class ModbusCfgDocConverter {
 
     }
 
+  }
+
+  private static boolean isSameConnection( ModbusDevice aDevice1, ModbusDevice aDevice2 ) {
+    if( aDevice1.isTcp() && aDevice2.isTcp() ) {
+      String ipAddress1 =
+          ModbusDeviceOptionsUtils.OP_TCP_IP_ADDRESS.getValue( aDevice1.getDeviceOptValues() ).asString();
+      int port1 = ModbusDeviceOptionsUtils.OP_TCP_PORT.getValue( aDevice1.getDeviceOptValues() ).asInt();
+
+      String ipAddress2 =
+          ModbusDeviceOptionsUtils.OP_TCP_IP_ADDRESS.getValue( aDevice2.getDeviceOptValues() ).asString();
+      int port2 = ModbusDeviceOptionsUtils.OP_TCP_PORT.getValue( aDevice2.getDeviceOptValues() ).asInt();
+
+      return ipAddress1.equals( ipAddress2 ) && port1 == port2;
+    }
+
+    if( !aDevice1.isTcp() && !aDevice2.isTcp() ) {
+      String portName1 = ModbusDeviceOptionsUtils.OP_RTU_PORT_NAME.getValue( aDevice1.getDeviceOptValues() ).asString();
+      String portName2 = ModbusDeviceOptionsUtils.OP_RTU_PORT_NAME.getValue( aDevice2.getDeviceOptValues() ).asString();
+      return portName1.equals( portName2 );
+    }
+    return false;
   }
 }

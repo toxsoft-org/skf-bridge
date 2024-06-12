@@ -26,11 +26,19 @@ public class ModbusToS5CfgDocService
 
   private final static String SECT_ID_CFG_DOCS = "modbus.bridge.cfg.doc"; //$NON-NLS-1$
 
-  private final static String             SECT_ID_ADDRESSES = "modbus.bridge.ip.addresses"; //$NON-NLS-1$
+  private final static String SECT_ID_ADDRESSES = "modbus.bridge.ip.addresses"; //$NON-NLS-1$
+
+  private final static String SECT_ID_MODBUS_DEVICES = "modbus.bridge.modbus.devices"; //$NON-NLS-1$
+
   /**
    * cached list of ip addresses
    */
-  private IStridablesListEdit<TCPAddress> ipAddrsCopy       = new StridablesList<>();
+  private IStridablesListEdit<TCPAddress> ipAddrsCopy = new StridablesList<>();
+
+  /**
+   * cached list of Modbus Devices
+   */
+  private IStridablesListEdit<ModbusDevice> devicesCopy = new StridablesList<>();
 
   /**
    * @param aContext - app context {@link ITsGuiContext}
@@ -116,6 +124,71 @@ public class ModbusToS5CfgDocService
     if( ipAddrsCopy.hasKey( aAddress.id() ) ) {
       ipAddrsCopy.removeById( aAddress.id() );
     }
+  }
+
+  public void saveModbusDevice( ModbusDevice aModbusDevice ) {
+    ITsWorkroom workroom = context.eclipseContext().get( ITsWorkroom.class );
+    TsInternalErrorRtException.checkNull( workroom );
+    IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
+    IStridablesListEdit<ModbusDevice> stored = new StridablesList<>();
+    try {
+      stored = new StridablesList<>( storage.readColl( SECT_ID_MODBUS_DEVICES, ModbusDevice.KEEPER ) );
+    }
+    catch( Exception e ) {
+      LoggerUtils.errorLogger().error( e );
+      Shell shell = context.find( Shell.class );
+      TsDialogUtils.error( shell, e );
+    }
+    // FIXME разобраться зачем тут два телодвижения ( stored & ipAddrsCopy )
+    if( stored.hasKey( aModbusDevice.id() ) ) {
+      stored.replace( aModbusDevice.id(), aModbusDevice );
+    }
+    else {
+      stored.add( aModbusDevice );
+    }
+
+    storage.writeColl( SECT_ID_MODBUS_DEVICES, stored, ModbusDevice.KEEPER );
+
+    if( devicesCopy.hasKey( aModbusDevice.id() ) ) {
+      devicesCopy.replace( aModbusDevice.id(), aModbusDevice );
+    }
+    else {
+      devicesCopy.add( aModbusDevice );
+    }
+  }
+
+  public void removeModbusDevice( ModbusDevice aModbusDevice ) {
+    ITsWorkroom workroom = context.eclipseContext().get( ITsWorkroom.class );
+    TsInternalErrorRtException.checkNull( workroom );
+    IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
+    IStridablesListEdit<ModbusDevice> stored =
+        new StridablesList<>( storage.readColl( SECT_ID_MODBUS_DEVICES, ModbusDevice.KEEPER ) );
+    if( stored.hasKey( aModbusDevice.id() ) ) {
+      stored.removeById( aModbusDevice.id() );
+    }
+
+    storage.writeColl( SECT_ID_MODBUS_DEVICES, stored, ModbusDevice.KEEPER );
+
+    if( devicesCopy.hasKey( aModbusDevice.id() ) ) {
+      devicesCopy.removeById( aModbusDevice.id() );
+    }
+  }
+
+  public IList<ModbusDevice> getModbusDevices() {
+    if( devicesCopy.size() == 0 ) {
+      ITsWorkroom workroom = context.eclipseContext().get( ITsWorkroom.class );
+      TsInternalErrorRtException.checkNull( workroom );
+      IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
+      try {
+        devicesCopy = new StridablesList<>( storage.readColl( SECT_ID_MODBUS_DEVICES, ModbusDevice.KEEPER ) );
+      }
+      catch( Exception e ) {
+        LoggerUtils.errorLogger().error( e );
+        Shell shell = context.find( Shell.class );
+        TsDialogUtils.error( shell, e );
+      }
+    }
+    return devicesCopy;
   }
 
 }

@@ -31,7 +31,7 @@ public class ModbusNodeKeeper
 
   @Override
   protected void doWrite( IStrioWriter aSw, ModbusNode aEntity ) {
-    TCPAddress.KEEPER.write( aSw, aEntity.getAddress() );
+    ModbusDevice.KEEPER.write( aSw, aEntity.getAddress() );
     aSw.writeSeparatorChar();
     aSw.writeEol();
     aSw.writeInt( aEntity.getRegister() );
@@ -52,7 +52,7 @@ public class ModbusNodeKeeper
 
   @Override
   protected ModbusNode doRead( IStrioReader aSr ) {
-    TCPAddress address = TCPAddress.KEEPER.read( aSr );
+    ModbusDevice address = ModbusDevice.KEEPER.read( aSr );
     aSr.ensureSeparatorChar();
     int register = aSr.readInt();
     aSr.ensureSeparatorChar();

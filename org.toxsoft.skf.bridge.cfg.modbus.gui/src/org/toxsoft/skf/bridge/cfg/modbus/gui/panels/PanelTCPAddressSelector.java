@@ -26,9 +26,9 @@ import org.toxsoft.uskat.core.gui.conn.*;
  * @author dima
  */
 public class PanelTCPAddressSelector
-    extends AbstractTsDialogPanel<TCPAddress, ITsGuiContext> {
+    extends AbstractTsDialogPanel<ModbusDevice, ITsGuiContext> {
 
-  private IM5CollectionPanel<TCPAddress> tcpAddresesPanel;
+  private IM5CollectionPanel<ModbusDevice> tcpAddresesPanel;
 
   /**
    * Constructor
@@ -36,7 +36,7 @@ public class PanelTCPAddressSelector
    * @param aParent Composite - parent component.
    * @param aEnviroment - enviroment of run.
    */
-  protected PanelTCPAddressSelector( Composite aParent, TsDialog<TCPAddress, ITsGuiContext> aEnviroment ) {
+  protected PanelTCPAddressSelector( Composite aParent, TsDialog<ModbusDevice, ITsGuiContext> aEnviroment ) {
     super( aParent, aEnviroment );
     this.setLayout( new BorderLayout() );
 
@@ -45,7 +45,7 @@ public class PanelTCPAddressSelector
 
     IM5Domain m5 = conn.scope().get( IM5Domain.class );
     // Model of IP address
-    IM5Model<TCPAddress> ipAddresessModel = m5.getModel( TCPAddressM5Model.MODEL_ID, TCPAddress.class );
+    IM5Model<ModbusDevice> ipAddresessModel = m5.getModel( ModbusDeviceM5Model.MODEL_ID, ModbusDevice.class );
 
     ITsGuiContext ctx = new TsGuiContext( tsContext() );
     ctx.params().addAll( tsContext().params() );
@@ -58,9 +58,9 @@ public class PanelTCPAddressSelector
     // обнуляем действие по умолчанию на dbl click
     IMultiPaneComponentConstants.OPDEF_DBLCLICK_ACTION_ID.setValue( ctx.params(), AvUtils.AV_STR_EMPTY );
     ModbusToS5CfgDocService docService = new ModbusToS5CfgDocService( tsContext() );
-    TCPAddressM5LifecycleManager lm = new TCPAddressM5LifecycleManager( ipAddresessModel, docService );
+    ModbusDeviceM5LifecycleManager lm = new ModbusDeviceM5LifecycleManager( ipAddresessModel, docService );
 
-    MultiPaneComponentModown<TCPAddress> componentModown =
+    MultiPaneComponentModown<ModbusDevice> componentModown =
         new MultiPaneComponentModown<>( ctx, ipAddresessModel, lm.itemsProvider(), lm );
 
     tcpAddresesPanel = new M5CollectionPanelMpcModownWrapper<>( componentModown, false );
@@ -72,14 +72,14 @@ public class PanelTCPAddressSelector
   //
 
   @Override
-  protected void doSetDataRecord( TCPAddress aInitAddr ) {
+  protected void doSetDataRecord( ModbusDevice aInitAddr ) {
     if( aInitAddr != null ) {
       tcpAddresesPanel.setSelectedItem( aInitAddr );
     }
   }
 
   @Override
-  protected TCPAddress doGetDataRecord() {
+  protected ModbusDevice doGetDataRecord() {
     return tcpAddresesPanel.selectedItem();
   }
 
@@ -94,11 +94,11 @@ public class PanelTCPAddressSelector
    * @param aInitAddr - init address
    * @return TCPAddress - выбранный TCP/IP адрес или <b>null</b> в случае отказа от выбора
    */
-  public static TCPAddress selectTCPAddress( ITsGuiContext aTsContext, TCPAddress aInitAddr ) {
+  public static ModbusDevice selectTCPAddress( ITsGuiContext aTsContext, ModbusDevice aInitAddr ) {
     ITsDialogInfo cdi = new TsDialogInfo( aTsContext, STR_MSG_SELECT_TCP_ADDR, STR_DESCR_SELECT_TCP_ADDR );
 
-    IDialogPanelCreator<TCPAddress, ITsGuiContext> creator = PanelTCPAddressSelector::new;
-    TsDialog<TCPAddress, ITsGuiContext> d = new TsDialog<>( cdi, aInitAddr, aTsContext, creator );
+    IDialogPanelCreator<ModbusDevice, ITsGuiContext> creator = PanelTCPAddressSelector::new;
+    TsDialog<ModbusDevice, ITsGuiContext> d = new TsDialog<>( cdi, aInitAddr, aTsContext, creator );
     return d.execData();
   }
 

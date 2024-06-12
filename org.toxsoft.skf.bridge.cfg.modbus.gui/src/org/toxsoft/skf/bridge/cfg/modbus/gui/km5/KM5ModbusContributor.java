@@ -47,7 +47,7 @@ public class KM5ModbusContributor
         ModbusNodesForCfgM5Model.MODEL_ID ) );
     addIfNotAlreadyAdded( new ModbusNodesForCfgM5Model() );
     addIfNotAlreadyAdded( new CfgUnitRealizationTypeM5Model() );
-    addIfNotAlreadyAdded( new TCPAddressM5Model() );
+    addIfNotAlreadyAdded( new ModbusDeviceM5Model() );
 
     return myModels;
   }
