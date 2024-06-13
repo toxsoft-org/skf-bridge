@@ -30,7 +30,7 @@ public class ModbusCfgDocConverter {
   private static final String CONNECTIONS_ARRAY_NAME = "connections";
   private static final String DEVICES_ARRAY_NAME     = "devices";
 
-  private static final String MODBUS_DEVICE_ID = "modbus.bridge.common";
+  private static final String MODBUS_DEVICE_ID = "opc2s5.bridge.collection.id";// "modbus.bridge.common";
 
   private static final String DESCRIPTION_PARAM_NAME         = "description";
   private static final String DESCRIPTION_PARAM_VAL_TEMPLATE = "modbus common apparat producer";
