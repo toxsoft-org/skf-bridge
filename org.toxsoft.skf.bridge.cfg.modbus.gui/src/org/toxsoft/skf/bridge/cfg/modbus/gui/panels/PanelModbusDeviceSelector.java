@@ -21,11 +21,11 @@ import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.gui.conn.*;
 
 /**
- * Panel to browser list of TCP/IP addreses and select one of it .
+ * Panel to browser list of Modbus Devices and select one of it .
  *
  * @author dima
  */
-public class PanelTCPAddressSelector
+public class PanelModbusDeviceSelector
     extends AbstractTsDialogPanel<ModbusDevice, ITsGuiContext> {
 
   private IM5CollectionPanel<ModbusDevice> tcpAddresesPanel;
@@ -36,7 +36,7 @@ public class PanelTCPAddressSelector
    * @param aParent Composite - parent component.
    * @param aEnviroment - enviroment of run.
    */
-  protected PanelTCPAddressSelector( Composite aParent, TsDialog<ModbusDevice, ITsGuiContext> aEnviroment ) {
+  protected PanelModbusDeviceSelector( Composite aParent, TsDialog<ModbusDevice, ITsGuiContext> aEnviroment ) {
     super( aParent, aEnviroment );
     this.setLayout( new BorderLayout() );
 
@@ -88,17 +88,17 @@ public class PanelTCPAddressSelector
   //
 
   /**
-   * Вызов диалога для выбора одного произвольного TCP/IP адреса
+   * Вызов диалога для выбора одного произвольного Modbus Device
    *
    * @param aTsContext ITsGuiContext - соответствующий контекст
-   * @param aInitAddr - init address
-   * @return TCPAddress - выбранный TCP/IP адрес или <b>null</b> в случае отказа от выбора
+   * @param aInitDev - init Modbus Device
+   * @return TCPAddress - выбранный Modbus Device или <b>null</b> в случае отказа от выбора
    */
-  public static ModbusDevice selectTCPAddress( ITsGuiContext aTsContext, ModbusDevice aInitAddr ) {
+  public static ModbusDevice selectModbusDevice( ITsGuiContext aTsContext, ModbusDevice aInitDev ) {
     ITsDialogInfo cdi = new TsDialogInfo( aTsContext, STR_MSG_SELECT_TCP_ADDR, STR_DESCR_SELECT_TCP_ADDR );
 
-    IDialogPanelCreator<ModbusDevice, ITsGuiContext> creator = PanelTCPAddressSelector::new;
-    TsDialog<ModbusDevice, ITsGuiContext> d = new TsDialog<>( cdi, aInitAddr, aTsContext, creator );
+    IDialogPanelCreator<ModbusDevice, ITsGuiContext> creator = PanelModbusDeviceSelector::new;
+    TsDialog<ModbusDevice, ITsGuiContext> d = new TsDialog<>( cdi, aInitDev, aTsContext, creator );
     return d.execData();
   }
 

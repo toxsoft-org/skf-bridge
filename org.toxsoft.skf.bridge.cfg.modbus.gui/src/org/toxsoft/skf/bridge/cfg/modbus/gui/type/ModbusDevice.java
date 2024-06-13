@@ -74,7 +74,10 @@ public class ModbusDevice
         }
       };
 
-  public static final ModbusDevice NONE = new ModbusDevice();
+  /**
+   * Default modbus device
+   */
+  public static final ModbusDevice DEFAULT_DEVICE = new ModbusDevice();
 
   /**
    * Constructor
@@ -93,7 +96,7 @@ public class ModbusDevice
 
   @SuppressWarnings( "nls" )
   private ModbusDevice() {
-    super( "empty.devis.address.id", "empty modbus device", TsLibUtils.EMPTY_STRING );
+    super( "default.modbus.device.id", "default modbus device", TsLibUtils.EMPTY_STRING );
     isTcp = true;
     setDeviceOptValues( ModbusDeviceOptionsUtils.getParamDefaultValuess( isTcp ) );
   }

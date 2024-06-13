@@ -11,19 +11,19 @@ import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.type.*;
 
 /**
- * {@link EAtomicType#VALOBJ} of type {@link TCPAddress} editor.
+ * {@link EAtomicType#VALOBJ} of type {@link ModbusDevice} editor.
  * <p>
- * Wraps over {@link ValedTCPAddressEditor}.
+ * Wraps over {@link ValedModbusDeviceEditor}.
  *
  * @author dima
  */
-public class ValedAvValobjTCPAddressEditor
-    extends AbstractAvValobjWrapperValedControl<TCPAddress> {
+public class ValedAvValobjModbusDeviceEditor
+    extends AbstractAvValobjWrapperValedControl<ModbusDevice> {
 
   /**
    * The factory name.
    */
-  public static final String FACTORY_NAME = VALED_EDNAME_PREFIX + ".ValedAvValobjTCPAddressEditor"; //$NON-NLS-1$
+  public static final String FACTORY_NAME = VALED_EDNAME_PREFIX + ".ValedAvValobjModbusDeviceEditor"; //$NON-NLS-1$
 
   /**
    * The factory class.
@@ -40,7 +40,7 @@ public class ValedAvValobjTCPAddressEditor
     @SuppressWarnings( "unchecked" )
     @Override
     protected IValedControl<IAtomicValue> doCreateEditor( ITsGuiContext aContext ) {
-      return new ValedAvValobjTCPAddressEditor( aContext );
+      return new ValedAvValobjModbusDeviceEditor( aContext );
     }
 
   }
@@ -56,8 +56,8 @@ public class ValedAvValobjTCPAddressEditor
    * @param aTsContext {@link ITsGuiContext} - the editor context
    * @throws TsNullArgumentRtException any argument = <code>null</code>
    */
-  public ValedAvValobjTCPAddressEditor( ITsGuiContext aTsContext ) {
-    super( aTsContext, ValedTCPAddressEditor.FACTORY );
+  public ValedAvValobjModbusDeviceEditor( ITsGuiContext aTsContext ) {
+    super( aTsContext, ValedModbusDeviceEditor.FACTORY );
   }
 
 }

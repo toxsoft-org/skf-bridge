@@ -1,6 +1,7 @@
 package org.toxsoft.skf.bridge.cfg.modbus.gui.km5;
 
 import static org.toxsoft.core.tsgui.m5.IM5Constants.*;
+import static org.toxsoft.skf.bridge.cfg.modbus.gui.km5.ISkResources.*;
 
 import java.net.*;
 
@@ -43,7 +44,7 @@ public class ModbusDeviceM5LifecycleManager
           InetAddress.getByName( ipAddressVal.asString() );
         }
         catch( @SuppressWarnings( "unused" ) UnknownHostException ex ) {
-          return ValidationResult.error( "MSG_ERR_INVALID_IP_ADDRESS" );
+          return ValidationResult.error( MSG_ERR_INVALID_IP_ADDRESS );
         }
       }
     }
@@ -66,7 +67,7 @@ public class ModbusDeviceM5LifecycleManager
   }
 
   /**
-   * @return generated strid for {@link TCPAddress}
+   * @return generated strid for {@link ModbusDevice}
    */
   public static String generateStrid() {
     return DEVICE_ID_TEMPL + System.currentTimeMillis();
@@ -84,7 +85,7 @@ public class ModbusDeviceM5LifecycleManager
           InetAddress.getByName( ipAddressVal.asString() );
         }
         catch( @SuppressWarnings( "unused" ) UnknownHostException ex ) {
-          return ValidationResult.error( "MSG_ERR_INVALID_IP_ADDRESS" );
+          return ValidationResult.error( MSG_ERR_INVALID_IP_ADDRESS );
         }
       }
     }

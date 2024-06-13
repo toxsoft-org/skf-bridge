@@ -41,8 +41,8 @@ public class TCPAddressM5Model
    * /** Attribute {@link TCPAddress#nmName() } string name
    */
   public M5AttributeFieldDef<TCPAddress> NAME = new M5AttributeFieldDef<>( FID_NAME, EAtomicType.STRING, //
-      TSID_NAME, STR_N_ADDRESS_NAME, //
-      TSID_DESCRIPTION, STR_D_ADDRESS_NAME, //
+      TSID_NAME, STR_N_CONNECTION_NAME, //
+      TSID_DESCRIPTION, STR_D_CONNECTION_NAME, //
       OPID_EDITOR_FACTORY_NAME, ValedAvStringText.FACTORY_NAME //
   ) {
 

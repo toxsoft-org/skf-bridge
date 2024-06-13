@@ -48,8 +48,8 @@ public class ModbusDeviceM5Model
    * Attribute {@link ModbusDevice#nmName() } string name
    */
   public M5AttributeFieldDef<ModbusDevice> NAME = new M5AttributeFieldDef<>( FID_NAME, EAtomicType.STRING, //
-      TSID_NAME, STR_N_ADDRESS_NAME, //
-      TSID_DESCRIPTION, STR_D_ADDRESS_NAME, //
+      TSID_NAME, STR_N_CONNECTION_NAME, //
+      TSID_DESCRIPTION, STR_D_CONNECTION_NAME, //
       OPID_EDITOR_FACTORY_NAME, ValedAvStringText.FACTORY_NAME //
   ) {
 
@@ -74,8 +74,8 @@ public class ModbusDeviceM5Model
    */
   public M5AttributeFieldDef<ModbusDevice> IS_TCP_INDEX =
       new M5AttributeFieldDef<>( FID_IS_TCP_INDEX, EAtomicType.BOOLEAN, //
-          TSID_NAME, "Устройство TCP", //
-          TSID_DESCRIPTION, "Устройство TCP (или RTU)" //
+          TSID_NAME, STR_N_IS_TCP_INDEX, //
+          TSID_DESCRIPTION, STR_D_IS_TCP_INDEX //
       ) {
 
         @Override
@@ -104,7 +104,7 @@ public class ModbusDeviceM5Model
 
         @Override
         protected void doInit() {
-          setNameAndDescription( "Параметры", "Параметры устройства" );
+          setNameAndDescription( STR_N_DEVICE_CONN_OPTS, STR_D_DEVICE_CONN_OPTS );
           setFlags( M5FF_COLUMN );
           setValedEditor( ValedOptionSet.FACTORY_NAME );
           // default

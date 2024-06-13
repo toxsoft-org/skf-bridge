@@ -89,7 +89,7 @@ public class ModbusNodesForCfgM5Model
       TSID_NAME, "Устройство modbus", //
       TSID_DESCRIPTION, "Устройство modbus (tcp или rtu)", //
       TSID_KEEPER_ID, ModbusDevice.KEEPER_ID, //
-      OPID_EDITOR_FACTORY_NAME, ValedAvValobjTCPAddressEditor.FACTORY_NAME //
+      OPID_EDITOR_FACTORY_NAME, ValedAvValobjModbusDeviceEditor.FACTORY_NAME //
   ) {
 
     @Override
@@ -98,7 +98,7 @@ public class ModbusNodesForCfgM5Model
     }
 
     protected IAtomicValue doGetFieldValue( IAtomicValue aEntity ) {
-      return AvUtils.avValobj( ((ModbusNode)aEntity.asValobj()).getAddress() );
+      return AvUtils.avValobj( ((ModbusNode)aEntity.asValobj()).getModbusDevice() );
     }
 
   };

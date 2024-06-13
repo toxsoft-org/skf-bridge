@@ -11,7 +11,7 @@ import org.toxsoft.core.tslib.utils.*;
  */
 public class ModbusNode {
 
-  private ModbusDevice address = ModbusDevice.NONE;
+  private ModbusDevice modbusDevice = ModbusDevice.DEFAULT_DEVICE;
 
   private int register;
 
@@ -38,40 +38,40 @@ public class ModbusNode {
   }
 
   /**
-   * @param aAddress - TCP/IP address {@link TCPAddress}
+   * @param aModbusDevice - Modbus Device {@link ModbusDevice}
    * @param aRegister - modbus register
    * @param aWordsCount - count of words
    * @param aRequestType - request type {@link ERequestType}
    */
-  public ModbusNode( ModbusDevice aAddress, int aRegister, int aWordsCount, ERequestType aRequestType ) {
+  public ModbusNode( ModbusDevice aModbusDevice, int aRegister, int aWordsCount, ERequestType aRequestType ) {
     this( aRegister, aWordsCount, aRequestType );
-    address = aAddress;
+    modbusDevice = aModbusDevice;
   }
 
   /**
-   * @param aAddress - TCP/IP address {@link TCPAddress}
+   * @param aModbusDevice - Modbus Device {@link ModbusDevice}
    * @param aRegister - modbus register
    * @param aWordsCount - count of words
    * @param aValueType - type of node value
    * @param aRequestType - request type {@link ERequestType}
    */
-  public ModbusNode( ModbusDevice aAddress, int aRegister, int aWordsCount, EAtomicType aValueType,
+  public ModbusNode( ModbusDevice aModbusDevice, int aRegister, int aWordsCount, EAtomicType aValueType,
       ERequestType aRequestType ) {
-    this( aAddress, aRegister, aWordsCount, aRequestType );
+    this( aModbusDevice, aRegister, aWordsCount, aRequestType );
     valueType = aValueType;
   }
 
   /**
-   * @param aAddress - TCP/IP address {@link TCPAddress}
+   * @param aModbusDevice - Modbus Device {@link ModbusDevice}
    * @param aRegister - modbus register
    * @param aWordsCount - count of words
    * @param aValueType - type of node value
    * @param aRequestType - request type {@link ERequestType}
    * @param aParameters - параметры в строковом представлении
    */
-  public ModbusNode( ModbusDevice aAddress, int aRegister, int aWordsCount, EAtomicType aValueType,
+  public ModbusNode( ModbusDevice aModbusDevice, int aRegister, int aWordsCount, EAtomicType aValueType,
       ERequestType aRequestType, String aParameters ) {
-    this( aAddress, aRegister, aWordsCount, aValueType, aRequestType );
+    this( aModbusDevice, aRegister, aWordsCount, aValueType, aRequestType );
     params = aParameters;
   }
 
@@ -84,27 +84,27 @@ public class ModbusNode {
     // return requestType.name() + "_" + register + "_" + wordsCount + (isOutput ? "_output" : TsLibUtils.EMPTY_STRING);
 
     // String flattenIP = address.getIP().getHostAddress().replace( '.', '_' );
-    String flattenIP = address.getDeviceConnectionId();
+    String flattenID = modbusDevice.getDeviceConnectionId();
     String ID_FMT_STR = "modbus_node_id_%s_%s_%d_%d";
-    String retVal = String.format( ID_FMT_STR, flattenIP, requestType.name(), Integer.valueOf( register ),
+    String retVal = String.format( ID_FMT_STR, flattenID, requestType.name(), Integer.valueOf( register ),
         Integer.valueOf( wordsCount ) );
     return retVal + (isOutput ? "_output" : TsLibUtils.EMPTY_STRING);
   }
 
   /**
-   * @return address {@link TCPAddress}
+   * @return ModbusDevice - Modbus Device {@link ModbusDevice}
    */
-  public ModbusDevice getAddress() {
-    return address;
+  public ModbusDevice getModbusDevice() {
+    return modbusDevice;
   }
 
   /**
-   * Set new address
+   * Set new Modbus Device
    *
-   * @param aAddress - address {@link TCPAddress}
+   * @param aModbusDevice - Modbus Device {@link ModbusDevice}
    */
-  public void setAddress( ModbusDevice aAddress ) {
-    address = aAddress;
+  public void setModbusDevice( ModbusDevice aModbusDevice ) {
+    modbusDevice = aModbusDevice;
   }
 
   /**
@@ -211,7 +211,7 @@ public class ModbusNode {
   @SuppressWarnings( "boxing" )
   @Override
   public String toString() {
-    return String.format( "%s : %d : %d : %s", address.getDeviceConnectionId(), register, wordsCount, //$NON-NLS-1$
+    return String.format( "%s : %d : %d : %s", modbusDevice.getDeviceConnectionId(), register, wordsCount, //$NON-NLS-1$
         requestType.name() );
   }
 

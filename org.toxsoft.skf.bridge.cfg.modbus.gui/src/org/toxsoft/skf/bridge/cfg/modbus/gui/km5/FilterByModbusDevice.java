@@ -7,35 +7,35 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 
 /**
- * Filter list of {@link OpcToS5DataCfgUnit} by IP address
+ * Filter list of {@link OpcToS5DataCfgUnit} by Modbus Device connection options.
  *
  * @author dima
  */
-public class FilterByIPAddress
+public class FilterByModbusDevice
     implements ITsFilter<OpcToS5DataCfgUnit> {
 
-  private final String selIP;
+  private final String modbusConnectionId;
 
   /**
-   * Construct filter by IP address
+   * Construct filter by Modbus Device
    *
-   * @param aTCPAddress - IP address {@link TCPAddress}
+   * @param aModbusDevice - Modbus Device {@link ModbusDevice}
    */
-  public FilterByIPAddress( ModbusDevice aTCPAddress ) {
-    selIP = aTCPAddress.getDeviceConnectionId();
+  public FilterByModbusDevice( ModbusDevice aModbusDevice ) {
+    modbusConnectionId = aModbusDevice.getDeviceConnectionId();
   }
 
   @Override
   public boolean accept( OpcToS5DataCfgUnit aUnit ) {
-    // get IP address
+    // get modbus device
     IList<ModbusNode> nodes = OpcUaUtils.convertToNodesList( aUnit.getDataNodes2() );
     if( nodes.isEmpty() ) {
       return false;
     }
     ModbusNode firstNode = nodes.first();
-    ModbusDevice address = firstNode.getAddress();
-    String ip = address.getDeviceConnectionId();
-    return selIP.equals( ip );
+    ModbusDevice modbusDevice = firstNode.getModbusDevice();
+    String connectionId = modbusDevice.getDeviceConnectionId();
+    return modbusConnectionId.equals( connectionId );
   }
 
 }

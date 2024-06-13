@@ -23,8 +23,8 @@ public class ModbusCfgDocConverter {
 
   private static final String PIN_NODE_ID_FORMAT = "pin.%s.def";
 
-  private static final String SYNC_TAGS_ARRAY_ID      = "tags";
-  private static final String DEVICE_DEF_ID_FORMAT    = "device%s.def";
+  private static final String SYNC_TAGS_ARRAY_ID = "tags";
+  // private static final String DEVICE_DEF_ID_FORMAT = "device%s.def";
   private static final String SYNCH_PERIOD_PARAM_NAME = "period";
 
   private static final String CONNECTIONS_ARRAY_NAME = "connections";
@@ -103,15 +103,14 @@ public class ModbusCfgDocConverter {
     // массив соединений
     AvTree connectionsMassivTree = AvTree.createArrayAvTree();
     int connNumber = 1;
-    int devieNumber = 1;
 
     for( IListEdit<ModbusDevice> devicesOnConnect : modbusDevicesTree.values() ) {
       // массив устройств
       AvTree devicesMassivTree = AvTree.createArrayAvTree();
       for( ModbusDevice device : devicesOnConnect ) {
 
-        AvTree modbusDeviceTree =
-            createDevice( aDoc, device, String.format( DEVICE_DEF_ID_FORMAT, String.valueOf( devieNumber++ ) ) );
+        // String.format( DEVICE_DEF_ID_FORMAT, String.valueOf( devieNumber++ ) ) );
+        AvTree modbusDeviceTree = createDevice( aDoc, device, device.getDeviceConnectionId() + ".def" );
 
         devicesMassivTree.addElement( modbusDeviceTree );
 
@@ -201,7 +200,7 @@ public class ModbusCfgDocConverter {
     IList<ModbusNode> cfgNodes = aDoc.getNodesCfgs();
 
     for( ModbusNode tagData : cfgNodes ) {
-      if( isSameConnection( tagData.getAddress(), device ) ) {
+      if( isSameConnection( tagData.getModbusDevice(), device ) ) {
         IAvTree tag = createTag( tagData );
         tagsMassivTree.addElement( tag );
       }
@@ -216,7 +215,7 @@ public class ModbusCfgDocConverter {
     IOptionSetEdit pinOpSet1 = new OptionSet();
     pinOpSet1.setInt( DEV_ADDRESS_RATE_PARAM_NAME, devAddress );
 
-    AvTree groupTree = AvTree.createSingleAvTree( device.getDeviceConnectionId() + ".def", pinOpSet1, nodes );
+    AvTree groupTree = AvTree.createSingleAvTree( aDeviceNodeId, pinOpSet1, nodes );
     return groupTree;
   }
 

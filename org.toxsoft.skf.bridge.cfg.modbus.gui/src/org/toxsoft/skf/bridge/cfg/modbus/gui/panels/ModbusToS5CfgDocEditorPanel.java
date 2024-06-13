@@ -85,14 +85,14 @@ public class ModbusToS5CfgDocEditorPanel
   final static TsActionDef ACDEF_S5_SERVER_SELECT = TsActionDef.ofPush2( ACTID_S5_SERVER_SELECT, STR_N_SELECT_S5_SERVER,
       STR_D_SELECT_S5_SERVER, ICONID_S5_SERVER_SELECT );
 
-  final static TsActionDef ACDEF_IP_ADDRESS_SELECT =
-      TsActionDef.ofCheck2( ACTID_IP_ADDRESS_SELECT, STR_N_SELECT_IP_ADDRESS, STR_D_SELECT_IP_ADDRESS, ICONID_FILTER );
+  final static TsActionDef ACDEF_IP_ADDRESS_SELECT = TsActionDef.ofCheck2( ACTID_IP_ADDRESS_SELECT,
+      ISkResources.STR_N_SELECT_IP_ADDRESS, ISkResources.STR_D_SELECT_IP_ADDRESS, ICONID_FILTER );
 
   final static TsActionDef ACDEF_OPC_SERVER_SELECT = TsActionDef.ofPush2( ACTID_OPC_SERVER_SELECT,
       STR_N_SELECT_OPC_UA_SERVER, STR_D_SELECT_OPC_UA_SERVER, ICONID_OPC_SERVER_SELECT );
 
-  final static TsActionDef ACDEF_COPY_ALL =
-      TsActionDef.ofPush2( ACTID_COPY_ALL, STR_N_COPY_ALL, STR_D_COPY_ALL, ITsStdIconIds.ICONID_LIST_ADD_ALL );
+  final static TsActionDef ACDEF_COPY_ALL = TsActionDef.ofPush2( ACTID_COPY_ALL, ISkResources.STR_N_COPY_ALL,
+      ISkResources.STR_D_COPY_ALL, ITsStdIconIds.ICONID_LIST_ADD_ALL );
 
   final ISkConnection conn;
 
@@ -105,7 +105,7 @@ public class ModbusToS5CfgDocEditorPanel
   /**
    * Current selected IP address
    */
-  private ModbusDevice            selAddress = ModbusDevice.NONE;
+  private ModbusDevice            selAddress = ModbusDevice.DEFAULT_DEVICE;
   private TextControlContribution selAddressTextContr;
 
   /**
@@ -216,7 +216,7 @@ public class ModbusToS5CfgDocEditorPanel
 
     // Создаём закладку IP адресов
     CTabItem tabIPAddrsItem = new CTabItem( tabSubFolder, SWT.NONE );
-    tabIPAddrsItem.setText( STR_IP_ADDRESES );
+    tabIPAddrsItem.setText( ISkResources.STR_IP_ADDRESES );
 
     ITsGuiContext ctx = new TsGuiContext( tsContext() );
     ctx.params().addAll( tsContext().params() );
@@ -314,7 +314,7 @@ public class ModbusToS5CfgDocEditorPanel
                 boolean checked = toolbar().getAction( ACTID_IP_ADDRESS_SELECT ).isChecked();
                 if( checked ) {
                   // select IP
-                  ModbusDevice address = PanelTCPAddressSelector.selectTCPAddress( tsContext(), selAddress );
+                  ModbusDevice address = PanelModbusDeviceSelector.selectModbusDevice( tsContext(), selAddress );
                   setNewIPAddress( tree(), address );
                 }
                 else {
@@ -329,7 +329,7 @@ public class ModbusToS5CfgDocEditorPanel
                   break;
                 }
                 // popup dialogs to select new IP
-                ModbusDevice newAddress = PanelTCPAddressSelector.selectTCPAddress( ctx, selAddress );
+                ModbusDevice newAddress = PanelModbusDeviceSelector.selectModbusDevice( ctx, selAddress );
                 if( newAddress == null ) {
                   break;
                 }
@@ -402,7 +402,8 @@ public class ModbusToS5CfgDocEditorPanel
 
     tabCfgUnitsItem.setControl( opcToS5DataCfgUnitPanel.createControl( tabSubFolder ) );
     // add label to dispale selected IP
-    selAddressTextContr = new TextControlContribution( "selAddressTextContrId", 200, STR_SEL_IP_ADDRESS, SWT.NONE ); //$NON-NLS-1$
+    selAddressTextContr =
+        new TextControlContribution( "selAddressTextContrId", 200, ISkResources.STR_SEL_IP_ADDRESS, SWT.NONE ); //$NON-NLS-1$
     linksMpc.toolbar().addContributionItem( selAddressTextContr );
     clearFilter( linksMpc.tree() );
 
@@ -494,10 +495,10 @@ public class ModbusToS5CfgDocEditorPanel
   void setNewIPAddress( IM5TreeViewer<OpcToS5DataCfgUnit> aIm5TreeViewer, ModbusDevice address ) {
     if( address != null ) {
       // create new filter
-      ITsFilter<OpcToS5DataCfgUnit> filter = new FilterByIPAddress( address );
+      ITsFilter<OpcToS5DataCfgUnit> filter = new FilterByModbusDevice( address );
       aIm5TreeViewer.filterManager().setFilter( filter );
       selAddress = address;
-      selAddressTextContr.setText( STR_SEL_IP_ADDRESS + address.nmName() );
+      selAddressTextContr.setText( ISkResources.STR_SEL_IP_ADDRESS + address.nmName() );
     }
 
   }

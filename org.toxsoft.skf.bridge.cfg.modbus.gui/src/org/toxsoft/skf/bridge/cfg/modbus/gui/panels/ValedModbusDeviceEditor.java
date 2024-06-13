@@ -13,22 +13,22 @@ import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.type.*;
 
 /**
- * Allows to select {@link TCPAddress}.
+ * Allows to select {@link ModbusDevice}.
  *
  * @author dima
  */
-public class ValedTCPAddressEditor
+public class ValedModbusDeviceEditor
     extends AbstractValedTextAndButton<ModbusDevice> {
 
   /**
    * The factory name.
    */
-  public static final String FACTORY_NAME = VALED_EDNAME_PREFIX + ".TCPAddressEditor"; //$NON-NLS-1$
+  public static final String FACTORY_NAME = VALED_EDNAME_PREFIX + ".ModbusDeviceEditor"; //$NON-NLS-1$
 
   /**
    * selected value
    */
-  private ModbusDevice value = ModbusDevice.NONE;
+  private ModbusDevice value = ModbusDevice.DEFAULT_DEVICE;
 
   /**
    * The factory class.
@@ -45,7 +45,7 @@ public class ValedTCPAddressEditor
     @SuppressWarnings( "unchecked" )
     @Override
     protected IValedControl<ModbusDevice> doCreateEditor( ITsGuiContext aContext ) {
-      AbstractValedControl<ModbusDevice, ?> e = new ValedTCPAddressEditor( aContext );
+      AbstractValedControl<ModbusDevice, ?> e = new ValedModbusDeviceEditor( aContext );
       return e;
     }
 
@@ -62,7 +62,7 @@ public class ValedTCPAddressEditor
    * @param aContext {@link ITsGuiContext} - the valed context
    * @throws TsNullArgumentRtException аргумент = null
    */
-  public ValedTCPAddressEditor( ITsGuiContext aContext ) {
+  public ValedModbusDeviceEditor( ITsGuiContext aContext ) {
     super( aContext );
     setParamIfNull( OPDEF_IS_WIDTH_FIXED, AV_FALSE );
     setParamIfNull( OPDEF_IS_HEIGHT_FIXED, AV_TRUE );
@@ -73,7 +73,7 @@ public class ValedTCPAddressEditor
   protected boolean doProcessButtonPress() {
     // create and dispaly TCPAddress selector
     ModbusDevice address =
-        PanelTCPAddressSelector.selectTCPAddress( tsContext(), canGetValue().isOk() ? getValue() : null );
+        PanelModbusDeviceSelector.selectModbusDevice( tsContext(), canGetValue().isOk() ? getValue() : null );
 
     if( address != null ) {
       doSetUnvalidatedValue( address );

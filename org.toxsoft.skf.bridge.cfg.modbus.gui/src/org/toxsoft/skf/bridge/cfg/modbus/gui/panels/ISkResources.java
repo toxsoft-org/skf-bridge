@@ -18,7 +18,13 @@ public interface ISkResources {
   /**
    * {@link ModbusToS5CfgDocEditorPanel}
    */
-  String DLG_T_SKID_SEL         = Messages.DLG_T_SKID_SEL;
-  String STR_MSG_SKID_SELECTION = Messages.STR_MSG_SKID_SELECTION;
-
+  String DLG_T_SKID_SEL          = Messages.DLG_T_SKID_SEL;
+  String STR_MSG_SKID_SELECTION  = Messages.STR_MSG_SKID_SELECTION;
+  String STR_SEL_IP_ADDRESS      = Messages.STR_SEL_IP_ADDRESS;      // "IP: ";
+  String STR_IP_ADDRESES         = Messages.STR_IP_ADDRESES;         // "IP адреса";
+  String STR_N_SELECT_IP_ADDRESS = Messages.STR_N_SELECT_IP_ADDRESS; // "IP адрес";
+  String STR_D_SELECT_IP_ADDRESS = Messages.STR_D_SELECT_IP_ADDRESS; // "Фильтр на выбранный IP адрес";
+  String STR_N_COPY_ALL          = Messages.STR_N_COPY_ALL;          // "скопировать все";
+  String STR_D_COPY_ALL          = Messages.STR_D_COPY_ALL;          // "Создать новые элементы сделав копии из всех
+                                                                     // отображающихся";
 }

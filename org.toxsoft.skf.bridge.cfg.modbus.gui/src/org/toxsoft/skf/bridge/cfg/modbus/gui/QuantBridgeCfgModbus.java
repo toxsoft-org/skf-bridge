@@ -80,8 +80,8 @@ public class QuantBridgeCfgModbus
     // m5.addModel( new VtReportParamM5Model() );
 
     ValedControlFactoriesRegistry vcReg = aWinContext.get( ValedControlFactoriesRegistry.class );
-    vcReg.registerFactory( ValedTCPAddressEditor.FACTORY );
-    vcReg.registerFactory( ValedAvValobjTCPAddressEditor.FACTORY );
+    vcReg.registerFactory( ValedModbusDeviceEditor.FACTORY );
+    vcReg.registerFactory( ValedAvValobjModbusDeviceEditor.FACTORY );
   }
 
 }
