@@ -51,7 +51,7 @@ public class ModbusCfgDocConverter {
   private static final String BAUD_RATE_PARAM_NAME        = "baud.rate";
   private static final String DEV_ADDRESS_RATE_PARAM_NAME = "dev.address";
 
-  private static final String CONNECTION_TEMP_FMT_STR = "connection.number%d.def";
+  // private static final String CONNECTION_TEMP_FMT_STR = "connection.number%d.def";
 
   private static final String MODBUS_CFG_NODE_ID = "modbus.common.cfg";
 
@@ -87,14 +87,14 @@ public class ModbusCfgDocConverter {
     for( ModbusDevice device : modbusDevices ) {
 
       if( device.isTcp() ) {
-        modbusDevicesTree.put( device.id(), new ElemArrayList<>( device ) );
+        modbusDevicesTree.put( device.getDeviceModbusConnectionId(), new ElemArrayList<>( device ) );
       }
       else {
-        String portName = ModbusDeviceOptionsUtils.OP_RTU_PORT_NAME.getValue( device.getDeviceOptValues() ).asString();
-        IListEdit<ModbusDevice> devicesOnPort = modbusDevicesTree.findByKey( portName );
+        String deviceModbusConnectionId = device.getDeviceModbusConnectionId();
+        IListEdit<ModbusDevice> devicesOnPort = modbusDevicesTree.findByKey( deviceModbusConnectionId );
         if( devicesOnPort == null ) {
           devicesOnPort = new ElemArrayList<>();
-          modbusDevicesTree.put( portName, devicesOnPort );
+          modbusDevicesTree.put( deviceModbusConnectionId, devicesOnPort );
         }
         devicesOnPort.add( device );
       }
@@ -102,15 +102,15 @@ public class ModbusCfgDocConverter {
 
     // массив соединений
     AvTree connectionsMassivTree = AvTree.createArrayAvTree();
-    int connNumber = 1;
 
-    for( IListEdit<ModbusDevice> devicesOnConnect : modbusDevicesTree.values() ) {
+    for( String deviceModbusConnectionId : modbusDevicesTree.keys() ) {
+      IListEdit<ModbusDevice> devicesOnConnect = modbusDevicesTree.getByKey( deviceModbusConnectionId );
       // массив устройств
       AvTree devicesMassivTree = AvTree.createArrayAvTree();
       for( ModbusDevice device : devicesOnConnect ) {
 
         // String.format( DEVICE_DEF_ID_FORMAT, String.valueOf( devieNumber++ ) ) );
-        AvTree modbusDeviceTree = createDevice( aDoc, device, device.getDeviceConnectionId() + ".def" );
+        AvTree modbusDeviceTree = createDevice( aDoc, device, device.getDeviceId() + ".def" );
 
         devicesMassivTree.addElement( modbusDeviceTree );
 
@@ -143,38 +143,11 @@ public class ModbusCfgDocConverter {
       }
 
       // id next section
-      String connNodeId = String.format( CONNECTION_TEMP_FMT_STR, Integer.valueOf( connNumber++ ) );
+      // String connNodeId = String.format( CONNECTION_TEMP_FMT_STR, Integer.valueOf( connNumber++ ) );
 
-      IAvTree singleConnection = AvTree.createSingleAvTree( connNodeId, connOps, connectionNodes );
+      IAvTree singleConnection = AvTree.createSingleAvTree( deviceModbusConnectionId, connOps, connectionNodes );
       connectionsMassivTree.addElement( singleConnection );
     }
-
-    // old version
-    // String type = TYPE_PARAM_VAL_TEMPLATE;
-    // String ipAddress = IP_PARAM_VAL_TEMPLATE;
-    // String port = PORT_PARAM_VAL_TEMPLATE;
-    //
-    // AvTree deviceRegistersGroup = createGroup( aDoc, SYNC_TAGS_ARRAY_ID, SYNC_GROUP_NODE_ID );
-    //
-    // // массив устройств
-    // AvTree devicesMassivTree = AvTree.createArrayAvTree();
-    //
-    // devicesMassivTree.addElement( deviceRegistersGroup );
-    //
-    // StringMap<IAvTree> devicesNodes = new StringMap<>();
-    // devicesNodes.put( DEVICES_ARRAY_NAME, devicesMassivTree );
-    //
-    // IOptionSetEdit connection1Ops = new OptionSet();
-    //
-    // connection1Ops.setStr( TYPE_PARAM_NAME, type );
-    // connection1Ops.setStr( IP_PARAM_NAME, ipAddress );
-    // connection1Ops.setStr( PORT_PARAM_NAME, port );
-
-    // массив соединений
-    // AvTree connectionsMassivTree = AvTree.createArrayAvTree();
-
-    // IAvTree singleConnection = AvTree.createSingleAvTree( CONNECTION_1_NODE_ID, connection1Ops, devicesNodes );
-    // connectionsMassivTree.addElement( singleConnection );
 
     StringMap<IAvTree> nodes = new StringMap<>();
     nodes.put( CONNECTIONS_ARRAY_NAME, connectionsMassivTree );

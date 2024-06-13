@@ -79,7 +79,7 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
     master().addDataUnit( result );
     return result;
   }
-  
+
   /**
    * @return generate strid
    */
@@ -137,7 +137,7 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
       TsInternalErrorRtException.checkNull( conn );
       IAvTree avTree = OpcToS5DataCfgConverter.convertToDlmCfgTree( master().dataUnits(), conn, aNodeEntity -> {
         NodeId nodeid = aNodeEntity.asValobj();
-        return nodeid.toParseableString();
+        return new Pair<>( OpcToS5DataCfgConverter.OPC_TAG_DEVICE, nodeid.toParseableString() );
       } );
       String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
       AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );

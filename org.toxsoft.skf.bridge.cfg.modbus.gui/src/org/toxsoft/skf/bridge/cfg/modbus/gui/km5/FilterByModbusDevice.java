@@ -22,7 +22,7 @@ public class FilterByModbusDevice
    * @param aModbusDevice - Modbus Device {@link ModbusDevice}
    */
   public FilterByModbusDevice( ModbusDevice aModbusDevice ) {
-    modbusConnectionId = aModbusDevice.getDeviceConnectionId();
+    modbusConnectionId = aModbusDevice.getDeviceId();
   }
 
   @Override
@@ -34,7 +34,7 @@ public class FilterByModbusDevice
     }
     ModbusNode firstNode = nodes.first();
     ModbusDevice modbusDevice = firstNode.getModbusDevice();
-    String connectionId = modbusDevice.getDeviceConnectionId();
+    String connectionId = modbusDevice.getDeviceId();
     return modbusConnectionId.equals( connectionId );
   }
 

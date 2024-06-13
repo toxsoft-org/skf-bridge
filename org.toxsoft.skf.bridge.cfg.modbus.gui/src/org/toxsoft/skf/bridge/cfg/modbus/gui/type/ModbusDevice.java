@@ -130,11 +130,40 @@ public class ModbusDevice
   }
 
   /**
+   * Returns identifier of modbus connection - can be the same for several devices
+   *
+   * @return String - identifier of modbus connection - can be the same for several devices (tcp-ipAddress-port,
+   *         rtu-portName)
+   */
+  public String getDeviceModbusConnectionId() {
+    StringBuilder result = new StringBuilder();
+    result.append( isTcp ? "tcp" : "rtu" );
+
+    if( isTcp ) {
+      String ipAddress = ModbusDeviceOptionsUtils.OP_TCP_IP_ADDRESS.getValue( getDeviceOptValues() ).asString();
+      int port = ModbusDeviceOptionsUtils.OP_TCP_PORT.getValue( getDeviceOptValues() ).asInt();
+
+      result.append( "_" );
+      result.append( ipAddress );
+      result.append( "_" );
+      result.append( port );
+    }
+    else
+
+    {
+      String portName = ModbusDeviceOptionsUtils.OP_RTU_PORT_NAME.getValue( getDeviceOptValues() ).asString();
+      result.append( "_" );
+      result.append( portName );
+    }
+    return result.toString().replace( ".", "_" );
+  }
+
+  /**
    * Returns device identifier forming from its connection options
    *
    * @return String - device identifier forming from its connection options (tcp-ipAddress-port, rtu-portName-address)
    */
-  public String getDeviceConnectionId() {
+  public String getDeviceId() {
     StringBuilder result = new StringBuilder();
     result.append( isTcp ? "tcp" : "rtu" );
 

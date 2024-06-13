@@ -136,7 +136,7 @@ public class ModbusToS5CfgUnitM5LifecycleManager
       TsInternalErrorRtException.checkNull( conn );
       IAvTree avTree = OpcToS5DataCfgConverter.convertToDlmCfgTree( master().dataUnits(), conn, aNodeEntity -> {
         ModbusNode nodeid = aNodeEntity.asValobj();
-        return nodeid.getId();
+        return new Pair<>( nodeid.getModbusDevice().getDeviceModbusConnectionId(), nodeid.getId() );
       } );
       String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
       AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );

@@ -1,6 +1,7 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.utils;
 
 import org.toxsoft.core.tslib.av.*;
+import org.toxsoft.core.tslib.utils.*;
 
 /**
  * Конвертор идентификатора
@@ -13,7 +14,7 @@ public interface INodeIdConvertor {
    * Выделяет идентификатор из сущности узла (тега, регистра), хранящейся в виде VALOBJ в AtomicValue.
    *
    * @param aNodeEntity IAtomicValue - сущность, содержащая узел или аналог.
-   * @return String - идентификатор.
+   * @return Pair<String, String> - идентификатор, состоящий из идентификатора устройства (слева) и идентификатора сущности (справа).
    */
-  String converToNodeId( IAtomicValue aNodeEntity );
+  Pair<String, String> converToNodeId( IAtomicValue aNodeEntity );
 }

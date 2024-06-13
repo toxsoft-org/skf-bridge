@@ -56,6 +56,7 @@ import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.gw.skid.*;
+import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
@@ -302,8 +303,8 @@ public class OpcUaUtils {
     return new AnonymousProvider();// Siemens
   }
 
-  public static IList<String> convertToNodesList2( IAvList aAtomicList, INodeIdConvertor aConvertor ) {
-    IListEdit<String> result = new ElemArrayList<>();
+  public static IList<Pair<String, String>> convertToNodesList2( IAvList aAtomicList, INodeIdConvertor aConvertor ) {
+    IListEdit<Pair<String, String>> result = new ElemArrayList<>();
     for( IAtomicValue val : aAtomicList ) {
       result.add( aConvertor.converToNodeId( val ) );
     }

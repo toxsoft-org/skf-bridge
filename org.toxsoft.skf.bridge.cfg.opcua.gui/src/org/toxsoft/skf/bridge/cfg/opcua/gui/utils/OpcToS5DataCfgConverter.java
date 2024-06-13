@@ -20,6 +20,7 @@ import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.gw.skid.*;
+import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.filegen.*;
@@ -62,7 +63,7 @@ public class OpcToS5DataCfgConverter {
       "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.OneToOneDataTransmitterFactory";
   private static final String ONE_INT_TO_ONE_BIT_DATA_TRANSMITTER_FACTORY_CLASS =
       "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.SingleIntToSingleBoolDataTransmitterFactory";
-  private static final String OPC_TAG_DEVICE                                    = "opc2s5.bridge.collection.id";
+  public static final String  OPC_TAG_DEVICE                                    = "opc2s5.bridge.collection.id";
   private static final String EVENT_TRIGGER_DEF_FORMAT                          = "event.trigger.%s.def";
 
   private static final String OUTPUT_TAGS_ARRAY_ID    = "output.tags";
@@ -290,7 +291,7 @@ public class OpcToS5DataCfgConverter {
   /**
    * Хранилище комплексных тегов (идентификаторов и составляющих тегов) - очищать перед новой генерацией.
    */
-  private static IStringMapEdit<IStringMapEdit<String>> complexTagsContetnt = new StringMap<>();
+  private static IStringMapEdit<IStringMapEdit<Pair<String, String>>> complexTagsContetnt = new StringMap<>();
 
   /**
    * Хранилище идов комплексных тегов (мапированных по skid объектов) - очищать перед новой генерацией.
@@ -367,19 +368,19 @@ public class OpcToS5DataCfgConverter {
 
       pinOpSet1.setStr( СOMPLEX_TAG_ID, tagId );
       pinOpSet1.setStr( СOMPLEX_TAG_TYPE, SIMPLE_СOMPLEX_TAG_TYPE );
-      pinOpSet1.setStr( TAG_DEVICE_ID, OPC_TAG_DEVICE );
 
       // ссылки на составляющие теги
-      IStringMapEdit<String> tags = complexTagsContetnt.getByKey( tagId );
+      IStringMapEdit<Pair<String, String>> tags = complexTagsContetnt.getByKey( tagId );
 
       for( String tagKey : tags.keys() ) {
         // dima 12.02.24 пустые теги игнорируем
-        String nodeId = tags.getByKey( tagKey );
+        String nodeId = tags.getByKey( tagKey ).right();
         if( nodeId.isBlank() ) {
           continue;
         }
-        pinOpSet1.setStr( tagKey, tags.getByKey( tagKey ) );// .toParseableString() );
+        pinOpSet1.setStr( tagKey, tags.getByKey( tagKey ).right() );// .toParseableString() );
       }
+      pinOpSet1.setStr( TAG_DEVICE_ID, tags.values().first().left() );
 
       AvTree complexTagTree = AvTree.createSingleAvTree( tagId + ".def", pinOpSet1, IStringMap.EMPTY );
       pinsMassivTree.addElement( complexTagTree );
@@ -510,26 +511,26 @@ public class OpcToS5DataCfgConverter {
       pinOpSet1.setStr( i == 0 ? DATA_ID : DATA_ID + i, dataId );
     }
 
-    // вместо пина - данные о теге
-    // идентификатор OPC-устройства (драйвера)
-    pinOpSet1.setStr( TAG_DEVICE_ID, OPC_TAG_DEVICE );
-
-    IList<String> nodes = convertToNodesList2( aUnit.getDataNodes2(), idConvertor );
+    IList<Pair<String, String>> nodes = convertToNodesList2( aUnit.getDataNodes2(), idConvertor );
 
     for( int i = 0; i < nodes.size(); i++ ) {
-      String node = nodes.get( i );
+      String node = nodes.get( i ).right();
 
       // сам идентфикатор тега
       pinOpSet1.setStr( i == 0 ? TAG_ID : TAG_ID + i, node );
 
     }
 
+    // вместо пина - данные о теге
+    // идентификатор OPC-устройства (драйвера)
+    pinOpSet1.setStr( TAG_DEVICE_ID, nodes.first().left() );
+
     // сохраняем соответствие для потомков (вдруг пригодится) - для каждого gwid
     if( nodes.size() == 1 ) {
       for( int i = 0; i < gwids.size(); i++ ) {
         Gwid gwid = gwids.get( i );
 
-        tagsIdsByGwidContetnt.put( gwid, nodes.first() );
+        tagsIdsByGwidContetnt.put( gwid, nodes.first().right() );
       }
     }
 
@@ -592,14 +593,14 @@ public class OpcToS5DataCfgConverter {
       rriAttrOpSet.setStr( i == 0 ? RRI_ATTR_ID : RRI_ATTR_ID + i, dataId );
     }
 
+    IList<Pair<String, String>> nodes = convertToNodesList2( aUnit.getDataNodes2(), idConvertor );
+
     // вместо пина - данные о теге
     // идентификатор OPC-устройства (драйвера)
-    rriAttrOpSet.setStr( TAG_DEVICE_ID, OPC_TAG_DEVICE );
-
-    IList<String> nodes = convertToNodesList2( aUnit.getDataNodes2(), idConvertor );
+    rriAttrOpSet.setStr( TAG_DEVICE_ID, nodes.first().left() );
 
     for( int i = 0; i < nodes.size(); i++ ) {
-      String node = nodes.get( i );
+      String node = nodes.get( i ).right();
 
       // сам идентфикатор тега
       rriAttrOpSet.setStr( i == 0 ? TAG_ID : TAG_ID + i, node );
@@ -608,7 +609,7 @@ public class OpcToS5DataCfgConverter {
     Skid attrSkid = gwids.first().skid();
     if( !complexTagsIdsBySkidsContetnt.hasKey( attrSkid ) ) {
       // создаем комплексный тег, его узлы описаны после 0 элемента
-      IList<String> cmdNodes = nodes.fetch( 1, nodes.size() - 1 );
+      IList<Pair<String, String>> cmdNodes = nodes.fetch( 1, nodes.size() - 1 );
       String complexNodeId = createIfNeedAndGetComplexNodeId( cmdNodes, null );
       complexTagsIdsBySkidsContetnt.put( attrSkid, complexNodeId );
     }
@@ -794,14 +795,15 @@ public class OpcToS5DataCfgConverter {
     AvTree tagsTree = AvTree.createArrayAvTree();
     cmdTreeNodes.put( COMMAND_TAGS_ARRAY, tagsTree );
 
-    IList<String> nodes = convertToNodesList2( aUnit.getDataNodes2(), idConvertor );
+    IList<Pair<String, String>> nodes = convertToNodesList2( aUnit.getDataNodes2(), idConvertor );
 
     for( int i = 0; i < nodes.size(); i++ ) {
-      String node = nodes.get( i );
+      String node = nodes.get( i ).right();
+      String device = nodes.get( i ).left();
 
       IOptionSetEdit nodeOpSet = new OptionSet();
 
-      nodeOpSet.setStr( TAG_DEVICE_ID, OPC_TAG_DEVICE );
+      nodeOpSet.setStr( TAG_DEVICE_ID, device );
       nodeOpSet.setStr( TAG_ID, node );
       IAvTree nodeTree = AvTree.createSingleAvTree( "tag" + (i + 1), nodeOpSet, IStringMap.EMPTY );
       tagsTree.addElement( nodeTree );
@@ -829,35 +831,38 @@ public class OpcToS5DataCfgConverter {
    * @return String - идентификатор сложного тега
    * @throws TsIllegalArgumentRtException - в случае несовпадения фидбаков при одинаковых командных тегов.
    */
-  private static String createIfNeedAndGetComplexNodeId( IList<String> aDataNodes, EAtomicType aParamNodeType ) {
+  private static String createIfNeedAndGetComplexNodeId( IList<Pair<String, String>> aDataNodes,
+      EAtomicType aParamNodeType ) {
     // минимум 2 тега - командный и фидбак
     TsIllegalArgumentRtException.checkFalse( aDataNodes.size() > 1 );
 
     // первый node - командный (по нему же - мапирование)
-    String cmdIdNode = aDataNodes.first();
+    String cmdIdNode = aDataNodes.first().right();
 
     // последний - фидбак
-    String feedBackNode = aDataNodes.last();
+    String feedBackNode = aDataNodes.last().right();
 
     // генерим идентификатор
     String compexTagId = "synthetic_" + cmdIdNode;
     compexTagId = compexTagId.replaceAll( ";", "_" ).replaceAll( "=", "_" );
 
+    String deviceId = aDataNodes.first().left();
+
     // проверка наличия этого сложного тега
-    IStringMapEdit<String> cTagContent = complexTagsContetnt.findByKey( compexTagId );
+    IStringMapEdit<Pair<String, String>> cTagContent = complexTagsContetnt.findByKey( compexTagId );
     if( cTagContent == null ) {
       cTagContent = new StringMap<>();
       // командный
-      cTagContent.put( СT_WRITE_ID_TAG, cmdIdNode );
+      cTagContent.put( СT_WRITE_ID_TAG, new Pair<>( deviceId, cmdIdNode ) );
       // фидбак
-      cTagContent.put( СT_READ_FEEDBACK_TAG, feedBackNode );
+      cTagContent.put( СT_READ_FEEDBACK_TAG, new Pair<>( deviceId, feedBackNode ) );
       // dima 08.02.24 теперь всегда приходят теги с параметрами
       // первым идет int
       String argIntTagId = String.format( СT_WRITE_VAL_TAG_FORMAT, EAtomicType.INTEGER.id().toLowerCase() );
-      cTagContent.put( argIntTagId, aDataNodes.get( 1 ) );
+      cTagContent.put( argIntTagId, new Pair<>( deviceId, aDataNodes.get( 1 ).right() ) );
       // вторым float
       String argFloatTagId = String.format( СT_WRITE_VAL_TAG_FORMAT, EAtomicType.FLOATING.id().toLowerCase() );
-      cTagContent.put( argFloatTagId, aDataNodes.get( 2 ) );
+      cTagContent.put( argFloatTagId, new Pair<>( deviceId, aDataNodes.get( 2 ).right() ) );
       // old version
       // // между ними - если есть - тег параметров
       // if( aDataNodes.size() > 2 && aParamNodeType != null ) {
@@ -1029,10 +1034,11 @@ public class OpcToS5DataCfgConverter {
     pinOpSet1.setStr( OBJ_NAME, objName );
     pinOpSet1.setStr( EVENT_ID, evntId );
 
-    IList<String> nodes = convertToNodesList2( aUnit.getDataNodes2(), idConvertor );
-    String node = nodes.first();
+    IList<Pair<String, String>> nodes = convertToNodesList2( aUnit.getDataNodes2(), idConvertor );
+    String node = nodes.first().right();
+    String deviceId = nodes.first().left();
 
-    pinOpSet1.setStr( TAG_DEVICE_ID, OPC_TAG_DEVICE );
+    pinOpSet1.setStr( TAG_DEVICE_ID, deviceId );
     pinOpSet1.setStr( TAG_ID, node );
 
     IOptionSet opts = aUnit.getRealizationOpts();

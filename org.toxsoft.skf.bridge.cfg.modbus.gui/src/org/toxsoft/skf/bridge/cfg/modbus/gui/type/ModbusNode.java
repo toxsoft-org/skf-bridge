@@ -84,7 +84,7 @@ public class ModbusNode {
     // return requestType.name() + "_" + register + "_" + wordsCount + (isOutput ? "_output" : TsLibUtils.EMPTY_STRING);
 
     // String flattenIP = address.getIP().getHostAddress().replace( '.', '_' );
-    String flattenID = modbusDevice.getDeviceConnectionId();
+    String flattenID = modbusDevice.getDeviceId();
     String ID_FMT_STR = "modbus_node_id_%s_%s_%d_%d";
     String retVal = String.format( ID_FMT_STR, flattenID, requestType.name(), Integer.valueOf( register ),
         Integer.valueOf( wordsCount ) );
@@ -211,7 +211,7 @@ public class ModbusNode {
   @SuppressWarnings( "boxing" )
   @Override
   public String toString() {
-    return String.format( "%s : %d : %d : %s", modbusDevice.getDeviceConnectionId(), register, wordsCount, //$NON-NLS-1$
+    return String.format( "%s : %d : %d : %s", modbusDevice.getDeviceId(), register, wordsCount, //$NON-NLS-1$
         requestType.name() );
   }
 
