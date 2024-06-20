@@ -15,7 +15,8 @@ public interface ISkidePluginBridgeCfgModbusConstants {
   // Icons
 
   String PREFIX_OF_ICON_FIELD_NAME = "ICONID_";          //$NON-NLS-1$
-  String ICONID_SKIDE_PLUGIN       = "opc_ua_browser-2"; //$NON-NLS-1$
+  String ICONID_IN_OUT             = "app-modbus-inout"; //$NON-NLS-1$
+  String ICONID_APP_MODBUS_EDITOR  = "app-modbus";       //$NON-NLS-1$
   String ICONID_CFG_UNIT           = "opc_ua_browser-1"; //$NON-NLS-1$
   String ICONID_SD_SKIDE_PLUGIN    = "opc_ua_browser";   //$NON-NLS-1$
   String ICONID_CFG_SKIDE_PLUGIN   = "opc_ua_browser-1"; //$NON-NLS-1$

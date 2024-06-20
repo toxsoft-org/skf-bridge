@@ -31,7 +31,7 @@ public class SkidePluginBridgeCfgModbus
     super( SKIDE_PLUGIN_ID, OptionSetUtils.createOpSet( //
         TSID_NAME, "STR_SKIDE_PLUGIN_BRIDGE_CFG_OPC_UA", //
         TSID_DESCRIPTION, "STR_SKIDE_PLUGIN_BRIDGE_CFG_OPC_UA_D", //
-        TSID_ICON_ID, ICONID_SKIDE_PLUGIN //
+        TSID_ICON_ID, ICONID_APP_MODBUS_EDITOR //
     ) );
   }
 

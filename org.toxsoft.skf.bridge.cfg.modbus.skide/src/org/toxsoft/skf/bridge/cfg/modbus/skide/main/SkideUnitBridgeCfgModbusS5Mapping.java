@@ -30,7 +30,7 @@ public class SkideUnitBridgeCfgModbusS5Mapping
         TSID_NAME, STR_N_MODBUS_S5_CONFIG_EDITOR, //
         TSID_DESCRIPTION, STR_D_MODBUS_S5_CONFIG_EDITOR, //
         OPDEF_SKIDE_UNIT_CATEGORY, UCATEGID_EXTERNAL_SYSTEMS, //
-        TSID_ICON_ID, ICONID_CFG_SKIDE_PLUGIN //
+        TSID_ICON_ID, ICONID_APP_MODBUS_EDITOR //
     ), aContext, aCreator );
     unitActions().add( ACDEF_ABOUT );
   }
