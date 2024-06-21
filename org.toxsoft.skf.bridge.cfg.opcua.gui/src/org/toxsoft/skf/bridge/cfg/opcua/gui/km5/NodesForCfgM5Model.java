@@ -11,6 +11,7 @@ import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
 import org.eclipse.milo.opcua.sdk.client.*;
 import org.eclipse.milo.opcua.sdk.client.api.*;
+import org.eclipse.milo.opcua.stack.core.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.toxsoft.core.tsgui.bricks.actions.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
@@ -161,7 +162,7 @@ public class NodesForCfgM5Model
                 }
 
                 IList<UaTreeNode> selNodes =
-                    OpcUaNodesSelector.selectUaNode( aContext, (OpcUaClient)uaClient, IList.EMPTY, config );
+                    OpcUaNodesSelector.selectUaNode( aContext, (OpcUaClient)uaClient, Identifiers.RootFolder, config );
 
                 if( selNodes == null || selNodes.size() == 0 ) {
                   return null;
@@ -187,9 +188,9 @@ public class NodesForCfgM5Model
                 else {
                   System.out.println( "Selected opc conn: " + "null" );
                 }
-
+                NodeId nodeId = aItem.asValobj();
                 IList<UaTreeNode> selNodes =
-                    OpcUaNodesSelector.selectUaNode( aContext, (OpcUaClient)uaClient, IList.EMPTY, config );
+                    OpcUaNodesSelector.selectUaNode( aContext, (OpcUaClient)uaClient, nodeId, config );
 
                 if( selNodes == null || selNodes.size() == 0 ) {
                   return aItem;

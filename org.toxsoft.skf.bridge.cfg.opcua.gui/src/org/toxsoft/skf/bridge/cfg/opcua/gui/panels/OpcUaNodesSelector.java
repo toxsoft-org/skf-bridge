@@ -51,6 +51,7 @@ public class OpcUaNodesSelector
   static class OpcUaNodesSelectorContext {
 
     private final NodeId                    topNode;
+    private final NodeId                    selNode;
     private final OpcUaClient               client;
     private final boolean                   hideVariableNodes;
     private final boolean                   checkable;
@@ -60,6 +61,19 @@ public class OpcUaNodesSelector
     public OpcUaNodesSelectorContext( NodeId aTopNode, OpcUaClient aClient, boolean isHideVariableNodes,
         boolean isCheckable, IOpcUaServerConnCfg aServerConnCfg, ImmutableSet<AccessLevel> aAccessLevel ) {
       topNode = aTopNode;
+      selNode = NodeId.NULL_VALUE;
+      client = aClient;
+      hideVariableNodes = isHideVariableNodes;
+      checkable = isCheckable;
+      serverConnCfg = aServerConnCfg;
+      accessLevel = aAccessLevel;
+    }
+
+    public OpcUaNodesSelectorContext( NodeId aTopNode, NodeId aInitNode, OpcUaClient aClient,
+        boolean isHideVariableNodes, boolean isCheckable, IOpcUaServerConnCfg aServerConnCfg,
+        ImmutableSet<AccessLevel> aAccessLevel ) {
+      topNode = aTopNode;
+      selNode = aInitNode;
       client = aClient;
       hideVariableNodes = isHideVariableNodes;
       checkable = isCheckable;
@@ -272,9 +286,24 @@ public class OpcUaNodesSelector
 
   @Override
   protected void doSetDataRecord( IList<UaTreeNode> aInitNodes ) {
-    if( aInitNodes != null ) {
+    UaTreeNode selTreeNode = getSelTreeNode();
+    if( selTreeNode != null ) {
+      opcUaNodePanel.setSelectedItem( selTreeNode );
+    }
+    if( opcUaNodePanel.checkSupport().isChecksSupported() && aInitNodes != null ) {
       opcUaNodePanel.checkSupport().setItemsCheckState( aInitNodes, true );
     }
+  }
+
+  private UaTreeNode getSelTreeNode() {
+    NodeId selNodeId = environ().selNode;
+    for( UaTreeNode uaTreeNode : opcUaNodePanel.items() ) {
+      NodeId nodeId = NodeId.parse( uaTreeNode.getNodeId() );
+      if( nodeId.equals( selNodeId ) ) {
+        return uaTreeNode;
+      }
+    }
+    return null;
   }
 
   @Override
@@ -304,18 +333,18 @@ public class OpcUaNodesSelector
    *
    * @param aTsContext ITsGuiContext - соответствующий контекст
    * @param aClient - OPC UA
-   * @param aCheckedNodes - список помеченных узлов
+   * @param aInitNode - текущий выбранный узел
    * @param aServerConnCfg - параметры текущего подключения к OPC UA
    * @return IList<UaTreeNode> - список выбранных узлов или <b>null</b> в случае отказа от выбора
    */
-  public static IList<UaTreeNode> selectUaNode( ITsGuiContext aTsContext, OpcUaClient aClient,
-      IList<UaTreeNode> aCheckedNodes, IOpcUaServerConnCfg aServerConnCfg ) {
+  public static IList<UaTreeNode> selectUaNode( ITsGuiContext aTsContext, OpcUaClient aClient, NodeId aInitNode,
+      IOpcUaServerConnCfg aServerConnCfg ) {
     ITsDialogInfo cdi = new TsDialogInfo( aTsContext, STR_MSG_SELECT_NODE, STR_DESCR_SELECT_NODE );
-    OpcUaNodesSelectorContext ctx = new OpcUaNodesSelectorContext( Identifiers.RootFolder, aClient, false, false,
-        aServerConnCfg, AccessLevel.READ_WRITE );
+    OpcUaNodesSelectorContext ctx = new OpcUaNodesSelectorContext( Identifiers.RootFolder, aInitNode, aClient, false,
+        false, aServerConnCfg, AccessLevel.READ_WRITE );
 
     IDialogPanelCreator<IList<UaTreeNode>, OpcUaNodesSelectorContext> creator = OpcUaNodesSelector::new;
-    TsDialog<IList<UaTreeNode>, OpcUaNodesSelectorContext> d = new TsDialog<>( cdi, aCheckedNodes, ctx, creator );
+    TsDialog<IList<UaTreeNode>, OpcUaNodesSelectorContext> d = new TsDialog<>( cdi, IList.EMPTY, ctx, creator );
     return d.execData();
   }
 
