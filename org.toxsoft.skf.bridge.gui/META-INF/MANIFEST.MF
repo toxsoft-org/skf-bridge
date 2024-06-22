@@ -6,6 +6,6 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.toxsoft.skf.bridge.gui.Activator
 Bundle-Vendor: toxsoft.org
 Require-Bundle: org.eclipse.core.runtime
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: org.toxsoft.skf.bridge.gui
 Bundle-ActivationPolicy: lazy

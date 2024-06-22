@@ -13,7 +13,7 @@ Require-Bundle: org.toxsoft.extlibs.wildfly,
  org.toxsoft.uskat.skadmin.core
 Export-Package: org.toxsoft.skf.bridge.s5.skadmin,
  org.toxsoft.skf.bridge.s5.skadmin.gateways
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: org.toxsoft.skf.bridge.s5.skadmin
 TsPluginContainerVersion: 2
 TsPluginVersion:    {4,0,2022-08-22_00:00:00}

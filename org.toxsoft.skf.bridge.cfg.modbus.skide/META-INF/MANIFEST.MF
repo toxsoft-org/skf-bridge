@@ -5,8 +5,8 @@ Bundle-SymbolicName: org.toxsoft.skf.bridge.cfg.modbus.skide;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.toxsoft.skf.bridge.cfg.modbus.skide.Activator
 Bundle-Vendor: Toxsoft
-Require-Bundle: javax.inject,
- javax.inject,
+Require-Bundle: jakarta.inject.jakarta.inject-api,
+ jakarta.annotation-api,
  org.eclipse.core.runtime,
  org.eclipse.ui,
  org.eclipse.e4.core.contexts,
@@ -23,9 +23,8 @@ Require-Bundle: javax.inject,
  org.toxsoft.skide.core,
  org.toxsoft.skide.exe,
  org.toxsoft.skf.bridge.cfg.modbus.gui
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: org.toxsoft.skf.bridge.cfg.modbus.skide
-Import-Package: javax.annotation;version="1.2.0"
 Bundle-ActivationPolicy: lazy
 Export-Package: org.toxsoft.skf.bridge.cfg.modbus.skide,
  org.toxsoft.skf.bridge.cfg.modbus.skide.e4.addons,

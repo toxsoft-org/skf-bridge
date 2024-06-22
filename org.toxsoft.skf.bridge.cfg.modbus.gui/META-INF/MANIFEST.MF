@@ -19,7 +19,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.toxsoft.core.txtproj.lib,
  org.toxsoft.skide.plugin.exconn,
  org.toxsoft.skf.bridge.cfg.opcua.gui
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: org.toxsoft.skf.bridge.cfg.modbus.gui
 Bundle-ActivationPolicy: lazy
 Export-Package: org.toxsoft.skf.bridge.cfg.modbus.gui,

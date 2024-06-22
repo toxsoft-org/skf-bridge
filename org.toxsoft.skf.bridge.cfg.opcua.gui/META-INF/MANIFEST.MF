@@ -23,7 +23,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.toxsoft.skf.rri.lib,
  org.toxsoft.skf.refbooks.lib,
  ru.toxsoft.l2.dlm.tags.common
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: org.toxsoft.skf.bridge.cfg.opcua.gui
 Bundle-ActivationPolicy: lazy
 Export-Package: org.toxsoft.skf.bridge.cfg.opcua.gui,

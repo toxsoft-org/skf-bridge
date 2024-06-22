@@ -5,8 +5,8 @@ Bundle-SymbolicName: org.toxsoft.skf.bridge.incub
 Bundle-Vendor: toxsoft.og
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.toxsoft.skf.bridge.incub.Activator
-Require-Bundle: javax.annotation,
- javax.inject,
+Require-Bundle: jakarta.inject.jakarta.inject-api,
+ jakarta.annotation-api,
  org.eclipse.core.runtime,
  org.eclipse.ui,
  org.eclipse.e4.core.contexts,
@@ -21,6 +21,6 @@ Require-Bundle: javax.annotation,
  org.toxsoft.core.txtproj.lib,
  org.toxsoft.uskat.core,
  org.toxsoft.uskat.core.gui
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: org.toxsoft.skf.bridge.incub
 Bundle-ActivationPolicy: lazy
