@@ -1,6 +1,5 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
 
-import static org.toxsoft.core.tsgui.bricks.actions.ITsStdActionDefs.*;
 import static org.toxsoft.core.tsgui.m5.IM5Constants.*;
 import static org.toxsoft.core.tsgui.valed.api.IValedControlConstants.*;
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
@@ -10,14 +9,9 @@ import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.km5.ISkResources.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
-import java.io.*;
-
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
-import org.eclipse.swt.*;
-import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.tsgui.bricks.actions.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
-import org.toxsoft.core.tsgui.dialogs.*;
 import org.toxsoft.core.tsgui.graphics.icons.*;
 import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tsgui.m5.gui.mpc.impl.*;
@@ -28,16 +22,13 @@ import org.toxsoft.core.tsgui.m5.model.impl.*;
 import org.toxsoft.core.tsgui.panels.toolbar.*;
 import org.toxsoft.core.tsgui.valed.controls.av.*;
 import org.toxsoft.core.tslib.av.*;
-import org.toxsoft.core.tslib.av.avtree.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
-import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.filegen.*;
-import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 
 /**
@@ -214,16 +205,16 @@ public class CfgOpcUaNodeM5Model
                   IListEdit<ITsActionDef> aActs ) {
 
                 // удалить всё
-                aActs.add( ACDEF_REMOVE_ALL );
-                aActs.add( ACDEF_SEPARATOR );
+                // aActs.add( ACDEF_REMOVE_ALL );
+                // aActs.add( ACDEF_SEPARATOR );
 
                 // добавить недостающие
-                aActs.add( ACDEF_SYNCHRONIZE );
-                aActs.add( ACDEF_REMOVE_UNNECESSARY );
+                // aActs.add( ACDEF_SYNCHRONIZE );
+                // aActs.add( ACDEF_REMOVE_UNNECESSARY );
 
-                aActs.add( ACDEF_SEPARATOR );
+                // aActs.add( ACDEF_SEPARATOR );
                 // aActs.add( OpcToS5DataCfgUnitM5Model.ACDEF_SAVE_DOC );
-                aActs.add( ACDEF_GENERATE_DEVCFG_FILE );
+                // aActs.add( ACDEF_GENERATE_DEVCFG_FILE );
 
                 ITsToolbar toolbar =
 
@@ -259,7 +250,7 @@ public class CfgOpcUaNodeM5Model
                     break;
 
                   case ACTID_GENERATE_DEVCFG_FILE:
-                    ((CfgOpcUaNodeLifecycleManager)lifecycleManager()).generateFileFromCurrState( tsContext() );
+                    // ((CfgOpcUaNodeLifecycleManager)lifecycleManager()).generateFileFromCurrState( tsContext() );
                     break;
 
                   case ACTID_REMOVE_UNNECESSARY:
@@ -300,7 +291,7 @@ public class CfgOpcUaNodeM5Model
      * @param aMaster ISkConnection - sk-connection
      */
     public CfgOpcUaNodeLifecycleManager( IM5Model<CfgOpcUaNode> aModel, OpcToS5DataCfgDoc aMaster ) {
-      super( aModel, false, true, true, true, aMaster );
+      super( aModel, false, true, false, true, aMaster );
     }
 
     public void removeUnnecessary( @SuppressWarnings( "unused" ) ITsGuiContext aContext ) {
@@ -345,6 +336,9 @@ public class CfgOpcUaNodeM5Model
       origin.setWrite( isWrite );
       origin.setSynch( isSynch );
 
+      OpcToS5DataCfgDocService service = model().domain().tsContext().get( OpcToS5DataCfgDocService.class );
+      service.saveCfgDoc( master() );
+
       return origin;
     }
 
@@ -365,87 +359,9 @@ public class CfgOpcUaNodeM5Model
       service.saveCfgDoc( master() );
     }
 
-    void generateFileFromCurrState( ITsGuiContext aContext ) {
-      Shell shell = aContext.find( Shell.class );
-      FileDialog fd = new FileDialog( shell, SWT.SAVE );
-      fd.setText( STR_SELECT_FILE_SAVE_DEVCFG );
-      fd.setFilterPath( TsLibUtils.EMPTY_STRING );
-      String[] filterExt = { ".devcfg" }; //$NON-NLS-1$
-      fd.setFilterExtensions( filterExt );
-      String selected = fd.open();
-      if( selected == null ) {
-        return;
-      }
-
-      try {
-        IAvTree avTree = OpcToS5DataCfgConverter.convertToDevCfgTree( aContext, master() );
-
-        String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
-        AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
-
-        String DLM_CONFIG_STR = "DeviceConfig = "; //$NON-NLS-1$
-        PinsConfigFileFormatter.format( TMP_DEST_FILE, selected, DLM_CONFIG_STR );
-
-        TsDialogUtils.info( shell, MSG_CONFIG_FILE_DEVCFG_CREATED, selected );
-      }
-      catch( Exception e ) {
-        LoggerUtils.errorLogger().error( e );
-        TsDialogUtils.error( shell, e );
-      }
-    }
-
     void ensureNodesCfgs( ITsGuiContext aContext ) {
-
-      OpcUaServerConnCfg conConf =
-          (OpcUaServerConnCfg)aContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
-
-      if( conConf == null ) {
-        ETsDialogCode retCode = TsDialogUtils.askYesNoCancel( aContext.get( Shell.class ), MSG_SELECT_OPC_UA_SERVER );
-
-        if( retCode == ETsDialogCode.CANCEL || retCode == ETsDialogCode.CLOSE || retCode == ETsDialogCode.NO ) {
-          return;
-        }
-
-        // if( retCode == ETsDialogCode.YES ) {
-        //
-        // }
-      }
-
-      IList<OpcToS5DataCfgUnit> dataCfgUnits = master().dataUnits();
-
-      IList<CfgOpcUaNode> nodesCfgsList = master().getNodesCfgs();
-      IStringMapEdit<CfgOpcUaNode> nodesCfgs = new StringMap<>();
-      for( CfgOpcUaNode node : nodesCfgsList ) {
-        nodesCfgs.put( node.getNodeId(), node );
-      }
-
-      for( OpcToS5DataCfgUnit unit : dataCfgUnits ) {
-        IList<NodeId> nodes = OpcUaUtils.convertToNodesList( unit.getDataNodes2() );
-
-        String relizationTypeId = unit.getRelizationTypeId();
-        CfgUnitRealizationTypeRegister typeReg2 =
-            model().domain().tsContext().get( CfgUnitRealizationTypeRegister.class );
-
-        ICfgUnitRealizationType realType =
-            typeReg2.getTypeOfRealizationById( unit.getTypeOfCfgUnit(), relizationTypeId );
-
-        for( int i = 0; i < nodes.size(); i++ ) {
-          NodeId node = nodes.get( i );
-          if( !nodesCfgs.hasKey( node.toParseableString() ) ) {
-            CfgOpcUaNode uaNode = realType.createInitCfg( aContext, node.toParseableString(), i, nodes.size() );
-            nodesCfgs.put( node.toParseableString(), uaNode );
-
-            if( unit.getRealizationOpts().hasKey( OpcUaUtils.OP_SYNCH_PERIOD.id() ) ) {
-              uaNode.setSynch( OpcUaUtils.OP_SYNCH_PERIOD.getValue( unit.getRealizationOpts() ).asInt() > 0 );
-            }
-            // new CfgOpcUaNode( node.toParseableString(), false, true, false, EAtomicType.INTEGER ) );
-          }
-        }
-
-        master().setNodesCfgs( nodesCfgs.values() );
-      }
+      OpcUaUtils.synchronizeNodesCfgs( master(), aContext, false );
     }
-
   }
 
 }

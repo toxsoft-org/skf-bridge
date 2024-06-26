@@ -49,6 +49,8 @@ public class KM5OpcUaContributor
 
   @Override
   protected IStringList papiCreateModels() {
+    OpcToS5DataCfgDocService docService = new OpcToS5DataCfgDocService( m5().tsContext() );
+    m5().tsContext().put( OpcToS5DataCfgDocService.class, docService );
     OpcUaUtils.registerCfgUnitRealizationTypes( m5().tsContext() );
     OpcUaServerConnCfgModel opcUaServerConnCfgModel = new OpcUaServerConnCfgModel();
     myModels.add( opcUaServerConnCfgModel.id() );

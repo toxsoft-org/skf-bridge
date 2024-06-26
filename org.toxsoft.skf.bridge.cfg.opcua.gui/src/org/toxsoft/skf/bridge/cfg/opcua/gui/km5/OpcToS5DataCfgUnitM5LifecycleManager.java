@@ -1,30 +1,16 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
 
-import static org.toxsoft.skf.bridge.cfg.opcua.gui.km5.ISkResources.*;
-
-import java.io.*;
-
-import org.eclipse.milo.opcua.stack.core.types.builtin.*;
-import org.eclipse.swt.*;
-import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
-import org.toxsoft.core.tsgui.dialogs.*;
 import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tsgui.m5.model.impl.*;
 import org.toxsoft.core.tslib.av.*;
-import org.toxsoft.core.tslib.av.avtree.*;
 import org.toxsoft.core.tslib.av.list.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
-import org.toxsoft.core.tslib.utils.*;
-import org.toxsoft.core.tslib.utils.errors.*;
-import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
-import org.toxsoft.uskat.core.connection.*;
-import org.toxsoft.uskat.core.gui.conn.*;
 
 /**
  * Lifecycle Manager of {@link OpcToS5DataCfgUnit} entities.
@@ -77,6 +63,10 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
     result.setRelizationTypeId( realType.id() );
     result.setRealizationOpts( realization );
     master().addDataUnit( result );
+
+    OpcUaUtils.synchronizeNodesCfgs( master(), m().tsContext(), true );
+    saveCurrState( m().tsContext() );
+
     return result;
   }
 
@@ -106,51 +96,23 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
     result.setRelizationTypeId( realType.id() );
     result.setRealizationOpts( realization );
 
+    OpcUaUtils.synchronizeNodesCfgs( master(), m().tsContext(), true );
+    saveCurrState( m().tsContext() );
+
     return result;
   }
 
   @Override
   protected void doRemove( OpcToS5DataCfgUnit aEntity ) {
     master().removeDataUnit( aEntity );
+
+    OpcUaUtils.synchronizeNodesCfgs( master(), m().tsContext(), true );
+    saveCurrState( m().tsContext() );
   }
 
   void saveCurrState( ITsGuiContext aContext ) {
     OpcToS5DataCfgDocService service = aContext.get( OpcToS5DataCfgDocService.class );
     service.saveCfgDoc( master() );
-  }
-
-  public void generateFileFromCurrState( ITsGuiContext aContext ) {
-    Shell shell = aContext.find( Shell.class );
-    FileDialog fd = new FileDialog( shell, SWT.SAVE );
-    fd.setText( STR_SELECT_FILE_SAVE_DLMCFG );
-    fd.setFilterPath( TsLibUtils.EMPTY_STRING );
-    String[] filterExt = { ".dlmcfg" }; //$NON-NLS-1$
-    fd.setFilterExtensions( filterExt );
-    String selected = fd.open();
-    if( selected == null ) {
-      return;
-    }
-    try {
-      ISkConnectionSupplier cs = aContext.get( ISkConnectionSupplier.class );
-      TsInternalErrorRtException.checkNull( cs );
-      ISkConnection conn = cs.defConn();
-      TsInternalErrorRtException.checkNull( conn );
-      IAvTree avTree = OpcToS5DataCfgConverter.convertToDlmCfgTree( master().dataUnits(), conn, aNodeEntity -> {
-        NodeId nodeid = aNodeEntity.asValobj();
-        return new Pair<>( OpcToS5DataCfgConverter.OPC_TAG_DEVICE, nodeid.toParseableString() );
-      } );
-      String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
-      AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
-
-      String DLM_CONFIG_STR = "DlmConfig = "; //$NON-NLS-1$
-      PinsConfigFileFormatter.format( TMP_DEST_FILE, selected, DLM_CONFIG_STR );
-
-      TsDialogUtils.info( shell, MSG_CONFIG_FILE_DLMCFG_CREATED, selected );
-    }
-    catch( Exception e ) {
-      LoggerUtils.errorLogger().error( e );
-      TsDialogUtils.error( shell, e );
-    }
   }
 
   /**

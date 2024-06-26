@@ -108,8 +108,7 @@ public class OpcToS5DataCfgDocEditorPanel
     IM5Domain m5 = conn.scope().get( IM5Domain.class );
     IM5Model<OpcToS5DataCfgDoc> model = m5.getModel( OpcToS5DataCfgDocM5Model.MODEL_ID, OpcToS5DataCfgDoc.class );
 
-    OpcToS5DataCfgDocService docService = new OpcToS5DataCfgDocService( aContext );
-    aContext.put( OpcToS5DataCfgDocService.class, docService );
+    OpcToS5DataCfgDocService docService = aContext.get( OpcToS5DataCfgDocService.class );
 
     IM5LifecycleManager<OpcToS5DataCfgDoc> lm = new OpcToS5DataCfgDocM5LifecycleManager( model, docService );
     ITsGuiContext ctx = new TsGuiContext( aContext );
@@ -205,7 +204,7 @@ public class OpcToS5DataCfgDocEditorPanel
 
     TsToolbar toolBar = new TsToolbar( ctx );
     toolBar.setIconSize( EIconSize.IS_24X24 );
-    toolBar.addActionDef( ACDEF_SAVE_DOC );
+    toolBar.addActionDef( ACDEF_GENERATE_FILE );
     toolBar.addActionDef( ACDEF_S5_SERVER_SELECT );
     toolBar.addActionDef( ACDEF_OPC_SERVER_SELECT );
 
@@ -223,9 +222,14 @@ public class OpcToS5DataCfgDocEditorPanel
     IM5Domain m5 = conn.scope().get( IM5Domain.class );
 
     toolBar.addListener( aActionId -> {
-      if( aActionId.equals( ACDEF_SAVE_DOC.id() ) ) {
-        OpcToS5DataCfgDocService service = ctx.get( OpcToS5DataCfgDocService.class );
-        service.saveCfgDoc( aSelDoc );
+      if( aActionId.equals( ACDEF_GENERATE_FILE.id() ) ) {
+        // OpcToS5DataCfgDocService service = ctx.get( OpcToS5DataCfgDocService.class );
+        // service.saveCfgDoc( aSelDoc );
+
+        // generate cfg files
+
+        OpcUaUtils.generateDlmCfgFileFromCurrState( aSelDoc, ctx );
+        OpcUaUtils.generateDevCfgFileFromCurrState( aSelDoc, ctx );
         return;
       }
       if( aActionId.equals( ACDEF_S5_SERVER_SELECT.id() ) ) {
@@ -348,7 +352,7 @@ public class OpcToS5DataCfgDocEditorPanel
               IListEdit<ITsActionDef> aActs ) {
             aActs.add( ACDEF_SEPARATOR );
             aActs.add( ACDEF_AUTO_LINK );
-            aActs.add( ACDEF_GENERATE_FILE );
+            // aActs.add( ACDEF_GENERATE_FILE );
 
             ITsToolbar toolbar =
 
@@ -367,7 +371,7 @@ public class OpcToS5DataCfgDocEditorPanel
 
             switch( aActionId ) {
               case ACTID_GENERATE_FILE:
-                ((OpcToS5DataCfgUnitM5LifecycleManager)lifecycleManager()).generateFileFromCurrState( ctx );
+                // OpcToS5DataCfgUnitM5LifecycleManager.generateFileFromCurrState( aSelDoc, ctx );
                 break;
 
               case ACTID_AUTO_LINK:

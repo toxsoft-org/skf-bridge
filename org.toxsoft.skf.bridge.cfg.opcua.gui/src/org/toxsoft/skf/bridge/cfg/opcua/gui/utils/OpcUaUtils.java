@@ -5,6 +5,7 @@ import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.impl.DataDef.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
+import static org.toxsoft.skf.bridge.cfg.opcua.gui.km5.ISkResources.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.skide.IGreenWorldRefbooks.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.utils.ISkResources.*;
 import static org.toxsoft.skide.plugin.exconn.ISkidePluginExconnSharedResources.*;
@@ -29,6 +30,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.*;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
 import org.eclipse.milo.opcua.stack.core.types.structured.*;
 import org.eclipse.milo.opcua.stack.core.util.*;
+import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.log4j.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
@@ -39,6 +41,7 @@ import org.toxsoft.core.tsgui.m5.gui.*;
 import org.toxsoft.core.tsgui.m5.gui.mpc.*;
 import org.toxsoft.core.tsgui.m5.model.*;
 import org.toxsoft.core.tslib.av.*;
+import org.toxsoft.core.tslib.av.avtree.*;
 import org.toxsoft.core.tslib.av.impl.*;
 import org.toxsoft.core.tslib.av.list.*;
 import org.toxsoft.core.tslib.av.metainfo.*;
@@ -217,6 +220,69 @@ public class OpcUaUtils {
    * Журнал работы
    */
   private static ILogger logger = LoggerWrapper.getLogger( OpcUaUtils.class.getName() );
+
+  public static void generateDevCfgFileFromCurrState( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext ) {
+    Shell shell = aContext.find( Shell.class );
+    FileDialog fd = new FileDialog( shell, SWT.SAVE );
+    fd.setText( STR_SELECT_FILE_SAVE_DEVCFG );
+    fd.setFilterPath( TsLibUtils.EMPTY_STRING );
+    String[] filterExt = { ".devcfg" }; //$NON-NLS-1$
+    fd.setFilterExtensions( filterExt );
+    String selected = fd.open();
+    if( selected == null ) {
+      return;
+    }
+
+    try {
+      IAvTree avTree = OpcToS5DataCfgConverter.convertToDevCfgTree( aContext, aDoc );
+
+      String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
+      AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
+
+      String DLM_CONFIG_STR = "DeviceConfig = "; //$NON-NLS-1$
+      PinsConfigFileFormatter.format( TMP_DEST_FILE, selected, DLM_CONFIG_STR );
+
+      TsDialogUtils.info( shell, MSG_CONFIG_FILE_DEVCFG_CREATED, selected );
+    }
+    catch( Exception e ) {
+      LoggerUtils.errorLogger().error( e );
+      TsDialogUtils.error( shell, e );
+    }
+  }
+
+  public static void generateDlmCfgFileFromCurrState( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext ) {
+    Shell shell = aContext.find( Shell.class );
+    FileDialog fd = new FileDialog( shell, SWT.SAVE );
+    fd.setText( STR_SELECT_FILE_SAVE_DLMCFG );
+    fd.setFilterPath( TsLibUtils.EMPTY_STRING );
+    String[] filterExt = { ".dlmcfg" }; //$NON-NLS-1$
+    fd.setFilterExtensions( filterExt );
+    String selected = fd.open();
+    if( selected == null ) {
+      return;
+    }
+    try {
+      ISkConnectionSupplier cs = aContext.get( ISkConnectionSupplier.class );
+      TsInternalErrorRtException.checkNull( cs );
+      ISkConnection conn = cs.defConn();
+      TsInternalErrorRtException.checkNull( conn );
+      IAvTree avTree = OpcToS5DataCfgConverter.convertToDlmCfgTree( aDoc.dataUnits(), conn, aNodeEntity -> {
+        NodeId nodeid = aNodeEntity.asValobj();
+        return new Pair<>( OpcToS5DataCfgConverter.OPC_TAG_DEVICE, nodeid.toParseableString() );
+      } );
+      String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
+      AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
+
+      String DLM_CONFIG_STR = "DlmConfig = "; //$NON-NLS-1$
+      PinsConfigFileFormatter.format( TMP_DEST_FILE, selected, DLM_CONFIG_STR );
+
+      TsDialogUtils.info( shell, MSG_CONFIG_FILE_DLMCFG_CREATED, selected );
+    }
+    catch( Exception e ) {
+      LoggerUtils.errorLogger().error( e );
+      TsDialogUtils.error( shell, e );
+    }
+  }
 
   /**
    * Выбор и подключение к OPC UA серверу
@@ -1644,6 +1710,62 @@ public class OpcUaUtils {
         ) );
 
     return new BitIdx2RriDtoAttr( aBitArrayRtDataId, bitIndex, attrInfo );
+  }
+
+  public static void synchronizeNodesCfgs( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext,
+      boolean aDeleteUnnecessary ) {
+
+    OpcUaServerConnCfg conConf =
+        (OpcUaServerConnCfg)aContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
+
+    if( conConf == null ) {
+      ETsDialogCode retCode = TsDialogUtils.askYesNoCancel( aContext.get( Shell.class ), MSG_SELECT_OPC_UA_SERVER );
+
+      if( retCode == ETsDialogCode.CANCEL || retCode == ETsDialogCode.CLOSE || retCode == ETsDialogCode.NO ) {
+        return;
+      }
+    }
+
+    IListEdit<CfgOpcUaNode> nodesCfgsList = new ElemArrayList<>( aDoc.getNodesCfgs() );
+    IStringMapEdit<CfgOpcUaNode> nodesCfgs = new StringMap<>();
+    for( CfgOpcUaNode node : nodesCfgsList ) {
+      nodesCfgs.put( node.getNodeId(), node );
+    }
+
+    if( aDeleteUnnecessary ) {
+      nodesCfgsList.clear();
+    }
+
+    IList<OpcToS5DataCfgUnit> dataCfgUnits = aDoc.dataUnits();
+    for( OpcToS5DataCfgUnit unit : dataCfgUnits ) {
+      IList<NodeId> nodes = OpcUaUtils.convertToNodesList( unit.getDataNodes2() );
+
+      String relizationTypeId = unit.getRelizationTypeId();
+      CfgUnitRealizationTypeRegister typeReg2 = aContext.get( CfgUnitRealizationTypeRegister.class );
+
+      ICfgUnitRealizationType realType = typeReg2.getTypeOfRealizationById( unit.getTypeOfCfgUnit(), relizationTypeId );
+
+      for( int i = 0; i < nodes.size(); i++ ) {
+        NodeId node = nodes.get( i );
+        if( !nodesCfgs.hasKey( node.toParseableString() ) ) {
+          CfgOpcUaNode uaNode = realType.createInitCfg( aContext, node.toParseableString(), i, nodes.size() );
+          nodesCfgs.put( node.toParseableString(), uaNode );
+          nodesCfgsList.add( uaNode );
+
+          if( unit.getRealizationOpts().hasKey( OpcUaUtils.OP_SYNCH_PERIOD.id() ) ) {
+            uaNode.setSynch( OpcUaUtils.OP_SYNCH_PERIOD.getValue( unit.getRealizationOpts() ).asInt() > 0 );
+          }
+          // new CfgOpcUaNode( node.toParseableString(), false, true, false, EAtomicType.INTEGER ) );
+        }
+        else {
+          if( !nodesCfgsList.hasElem( nodesCfgs.getByKey( node.toParseableString() ) ) ) {
+            nodesCfgsList.add( nodesCfgs.getByKey( node.toParseableString() ) );
+          }
+        }
+      }
+
+      aDoc.setNodesCfgs( nodesCfgsList );
+    }
   }
 
 }

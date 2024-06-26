@@ -126,6 +126,16 @@ public class OpcToS5DataCfgDoc
       };
 
   /**
+   * Path to l2 bridge
+   */
+  private String l2Path;
+
+  /**
+   * Prefix of cfg files ("prefix".dlmcfg, "prefix".devcfg)
+   */
+  private String cfgFilesPrefix;
+
+  /**
    * List of data cfg units.
    */
   private IListEdit<OpcToS5DataCfgUnit> dataCfgUnits = new ElemArrayList<>();
@@ -199,6 +209,22 @@ public class OpcToS5DataCfgDoc
     for( CfgOpcUaNode cfg : aNodesCfgs ) {
       nodesCfgs.put( cfg.getNodeId(), cfg );
     }
+  }
+
+  public synchronized String getL2Path() {
+    return l2Path;
+  }
+
+  public synchronized void setL2Path( String aL2Path ) {
+    l2Path = aL2Path;
+  }
+
+  public synchronized String getCfgFilesPrefix() {
+    return cfgFilesPrefix;
+  }
+
+  public synchronized void setCfgFilesPrefix( String aCfgFilesPrefix ) {
+    cfgFilesPrefix = aCfgFilesPrefix;
   }
 
 }
