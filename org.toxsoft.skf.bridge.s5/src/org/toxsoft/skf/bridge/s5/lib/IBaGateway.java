@@ -37,7 +37,7 @@ public interface IBaGateway
   void defineGateway( ISkGatewayConfiguration aGatewayConfig );
 
   /**
-   * Удаляет шлюз из службы
+   * Удаляет шлюз из службы.
    * <p>
    * Если в службе уже зарегистирован шлюз aGatewayId, то ничего не делает
    *
