@@ -19,7 +19,7 @@ public interface IBaGateway
   String ADDON_ID = ISkGatewayHardConstants.BAID_GATEWAYS;
 
   /**
-   * Возвращает список конфигураций мостов зарегистрированных службой
+   * Возвращает список конфигураций мостов зарегистрированных службой.
    *
    * @return {@link IStridablesList}&lt;{@link ISkGatewayConfiguration}&gt; список конфигураций мостов
    */
