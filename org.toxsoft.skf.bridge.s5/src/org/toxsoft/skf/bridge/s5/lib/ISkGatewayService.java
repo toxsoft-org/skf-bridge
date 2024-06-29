@@ -2,10 +2,9 @@ package org.toxsoft.skf.bridge.s5.lib;
 
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
-import org.toxsoft.core.tslib.bricks.strid.coll.IStridablesList;
-import org.toxsoft.core.tslib.utils.errors.TsIllegalArgumentRtException;
-import org.toxsoft.core.tslib.utils.errors.TsNullArgumentRtException;
-import org.toxsoft.uskat.core.api.ISkService;
+import org.toxsoft.core.tslib.bricks.strid.coll.*;
+import org.toxsoft.core.tslib.utils.errors.*;
+import org.toxsoft.uskat.core.api.*;
 
 /**
  * Cлужба импорта-экспорта данных/событий/команд локального s5-сервера в удаленный s5-сервер (шлюзы).
@@ -21,7 +20,7 @@ public interface ISkGatewayService
   String SERVICE_ID = SK_SYSEXT_SERVICE_ID_PREFIX + "GatewayService"; //$NON-NLS-1$
 
   /**
-   * Возвращает список конфигураций мостов зарегистрированных службой
+   * Возвращает список конфигураций мостов зарегистрированных службой.
    *
    * @return {@link IStridablesList}&lt;{@link ISkGatewayConfiguration}&gt; список конфигураций мостов
    */
