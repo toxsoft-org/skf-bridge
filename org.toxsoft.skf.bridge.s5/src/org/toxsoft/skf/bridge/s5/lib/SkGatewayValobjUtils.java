@@ -4,7 +4,7 @@ import org.toxsoft.core.tslib.utils.valobj.*;
 import org.toxsoft.skf.bridge.s5.lib.impl.*;
 
 /**
- * Регистрация хранителей данных подсистемы
+ * Регистрация хранителей данных подсистемы.
  *
  * @author mvk
  */
