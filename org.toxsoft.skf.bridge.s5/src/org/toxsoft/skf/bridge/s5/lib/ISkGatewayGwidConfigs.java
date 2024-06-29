@@ -10,7 +10,7 @@ import org.toxsoft.core.tslib.gw.gwid.*;
 public interface ISkGatewayGwidConfigs {
 
   /**
-   * Возвращает типы {@link Gwid}-идентификаторов хранимых в конфигурации
+   * Возвращает типы {@link Gwid}-идентификаторов хранимых в конфигурации.
    *
    * @return {@link EGwidKind} тип идентификатора {@link Gwid}.
    */
