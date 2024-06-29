@@ -6,12 +6,12 @@ import static org.toxsoft.core.tslib.av.impl.DataDef.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
 import static org.toxsoft.skf.bridge.s5.lib.impl.ISkResources.*;
 
-import org.toxsoft.core.tslib.av.metainfo.IDataDef;
-import org.toxsoft.skf.bridge.s5.lib.ISkGatewayService;
-import org.toxsoft.uskat.s5.server.backend.supports.IS5BackendAddonConfig;
+import org.toxsoft.core.tslib.av.metainfo.*;
+import org.toxsoft.skf.bridge.s5.lib.*;
+import org.toxsoft.uskat.s5.server.backend.supports.*;
 
 /**
- * Конфигурация службы {@link ISkGatewayService}
+ * Конфигурация службы {@link ISkGatewayService}.
  *
  * @author mvk
  */
