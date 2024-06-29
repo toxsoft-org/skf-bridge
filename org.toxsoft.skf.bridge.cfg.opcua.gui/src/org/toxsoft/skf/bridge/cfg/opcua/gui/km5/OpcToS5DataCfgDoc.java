@@ -43,6 +43,12 @@ public class OpcToS5DataCfgDoc
           aSw.writeQuotedString( aEntity.description() );
           aSw.writeSeparatorChar();
           aSw.writeEol();
+          aSw.writeQuotedString( aEntity.getL2Path() );
+          aSw.writeSeparatorChar();
+          aSw.writeEol();
+          aSw.writeQuotedString( aEntity.getCfgFilesPrefix() );
+          aSw.writeSeparatorChar();
+          aSw.writeEol();
 
           // Units
           // units count
@@ -85,6 +91,10 @@ public class OpcToS5DataCfgDoc
           aSr.ensureSeparatorChar();
           String descr = aSr.readQuotedString();
           aSr.ensureSeparatorChar();
+          String l2Path = aSr.readQuotedString();
+          aSr.ensureSeparatorChar();
+          String cfgFileName = aSr.readQuotedString();
+          aSr.ensureSeparatorChar();
 
           // Units
           // units count
@@ -121,6 +131,8 @@ public class OpcToS5DataCfgDoc
           OpcToS5DataCfgDoc result = new OpcToS5DataCfgDoc( id, name, descr );
           result.dataCfgUnits = units;
           result.nodesCfgs = nodes;
+          result.setL2Path( l2Path );
+          result.setCfgFilesPrefix( cfgFileName );
           return result;
         }
       };
@@ -211,19 +223,19 @@ public class OpcToS5DataCfgDoc
     }
   }
 
-  public synchronized String getL2Path() {
+  public String getL2Path() {
     return l2Path;
   }
 
-  public synchronized void setL2Path( String aL2Path ) {
+  public void setL2Path( String aL2Path ) {
     l2Path = aL2Path;
   }
 
-  public synchronized String getCfgFilesPrefix() {
+  public String getCfgFilesPrefix() {
     return cfgFilesPrefix;
   }
 
-  public synchronized void setCfgFilesPrefix( String aCfgFilesPrefix ) {
+  public void setCfgFilesPrefix( String aCfgFilesPrefix ) {
     cfgFilesPrefix = aCfgFilesPrefix;
   }
 

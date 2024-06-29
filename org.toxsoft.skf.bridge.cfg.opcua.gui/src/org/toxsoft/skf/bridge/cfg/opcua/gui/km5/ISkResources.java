@@ -5,6 +5,7 @@ package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
  *
  * @author dima
  */
+@SuppressWarnings( "javadoc" )
 public interface ISkResources {
 
   /**
@@ -68,10 +69,10 @@ public interface ISkResources {
   /**
    * {@link OpcToS5DataCfgDocM5Model}
    */
-  String STR_N_CONFIG_NAME  = Messages.STR_N_CONFIG_NAME;
-  String STR_D_CONFIG_NAME  = Messages.STR_D_CONFIG_NAME;
-  String STR_N_CONFIG_DESCR = Messages.STR_N_CONFIG_DESCR;
-  String STR_D_CONFIG_DESCR = Messages.STR_D_CONFIG_DESCR;
+  String STR_N_PATH_TO_L2    = Messages.STR_N_PATH_TO_L2;
+  String STR_D_PATH_TO_L2    = Messages.STR_D_PATH_TO_L2;
+  String STR_N_CFG_FILE_NAME = Messages.STR_N_CFG_FILE_NAME;
+  String STR_D_CFG_FILE_NAME = Messages.STR_D_CFG_FILE_NAME;
 
   /**
    * {@link OpcToS5DataCfgUnitM5LifecycleManager}

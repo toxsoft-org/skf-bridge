@@ -1,6 +1,5 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
 
-import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tsgui.m5.model.impl.*;
 import org.toxsoft.core.tslib.av.*;
@@ -10,7 +9,6 @@ import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
-import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 
 /**
  * Lifecycle Manager of {@link OpcToS5DataCfgUnit} entities.
@@ -49,7 +47,7 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
     String name = m().DISPLAY_NAME.getFieldValue( aValues ).asString();
     String strid = generateStrid();
     ECfgUnitType type = m().TYPE.getFieldValue( aValues ).asValobj();
-    // aValues ).asString();
+
     IList<Gwid> gwids = m().GWIDS.getFieldValue( aValues );
     IList<IAtomicValue> nodes = m().NODES.getFieldValue( aValues );
 
@@ -64,8 +62,7 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
     result.setRealizationOpts( realization );
     master().addDataUnit( result );
 
-    OpcUaUtils.synchronizeNodesCfgs( master(), m().tsContext(), true );
-    saveCurrState( m().tsContext() );
+    itemsProvider().informOnItemsListChange();
 
     return result;
   }
@@ -96,8 +93,7 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
     result.setRelizationTypeId( realType.id() );
     result.setRealizationOpts( realization );
 
-    OpcUaUtils.synchronizeNodesCfgs( master(), m().tsContext(), true );
-    saveCurrState( m().tsContext() );
+    itemsProvider().informOnItemsListChange();
 
     return result;
   }
@@ -106,24 +102,22 @@ public class OpcToS5DataCfgUnitM5LifecycleManager
   protected void doRemove( OpcToS5DataCfgUnit aEntity ) {
     master().removeDataUnit( aEntity );
 
-    OpcUaUtils.synchronizeNodesCfgs( master(), m().tsContext(), true );
-    saveCurrState( m().tsContext() );
-  }
-
-  void saveCurrState( ITsGuiContext aContext ) {
-    OpcToS5DataCfgDocService service = aContext.get( OpcToS5DataCfgDocService.class );
-    service.saveCfgDoc( master() );
+    itemsProvider().informOnItemsListChange();
   }
 
   /**
-   * @param aResult config unit
+   * Adds cfg unit
+   *
+   * @param aCfgUnit OpcToS5DataCfgUnit - config unit
    */
   public void addCfgUnit( OpcToS5DataCfgUnit aCfgUnit ) {
     master().addDataUnit( aCfgUnit );
   }
 
   /**
-   * @param aResult config unit
+   * Adds cfg units
+   *
+   * @param aCfgUnits IList - config unit
    */
   public void addCfgUnits( IList<OpcToS5DataCfgUnit> aCfgUnits ) {
     master().addDataUnits( aCfgUnits );

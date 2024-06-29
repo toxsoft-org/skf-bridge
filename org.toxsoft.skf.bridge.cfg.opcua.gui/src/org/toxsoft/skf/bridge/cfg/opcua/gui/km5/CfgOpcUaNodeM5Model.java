@@ -245,7 +245,7 @@ public class CfgOpcUaNodeM5Model
                     break;
 
                   case OpcToS5DataCfgUnitM5Model.ACTID_SAVE_DOC:
-                    ((CfgOpcUaNodeLifecycleManager)lifecycleManager()).saveCurrState( tsContext() );
+                    // ((CfgOpcUaNodeLifecycleManager)lifecycleManager()).saveCurrState( tsContext() );
 
                     break;
 
@@ -317,10 +317,14 @@ public class CfgOpcUaNodeM5Model
 
         master().setNodesCfgs( actualNodesCfgs.values() );
       }
+
+      itemsProvider().informOnItemsListChange();
     }
 
     public void removeAll( @SuppressWarnings( "unused" ) ITsGuiContext aContext ) {
       master().setNodesCfgs( new ElemArrayList<>() );
+
+      itemsProvider().informOnItemsListChange();
     }
 
     @Override
@@ -336,8 +340,7 @@ public class CfgOpcUaNodeM5Model
       origin.setWrite( isWrite );
       origin.setSynch( isSynch );
 
-      OpcToS5DataCfgDocService service = model().domain().tsContext().get( OpcToS5DataCfgDocService.class );
-      service.saveCfgDoc( master() );
+      itemsProvider().informOnItemsListChange();
 
       return origin;
     }
@@ -347,16 +350,13 @@ public class CfgOpcUaNodeM5Model
       IListEdit<CfgOpcUaNode> nodesCfgsList = new ElemArrayList<>( master().getNodesCfgs() );
       nodesCfgsList.remove( aEntity );
       master().setNodesCfgs( nodesCfgsList );
+
+      itemsProvider().informOnItemsListChange();
     }
 
     @Override
     protected IList<CfgOpcUaNode> doListEntities() {
       return master().getNodesCfgs();
-    }
-
-    void saveCurrState( ITsGuiContext aContext ) {
-      OpcToS5DataCfgDocService service = aContext.get( OpcToS5DataCfgDocService.class );
-      service.saveCfgDoc( master() );
     }
 
     void ensureNodesCfgs( ITsGuiContext aContext ) {

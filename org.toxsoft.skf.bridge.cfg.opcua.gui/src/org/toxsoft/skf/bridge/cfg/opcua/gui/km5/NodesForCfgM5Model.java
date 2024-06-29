@@ -113,9 +113,7 @@ public class NodesForCfgM5Model
                 aActs.add( ACDEF_SEPARATOR );
                 aActs.add( ACDEF_EDIT_AS_STR );
 
-                ITsToolbar toolbar =
-
-                    super.doCreateToolbar( aContext, aName, aIconSize, aActs );
+                ITsToolbar toolbar = super.doCreateToolbar( aContext, aName, aIconSize, aActs );
 
                 toolbar.addListener( aActionId -> {
                   // nop
@@ -123,6 +121,22 @@ public class NodesForCfgM5Model
                 } );
 
                 return toolbar;
+              }
+
+              @Override
+              protected boolean doGetIsAddAllowed( IAtomicValue aSel ) {
+                OpcUaServerConnCfg config =
+                    (OpcUaServerConnCfg)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
+
+                return config != null;
+              }
+
+              @Override
+              protected boolean doGetIsEditAllowed( IAtomicValue aSel ) {
+                OpcUaServerConnCfg config =
+                    (OpcUaServerConnCfg)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
+
+                return config != null;
               }
 
               @Override

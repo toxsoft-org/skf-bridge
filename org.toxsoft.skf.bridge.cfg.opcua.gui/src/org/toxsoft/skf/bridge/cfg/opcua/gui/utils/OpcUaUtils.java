@@ -85,6 +85,11 @@ import org.toxsoft.uskat.core.impl.dto.*;
 public class OpcUaUtils {
 
   /**
+   * Журнал работы
+   */
+  private static ILogger logger = LoggerWrapper.getLogger( OpcUaUtils.class.getName() );
+
+  /**
    * Параметр события: включен.
    * <p>
    * Параметр имеет тип {@link EAtomicType#BOOLEAN}.
@@ -217,22 +222,17 @@ public class OpcUaUtils {
   }
 
   /**
-   * Журнал работы
+   * Generates devcfg file from configuration Doc.
+   *
+   * @param aDoc OpcToS5DataCfgDoc - configuration Doc.
+   * @param aContext ITsGuiContext - context.
    */
-  private static ILogger logger = LoggerWrapper.getLogger( OpcUaUtils.class.getName() );
-
   public static void generateDevCfgFileFromCurrState( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext ) {
-    Shell shell = aContext.find( Shell.class );
-    FileDialog fd = new FileDialog( shell, SWT.SAVE );
-    fd.setText( STR_SELECT_FILE_SAVE_DEVCFG );
-    fd.setFilterPath( TsLibUtils.EMPTY_STRING );
-    String[] filterExt = { ".devcfg" }; //$NON-NLS-1$
-    fd.setFilterExtensions( filterExt );
-    String selected = fd.open();
+    String selected = formCfgFileFullName( aDoc, aContext, "/cfg/hal/thds/%s%s", ".devcfg" );
     if( selected == null ) {
       return;
     }
-
+    Shell shell = aContext.find( Shell.class );
     try {
       IAvTree avTree = OpcToS5DataCfgConverter.convertToDevCfgTree( aContext, aDoc );
 
@@ -250,17 +250,18 @@ public class OpcUaUtils {
     }
   }
 
+  /**
+   * Generates dlmcfg file from configuration Doc.
+   *
+   * @param aDoc OpcToS5DataCfgDoc - configuration Doc.
+   * @param aContext ITsGuiContext - context.
+   */
   public static void generateDlmCfgFileFromCurrState( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext ) {
-    Shell shell = aContext.find( Shell.class );
-    FileDialog fd = new FileDialog( shell, SWT.SAVE );
-    fd.setText( STR_SELECT_FILE_SAVE_DLMCFG );
-    fd.setFilterPath( TsLibUtils.EMPTY_STRING );
-    String[] filterExt = { ".dlmcfg" }; //$NON-NLS-1$
-    fd.setFilterExtensions( filterExt );
-    String selected = fd.open();
+    String selected = formCfgFileFullName( aDoc, aContext, "/cfg/dlms/%s%s", ".dlmcfg" );
     if( selected == null ) {
       return;
     }
+    Shell shell = aContext.find( Shell.class );
     try {
       ISkConnectionSupplier cs = aContext.get( ISkConnectionSupplier.class );
       TsInternalErrorRtException.checkNull( cs );
@@ -274,6 +275,12 @@ public class OpcUaUtils {
       AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
 
       String DLM_CONFIG_STR = "DlmConfig = "; //$NON-NLS-1$
+
+      File dstFile = new File( selected );
+      if( !dstFile.exists() ) {
+        dstFile.createNewFile();
+      }
+
       PinsConfigFileFormatter.format( TMP_DEST_FILE, selected, DLM_CONFIG_STR );
 
       TsDialogUtils.info( shell, MSG_CONFIG_FILE_DLMCFG_CREATED, selected );
@@ -282,6 +289,24 @@ public class OpcUaUtils {
       LoggerUtils.errorLogger().error( e );
       TsDialogUtils.error( shell, e );
     }
+  }
+
+  private static String formCfgFileFullName( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext, String aReletivePathFormat,
+      String aFileExtention ) {
+    String pathToL2 = aDoc.getL2Path();
+    String cfgFilename = aDoc.getCfgFilesPrefix();
+    if( pathToL2 != null && pathToL2.length() > 0 && cfgFilename != null && cfgFilename.length() > 0 ) {
+      return pathToL2 + String.format( aReletivePathFormat, cfgFilename, aFileExtention );
+    }
+    Shell shell = aContext.find( Shell.class );
+    FileDialog fd = new FileDialog( shell, SWT.SAVE );
+    fd.setText( STR_SELECT_FILE_SAVE_DLMCFG );
+    fd.setFilterPath( TsLibUtils.EMPTY_STRING );
+    String[] filterExt = { aFileExtention };
+    fd.setFilterExtensions( filterExt );
+    String selected = fd.open();
+
+    return selected;
   }
 
   /**
@@ -1712,6 +1737,13 @@ public class OpcUaUtils {
     return new BitIdx2RriDtoAttr( aBitArrayRtDataId, bitIndex, attrInfo );
   }
 
+  /**
+   * Does synchronization of Opc Ua Nodes due to cfg units from Doc.
+   *
+   * @param aDoc OpcToS5DataCfgDoc - Doc, containing cfg units opc-s5.
+   * @param aContext ITsGuiContext - context.
+   * @param aDeleteUnnecessary true - delet Unnecessary Opc Ua Nodes
+   */
   public static void synchronizeNodesCfgs( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext,
       boolean aDeleteUnnecessary ) {
 

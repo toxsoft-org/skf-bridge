@@ -429,6 +429,18 @@ public class OpcToS5DataCfgDocEditorPanel
     IM5CollectionPanel<CfgOpcUaNode> cfgNodesPanel =
         nodeModel.panelCreator().createCollEditPanel( ctx2, nodeLm.itemsProvider(), nodeLm );
 
+    lm.itemsProvider().genericChangeEventer().addListener( aSource -> {
+      OpcUaUtils.synchronizeNodesCfgs( aSelDoc, ctx, true );
+      OpcToS5DataCfgDocService service = ctx.get( OpcToS5DataCfgDocService.class );
+      service.saveCfgDoc( aSelDoc );
+      cfgNodesPanel.refresh();
+    } );
+
+    nodeLm.itemsProvider().genericChangeEventer().addListener( aSource -> {
+      OpcToS5DataCfgDocService service = ctx.get( OpcToS5DataCfgDocService.class );
+      service.saveCfgDoc( aSelDoc );
+    } );
+
     tabCfgNodesItem.setControl( cfgNodesPanel.createControl( tabSubFolder ) );
 
     tabSubFolder.setSelection( tabCfgUnitsItem );

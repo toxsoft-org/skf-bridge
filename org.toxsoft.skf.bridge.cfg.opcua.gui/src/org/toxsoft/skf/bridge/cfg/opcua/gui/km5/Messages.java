@@ -13,8 +13,8 @@ public class Messages
   public static String        MSG_SELECT_OPC_UA_SERVER;
   public static String        STR_D_ADD_AS_STRING;
   public static String        STR_D_ADD_MISSED_NODES;
-  public static String        STR_D_CONFIG_DESCR;
-  public static String        STR_D_CONFIG_NAME;
+  public static String        STR_D_CFG_FILE_NAME;
+  public static String        STR_D_PATH_TO_L2;
   public static String        STR_D_DATA_TYPE;
   public static String        STR_D_EDIT_AS_STRING;
   public static String        STR_D_GENERATE_DEVCFG;
@@ -41,8 +41,8 @@ public class Messages
   public static String        STR_LINK_PREFIX;
   public static String        STR_N_ADD_AS_STRING;
   public static String        STR_N_ADD_MISSED_NODES;
-  public static String        STR_N_CONFIG_DESCR;
-  public static String        STR_N_CONFIG_NAME;
+  public static String        STR_N_CFG_FILE_NAME;
+  public static String        STR_N_PATH_TO_L2;
   public static String        STR_N_DATA_TYPE;
   public static String        STR_N_EDIT_AS_STRING;
   public static String        STR_N_GENERATE_DEVCFG;
