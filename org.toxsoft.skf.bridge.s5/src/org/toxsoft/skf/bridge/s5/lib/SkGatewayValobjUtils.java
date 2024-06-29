@@ -1,6 +1,6 @@
 package org.toxsoft.skf.bridge.s5.lib;
 
-import org.toxsoft.core.tslib.utils.valobj.TsValobjUtils;
+import org.toxsoft.core.tslib.utils.valobj.*;
 import org.toxsoft.skf.bridge.s5.lib.impl.*;
 
 /**
@@ -11,7 +11,7 @@ import org.toxsoft.skf.bridge.s5.lib.impl.*;
 public class SkGatewayValobjUtils {
 
   /**
-   * Регистрация известных хранителей
+   * Регистрация известных хранителей.
    */
   public static void registerS5Keepers() {
     TsValobjUtils.registerKeeperIfNone( SkGatewayGwidConfigs.KEEPER_ID, SkGatewayGwidConfigs.KEEPER );
