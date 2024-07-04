@@ -149,7 +149,7 @@ public class StoredMetaInfoAutoLinkConfigurationProcess
 
       String name = STR_LINK_PREFIX + cmd2Nodes.gwid().asString();
 
-      OpcToS5DataCfgUnit unit = new OpcToS5DataCfgUnit( strid, name, gwids, convertToAtomicList( nodes ) );
+      OpcToS5DataCfgUnit unit = new OpcToS5DataCfgUnit( strid, name, gwids, convertNodeListToAtomicList( nodes ) );
 
       unit.setTypeOfCfgUnit( type );
       unit.setRelizationTypeId( realType.id() );
@@ -196,7 +196,7 @@ public class StoredMetaInfoAutoLinkConfigurationProcess
 
       String name = STR_LINK_PREFIX + gwid.asString();
 
-      OpcToS5DataCfgUnit unit = new OpcToS5DataCfgUnit( strid, name, gwids, convertToAtomicList( nodes ) );
+      OpcToS5DataCfgUnit unit = new OpcToS5DataCfgUnit( strid, name, gwids, convertNodeListToAtomicList( nodes ) );
 
       unit.setTypeOfCfgUnit( type );
       unit.setRelizationTypeId( realType.id() );
@@ -244,7 +244,7 @@ public class StoredMetaInfoAutoLinkConfigurationProcess
 
       String name = STR_LINK_PREFIX + gwid.asString();
 
-      OpcToS5DataCfgUnit unit = new OpcToS5DataCfgUnit( strid, name, gwids, convertToAtomicList( nodes ) );
+      OpcToS5DataCfgUnit unit = new OpcToS5DataCfgUnit( strid, name, gwids, convertNodeListToAtomicList( nodes ) );
       unit.setTypeOfCfgUnit( type );
       unit.setRelizationTypeId( realType.id() );
       unit.setRealizationOpts( realization );
@@ -287,7 +287,7 @@ public class StoredMetaInfoAutoLinkConfigurationProcess
 
       String name = STR_LINK_PREFIX + gwid.asString();
 
-      OpcToS5DataCfgUnit unit = new OpcToS5DataCfgUnit( strid, name, gwids, convertToAtomicList( nodes ) );
+      OpcToS5DataCfgUnit unit = new OpcToS5DataCfgUnit( strid, name, gwids, convertNodeListToAtomicList( nodes ) );
 
       unit.setTypeOfCfgUnit( type );
       unit.setRelizationTypeId( realType.id() );

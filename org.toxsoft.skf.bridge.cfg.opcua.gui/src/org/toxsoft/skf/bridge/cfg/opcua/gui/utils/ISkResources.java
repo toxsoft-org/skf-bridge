@@ -5,33 +5,16 @@ package org.toxsoft.skf.bridge.cfg.opcua.gui.utils;
  *
  * @author dima
  */
-@SuppressWarnings( { "nls", "javadoc" } )
+@SuppressWarnings( { "javadoc" } )
 public interface ISkResources {
 
-  String STR_UPDATE_CLASSES     = Messages.STR_UPDATE_CLASSES;
-  String MSG_OPEN_ODS_FILE      = Messages.MSG_OPEN_ODS_FILE;
-  String MSG_PARSE_ODS_FILE     = Messages.MSG_PARSE_ODS_FILE;
-  String MSG_UPDATE_SERVER      = Messages.MSG_UPDATE_SERVER;
-  String MSG_ERR_IMPORT         = Messages.MSG_ERR_IMPORT;
-  String STR_UPDATE_OBJECTS     = Messages.STR_UPDATE_OBJECTS;
-  String MSG_GENERATE_THD_CFG   = Messages.MSG_GENERATE_THD_CFG;
-  String MSG_GENERATE_ODS       = Messages.MSG_GENERATE_ODS;
-  String MSG_GENERATE_DLM_CFG   = Messages.MSG_GENERATE_DLM_CFG;
-  String STR_GENERATION_L2_CFG  = Messages.STR_GENERATION_L2_CFG;
-  String STR_CONVERTION_XML_ODS = Messages.STR_CONVERTION_XML_ODS;
-  String MSG_ERR_GENERATION     = Messages.MSG_ERR_GENERATION;
-  String STR_N_EV_PARAM_OLD_VAL = Messages.STR_N_EV_PARAM_OLD_VAL;
-  String STR_D_EV_PARAM_OLD_VAL = Messages.STR_D_EV_PARAM_OLD_VAL;
-  String STR_N_EV_PARAM_NEW_VAL = Messages.STR_N_EV_PARAM_NEW_VAL;
-  String STR_D_EV_PARAM_NEW_VAL = Messages.STR_D_EV_PARAM_NEW_VAL;
-  String STR_N_EV_PARAM_ON      = Messages.STR_N_EV_PARAM_ON;
-  String STR_D_EV_PARAM_ON      = Messages.STR_D_EV_PARAM_ON;
-  String STR_N_EV_PARAM_VALUE   = Messages.STR_N_EV_PARAM_VALUE;
-  String STR_D_EV_PARAM_VALUE   = Messages.STR_D_EV_PARAM_VALUE;
-  String STR_N_CMD_ARG_INT      = Messages.STR_N_CMD_ARG_INT;
-  String STR_D_CMD_ARG_INT      = Messages.STR_D_CMD_ARG_INT;
-  String STR_N_CMD_ARG_FLT      = Messages.STR_N_CMD_ARG_FLT;
-  String STR_D_CMD_ARG_FLT      = Messages.STR_D_CMD_ARG_FLT;
+  /**
+   * {@link Ods2DtoCmdInfoParser}
+   */
+  String STR_N_CMD_ARG_INT = Messages.STR_N_CMD_ARG_INT;
+  String STR_D_CMD_ARG_INT = Messages.STR_D_CMD_ARG_INT;
+  String STR_N_CMD_ARG_FLT = Messages.STR_N_CMD_ARG_FLT;
+  String STR_D_CMD_ARG_FLT = Messages.STR_D_CMD_ARG_FLT;
 
   /**
    * {@link OpcUaUtils}
@@ -67,5 +50,15 @@ public interface ISkResources {
   String STR_ON                             = Messages.STR_ON;
   String STR_BIT_TAG_VAL_CHANGED_EVENT      = Messages.STR_BIT_TAG_VAL_CHANGED_EVENT;
   String STR_BIT_WORD_TAG_VAL_CHANGED_EVENT = Messages.STR_BIT_WORD_TAG_VAL_CHANGED_EVENT;
+  String STR_N_EV_PARAM_ON                  = Messages.STR_N_EV_PARAM_ON;
+  String STR_D_EV_PARAM_ON                  = Messages.STR_D_EV_PARAM_ON;
 
+  String STR_D_IS_CURR      = Messages.STR_D_IS_CURR;
+  String STR_N_IS_CURR      = Messages.STR_N_IS_CURR;
+  String STR_D_IS_HIST      = Messages.STR_D_IS_HIST;
+  String STR_N_IS_HIST      = Messages.STR_N_IS_HIST;
+  String STR_D_SYNCH_PERIOD = Messages.STR_D_SYNCH_PERIOD;
+  String STR_N_SYNCH_PERIOD = Messages.STR_N_SYNCH_PERIOD;
+  String STR_D_SYNTH_TAG    = Messages.STR_D_SYNTH_TAG;
+  String STR_N_SYNTH_TAG    = Messages.STR_N_SYNTH_TAG;
 }

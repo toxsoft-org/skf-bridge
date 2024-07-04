@@ -89,68 +89,74 @@ public class OpcUaUtils {
    */
   private static ILogger logger = LoggerWrapper.getLogger( OpcUaUtils.class.getName() );
 
+  private static final String DLMCFG_FILE_EXTENTION = ".dlmcfg"; //$NON-NLS-1$
+
+  private static final String DEVCFG_FILE_EXTENTION = ".devcfg"; //$NON-NLS-1$
+
+  private static final String DEV_CFG_FILE_RELETIVE_PATH_AND_NAME_FORMAT = "/cfg/hal/thds/%s%s"; //$NON-NLS-1$
+
+  private static final String DLM_CFG_FILE_RELETIVE_PATH_AND_NAME_FORMAT = "/cfg/dlms/%s%s"; //$NON-NLS-1$
+
   /**
    * Параметр события: включен.
    * <p>
    * Параметр имеет тип {@link EAtomicType#BOOLEAN}.
    */
-  static String EVPID_ON = "on"; //$NON-NLS-1$
+  private static final String EVPID_ON = "on"; //$NON-NLS-1$
 
   public static final String COMMANDS_JAVA_CLASS_VALUE_COMMAND_BY_COMPLEX_TAG_EXEC =
-      "ru.toxsoft.l2.dlm.opc_bridge.submodules.commands.ValCommandByComplexTagExec";
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.commands.ValCommandByComplexTagExec"; //$NON-NLS-1$
 
   public static final String COMMANDS_JAVA_CLASS_VALUE_COMMAND_BY_ONE_TAG_EXEC =
-      "ru.toxsoft.l2.dlm.opc_bridge.submodules.commands.ValCommandByOneTagWithParamExec";
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.commands.ValCommandByOneTagWithParamExec"; //$NON-NLS-1$
 
-  public static final String CFG_UNIT_REALIZATION_TYPE_VALUE_COMMAND_BY_ONE_TAG = "val.command.one.tag";
+  public static final String CFG_UNIT_REALIZATION_TYPE_VALUE_COMMAND_BY_ONE_TAG = "val.command.one.tag"; //$NON-NLS-1$
 
-  public static final String CFG_UNIT_REALIZATION_TYPE_VALUE_COMMAND = "value.command";
+  private static final String CFG_UNIT_REALIZATION_TYPE_VALUE_COMMAND = "value.command"; //$NON-NLS-1$
 
   private static final String COMMANDS_JAVA_CLASS_VALUE_COMMAND_EXEC =
-      "ru.toxsoft.l2.dlm.opc_bridge.submodules.commands.ValueCommandExec";
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.commands.ValueCommandExec"; //$NON-NLS-1$
 
   private static final String DATA_JAVA_CLASS_ONE_TO_ONE_DATA_TRANSMITTER_FACTORY =
-      "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.OneToOneDataTransmitterFactory";
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.OneToOneDataTransmitterFactory"; //$NON-NLS-1$
 
   private static final String JAVA_CLASS_ONE_TO_ONE_RRI_ATTR_TRANSMITTER_FACTORY =
-      "ru.toxsoft.l2.dlm.opc_bridge.submodules.rri.OneToOneRriDataTransmitterFactory";
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.rri.OneToOneRriDataTransmitterFactory"; //$NON-NLS-1$
 
   private static final String EVENTS_ONE_TAG_CHANGED_PARAM_FORMER =
-      "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagToChangedParamFormer";
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagToChangedParamFormer"; //$NON-NLS-1$
 
   private static final String EVENTS_ONE_TAG_TO_ONE_PARAM_FORMER =
-      "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagToOneParamFormer";
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagToOneParamFormer"; //$NON-NLS-1$
 
   private static final String EVENTS_JAVA_CLASS_TAG_SWITCH_CONDITION =
-      "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagSwitchEventCondition";
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagSwitchEventCondition"; //$NON-NLS-1$
 
   private static final String EVENTS_JAVA_CLASS_TAG_VALUE_CHANGED_CONDITION =
-      "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagChangedEventCondition";
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagChangedEventCondition"; //$NON-NLS-1$
 
   private static final String EVENTS_JAVA_CLASS_OPC_TAGS_EVENT_SENDER =
-      "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OpcTagsEventSender";
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OpcTagsEventSender"; //$NON-NLS-1$
 
-  public static final String CFG_UNIT_REALIZATION_TYPE_TAG_VALUE_CHANGED = "opc.tags.event.sender.tag.value.changed";
+  public static final String CFG_UNIT_REALIZATION_TYPE_TAG_VALUE_CHANGED = "opc.tags.event.sender.tag.value.changed"; //$NON-NLS-1$
 
-  public static final String CFG_UNIT_REALIZATION_TYPE_BIT_SWITCH_EVENT = "opc.tags.event.sender.bit.switch";
+  public static final String CFG_UNIT_REALIZATION_TYPE_BIT_SWITCH_EVENT = "opc.tags.event.sender.bit.switch"; //$NON-NLS-1$
 
-  public static final String CFG_UNIT_REALIZATION_TYPE_SWITCH_EVENT = "opc.tags.event.sender.switch";
+  public static final String CFG_UNIT_REALIZATION_TYPE_SWITCH_EVENT = "opc.tags.event.sender.switch"; //$NON-NLS-1$
 
-  private static StringMap<IList<UaTreeNode>> section2NodesList = new StringMap<>();
+  public static final String CFG_UNIT_REALIZATION_TYPE_ONT_TO_ONE_DATA = "ont.to.one.data"; //$NON-NLS-1$
 
-  public static final String CFG_UNIT_REALIZATION_TYPE_ONT_TO_ONE_DATA = "ont.to.one.data";
+  public static final String CFG_UNIT_REALIZATION_TYPE_ONE_TO_ONE_RRI = "one.to.one.rri"; //$NON-NLS-1$
 
-  public static final String CFG_UNIT_REALIZATION_TYPE_ONE_TO_ONE_RRI = "one.to.one.rri";
+  public static final String CFG_UNIT_REALIZATION_TYPE_ONE_INT_TO_ONE_BIT_DATA = "int.to.byte.data"; //$NON-NLS-1$
 
-  public static final String CFG_UNIT_REALIZATION_TYPE_ONE_INT_TO_ONE_BIT_DATA = "int.to.byte.data";
-
-  public static final String CFG_UNIT_REALIZATION_TYPE_ONE_INT_TO_ONE_BIT_RRI = "int.to.bit.rri";
+  public static final String CFG_UNIT_REALIZATION_TYPE_ONE_INT_TO_ONE_BIT_RRI = "int.to.bit.rri"; //$NON-NLS-1$
 
   private static final String DATA_JAVA_CLASS_ONE_INT_TO_ONE_BIT_DATA_TRANSMITTER_FACTORY =
-      "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.SingleIntToSingleBoolDataTransmitterFactory";
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.SingleIntToSingleBoolDataTransmitterFactory"; //$NON-NLS-1$
 
   private static final String JAVA_CLASS_ONE_INT_TO_ONE_BIT_RRI_ATTR_TRANSMITTER_FACTORY =
-      "ru.toxsoft.l2.dlm.opc_bridge.submodules.rri.SingleIntToSingleBoolRriDataTransmitterFactory";
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.rri.SingleIntToSingleBoolRriDataTransmitterFactory"; //$NON-NLS-1$
 
   /**
    * template for id secton for cached OPC UA nodes
@@ -185,30 +191,25 @@ public class OpcUaUtils {
   /**
    * template for id secton for store links CmdGwid->UaNodes
    */
-  private static final String SECTID_CMD_GWIDS_2_OPC_UA_NODES_TEMPLATE      = "cmd.gwid2opc.ua.nodes";      //$NON-NLS-1$
+  private static final String SECTID_CMD_GWIDS_2_OPC_UA_NODES_TEMPLATE = "cmd.gwid2opc.ua.nodes"; //$NON-NLS-1$
+
   /**
    * template for id secton for store links RriAttrCmdGwid->UaNodes
    */
   private static final String SECTID_RRI_ATTR_GWIDS_2_OPC_UA_NODES_TEMPLATE = "rri.attr.gwid2opc.ua.nodes"; //$NON-NLS-1$
 
-  private static final String                                    CLIENT_APP_NAME                            =
-      "eclipse milo opc-ua client";
-  private static final String                                    CLIENT_APP_URI                             =
-      "urn:eclipse:milo:examples:client";
-  private static final String                                    ERROR_FORMAT_UNABLE_TO_CREATE_SECURITY_DIR =
-      "unable to create security dir: %s";
-  private static final String                                    SYS_PROP_JAVA_IO_TMPDIR_DEF_VAL            =
-      "security";
-  private static final String                                    SYS_PROP_JAVA_IO_TMPDIR                    =
-      "java.io.tmpdir";
-  private static final Map<String, Map<String, Gwid>>            sect2nodeId2GwidMap                        =
-      new HashMap<>();
-  private static final Map<String, Map<String, NodeId>>          sect2classGwid2NodeIdMap                   =
-      new HashMap<>();
-  private static final Map<String, Map<Skid, NodeId>>            sect2skid2NodeIdMap                        =
-      new HashMap<>();
-  private static final Map<String, Map<String, CmdGwid2UaNodes>> sect2cmdGwid2NodeIdsMap                    =
-      new HashMap<>();
+  private static final String CLIENT_APP_NAME                            = "eclipse milo opc-ua client";        //$NON-NLS-1$
+  private static final String CLIENT_APP_URI                             = "urn:eclipse:milo:examples:client";  //$NON-NLS-1$
+  private static final String ERROR_FORMAT_UNABLE_TO_CREATE_SECURITY_DIR = "unable to create security dir: %s"; //$NON-NLS-1$
+  private static final String SYS_PROP_JAVA_IO_TMPDIR_DEF_VAL            = "security";                          //$NON-NLS-1$
+  private static final String SYS_PROP_JAVA_IO_TMPDIR                    = "java.io.tmpdir";                    //$NON-NLS-1$
+
+  private static final Map<String, Map<String, Gwid>>   sect2nodeId2GwidMap      = new HashMap<>();
+  private static final Map<String, Map<String, NodeId>> sect2classGwid2NodeIdMap = new HashMap<>();
+  private static final Map<String, Map<Skid, NodeId>>   sect2skid2NodeIdMap      = new HashMap<>();
+  private static final StringMap<IList<UaTreeNode>>     section2NodesList        = new StringMap<>();
+  // private static final Map<String, Map<String, CmdGwid2UaNodes>> sect2cmdGwid2NodeIdsMap =
+  // new HashMap<>();
 
   static private final String RTD_PREFIX = "rtd"; //$NON-NLS-1$
   private static final String EVT_PREFIX = "evt"; //$NON-NLS-1$
@@ -228,7 +229,8 @@ public class OpcUaUtils {
    * @param aContext ITsGuiContext - context.
    */
   public static void generateDevCfgFileFromCurrState( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext ) {
-    String selected = formCfgFileFullName( aDoc, aContext, "/cfg/hal/thds/%s%s", ".devcfg" );
+    String selected =
+        formCfgFileFullName( aDoc, aContext, DEV_CFG_FILE_RELETIVE_PATH_AND_NAME_FORMAT, DEVCFG_FILE_EXTENTION );
     if( selected == null ) {
       return;
     }
@@ -257,7 +259,8 @@ public class OpcUaUtils {
    * @param aContext ITsGuiContext - context.
    */
   public static void generateDlmCfgFileFromCurrState( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext ) {
-    String selected = formCfgFileFullName( aDoc, aContext, "/cfg/dlms/%s%s", ".dlmcfg" );
+    String selected =
+        formCfgFileFullName( aDoc, aContext, DLM_CFG_FILE_RELETIVE_PATH_AND_NAME_FORMAT, DLMCFG_FILE_EXTENTION );
     if( selected == null ) {
       return;
     }
@@ -394,6 +397,15 @@ public class OpcUaUtils {
     return new AnonymousProvider();// Siemens
   }
 
+  /**
+   * Переводит список AV объектов в список идентификаторов узлов (идентификатор - пара: ид устроства - ид узла в
+   * устройстве)
+   *
+   * @param aAtomicList список AV объектов
+   * @param aConvertor конвертор из AV объекта в полный идентификатор (идентификатор - пара: ид устроства - ид узла в
+   *          устройстве)
+   * @return список идентификаторов узлов
+   */
   public static IList<Pair<String, String>> convertToNodesList2( IAvList aAtomicList, INodeIdConvertor aConvertor ) {
     IListEdit<Pair<String, String>> result = new ElemArrayList<>();
     for( IAtomicValue val : aAtomicList ) {
@@ -402,6 +414,13 @@ public class OpcUaUtils {
     return result;
   }
 
+  /**
+   * Переводит список AV объектов в список узлов (содержащихся в объектах AV)
+   *
+   * @param <T> - класс узла
+   * @param aAtomicList - список AV объектов
+   * @return список узлов
+   */
   public static <T> IList<T> convertToNodesList( IAvList aAtomicList ) {
     IListEdit<T> result = new ElemArrayList<>();
     for( IAtomicValue val : aAtomicList ) {
@@ -410,7 +429,13 @@ public class OpcUaUtils {
     return result;
   }
 
-  public static IAvList convertToAtomicList( IList<NodeId> aNodeList ) {
+  /**
+   * Переводит список узлов в список AV объектов (созданных их этих узлов)
+   *
+   * @param aNodeList IList - список узлов.
+   * @return IAvList - список AV объектов
+   */
+  public static IAvList convertNodeListToAtomicList( IList<NodeId> aNodeList ) {
     IAvListEdit result = new AvList( new ElemArrayList<>() );
     for( NodeId node : aNodeList ) {
       result.add( avValobj( node ) );
@@ -735,11 +760,11 @@ public class OpcUaUtils {
       Map<String, NodeId> classGwid2NodeIdMap = new HashMap<>();
       sect2classGwid2NodeIdMap.put( sectId, classGwid2NodeIdMap );
       for( UaNode2Gwid node2Gwid : nodes2Gwids ) {
-        String key = node2Gwid.gwid().asString();
+        String key = node2Gwid.gwid().canonicalString();
         classGwid2NodeIdMap.put( key, node2Gwid.getNodeId() );
       }
     }
-    String gwidKey = aGwid.asString();
+    String gwidKey = aGwid.canonicalString();
     Map<String, NodeId> classGwid2NodeIdMap = sect2classGwid2NodeIdMap.get( sectId );
     if( classGwid2NodeIdMap.containsKey( gwidKey ) ) {
       retVal = classGwid2NodeIdMap.get( gwidKey );
@@ -836,23 +861,38 @@ public class OpcUaUtils {
     return retVal;
   }
 
+  /**
+   * Имя параметра - Идентификатор синтетического тега
+   */
   public static final IDataDef OP_COMPLEX_TAG_ID = create( "complex.tag.id", STRING, //$NON-NLS-1$
-      TSID_NAME, "Синтетический тег", //
-      TSID_DESCRIPTION, "Идентификатор синтетического тега" ); //
+      TSID_NAME, STR_N_SYNTH_TAG, //
+      TSID_DESCRIPTION, STR_D_SYNTH_TAG ); //
 
+  /**
+   * Имя параметра - java класс, реализующий оработку команды в dlm
+   */
   public static final IDataDef OP_CMD_JAVA_CLASS = create( "command.exec.java.class", STRING, //$NON-NLS-1$
       TSID_NAME, STR_N_JAVA_CLASS, //
       TSID_DESCRIPTION, STR_D_JAVA_CLASS, //
       TSID_IS_READ_ONLY, AV_TRUE );
 
+  /**
+   * Имя параметра - идентификатор параметра команды
+   */
   public static final IDataDef OP_CMD_VALUE_PARAM_ID = create( "value.param.id", STRING, //$NON-NLS-1$
       TSID_NAME, STR_N_PARAM_ID, //
       TSID_DESCRIPTION, STR_D_PARAM_ID ); //
 
+  /**
+   * Имя параметра - идентификатор (номер) команды opc
+   */
   public static final IDataDef OP_CMD_OPC_ID = create( "cmd.opc.id", INTEGER, //$NON-NLS-1$
       TSID_NAME, STR_N_OPC_CMD_ID, //
       TSID_DESCRIPTION, STR_D_OPC_CMD_ID ); //
 
+  /**
+   * Имя параметра - java класс, реализующий оработку данных в dlm
+   */
   public static final IDataDef OP_DATA_JAVA_CLASS = create( "java.class", STRING, //$NON-NLS-1$
       TSID_NAME, STR_N_DATA_JAVA_CLASS, //
       TSID_DESCRIPTION, STR_D_DATA_JAVA_CLASS, //
@@ -869,50 +909,69 @@ public class OpcUaUtils {
    * Имя параметра - период синхронизации
    */
   public static final IDataDef OP_SYNCH_PERIOD = create( "synch.period", INTEGER, //$NON-NLS-1$
-      TSID_NAME, "Период синхронизации", //
-      TSID_DESCRIPTION, "Период синхронизации данных", //
-      TSID_DEFAULT_VALUE, avInt( 1 ) );
+      TSID_NAME, STR_N_SYNCH_PERIOD, //
+      TSID_DESCRIPTION, STR_D_SYNCH_PERIOD, //
+      TSID_DEFAULT_VALUE, avInt( 0 ) );
 
   /**
    * Имя параметра - признак исторических данных
    */
   public static final IDataDef OP_IS_HIST = create( "is.hist", BOOLEAN, //$NON-NLS-1$
-      TSID_NAME, "Исторические", //
-      TSID_DESCRIPTION, "Исторические данные", //
+      TSID_NAME, STR_N_IS_HIST, //
+      TSID_DESCRIPTION, STR_D_IS_HIST, //
       TSID_DEFAULT_VALUE, avBool( true ) );
 
   /**
    * Имя параметра - признак исторических данных
    */
   public static final IDataDef OP_IS_CURR = create( "is.curr", BOOLEAN, //$NON-NLS-1$
-      TSID_NAME, "Текущие", //
-      TSID_DESCRIPTION, "Текущие данные", //
-      TSID_DEFAULT_VALUE, avBool( true ) );
+      TSID_NAME, STR_N_IS_CURR, //
+      TSID_DESCRIPTION, STR_D_IS_CURR, //
+      TSID_DEFAULT_VALUE, avBool( true ), //
+      TSID_IS_READ_ONLY, AV_TRUE );
 
+  /**
+   * Имя параметра - java класс, реализующий оработку событий в dlm
+   */
   public static final IDataDef OP_EVENT_SENDER_JAVA_CLASS = create( "event.sender.java.class", STRING, //$NON-NLS-1$
       TSID_NAME, STR_N_EVENT_SENDER_JAVA_CLASS, //
       TSID_DESCRIPTION, STR_D_EVENT_SENDER_JAVA_CLASS, //
       TSID_IS_READ_ONLY, AV_TRUE );
 
+  /**
+   * Имя параметра - java класс, реализующий условие наступления событий в dlm
+   */
   public static final IDataDef OP_CONDITION_JAVA_CLASS = create( "condition.java.class", STRING, //$NON-NLS-1$
       TSID_NAME, STR_N_CONDITION_JAVA_CLASS, //
       TSID_DESCRIPTION, STR_D_CONDITION_JAVA_CLASS, //
       TSID_IS_READ_ONLY, AV_TRUE );
 
+  /**
+   * Имя параметра - java класс, реализующий формирование параметров событий в dlm
+   */
   public static final IDataDef OP_PARAM_FORMER_JAVA_CLASS = create( "param.former.java.class", STRING, //$NON-NLS-1$
       TSID_NAME, STR_N_PARAM_FORMER_JAVA_CLASS, //
       TSID_DESCRIPTION, STR_D_PARAM_FORMER_JAVA_CLASS, //
       TSID_IS_READ_ONLY, AV_TRUE );
 
+  /**
+   * Имя параметра - параметры события
+   */
   public static final IDataDef OP_FORMER_EVENT_PARAM = create( "former.event.params", STRING, //$NON-NLS-1$
       TSID_NAME, STR_N_FORMER_EVENT_PARAM, //
       TSID_DESCRIPTION, STR_D_FORMER_EVENT_PARAM );
 
+  /**
+   * Имя параметра - признак наступления события по фронту
+   */
   public static final IDataDef OP_CONDITION_SWITCH_ON = create( "condition.switch.on", BOOLEAN, //$NON-NLS-1$
       TSID_NAME, STR_N_FRONT, //
       TSID_DESCRIPTION, STR_D_FRONT, //
       TSID_DEFAULT_VALUE, avBool( true ) );
 
+  /**
+   * Имя параметра - признак наступления события по обратному фронту
+   */
   public static final IDataDef OP_CONDITION_SWITCH_OFF = create( "condition.switch.off", BOOLEAN, //$NON-NLS-1$
       TSID_NAME, STR_N_DOWN, //
       TSID_DESCRIPTION, STR_D_DOWN, //
@@ -997,7 +1056,7 @@ public class OpcUaUtils {
     // OP_IS_CURR.setValue( defaultParams, avBool( false ) );
     // OP_IS_HIST.setValue( defaultParams, avBool( false ) );
     // new version
-    OP_SYNCH_PERIOD.setValue( defaultParams, avInt( 1 ) );
+    OP_SYNCH_PERIOD.setValue( defaultParams, avInt( 0 ) );
     OP_IS_CURR.setValue( defaultParams, avBool( true ) );
     OP_IS_HIST.setValue( defaultParams, avBool( true ) );
 
@@ -1021,9 +1080,9 @@ public class OpcUaUtils {
     OP_DATA_JAVA_CLASS.setValue( defaultParams, avStr( DATA_JAVA_CLASS_ONE_INT_TO_ONE_BIT_DATA_TRANSMITTER_FACTORY ) );
     OP_BIT_INDEX.setValue( defaultParams, avInt( 0 ) );
 
-    OP_SYNCH_PERIOD.setValue( defaultParams, avInt( -1 ) );
-    OP_IS_CURR.setValue( defaultParams, avBool( false ) );
-    OP_IS_HIST.setValue( defaultParams, avBool( false ) );
+    OP_SYNCH_PERIOD.setValue( defaultParams, avInt( 0 ) );
+    OP_IS_CURR.setValue( defaultParams, avBool( true ) );
+    OP_IS_HIST.setValue( defaultParams, avBool( true ) );
 
     ICfgUnitRealizationType dataIntToOne =
         new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_ONE_INT_TO_ONE_BIT_DATA, STR_BIT_FROM_WORD,
@@ -1171,8 +1230,14 @@ public class OpcUaUtils {
     // return aSectNameTemplate;
   }
 
+  /**
+   * Получение в строковом виде IP адреса из конфигурации подключения к opc серверу с заменой точек на подчёркивание
+   *
+   * @param aSelConfig IOpcUaServerConnCfg - конфигурация подключения к opc серверу
+   * @return String - строковое представление IP адреса с заменой точек на подчёркивание
+   */
   @SuppressWarnings( "nls" )
-  public static String extractIP( IOpcUaServerConnCfg aSelConfig ) {
+  private static String extractIP( IOpcUaServerConnCfg aSelConfig ) {
     // выделяем из хоста IP, opc.tcp://192.168.12.61:4840
     Pattern p = Pattern.compile( "[a-z:\\.\\/]+([0-9\\.]+)" );
     String host = aSelConfig.host();
