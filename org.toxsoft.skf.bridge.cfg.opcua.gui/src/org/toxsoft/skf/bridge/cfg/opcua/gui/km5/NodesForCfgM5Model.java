@@ -31,8 +31,8 @@ import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.helpers.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.panels.*;
-import org.toxsoft.uskat.core.connection.*;
-import org.toxsoft.uskat.core.gui.conn.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 
 /**
  * M5 model realization for {@link NodeId} entities using for cfg of map uanodes-gwids
@@ -41,6 +41,8 @@ import org.toxsoft.uskat.core.gui.conn.*;
  */
 public class NodesForCfgM5Model
     extends M5Model<IAtomicValue> {
+
+  private static final String EMPTY_VALUE = " - "; //$NON-NLS-1$
 
   /**
    * Model ID.
@@ -62,7 +64,27 @@ public class NodesForCfgM5Model
    */
   public static final String FID_NODE_STR = "node.str"; //$NON-NLS-1$
 
-  public final M5AttributeFieldDef<IAtomicValue> NODE_STR = new M5AttributeFieldDef<>( FID_NODE_STR, EAtomicType.STRING, //
+  /**
+   * node display name
+   */
+  public static final String FID_NODE_DISPLAY_NAME = "node.display.name"; //$NON-NLS-1$
+
+  /**
+   * node browse name
+   */
+  public static final String FID_NODE_BROWSE_NAME = "node.browse.name"; //$NON-NLS-1$
+
+  /**
+   * node description
+   */
+  public static final String FID_NODE_DESCRIPTION = "node.description"; //$NON-NLS-1$
+
+  /**
+   * node parent
+   */
+  public static final String FID_NODE_PARENT = "node.parent"; //$NON-NLS-1$
+
+  final M5AttributeFieldDef<IAtomicValue> NODE_STR = new M5AttributeFieldDef<>( FID_NODE_STR, EAtomicType.STRING, //
       TSID_NAME, STR_N_NODE_STRING, //
       TSID_DESCRIPTION, STR_D_NODE_STRING //
   ) {
@@ -75,17 +97,102 @@ public class NodesForCfgM5Model
     }
 
     protected IAtomicValue doGetFieldValue( IAtomicValue aEntity ) {
-      return avStr( ((NodeId)aEntity.asValobj()).toParseableString() );
+      OpcNodeInfo nodeInfo = aEntity.asValobj();
+      return avStr( nodeInfo.getNodeId().toParseableString() );
     }
 
   };
+
+  final M5AttributeFieldDef<IAtomicValue> NODE_DISPLAY_NAME =
+      new M5AttributeFieldDef<>( FID_NODE_DISPLAY_NAME, EAtomicType.STRING, //
+          TSID_NAME, STR_N_NODE_DISPLAY_NAME, //
+          TSID_DESCRIPTION, STR_D_NODE_DISPLAY_NAME ) {
+
+        @Override
+        protected void doInit() {
+          setFlags( M5FF_COLUMN | M5FF_READ_ONLY );
+          // setFlags( M5FF_COLUMN | M5FF_READ_ONLY | M5FF_HIDDEN );
+          // setFlags( M5FF_COLUMN | M5FF_HIDDEN );
+        }
+
+        protected IAtomicValue doGetFieldValue( IAtomicValue aEntity ) {
+
+          OpcNodeInfo nodeInfo = aEntity.asValobj();
+
+          return avStr( nodeInfo.getDisplayName() != null ? nodeInfo.getDisplayName() : EMPTY_VALUE );
+        }
+
+      };
+
+  final M5AttributeFieldDef<IAtomicValue> NODE_BROWSE_NAME =
+      new M5AttributeFieldDef<>( FID_NODE_BROWSE_NAME, EAtomicType.STRING, //
+          TSID_NAME, STR_N_NODE_BROWSE_NAME, //
+          TSID_DESCRIPTION, STR_D_NODE_BROWSE_NAME ) {
+
+        @Override
+        protected void doInit() {
+          setFlags( M5FF_COLUMN | M5FF_READ_ONLY );
+          // setFlags( M5FF_COLUMN | M5FF_READ_ONLY | M5FF_HIDDEN );
+          // setFlags( M5FF_COLUMN | M5FF_HIDDEN );
+        }
+
+        protected IAtomicValue doGetFieldValue( IAtomicValue aEntity ) {
+
+          OpcNodeInfo nodeInfo = aEntity.asValobj();
+
+          return avStr( nodeInfo.getBrowseName() != null ? nodeInfo.getBrowseName() : EMPTY_VALUE );
+        }
+
+      };
+
+  final M5AttributeFieldDef<IAtomicValue> NODE_DESCRIPTION =
+      new M5AttributeFieldDef<>( FID_NODE_DESCRIPTION, EAtomicType.STRING, //
+          TSID_NAME, STR_N_NODE_DESCRIPTION, //
+          TSID_DESCRIPTION, STR_D_NODE_DESCRIPTION ) {
+
+        @Override
+        protected void doInit() {
+          setFlags( M5FF_COLUMN | M5FF_READ_ONLY );
+          // setFlags( M5FF_COLUMN | M5FF_READ_ONLY | M5FF_HIDDEN );
+          // setFlags( M5FF_COLUMN | M5FF_HIDDEN );
+        }
+
+        protected IAtomicValue doGetFieldValue( IAtomicValue aEntity ) {
+
+          OpcNodeInfo nodeInfo = aEntity.asValobj();
+
+          return avStr( nodeInfo.getDescription() != null ? nodeInfo.getDescription() : EMPTY_VALUE );
+        }
+
+      };
+
+  final M5AttributeFieldDef<IAtomicValue> NODE_PARENT_INFO =
+      new M5AttributeFieldDef<>( FID_NODE_PARENT, EAtomicType.STRING, //
+          TSID_NAME, STR_N_NODE_PARENT, //
+          TSID_DESCRIPTION, STR_D_NODE_PARENT ) {
+
+        @Override
+        protected void doInit() {
+          setFlags( M5FF_COLUMN | M5FF_READ_ONLY );
+          // setFlags( M5FF_COLUMN | M5FF_READ_ONLY | M5FF_HIDDEN );
+          // setFlags( M5FF_COLUMN | M5FF_HIDDEN );
+        }
+
+        protected IAtomicValue doGetFieldValue( IAtomicValue aEntity ) {
+
+          OpcNodeInfo nodeInfo = aEntity.asValobj();
+
+          return avStr( nodeInfo.getParentDisplay() != null ? nodeInfo.getParentDisplay() : EMPTY_VALUE );
+        }
+
+      };
 
   /**
    * Constructor
    */
   public NodesForCfgM5Model() {
     super( MODEL_ID, IAtomicValue.class );
-    addFieldDefs( NODE_STR );
+    addFieldDefs( NODE_STR, NODE_DISPLAY_NAME, NODE_BROWSE_NAME, NODE_DESCRIPTION, NODE_PARENT_INFO );
 
     setPanelCreator( new M5DefaultPanelCreator<>() {
 
@@ -105,7 +212,7 @@ public class NodesForCfgM5Model
             new MultiPaneComponentModown<>( aContext, model(), aItemsProvider, aLifecycleManager ) {
 
               @Override
-              protected ITsToolbar doCreateToolbar( ITsGuiContext aContext, String aName, EIconSize aIconSize,
+              protected ITsToolbar doCreateToolbar( ITsGuiContext aaContext, String aName, EIconSize aIconSize,
                   IListEdit<ITsActionDef> aActs ) {
                 aActs.add( ACDEF_SEPARATOR );
                 aActs.add( ACDEF_ADD_AS_STR );
@@ -125,8 +232,9 @@ public class NodesForCfgM5Model
 
               @Override
               protected boolean doGetIsAddAllowed( IAtomicValue aSel ) {
+                ITsGuiContext inContext = tsContext();
                 OpcUaServerConnCfg config =
-                    (OpcUaServerConnCfg)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
+                    (OpcUaServerConnCfg)inContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
 
                 return config != null;
               }
@@ -141,18 +249,57 @@ public class NodesForCfgM5Model
 
               @Override
               protected void doProcessAction( String aActionId ) {
-
+                OpcUaServerConnCfg config =
+                    (OpcUaServerConnCfg)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
                 switch( aActionId ) {
 
                   case ACTID_ADD_AS_STR:
-                    // Gwid gwid =
-                    super.doAddItem();
+                    IAtomicValue addedVal = super.doAddItem();
+                    if( addedVal == null ) {
+                      break;
+                    }
+                    NodeId addedNodeId = ((OpcNodeInfo)addedVal.asValobj()).getNodeId();
 
+                    OpcNodeInfo addedNodeInfo = new OpcNodeInfo( addedNodeId );
+
+                    if( config != null ) {
+
+                      UaTreeNode uaTreeNode =
+                          OpcUaUtils.getUaTreeNodeOfNodeId( aContext, config, addedNodeId.toParseableString() );
+                      if( uaTreeNode != null ) {
+                        UaTreeNode parentTreeNode =
+                            OpcUaUtils.getUaTreeNodeOfNodeId( aContext, config, uaTreeNode.getParentNodeId() );
+
+                        addedNodeInfo.updateFromUaTreeNode( uaTreeNode, parentTreeNode );
+                      }
+                    }
+
+                    aLifecycleManager.edit( prepareBunch( addedNodeInfo, addedVal ) );
                     break;
 
                   case ACTID_EDIT_AS_STR:
-                    // Gwid gwid =
-                    super.doEditItem( selectedItem() );
+
+                    IAtomicValue editedVal = super.doEditItem( selectedItem() );
+                    if( editedVal == null ) {
+                      break;
+                    }
+                    NodeId nodeId = ((OpcNodeInfo)editedVal.asValobj()).getNodeId();
+
+                    OpcNodeInfo nodeInfo = new OpcNodeInfo( nodeId );
+
+                    if( config != null ) {
+
+                      UaTreeNode uaTreeNode =
+                          OpcUaUtils.getUaTreeNodeOfNodeId( aContext, config, nodeId.toParseableString() );
+                      if( uaTreeNode != null ) {
+                        UaTreeNode parentTreeNode =
+                            OpcUaUtils.getUaTreeNodeOfNodeId( aContext, config, uaTreeNode.getParentNodeId() );
+
+                        nodeInfo.updateFromUaTreeNode( uaTreeNode, parentTreeNode );
+                      }
+                    }
+
+                    aLifecycleManager.edit( prepareBunch( nodeInfo, editedVal ) );
 
                     break;
 
@@ -168,12 +315,6 @@ public class NodesForCfgM5Model
                     (UaClient)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_OPC_CONNECTION );
                 OpcUaServerConnCfg config =
                     (OpcUaServerConnCfg)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
-                if( uaClient != null ) {
-                  System.out.println( "Selected opc conn: " + uaClient.toString() );
-                }
-                else {
-                  System.out.println( "Selected opc conn: " + "null" );
-                }
 
                 IList<UaTreeNode> selNodes =
                     OpcUaNodesSelector.selectUaNode( aContext, (OpcUaClient)uaClient, Identifiers.RootFolder, config );
@@ -182,10 +323,14 @@ public class NodesForCfgM5Model
                   return null;
                 }
 
-                IM5BunchEdit<IAtomicValue> bunch = new M5BunchEdit<>( model() );
-                bunch.set( FID_NODE_STR, avStr( selNodes.first().getNodeId() ) );
-                aLifecycleManager.create( bunch );
-                return AvUtils.avValobj( NodeId.parse( selNodes.first().getNodeId() ) );
+                UaTreeNode uaTreeNode = selNodes.first();
+                OpcNodeInfo nodeInfo = new OpcNodeInfo( NodeId.parse( uaTreeNode.getNodeId() ) );
+
+                UaTreeNode parentTreeNode =
+                    OpcUaUtils.getUaTreeNodeOfNodeId( aContext, config, uaTreeNode.getParentNodeId() );
+                nodeInfo.updateFromUaTreeNode( uaTreeNode, parentTreeNode );
+
+                return aLifecycleManager.create( prepareBunch( nodeInfo, null ) );
               }
 
               @Override
@@ -196,25 +341,40 @@ public class NodesForCfgM5Model
                 OpcUaServerConnCfg config =
                     (OpcUaServerConnCfg)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
 
-                if( uaClient != null ) {
-                  System.out.println( "Selected opc conn: " + uaClient.toString() );
-                }
-                else {
-                  System.out.println( "Selected opc conn: " + "null" );
-                }
-                NodeId nodeId = aItem.asValobj();
+                NodeId nodeId = ((OpcNodeInfo)aItem.asValobj()).getNodeId();
                 IList<UaTreeNode> selNodes =
                     OpcUaNodesSelector.selectUaNode( aContext, (OpcUaClient)uaClient, nodeId, config );
 
                 if( selNodes == null || selNodes.size() == 0 ) {
                   return aItem;
                 }
+                UaTreeNode uaTreeNode = selNodes.first();
 
+                OpcNodeInfo nodeInfo = new OpcNodeInfo( NodeId.parse( uaTreeNode.getNodeId() ) );
+                UaTreeNode parentTreeNode =
+                    OpcUaUtils.getUaTreeNodeOfNodeId( aContext, config, uaTreeNode.getParentNodeId() );
+                nodeInfo.updateFromUaTreeNode( uaTreeNode, parentTreeNode );
+
+                return aLifecycleManager.edit( prepareBunch( nodeInfo, aItem ) );
+              }
+
+              private IM5BunchEdit<IAtomicValue> prepareBunch( OpcNodeInfo aNodeInfo, IAtomicValue aItem ) {
                 IM5BunchEdit<IAtomicValue> bunch = new M5BunchEdit<>( model() );
-                bunch.fillFrom( aItem, true );
-                bunch.set( FID_NODE_STR, avStr( selNodes.first().getNodeId() ) );
-                aLifecycleManager.edit( bunch );
-                return AvUtils.avValobj( NodeId.parse( selNodes.first().getNodeId() ) );
+                if( aItem != null ) {
+                  bunch.fillFrom( aItem, true );
+                }
+                bunch.set( FID_NODE_STR, avStr( aNodeInfo.getNodeId().toParseableString() ) );
+
+                bunch.set( FID_NODE_DISPLAY_NAME,
+                    aNodeInfo.getDisplayName() != null ? avStr( aNodeInfo.getDisplayName() ) : null );
+                bunch.set( FID_NODE_BROWSE_NAME,
+                    aNodeInfo.getBrowseName() != null ? avStr( aNodeInfo.getBrowseName() ) : null );
+                bunch.set( FID_NODE_DESCRIPTION,
+                    aNodeInfo.getDescription() != null ? avStr( aNodeInfo.getDescription() ) : null );
+                bunch.set( FID_NODE_PARENT,
+                    aNodeInfo.getParentDisplay() != null ? avStr( aNodeInfo.getParentDisplay() ) : null );
+
+                return bunch;
               }
 
               @Override
@@ -231,19 +391,19 @@ public class NodesForCfgM5Model
 
   @Override
   protected IM5LifecycleManager<IAtomicValue> doCreateDefaultLifecycleManager() {
-    ISkConnectionSupplier cs = tsContext().get( ISkConnectionSupplier.class );
+    // ISkConnectionSupplier cs = tsContext().get( ISkConnectionSupplier.class );
     // TODO which connection to use?
-    ISkConnection conn = cs.defConn();
-    return new NodesForCfgM5LifecycleManager( this, conn );
+    // ISkConnection conn = cs.defConn();
+    return new NodesForCfgM5LifecycleManager( this, tsContext() );
   }
 
   @Override
   protected IM5LifecycleManager<IAtomicValue> doCreateLifecycleManager( Object aMaster ) {
-    return new NodesForCfgM5LifecycleManager( this, ISkConnection.class.cast( aMaster ) );
+    return new NodesForCfgM5LifecycleManager( this, ITsGuiContext.class.cast( aMaster ) );
   }
 
   static class NodesForCfgM5LifecycleManager
-      extends M5LifecycleManager<IAtomicValue, ISkConnection> {
+      extends M5LifecycleManager<IAtomicValue, ITsGuiContext> {
 
     /**
      * Constructor by m5 model and sk-connection as master-object.
@@ -251,7 +411,7 @@ public class NodesForCfgM5Model
      * @param aModel IM5Model - model
      * @param aMaster ISkConnection - sk-connection
      */
-    public NodesForCfgM5LifecycleManager( IM5Model<IAtomicValue> aModel, ISkConnection aMaster ) {
+    public NodesForCfgM5LifecycleManager( IM5Model<IAtomicValue> aModel, ITsGuiContext aMaster ) {
       super( aModel, true, true, true, false, aMaster );
     }
 
@@ -279,8 +439,7 @@ public class NodesForCfgM5Model
      */
     @Override
     protected IAtomicValue doCreate( IM5Bunch<IAtomicValue> aValues ) {
-      IAtomicValue nodeStr = aValues.get( NodesForCfgM5Model.FID_NODE_STR );
-      return AvUtils.avValobj( NodeId.parse( nodeStr.asString() ) );
+      return processNodeInfo( aValues );
     }
 
     /**
@@ -309,8 +468,7 @@ public class NodesForCfgM5Model
      */
     @Override
     protected IAtomicValue doEdit( IM5Bunch<IAtomicValue> aValues ) {
-      IAtomicValue nodeStr = aValues.get( NodesForCfgM5Model.FID_NODE_STR );
-      return AvUtils.avValobj( NodeId.parse( nodeStr.asString() ) );
+      return processNodeInfo( aValues );
     }
 
     /**
@@ -364,6 +522,25 @@ public class NodesForCfgM5Model
     @Override
     protected IListReorderer<IAtomicValue> doGetItemsReorderer() {
       return null;
+    }
+
+    private static IAtomicValue processNodeInfo( IM5Bunch<IAtomicValue> aValues ) {
+      IAtomicValue nodeStr = aValues.get( NodesForCfgM5Model.FID_NODE_STR );
+      IAtomicValue displayName = aValues.get( NodesForCfgM5Model.FID_NODE_DISPLAY_NAME );
+      IAtomicValue browseName = aValues.get( NodesForCfgM5Model.FID_NODE_BROWSE_NAME );
+      IAtomicValue description = aValues.get( NodesForCfgM5Model.FID_NODE_DESCRIPTION );
+      IAtomicValue parentDisplay = aValues.get( NodesForCfgM5Model.FID_NODE_PARENT );
+
+      OpcNodeInfo nodeInfo = aValues.originalEntity() == null ? new OpcNodeInfo( NodeId.parse( nodeStr.asString() ) )
+          : aValues.originalEntity().asValobj();
+      nodeInfo.setNodeId( NodeId.parse( nodeStr.asString() ) );
+
+      nodeInfo.setDisplayName( displayName != null ? displayName.asString() : null );
+      nodeInfo.setBrowseName( browseName != null ? browseName.asString() : null );
+      nodeInfo.setDescription( description != null ? description.asString() : null );
+      nodeInfo.setParentDisplay( parentDisplay != null ? parentDisplay.asString() : null );
+
+      return AvUtils.avValobj( nodeInfo );
     }
   }
 

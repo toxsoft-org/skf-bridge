@@ -69,6 +69,14 @@ public class Messages
   public static String        STR_SELECT_FILE_SAVE_DEVCFG;
   public static String        STR_SELECT_FILE_SAVE_DLMCFG;
   public static String        STR_WRITE_NODE_CONFIRM;
+  public static String        STR_D_NODE_DISPLAY_NAME;
+  public static String        STR_N_NODE_DISPLAY_NAME;
+  public static String        STR_D_NODE_BROWSE_NAME;
+  public static String        STR_N_NODE_BROWSE_NAME;
+  public static String        STR_D_NODE_DESCRIPTION;
+  public static String        STR_N_NODE_DESCRIPTION;
+  public static String        STR_D_NODE_PARENT;
+  public static String        STR_N_NODE_PARENT;
 
   static {
     // initialize resource bundle

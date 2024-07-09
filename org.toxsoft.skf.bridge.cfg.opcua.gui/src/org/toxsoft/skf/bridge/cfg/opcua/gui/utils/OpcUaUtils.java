@@ -271,8 +271,8 @@ public class OpcUaUtils {
       ISkConnection conn = cs.defConn();
       TsInternalErrorRtException.checkNull( conn );
       IAvTree avTree = OpcToS5DataCfgConverter.convertToDlmCfgTree( aDoc.dataUnits(), conn, aNodeEntity -> {
-        NodeId nodeid = aNodeEntity.asValobj();
-        return new Pair<>( OpcToS5DataCfgConverter.OPC_TAG_DEVICE, nodeid.toParseableString() );
+        OpcNodeInfo nodeid = aNodeEntity.asValobj();
+        return new Pair<>( OpcToS5DataCfgConverter.OPC_TAG_DEVICE, nodeid.getNodeId().toParseableString() );
       } );
       String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
       AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
@@ -1304,6 +1304,68 @@ public class OpcUaUtils {
   }
 
   /**
+   * По описанию NodeId получить полное описание узла UaTreeNode
+   *
+   * @param aContext - контекст
+   * @param aConnCfg - конфигурация подключения
+   * @param aNodeId - адрес узла в OPC UA
+   * @return UaTreeNode - полное описание узла
+   */
+  public static UaTreeNode getUaTreeNodeOfNodeId( ITsGuiContext aContext, IOpcUaServerConnCfg aConnCfg,
+      String aNodeId ) {
+    IList<UaTreeNode> nodes;
+    NodeId nodeId = NodeId.parse( aNodeId );
+    // сначала проверяем в кэше
+    String sectionName = OpcUaUtils.getCachedTreeSectionName( aConnCfg );
+    if( section2NodesList.hasKey( sectionName ) ) {
+      nodes = section2NodesList.getByKey( sectionName );
+    }
+    else {
+      nodes = loadUaTreeNodes( aContext, aConnCfg );
+    }
+    for( UaTreeNode node : nodes ) {
+      NodeId candidateNodeId = NodeId.parse( node.getNodeId() );
+      if( candidateNodeId.equals( nodeId ) ) {
+        return node;
+      }
+    }
+    return null;
+  }
+
+  public static void updateNodesInfoesFromCache( ITsGuiContext aContext, IOpcUaServerConnCfg aConnCfg,
+      OpcToS5DataCfgDoc aDoc ) {
+    IList<UaTreeNode> nodes;
+
+    // сначала проверяем в кэше
+    String sectionName = OpcUaUtils.getCachedTreeSectionName( aConnCfg );
+    if( section2NodesList.hasKey( sectionName ) ) {
+      nodes = section2NodesList.getByKey( sectionName );
+    }
+    else {
+      nodes = loadUaTreeNodes( aContext, aConnCfg );
+    }
+    IStringMapEdit<UaTreeNode> mappedNodes = new StringMap<>();
+    for( UaTreeNode node : nodes ) {
+      mappedNodes.put( node.getNodeId(), node );
+    }
+
+    IList<OpcToS5DataCfgUnit> units = aDoc.dataUnits();
+
+    for( OpcToS5DataCfgUnit unit : units ) {
+      IAvList unitNodes = unit.getDataNodes2();
+      for( IAtomicValue unitNode : unitNodes ) {
+        OpcNodeInfo nodeInfo = unitNode.asValobj();
+        UaTreeNode uaTreeNode = mappedNodes.findByKey( nodeInfo.getNodeId().toParseableString() );
+        if( uaTreeNode != null ) {
+          UaTreeNode parentTreeNode =
+              uaTreeNode.getParentNodeId() != null ? mappedNodes.findByKey( uaTreeNode.getParentNodeId() ) : null;
+          nodeInfo.updateFromUaTreeNode( uaTreeNode, parentTreeNode );
+        }
+      }
+    }
+  }
+
+  /**
    * Lets one to select opc serve config from the list of availables.
    *
    * @param aContext ITsGuiContext - context.
@@ -1812,16 +1874,16 @@ public class OpcUaUtils {
   public static void synchronizeNodesCfgs( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext,
       boolean aDeleteUnnecessary ) {
 
-    OpcUaServerConnCfg conConf =
-        (OpcUaServerConnCfg)aContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
+    // OpcUaServerConnCfg conConf =
+    // (OpcUaServerConnCfg)aContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
 
-    if( conConf == null ) {
-      ETsDialogCode retCode = TsDialogUtils.askYesNoCancel( aContext.get( Shell.class ), MSG_SELECT_OPC_UA_SERVER );
-
-      if( retCode == ETsDialogCode.CANCEL || retCode == ETsDialogCode.CLOSE || retCode == ETsDialogCode.NO ) {
-        return;
-      }
-    }
+    // if( conConf == null ) {
+    // ETsDialogCode retCode = TsDialogUtils.askYesNoCancel( aContext.get( Shell.class ), MSG_SELECT_OPC_UA_SERVER );
+    //
+    // if( retCode == ETsDialogCode.CANCEL || retCode == ETsDialogCode.CLOSE || retCode == ETsDialogCode.NO ) {
+    // return;
+    // }
+    // }
 
     IListEdit<CfgOpcUaNode> nodesCfgsList = new ElemArrayList<>( aDoc.getNodesCfgs() );
     IStringMapEdit<CfgOpcUaNode> nodesCfgs = new StringMap<>();
@@ -1835,7 +1897,7 @@ public class OpcUaUtils {
 
     IList<OpcToS5DataCfgUnit> dataCfgUnits = aDoc.dataUnits();
     for( OpcToS5DataCfgUnit unit : dataCfgUnits ) {
-      IList<NodeId> nodes = OpcUaUtils.convertToNodesList( unit.getDataNodes2() );
+      IList<OpcNodeInfo> nodes = OpcUaUtils.convertToNodesList( unit.getDataNodes2() );
 
       String relizationTypeId = unit.getRelizationTypeId();
       CfgUnitRealizationTypeRegister typeReg2 = aContext.get( CfgUnitRealizationTypeRegister.class );
@@ -1843,7 +1905,7 @@ public class OpcUaUtils {
       ICfgUnitRealizationType realType = typeReg2.getTypeOfRealizationById( unit.getTypeOfCfgUnit(), relizationTypeId );
 
       for( int i = 0; i < nodes.size(); i++ ) {
-        NodeId node = nodes.get( i );
+        NodeId node = nodes.get( i ).getNodeId();
         if( !nodesCfgs.hasKey( node.toParseableString() ) ) {
           CfgOpcUaNode uaNode = realType.createInitCfg( aContext, node.toParseableString(), i, nodes.size() );
           nodesCfgs.put( node.toParseableString(), uaNode );

@@ -262,6 +262,7 @@ public class OpcToS5DataCfgDocEditorPanel
             boolean hasCach = OpcUaUtils.hasCachedOpcUaNodesTreeFor( ctx, conConf );
             // если есть кэш - не пытаться соединится
             if( hasCach ) {
+              OpcUaUtils.updateNodesInfoesFromCache( ctx, conConf, aSelDoc );
               Display.getDefault().asyncExec( () -> {
                 textContr2.setText( STR_OPC_UA_CACHE + conConf.nmName() );
                 TsDialogUtils.info( getShell(), STR_USE_OPC_UA_CACHE );
@@ -302,6 +303,7 @@ public class OpcToS5DataCfgDocEditorPanel
             IM5LifecycleManager<UaTreeNode> lm =
                 new OpcUaNodeM5LifecycleManager( model, client, Identifiers.RootFolder, ctx, conConf );
             lm.itemsProvider().listItems();
+            OpcUaUtils.updateNodesInfoesFromCache( ctx, conConf, aSelDoc );
             Display.getDefault().asyncExec( () -> {
               textContr2.setText( STR_OPC_UA_CACHE + conConf.nmName() );
               TsDialogUtils.info( getShell(), STR_USE_OPC_UA_CACHE_CREATED );

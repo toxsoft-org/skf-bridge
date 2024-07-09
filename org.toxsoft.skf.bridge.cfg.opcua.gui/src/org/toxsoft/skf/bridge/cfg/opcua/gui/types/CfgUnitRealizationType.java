@@ -73,6 +73,9 @@ public class CfgUnitRealizationType
     if( conConf != null ) {
       type = OpcUaUtils.getValueTypeOfNode( aContext, conConf, aNodeId );
     }
+    if( type == null ) {
+      type = EAtomicType.NONE;
+    }
 
     return new CfgOpcUaNode( aNodeId, false, true, false, type );
   }

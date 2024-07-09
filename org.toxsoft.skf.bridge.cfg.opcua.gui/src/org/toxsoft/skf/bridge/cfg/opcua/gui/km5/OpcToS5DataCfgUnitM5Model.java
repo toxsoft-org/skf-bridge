@@ -22,7 +22,9 @@ import org.toxsoft.core.tsgui.valed.controls.av.*;
 import org.toxsoft.core.tsgui.valed.controls.basic.*;
 import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.list.*;
+import org.toxsoft.core.tslib.av.metainfo.*;
 import org.toxsoft.core.tslib.av.opset.*;
+import org.toxsoft.core.tslib.bricks.strid.coll.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.utils.*;
@@ -176,7 +178,7 @@ public class OpcToS5DataCfgUnitM5Model
           StringBuilder result = new StringBuilder();
 
           if( gwids.size() > 0 ) {
-            result.append( gwids.get( 0 ).asString() );
+            result.append( gwids.get( 0 ).canonicalString() );
           }
 
           if( gwids.size() > 1 ) {
@@ -266,8 +268,29 @@ public class OpcToS5DataCfgUnitM5Model
         }
 
         protected String doGetFieldValueName( OpcToS5DataCfgUnit aEntity ) {
+          CfgUnitRealizationTypeRegister typeReg = m5().tsContext().get( CfgUnitRealizationTypeRegister.class );
+          ICfgUnitRealizationType type =
+              typeReg.getTypeOfRealizationById( aEntity.getTypeOfCfgUnit(), aEntity.getRelizationTypeId() );
+
+          IStridablesList<IDataDef> defs = type.paramDefenitions();
+
+          StringBuilder str = new StringBuilder();
+          String add = TsLibUtils.EMPTY_STRING;
+          for( IDataDef def : defs ) {
+            if( def.params().hasKey( TSID_IS_READ_ONLY ) && def.params().getBool( TSID_IS_READ_ONLY ) ) {
+              continue;
+            }
+            str.append( add );
+            str.append( def.nmName() );
+            str.append( ": " );
+            str.append( def.getValue( aEntity.getRealizationOpts() ).asString() );
+
+            add = ", ";
+          }
+
           // TODO Сделать внятное отображение реализации
-          return TsLibUtils.EMPTY_STRING + aEntity.getRealizationOpts().size();
+          // return TsLibUtils.EMPTY_STRING + aEntity.getRealizationOpts().size();
+          return str.toString();
         }
 
       };
@@ -300,7 +323,7 @@ public class OpcToS5DataCfgUnitM5Model
         StringBuilder result = new StringBuilder();
 
         if( nodes.size() > 0 ) {
-          result.append( nodes.get( 0 ).asValobj().toString() );
+          result.append( ((OpcNodeInfo)nodes.get( 0 ).asValobj()).getNodeId().toParseableString() );
         }
 
         if( nodes.size() > 1 ) {

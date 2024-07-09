@@ -63,8 +63,16 @@ public interface ISkResources {
   /**
    * {@link NodesForCfgM5Model}
    */
-  String STR_N_NODE_STRING = Messages.STR_N_NODE_STRING;
-  String STR_D_NODE_STRING = Messages.STR_D_NODE_STRING;
+  String STR_N_NODE_STRING       = Messages.STR_N_NODE_STRING;
+  String STR_D_NODE_STRING       = Messages.STR_D_NODE_STRING;
+  String STR_D_NODE_DISPLAY_NAME = Messages.STR_D_NODE_DISPLAY_NAME;
+  String STR_N_NODE_DISPLAY_NAME = Messages.STR_N_NODE_DISPLAY_NAME;
+  String STR_D_NODE_BROWSE_NAME  = Messages.STR_D_NODE_BROWSE_NAME;
+  String STR_N_NODE_BROWSE_NAME  = Messages.STR_N_NODE_BROWSE_NAME;
+  String STR_D_NODE_DESCRIPTION  = Messages.STR_D_NODE_DESCRIPTION;
+  String STR_N_NODE_DESCRIPTION  = Messages.STR_N_NODE_DESCRIPTION;
+  String STR_D_NODE_PARENT       = Messages.STR_D_NODE_PARENT;
+  String STR_N_NODE_PARENT       = Messages.STR_N_NODE_PARENT;
 
   /**
    * {@link OpcToS5DataCfgDocM5Model}
