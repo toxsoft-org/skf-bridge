@@ -29,14 +29,27 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.refbooks.lib.*;
 import org.toxsoft.uskat.core.connection.*;
 
-import ru.toxsoft.l2.dlm.opc_bridge.*;
-
 /**
  * Converter of cfg to avtree and back
  *
  * @author max
  */
 public class OpcToS5DataCfgConverter {
+
+  /**
+   * Имя параметра - индекс команды в OPC UA
+   */
+  public static final String OPC_CMD_INDEX = "opc.cmd.index";
+
+  /**
+   * Имя параметра - индекс команды в OPC UA
+   */
+  public static final String OPC_CMD_INDEX_ON = "opc.cmd.index.on";
+
+  /**
+   * Имя параметра - индекс команды в OPC UA
+   */
+  public static final String OPC_CMD_INDEX_OFF = "opc.cmd.index.off";
 
   public static final String СT_WRITE_ID_TAG         = "write.id.tag";
   public static final String СT_WRITE_VAL_TAG_PREFIX = "write.param.";
@@ -654,14 +667,14 @@ public class OpcToS5DataCfgConverter {
       Boolean flagUp = aRbItems.first().attrs().getValue( RBATRID_RRI_OPCUA___ON ).asBool();
       Boolean flagDn = aRbItems.first().attrs().getValue( RBATRID_RRI_OPCUA___OFF ).asBool();
       if( !flagUp && !flagDn ) {
-        aAttrOpSet.setInt( IDlmsBaseConstants.OPC_CMD_INDEX, cmdIndex );
+        aAttrOpSet.setInt( OPC_CMD_INDEX, cmdIndex );
       }
       else {
         if( flagUp ) {
-          aAttrOpSet.setInt( IDlmsBaseConstants.OPC_CMD_INDEX_ON, cmdIndex );
+          aAttrOpSet.setInt( OPC_CMD_INDEX_ON, cmdIndex );
         }
         else {
-          aAttrOpSet.setInt( IDlmsBaseConstants.OPC_CMD_INDEX_OFF, cmdIndex );
+          aAttrOpSet.setInt( OPC_CMD_INDEX_OFF, cmdIndex );
         }
       }
     }
@@ -671,10 +684,10 @@ public class OpcToS5DataCfgConverter {
         int cmdIndex = myRbItem.attrs().getValue( RBATRID_RRI_OPCUA___INDEX ).asInt();
         Boolean flagUp = myRbItem.attrs().getValue( RBATRID_RRI_OPCUA___ON ).asBool();
         if( flagUp ) {
-          aAttrOpSet.setInt( IDlmsBaseConstants.OPC_CMD_INDEX_ON, cmdIndex );
+          aAttrOpSet.setInt( OPC_CMD_INDEX_ON, cmdIndex );
         }
         else {
-          aAttrOpSet.setInt( IDlmsBaseConstants.OPC_CMD_INDEX_OFF, cmdIndex );
+          aAttrOpSet.setInt( OPC_CMD_INDEX_OFF, cmdIndex );
         }
       }
     }
