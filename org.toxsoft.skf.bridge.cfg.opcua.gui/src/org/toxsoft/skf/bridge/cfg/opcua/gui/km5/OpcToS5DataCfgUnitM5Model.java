@@ -320,17 +320,8 @@ public class OpcToS5DataCfgUnitM5Model
 
       protected String doGetFieldValueName( OpcToS5DataCfgUnit aEntity ) {
         IAvList nodes = aEntity.getDataNodes2();
-        StringBuilder result = new StringBuilder();
 
-        if( nodes.size() > 0 ) {
-          result.append( ((OpcNodeInfo)nodes.get( 0 ).asValobj()).getNodeId().toParseableString() );
-        }
-
-        if( nodes.size() > 1 ) {
-          result.append( ", ..." ); //$NON-NLS-1$
-        }
-
-        return result.toString();
+        return String.valueOf( nodes.size() );
       }
     };
     addFieldDefs( STRID, DISPLAY_NAME, TYPE, REALIZATION_TYPE, REALIZATION, GWIDS, NODES );

@@ -1,6 +1,5 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
 
-import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.toxsoft.core.tslib.av.impl.*;
 import org.toxsoft.core.tslib.av.list.*;
 import org.toxsoft.core.tslib.av.opset.*;
@@ -76,8 +75,9 @@ public class OpcToS5DataCfgUnit
           for( int i = 0; i < aEntity.dataNodes.size(); i++ ) {
             // one node
             // aSw.writeQuotedString( ((NodeId)aEntity.dataNodes.get( i ).asValobj()).toParseableString() );
-            OpcNodeInfo opcNodeInfo = aEntity.dataNodes.get( i ).asValobj();
-            AtomicValueKeeper.KEEPER.write( aSw, AvUtils.avValobj( opcNodeInfo.getNodeId() ) );
+            AtomicValueKeeper.KEEPER.write( aSw, aEntity.dataNodes.get( i ) );
+            // OpcNodeInfo opcNodeInfo = aEntity.dataNodes.get( i ).asValobj();
+            // AtomicValueKeeper.KEEPER.write( aSw, AvUtils.avValobj( opcNodeInfo.getNodeId() ) );
             aSw.writeSeparatorChar();
             aSw.writeEol();
           }
@@ -134,9 +134,9 @@ public class OpcToS5DataCfgUnit
             // String nodeString = aSr.readQuotedString();
 
             // NodeId nodeId = NodeId.parse( nodeString );
-            NodeId nodeId = AtomicValueKeeper.KEEPER.read( aSr ).asValobj();
-
-            nodes.add( AvUtils.avValobj( new OpcNodeInfo( nodeId ) ) );
+            // NodeId nodeId = AtomicValueKeeper.KEEPER.read( aSr ).asValobj();
+            // nodes.add( AvUtils.avValobj( new OpcNodeInfo( nodeId ) ) );
+            nodes.add( AtomicValueKeeper.KEEPER.read( aSr ) );
             // AvUtils.avValobj( NodeId.parse( nodeString ) ) );
             aSr.ensureSeparatorChar();
 

@@ -26,6 +26,7 @@ public class QuantBridgeCfgOpcUa
     super( QuantBridgeCfgOpcUa.class.getSimpleName() );
     TsValobjUtils.registerKeeperIfNone( ECfgUnitType.KEEPER_ID, ECfgUnitType.KEEPER );
     TsValobjUtils.registerKeeperIfNone( NodeIdDateKeeper.KEEPER_ID, NodeIdDateKeeper.KEEPER );
+    TsValobjUtils.registerKeeperIfNone( OpcNodeInfoKeeper.KEEPER_ID, OpcNodeInfoKeeper.KEEPER );
     // TsValobjUtils.registerKeeperIfNone( ETimeUnit.KEEPER_ID, ETimeUnit.KEEPER );
     // TsValobjUtils.registerKeeperIfNone( VtGraphParamsList.KEEPER_ID, VtGraphParamsList.KEEPER );
 
