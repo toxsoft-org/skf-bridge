@@ -21,32 +21,9 @@ public class ModbusNode {
 
   private ERequestType requestType;
 
-  private String params;
+  private String params = TsLibUtils.EMPTY_STRING;
 
   private boolean isOutput = false;
-
-  /**
-   * @param aRegister - modbus register
-   * @param aWordsCount - count of words
-   * @param aRequestType - request type {@link ERequestType}
-   */
-  public ModbusNode( int aRegister, int aWordsCount, ERequestType aRequestType ) {
-    super();
-    register = aRegister;
-    wordsCount = aWordsCount;
-    requestType = aRequestType;
-  }
-
-  /**
-   * @param aModbusDevice - Modbus Device {@link ModbusDevice}
-   * @param aRegister - modbus register
-   * @param aWordsCount - count of words
-   * @param aRequestType - request type {@link ERequestType}
-   */
-  public ModbusNode( ModbusDevice aModbusDevice, int aRegister, int aWordsCount, ERequestType aRequestType ) {
-    this( aRegister, aWordsCount, aRequestType );
-    modbusDevice = aModbusDevice;
-  }
 
   /**
    * @param aModbusDevice - Modbus Device {@link ModbusDevice}
@@ -57,7 +34,10 @@ public class ModbusNode {
    */
   public ModbusNode( ModbusDevice aModbusDevice, int aRegister, int aWordsCount, EAtomicType aValueType,
       ERequestType aRequestType ) {
-    this( aModbusDevice, aRegister, aWordsCount, aRequestType );
+    modbusDevice = aModbusDevice;
+    register = aRegister;
+    wordsCount = aWordsCount;
+    requestType = aRequestType;
     valueType = aValueType;
   }
 

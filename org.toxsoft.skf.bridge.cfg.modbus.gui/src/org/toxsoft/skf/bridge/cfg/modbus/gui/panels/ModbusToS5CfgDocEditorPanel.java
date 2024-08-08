@@ -354,8 +354,8 @@ public class ModbusToS5CfgDocEditorPanel
                   IList<ModbusNode> nodes = OpcUaUtils.convertToNodesList( sel.getDataNodes2() );
                   IListEdit<ModbusNode> newNodes = new ElemArrayList<>();
                   for( ModbusNode node : nodes ) {
-                    ModbusNode newNode =
-                        new ModbusNode( newAddress, node.getRegister(), node.getWordsCount(), node.getRequestType() );
+                    ModbusNode newNode = new ModbusNode( newAddress, node.getRegister(), node.getWordsCount(),
+                        node.getValueType(), node.getRequestType() );
                     newNodes.add( newNode );
                   }
                   initVals.set( OpcToS5DataCfgUnitM5Model.FID_NODES, convertToAtomicList( newNodes ) );
