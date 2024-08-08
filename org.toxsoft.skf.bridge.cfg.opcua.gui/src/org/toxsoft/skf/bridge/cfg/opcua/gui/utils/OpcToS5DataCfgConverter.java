@@ -441,6 +441,12 @@ public class OpcToS5DataCfgConverter {
         rriDefsTree.addElement( createRriAttrPin( unit, aConnection ) );
       }
     }
+
+    if( rriDefsTree.arrayLength() == 0 ) {
+      // возвращаем пустое дерево
+      return rriDefsTree;
+    }
+
     // создаем корневое дерево НСИ и вносим в него общие нстройки модуля
     StringMap<IAvTree> rriDefNodes = new StringMap<>();
 

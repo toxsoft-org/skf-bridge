@@ -911,7 +911,7 @@ public class OpcUaUtils {
   public static final IDataDef OP_SYNCH_PERIOD = create( "synch.period", INTEGER, //$NON-NLS-1$
       TSID_NAME, STR_N_SYNCH_PERIOD, //
       TSID_DESCRIPTION, STR_D_SYNCH_PERIOD, //
-      TSID_DEFAULT_VALUE, avInt( 0 ) );
+      TSID_DEFAULT_VALUE, avInt( 1000 ) );
 
   /**
    * Имя параметра - признак исторических данных
@@ -1056,7 +1056,7 @@ public class OpcUaUtils {
     // OP_IS_CURR.setValue( defaultParams, avBool( false ) );
     // OP_IS_HIST.setValue( defaultParams, avBool( false ) );
     // new version
-    OP_SYNCH_PERIOD.setValue( defaultParams, avInt( 0 ) );
+    OP_SYNCH_PERIOD.setValue( defaultParams, avInt( 1000 ) );
     OP_IS_CURR.setValue( defaultParams, avBool( true ) );
     OP_IS_HIST.setValue( defaultParams, avBool( true ) );
 
