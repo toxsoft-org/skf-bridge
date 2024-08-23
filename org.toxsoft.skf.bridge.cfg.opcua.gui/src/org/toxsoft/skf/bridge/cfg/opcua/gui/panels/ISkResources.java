@@ -90,6 +90,10 @@ public interface ISkResources {
   String STR_D_GENERATE_DLMCFG              = Messages.STR_D_GENERATE_DLMCFG;
   String STR_CONFIG_AUTO_GENERATION         = "Генерация конфигурации";
   String STR_LINKING                        = "Автоматическое связывание...";
-  String STR_FILL_NODES                     = "Добавляем OPC UA nodes";
+  String STR_FILL_NODES                     = "Добавляем OPC UA nodes...";
+  String STR_N_GENERATE_CFG                 = "Сгенерировать *.dlmcfg & *defcfg";
+  String STR_D_GENERATE_CFG                 = "Сгенерировать конфигурационные файлы моста OPC UA <-> USkat";
+  String STR_SAVE_CONFIG                    = "Сохранение конфигурации в файл плагина SkIDE...";
+  String STR_UPDATE_NODES_INFO              = "Обновление информации об OPC UA nodes.";
 
 }

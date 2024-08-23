@@ -15,8 +15,8 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 
 /**
- * Модельный класс конфигурируемой связи opc ua на данные s5. \\ Типичная единица конфигурации - мапирование один узел
- * на одно данное \\
+ * Модельный класс конфигурируемой связи opc ua на данные s5.<br>
+ * Типичная единица конфигурации - мапирование один узел на одно данное
  *
  * @author max
  */
@@ -62,22 +62,13 @@ public class OpcToS5DataCfgUnit
             aSw.writeEol();
           }
 
-          // Nodes
-          // AtomicValueKeeper.KEEPER.write( aSw, aEntity.dataNodes );
-          // aSw.writeSeparatorChar();
-          // aSw.writeEol();
-          // nodes count
-
           aSw.writeInt( aEntity.dataNodes.size() );
           aSw.writeSeparatorChar();
           aSw.writeEol();
 
           for( int i = 0; i < aEntity.dataNodes.size(); i++ ) {
             // one node
-            // aSw.writeQuotedString( ((NodeId)aEntity.dataNodes.get( i ).asValobj()).toParseableString() );
             AtomicValueKeeper.KEEPER.write( aSw, aEntity.dataNodes.get( i ) );
-            // OpcNodeInfo opcNodeInfo = aEntity.dataNodes.get( i ).asValobj();
-            // AtomicValueKeeper.KEEPER.write( aSw, AvUtils.avValobj( opcNodeInfo.getNodeId() ) );
             aSw.writeSeparatorChar();
             aSw.writeEol();
           }
@@ -121,9 +112,6 @@ public class OpcToS5DataCfgUnit
             gwids.add( gwid );
           }
 
-          // Nodes
-          // IAtomicValue nodes = AtomicValueKeeper.KEEPER.read( aSr );
-
           // nodes count
           int nodesCount = aSr.readInt();
           aSr.ensureSeparatorChar();
@@ -131,13 +119,7 @@ public class OpcToS5DataCfgUnit
           IAvListEdit nodes = new AvList( new ElemArrayList<>() );
           for( int i = 0; i < nodesCount; i++ ) {
             // one node
-            // String nodeString = aSr.readQuotedString();
-
-            // NodeId nodeId = NodeId.parse( nodeString );
-            // NodeId nodeId = AtomicValueKeeper.KEEPER.read( aSr ).asValobj();
-            // nodes.add( AvUtils.avValobj( new OpcNodeInfo( nodeId ) ) );
             nodes.add( AtomicValueKeeper.KEEPER.read( aSr ) );
-            // AvUtils.avValobj( NodeId.parse( nodeString ) ) );
             aSr.ensureSeparatorChar();
 
           }
@@ -186,8 +168,6 @@ public class OpcToS5DataCfgUnit
     super( aId, aName, aName );
     dataGwids = aGwids;
     dataNodes = aNodes;
-    // realizationOpts.setStr( "param.str", "string" );
-    // realizationOpts.setInt( "param.int", 5 );
   }
 
   /**
@@ -204,8 +184,6 @@ public class OpcToS5DataCfgUnit
    * Список узлов opc ua, используемых в этой единице конфигурации
    */
   private IAvList dataNodes = new AvList( new ElemArrayList<>() );
-
-  // private IList<NodeId> dataNodes = new ElemArrayList<>();
 
   /**
    * Ид Типа реализации
@@ -246,14 +224,6 @@ public class OpcToS5DataCfgUnit
   public void setDataNodes2( IAvList aNodes ) {
     dataNodes = aNodes;
   }
-
-  // public IList<NodeId> getDataNodes() {
-  // return dataNodes;
-  // }
-  //
-  // protected void setDataNodes( IList<NodeId> aNodes ) {
-  // dataNodes = aNodes;
-  // }
 
   public IOptionSet getRealizationOpts() {
     return realizationOpts;

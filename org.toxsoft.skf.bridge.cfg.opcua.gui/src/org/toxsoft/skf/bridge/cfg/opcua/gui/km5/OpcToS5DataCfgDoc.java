@@ -15,9 +15,10 @@ import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.filegen.*;
 
 /**
- * A hole configuration of opc ua <-> s5 bridge, contains several devisions (data, commands, events) each contains units
- * of configuration A unit - is a simple peace of configuration (for example one node to one gwid data transmitter). A
- * {@link OpcToS5DataCfgDoc} corresponds to one cfg file (.dlmcfg) and is source for auto generating of this file.
+ * A whole configuration of opc ua <-> s5 bridge, contains several devisions (data, commands, events) each contains
+ * units of configuration A unit - is a simple peace of configuration (for example one node to one gwid data
+ * transmitter). A {@link OpcToS5DataCfgDoc} corresponds to one cfg file (.dlmcfg) and is source for auto generating of
+ * this file.
  *
  * @author max
  */

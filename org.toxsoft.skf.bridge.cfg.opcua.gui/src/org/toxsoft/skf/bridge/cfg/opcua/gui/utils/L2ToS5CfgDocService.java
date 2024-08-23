@@ -1,5 +1,6 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.utils;
 
+import org.toxsoft.core.log4j.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tslib.bricks.keeper.*;
 import org.toxsoft.core.tslib.bricks.strid.*;
@@ -7,6 +8,7 @@ import org.toxsoft.core.tslib.bricks.strid.coll.*;
 import org.toxsoft.core.tslib.bricks.strid.coll.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.utils.errors.*;
+import org.toxsoft.core.tslib.utils.logs.*;
 import org.toxsoft.core.txtproj.lib.storage.*;
 import org.toxsoft.core.txtproj.lib.workroom.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.*;
@@ -19,11 +21,14 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.*;
  */
 public class L2ToS5CfgDocService<T extends IStridable> {
 
+  /**
+   * Журнал работы
+   */
+  private static ILogger logger = LoggerWrapper.getLogger( L2ToS5CfgDocService.class.getName() );
+
   private String sectIdCfgDocs;
 
   private IEntityKeeper<T> entityKeeper;
-
-  // private IStridablesListEdit<OpcToS5DataCfgDoc> initial = new StridablesList<>();
 
   protected ITsGuiContext context;
 
@@ -37,7 +42,6 @@ public class L2ToS5CfgDocService<T extends IStridable> {
    * @param aEntityKeeper - entity keeper
    */
   public L2ToS5CfgDocService( ITsGuiContext aContext, String aSectIdCfgDocs, IEntityKeeper<T> aEntityKeeper ) {
-    super();
     context = aContext;
     sectIdCfgDocs = aSectIdCfgDocs;
     entityKeeper = aEntityKeeper;
@@ -52,12 +56,17 @@ public class L2ToS5CfgDocService<T extends IStridable> {
         workCopy = new StridablesList<>( storage.readColl( sectIdCfgDocs, entityKeeper ) );
       }
       catch( Exception e ) {
-        e.printStackTrace();
+        logger.error( e );
       }
     }
     return workCopy;
   }
 
+  /**
+   * Сохранить конфигурацию в файл внутреннего хранилища плагина SkIDE
+   *
+   * @param aDoc - конфигурация
+   */
   public void saveCfgDoc( T aDoc ) {
     ITsWorkroom workroom = context.eclipseContext().get( ITsWorkroom.class );
     TsInternalErrorRtException.checkNull( workroom );
@@ -67,7 +76,7 @@ public class L2ToS5CfgDocService<T extends IStridable> {
       stored = new StridablesList<>( storage.readColl( sectIdCfgDocs, entityKeeper ) );
     }
     catch( Exception e ) {
-      e.printStackTrace();
+      logger.error( e );
     }
     if( stored.hasKey( aDoc.id() ) ) {
       stored.replace( aDoc.id(), aDoc );

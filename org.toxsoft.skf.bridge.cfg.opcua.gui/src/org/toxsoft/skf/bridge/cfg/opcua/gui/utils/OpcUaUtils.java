@@ -1303,7 +1303,7 @@ public class OpcUaUtils {
         return node.getDataType();
       }
     }
-    return null;
+    return EAtomicType.NONE;
   }
 
   /**
@@ -1335,6 +1335,13 @@ public class OpcUaUtils {
     return null;
   }
 
+  /**
+   * Обновляет информацию nodes OPC UA
+   *
+   * @param aContext - контекст
+   * @param aConnCfg - конфигурация подключения к серверу OPC UA
+   * @param aDoc - whole configuration of opc ua <-> s5 bridge
+   */
   public static void updateNodesInfoesFromCache( ITsGuiContext aContext, IOpcUaServerConnCfg aConnCfg,
       OpcToS5DataCfgDoc aDoc ) {
     IList<UaTreeNode> nodes;

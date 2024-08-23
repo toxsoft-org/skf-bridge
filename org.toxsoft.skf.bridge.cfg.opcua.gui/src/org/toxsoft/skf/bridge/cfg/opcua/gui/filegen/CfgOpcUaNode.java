@@ -112,7 +112,7 @@ public class CfgOpcUaNode {
   /**
    * Type
    */
-  private EAtomicType type;
+  private EAtomicType type = EAtomicType.NONE;
 
   /**
    * Extra type

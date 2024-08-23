@@ -52,13 +52,19 @@ public class OpcToS5DataCfgDocEditorPanel
 
   final static String ACTID_AUTO_LINK = SK_ID + "bridge.cfg.opcua.to.s5.auto.link"; //$NON-NLS-1$
 
+  /**
+   * action id генерации конфигурационных файлов моста
+   */
   public final static String ACTID_GENERATE_FILE = SK_ID + "bridge.cfg.opcua.to.s5.generate.file"; //$NON-NLS-1$
 
   final static TsActionDef ACDEF_AUTO_LINK =
       TsActionDef.ofPush2( ACTID_AUTO_LINK, STR_N_AUTO_LINK, STR_D_AUTO_LINK, ICONID_AUTO_LINK );
 
-  public final static TsActionDef ACDEF_GENERATE_FILE = TsActionDef.ofPush2( ACTID_GENERATE_FILE, STR_N_GENERATE_DLMCFG,
-      STR_D_GENERATE_DLMCFG, ICONID_SHOW_GENERATE_DLMCFG );
+  /**
+   * Генерация конфигурационных файлов моста
+   */
+  public final static TsActionDef ACDEF_GENERATE_FILE =
+      TsActionDef.ofPush2( ACTID_GENERATE_FILE, STR_N_GENERATE_CFG, STR_D_GENERATE_CFG, ICONID_SHOW_GENERATE_DLMCFG );
 
   final static TsActionDef ACDEF_EDIT_UNITS =
       TsActionDef.ofPush2( ACTID_EDIT_UNITS, STR_N_EDIT_CONFIG_SET, STR_D_EDIT_CONFIG_SET, ICONID_EDIT_UNITS );
@@ -116,10 +122,6 @@ public class OpcToS5DataCfgDocEditorPanel
     ITsGuiContext ctx = new TsGuiContext( aContext );
     ctx.params().addAll( aContext.params() );
 
-    // IMultiPaneComponentConstants.OPDEF_IS_DETAILS_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
-    // IMultiPaneComponentConstants.OPDEF_DETAILS_PANE_PLACE.setValue( ctx.params(),
-    // avValobj( EBorderLayoutPlacement.SOUTH ) );
-    // IMultiPaneComponentConstants.OPDEF_IS_SUPPORTS_TREE.setValue( ctx.params(), AvUtils.AV_TRUE );
     IMultiPaneComponentConstants.OPDEF_IS_ACTIONS_CRUD.setValue( ctx.params(), AvUtils.AV_TRUE );
     // добавляем в панель фильтр
     // IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
@@ -225,11 +227,6 @@ public class OpcToS5DataCfgDocEditorPanel
 
     toolBar.addListener( aActionId -> {
       if( aActionId.equals( ACDEF_GENERATE_FILE.id() ) ) {
-        // OpcToS5DataCfgDocService service = ctx.get( OpcToS5DataCfgDocService.class );
-        // service.saveCfgDoc( aSelDoc );
-
-        // generate cfg files
-
         OpcUaUtils.generateDlmCfgFileFromCurrState( aSelDoc, ctx );
         OpcUaUtils.generateDevCfgFileFromCurrState( aSelDoc, ctx );
         return;
@@ -324,9 +321,6 @@ public class OpcToS5DataCfgDocEditorPanel
 
     } );
 
-    // ISkConnectionSupplier connSup = ctx.get( ISkConnectionSupplier.class );
-    // установить по умолчанию s5 соединение рабочего пространства
-    // IdChain defaultConnIdChain = connSup.getDefaultConnectionKey();
     IdChain defaultConnIdChain = ISkConnectionSupplier.DEF_CONN_ID;
     ctx.put( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_S5_CONNECTION, defaultConnIdChain );
     String defConnName = defaultConnIdChain.first() != null ? defaultConnIdChain.first() : STR_DEFAULT_WORKROOM_SK_CONN;
@@ -336,10 +330,6 @@ public class OpcToS5DataCfgDocEditorPanel
     IM5Model<OpcToS5DataCfgUnit> model =
         m5.getModel( OpcToS5DataCfgUnitM5Model.MODEL_ID_TEMPLATE + ".opcua", OpcToS5DataCfgUnit.class );
 
-    // IMultiPaneComponentConstants.OPDEF_IS_DETAILS_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
-    // IMultiPaneComponentConstants.OPDEF_DETAILS_PANE_PLACE.setValue( ctx.params(),
-    // avValobj( EBorderLayoutPlacement.SOUTH ) );
-    // IMultiPaneComponentConstants.OPDEF_IS_SUPPORTS_TREE.setValue( ctx.params(), AvUtils.AV_TRUE );
     IMultiPaneComponentConstants.OPDEF_IS_ACTIONS_CRUD.setValue( ctx.params(), AvUtils.AV_TRUE );
     // добавляем в панель фильтр
     IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
@@ -414,7 +404,12 @@ public class OpcToS5DataCfgDocEditorPanel
                   monitor.subTask( STR_FILL_NODES );
                   OpcUaUtils.synchronizeNodesCfgs( aSelDoc, ctx, true );
                   OpcToS5DataCfgDocService service = ctx.get( OpcToS5DataCfgDocService.class );
+                  // третий этап - обновляем узлы OPC UA
+                  monitor.subTask( STR_SAVE_CONFIG );
                   service.saveCfgDoc( aSelDoc );
+                  // последний этап - обновление информации об OPC UA nodes
+                  monitor.subTask( STR_UPDATE_NODES_INFO );
+                  OpcUaUtils.updateNodesInfoesFromCache( ctx, connConf, aSelDoc );
 
                 } );
                 // обновляем GUI из потока GUI
@@ -438,10 +433,6 @@ public class OpcToS5DataCfgDocEditorPanel
     ctx2.params().addAll( ctx.params() );
     IM5Model<CfgOpcUaNode> nodeModel = m5.getModel( CfgOpcUaNodeM5Model.MODEL_ID, CfgOpcUaNode.class );
 
-    // IMultiPaneComponentConstants.OPDEF_IS_DETAILS_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
-    // IMultiPaneComponentConstants.OPDEF_DETAILS_PANE_PLACE.setValue( ctx.params(),
-    // avValobj( EBorderLayoutPlacement.SOUTH ) );
-    // IMultiPaneComponentConstants.OPDEF_IS_SUPPORTS_TREE.setValue( ctx.params(), AvUtils.AV_TRUE );
     IMultiPaneComponentConstants.OPDEF_IS_ACTIONS_CRUD.setValue( ctx2.params(), AvUtils.AV_TRUE );
     // добавляем в панель фильтр
     IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( ctx2.params(), AvUtils.AV_TRUE );
