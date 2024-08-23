@@ -36,7 +36,8 @@ public class OpcToS5DataCfgDocM5LifecycleManager
     IAtomicValue pathToL2Val = aValues.get( OpcToS5DataCfgDocM5Model.PATH_TO_L2 );
 
     newDoc.setCfgFilesPrefix( cfgFileNameVal.asString().trim() );
-    newDoc.setL2Path( pathToL2Val.asString().trim() );
+    // newDoc.setL2Path( pathToL2Val.asString().trim() );
+    newDoc.setL2Path( pathToL2Val.asValobj() );
 
     // docs.add( newDoc );
     // master().writeColl( SECTID_OPC_CFG_DOCS, docs, OpcToS5DataCfgDoc.KEEPER );
@@ -60,7 +61,8 @@ public class OpcToS5DataCfgDocM5LifecycleManager
     IAtomicValue pathToL2Val = aValues.get( OpcToS5DataCfgDocM5Model.PATH_TO_L2 );
 
     origDoc.setCfgFilesPrefix( cfgFileNameVal.asString().trim() );
-    origDoc.setL2Path( pathToL2Val.asString().trim() );
+    // origDoc.setL2Path( pathToL2Val.asString().trim() );
+    origDoc.setL2Path( pathToL2Val.asValobj() );
 
     // master().writeColl( SECTID_OPC_CFG_DOCS, docs, OpcToS5DataCfgDoc.KEEPER );
 

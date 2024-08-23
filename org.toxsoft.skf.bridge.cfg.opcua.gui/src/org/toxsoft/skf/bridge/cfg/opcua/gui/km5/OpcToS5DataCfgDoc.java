@@ -1,7 +1,10 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
 
+import java.io.*;
+
 import org.toxsoft.core.tslib.bricks.keeper.*;
 import org.toxsoft.core.tslib.bricks.keeper.AbstractEntityKeeper.*;
+import org.toxsoft.core.tslib.bricks.keeper.std.*;
 import org.toxsoft.core.tslib.bricks.strid.impl.*;
 import org.toxsoft.core.tslib.bricks.strio.*;
 import org.toxsoft.core.tslib.coll.*;
@@ -43,7 +46,7 @@ public class OpcToS5DataCfgDoc
           aSw.writeQuotedString( aEntity.description() );
           aSw.writeSeparatorChar();
           aSw.writeEol();
-          aSw.writeQuotedString( aEntity.getL2Path() );
+          FileKeeper.KEEPER.write( aSw, aEntity.getL2Path() );
           aSw.writeSeparatorChar();
           aSw.writeEol();
           aSw.writeQuotedString( aEntity.getCfgFilesPrefix() );
@@ -91,7 +94,7 @@ public class OpcToS5DataCfgDoc
           aSr.ensureSeparatorChar();
           String descr = aSr.readQuotedString();
           aSr.ensureSeparatorChar();
-          String l2Path = aSr.readQuotedString();
+          File l2Path = FileKeeper.KEEPER.read( aSr );
           aSr.ensureSeparatorChar();
           String cfgFileName = aSr.readQuotedString();
           aSr.ensureSeparatorChar();
@@ -140,7 +143,8 @@ public class OpcToS5DataCfgDoc
   /**
    * Path to l2 bridge
    */
-  private String l2Path;
+  // private String l2Path;
+  private File l2Path;
 
   /**
    * Prefix of cfg files ("prefix".dlmcfg, "prefix".devcfg)
@@ -223,11 +227,11 @@ public class OpcToS5DataCfgDoc
     }
   }
 
-  public String getL2Path() {
+  public File getL2Path() {
     return l2Path;
   }
 
-  public void setL2Path( String aL2Path ) {
+  public void setL2Path( File aL2Path ) {
     l2Path = aL2Path;
   }
 

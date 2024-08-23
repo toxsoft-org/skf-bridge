@@ -21,7 +21,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.toxsoft.skide.plugin.exconn,
  org.toxsoft.extlibs.opendocument,
  org.toxsoft.skf.rri.lib,
- org.toxsoft.skf.refbooks.lib
+ org.toxsoft.skf.refbooks.lib,
+ org.toxsoft.core.tsgui.rcp
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: org.toxsoft.skf.bridge.cfg.opcua.gui
 Bundle-ActivationPolicy: lazy

@@ -90,6 +90,8 @@ public class OpcToS5DataCfgDocEditorPanel
   private TextControlContribution textContr1;
   private TextControlContribution textContr2;
 
+  private IM5CollectionPanel<CfgOpcUaNode> cfgNodesPanel;
+
   /**
    * Конструктор панели.
    * <p>
@@ -195,7 +197,7 @@ public class OpcToS5DataCfgDocEditorPanel
     CTabItem tabCfgUnitsItem = new CTabItem( tabSubFolder, SWT.NONE );
     tabCfgUnitsItem.setText( STR_LINKS );
 
-    // Создаём закладку для конфигурации связей opc-sk
+    // Создаём закладку для конфигурации узлов opc
     CTabItem tabCfgNodesItem = new CTabItem( tabSubFolder, SWT.NONE );
     tabCfgNodesItem.setText( STR_NODES );
 
@@ -392,14 +394,32 @@ public class OpcToS5DataCfgDocEditorPanel
                   OpcUaUtils.selectOpcConfigAndOpenConnection( ctx );
                   conConf = (OpcUaServerConnCfg)ctx.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
                 }
+                else {
+                  ctx.put( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG, conConf );
+                }
 
                 // TODO - процессор брать из контекста
-                IList<OpcToS5DataCfgUnit> cfgUnits = new StoredMetaInfoAutoLinkConfigurationProcess()
-                    .formCfgUnitsFromAutoElements( ctx, currConn, conConf );
+                // процесс долгий, загоним его в фон и повесим бегунок
+                OpcUaUtils.runInWaitingDialog( ctx, STR_CONFIG_AUTO_GENERATION, monitor -> {
+                  // первый этап - устанавливаем связи
+                  monitor.subTask( STR_LINKING );
+                  OpcUaServerConnCfg connConf =
+                      (OpcUaServerConnCfg)ctx.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
+                  IList<OpcToS5DataCfgUnit> cfgUnits = new StoredMetaInfoAutoLinkConfigurationProcess()
+                      .formCfgUnitsFromAutoElements( ctx, currConn, connConf );
 
-                ((OpcToS5DataCfgUnitM5LifecycleManager)lifecycleManager()).addCfgUnits( cfgUnits );
+                  ((OpcToS5DataCfgUnitM5LifecycleManager)lifecycleManager()).addCfgUnits( cfgUnits );
 
+                  // второй этап - обновляем узлы OPC UA
+                  monitor.subTask( STR_FILL_NODES );
+                  OpcUaUtils.synchronizeNodesCfgs( aSelDoc, ctx, true );
+                  OpcToS5DataCfgDocService service = ctx.get( OpcToS5DataCfgDocService.class );
+                  service.saveCfgDoc( aSelDoc );
+
+                } );
+                // обновляем GUI из потока GUI
                 doFillTree();
+                cfgNodesPanel.refresh();
                 break;
 
               default:
@@ -428,8 +448,7 @@ public class OpcToS5DataCfgDocEditorPanel
 
     IM5LifecycleManager<CfgOpcUaNode> nodeLm = nodeModel.getLifecycleManager( aSelDoc );
 
-    IM5CollectionPanel<CfgOpcUaNode> cfgNodesPanel =
-        nodeModel.panelCreator().createCollEditPanel( ctx2, nodeLm.itemsProvider(), nodeLm );
+    cfgNodesPanel = nodeModel.panelCreator().createCollEditPanel( ctx2, nodeLm.itemsProvider(), nodeLm );
 
     lm.itemsProvider().genericChangeEventer().addListener( aSource -> {
       OpcUaUtils.synchronizeNodesCfgs( aSelDoc, ctx, true );

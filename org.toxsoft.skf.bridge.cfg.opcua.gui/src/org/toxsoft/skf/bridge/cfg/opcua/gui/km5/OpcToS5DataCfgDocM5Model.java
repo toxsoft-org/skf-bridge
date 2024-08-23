@@ -7,6 +7,7 @@ import static org.toxsoft.skf.bridge.cfg.opcua.gui.km5.ISkResources.*;
 
 import org.toxsoft.core.tsgui.m5.model.impl.*;
 import org.toxsoft.core.tsgui.m5.std.fields.*;
+import org.toxsoft.core.tsgui.rcp.valed.*;
 import org.toxsoft.core.tslib.av.*;
 
 /**
@@ -46,10 +47,13 @@ public class OpcToS5DataCfgDocM5Model
    * Attribute {@link OpcToS5DataCfgDoc#getL2Path() } path to l2 dir
    */
   public static final M5AttributeFieldDef<OpcToS5DataCfgDoc> PATH_TO_L2 =
-      new M5AttributeFieldDef<>( FID_PATH_TO_L2, EAtomicType.STRING, //
+      new M5AttributeFieldDef<>( FID_PATH_TO_L2, IValedFileConstants.DT_DIRECTORY_FILE,
+          // EAtomicType.STRING, //
           TSID_NAME, STR_N_PATH_TO_L2, //
           TSID_DESCRIPTION, STR_D_PATH_TO_L2 // , //
-      // OPID_EDITOR_FACTORY_NAME, ValedAvDirFiStringText.FACTORY_NAME //
+      // OPID_EDITOR_FACTORY_NAME, ValedFile.FACTORY_NAME // suitable valed
+      // OPID_EDITOR_FACTORY_NAME, ValedAvStringFile.FACTORY_NAME // suitable valed
+      // OPID_EDITOR_FACTORY_NAME, ValedAvValobjFile.FACTORY_NAME // suitable valed
       ) {
 
         @Override
@@ -58,7 +62,8 @@ public class OpcToS5DataCfgDocM5Model
         }
 
         protected IAtomicValue doGetFieldValue( OpcToS5DataCfgDoc aEntity ) {
-          return avStr( aEntity.getL2Path() );
+          // return avStr( aEntity.getL2Path() );
+          return avValobj( aEntity.getL2Path() );
         }
 
       };

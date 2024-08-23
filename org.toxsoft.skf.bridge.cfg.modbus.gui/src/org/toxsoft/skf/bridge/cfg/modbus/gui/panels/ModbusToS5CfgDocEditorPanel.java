@@ -315,7 +315,12 @@ public class ModbusToS5CfgDocEditorPanel
                 if( checked ) {
                   // select IP
                   ModbusDevice address = PanelModbusDeviceSelector.selectModbusDevice( tsContext(), selAddress );
-                  setNewIPAddress( tree(), address );
+                  if( address == null ) {
+                    toolbar().getAction( ACTID_IP_ADDRESS_SELECT ).setChecked( false );
+                  }
+                  else {
+                    setNewIPAddress( tree(), address );
+                  }
                 }
                 else {
                   clearFilter( tree() );

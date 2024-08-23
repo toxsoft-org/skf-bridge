@@ -88,5 +88,8 @@ public interface ISkResources {
   String STR_D_AUTO_LINK                    = Messages.STR_D_AUTO_LINK;
   String STR_N_GENERATE_DLMCFG              = Messages.STR_N_GENERATE_DLMCFG;
   String STR_D_GENERATE_DLMCFG              = Messages.STR_D_GENERATE_DLMCFG;
+  String STR_CONFIG_AUTO_GENERATION         = "Генерация конфигурации";
+  String STR_LINKING                        = "Автоматическое связывание...";
+  String STR_FILL_NODES                     = "Добавляем OPC UA nodes";
 
 }

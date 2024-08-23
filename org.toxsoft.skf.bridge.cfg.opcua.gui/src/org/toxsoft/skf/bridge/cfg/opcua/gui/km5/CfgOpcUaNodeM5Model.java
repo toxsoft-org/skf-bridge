@@ -209,7 +209,7 @@ public class CfgOpcUaNodeM5Model
                 // aActs.add( ACDEF_SEPARATOR );
 
                 // добавить недостающие
-                // aActs.add( ACDEF_SYNCHRONIZE );
+                aActs.add( ACDEF_SYNCHRONIZE );
                 // aActs.add( ACDEF_REMOVE_UNNECESSARY );
 
                 // aActs.add( ACDEF_SEPARATOR );

@@ -296,15 +296,16 @@ public class OpcUaUtils {
 
   private static String formCfgFileFullName( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext, String aReletivePathFormat,
       String aFileExtention ) {
-    String pathToL2 = aDoc.getL2Path();
+    File pathToL2 = aDoc.getL2Path();
     String cfgFilename = aDoc.getCfgFilesPrefix();
-    if( pathToL2 != null && pathToL2.length() > 0 && cfgFilename != null && cfgFilename.length() > 0 ) {
-      return pathToL2 + String.format( aReletivePathFormat, cfgFilename, aFileExtention );
-    }
+    // if( pathToL2 != null && pathToL2.length() > 0 && cfgFilename != null && cfgFilename.length() > 0 ) {
+    // return pathToL2 + String.format( aReletivePathFormat, cfgFilename, aFileExtention );
+    // }
     Shell shell = aContext.find( Shell.class );
     FileDialog fd = new FileDialog( shell, SWT.SAVE );
     fd.setText( STR_SELECT_FILE_SAVE_DLMCFG );
-    fd.setFilterPath( TsLibUtils.EMPTY_STRING );
+    fd.setFilterPath( pathToL2.getAbsolutePath() );
+    fd.setFileName( cfgFilename );
     String[] filterExt = { aFileExtention };
     fd.setFilterExtensions( filterExt );
     String selected = fd.open();
@@ -438,7 +439,9 @@ public class OpcUaUtils {
   public static IAvList convertNodeListToAtomicList( IList<NodeId> aNodeList ) {
     IAvListEdit result = new AvList( new ElemArrayList<>() );
     for( NodeId node : aNodeList ) {
-      result.add( avValobj( node ) );
+      // dima 19/08/24 fix
+      result.add( avValobj( new OpcNodeInfo( node ) ) );
+      // result.add( avValobj( node ) );
     }
     return result;
   }

@@ -896,14 +896,17 @@ public class OpcToS5DataCfgConverter {
     // проверка содержания тега
     // сначала фидбак
     TsIllegalArgumentRtException.checkFalse( cTagContent.hasKey( СT_READ_FEEDBACK_TAG )
-        && cTagContent.getByKey( СT_READ_FEEDBACK_TAG ).equals( feedBackNode ) );
+        && cTagContent.getByKey( СT_READ_FEEDBACK_TAG ).right().equals( feedBackNode ) );
 
     // далее проверяем и добавляем теги параметров
     if( aDataNodes.size() > 2 && aParamNodeType != null ) {
       String paramTagId = String.format( СT_WRITE_VAL_TAG_FORMAT, aParamNodeType.id().toLowerCase() );
       if( cTagContent.hasKey( paramTagId ) ) {
         // проверка
-        TsIllegalArgumentRtException.checkFalse( cTagContent.getByKey( paramTagId ).equals( aDataNodes.get( 1 ) ) );
+        // old version
+        // TsIllegalArgumentRtException.checkFalse( cTagContent.getByKey( paramTagId ).equals( aDataNodes.get( 1 ) ) );
+        TsIllegalArgumentRtException
+            .checkFalse( cTagContent.getByKey( paramTagId ).right().equals( aDataNodes.get( 1 ).right() ) );
       }
       else {
         // добавление
