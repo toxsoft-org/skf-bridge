@@ -18,7 +18,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.toxsoft.extlibs.log4j,
  org.toxsoft.core.txtproj.lib,
  org.toxsoft.skide.plugin.exconn,
- org.toxsoft.skf.bridge.cfg.opcua.gui
+ org.toxsoft.skf.bridge.cfg.opcua.gui,
+ org.toxsoft.core.tsgui.rcp
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: org.toxsoft.skf.bridge.cfg.modbus.gui
 Bundle-ActivationPolicy: lazy

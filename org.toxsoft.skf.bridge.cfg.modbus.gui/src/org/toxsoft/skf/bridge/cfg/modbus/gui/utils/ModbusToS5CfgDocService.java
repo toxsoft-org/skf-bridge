@@ -10,9 +10,9 @@ import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.core.txtproj.lib.storage.*;
 import org.toxsoft.core.txtproj.lib.workroom.*;
+import org.toxsoft.skf.bridge.cfg.modbus.gui.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.type.*;
-import org.toxsoft.skf.bridge.cfg.opcua.gui.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 
 /**

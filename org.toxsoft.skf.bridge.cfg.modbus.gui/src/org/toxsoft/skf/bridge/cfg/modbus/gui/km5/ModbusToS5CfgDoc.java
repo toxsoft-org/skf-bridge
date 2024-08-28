@@ -2,8 +2,11 @@ package org.toxsoft.skf.bridge.cfg.modbus.gui.km5;
 
 import static org.toxsoft.skf.bridge.cfg.modbus.gui.km5.ISkResources.*;
 
+import java.io.*;
+
 import org.toxsoft.core.tslib.bricks.keeper.*;
 import org.toxsoft.core.tslib.bricks.keeper.AbstractEntityKeeper.*;
+import org.toxsoft.core.tslib.bricks.keeper.std.*;
 import org.toxsoft.core.tslib.bricks.strid.impl.*;
 import org.toxsoft.core.tslib.bricks.strio.*;
 import org.toxsoft.core.tslib.coll.*;
@@ -52,6 +55,13 @@ public class ModbusToS5CfgDoc
           aSw.writeQuotedString( aEntity.description() );
           aSw.writeSeparatorChar();
           aSw.writeEol();
+          FileKeeper.KEEPER.write( aSw, aEntity.getL2Path() );
+          aSw.writeSeparatorChar();
+          aSw.writeEol();
+          aSw.writeQuotedString( aEntity.getCfgFilesPrefix() );
+          aSw.writeSeparatorChar();
+
+          aSw.writeEol();
 
           // Units
           // units count
@@ -66,24 +76,6 @@ public class ModbusToS5CfgDoc
             aSw.writeEol();
           }
 
-          // IList<CfgOpcUaNode> nodes =
-          // aEntity.getNodesCfgs();
-
-          // Nodes
-          // nodes count
-          // aSw.writeInt( nodes.size() );
-          // aSw.writeSeparatorChar();
-          // aSw.writeEol();
-          //
-          // for( int i = 0; i < nodes.size();
-          // i++ ) {
-          // // one node
-          // CfgOpcUaNode.KEEPER.write( aSw,
-          // nodes.get( i ) );
-          // aSw.writeSeparatorChar();
-          // aSw.writeEol();
-          // }
-
           aSw.writeQuotedString( CHECK_DOC );
           aSw.decNewLine();
         }
@@ -96,6 +88,10 @@ public class ModbusToS5CfgDoc
           String name = aSr.readQuotedString();
           aSr.ensureSeparatorChar();
           String descr = aSr.readQuotedString();
+          aSr.ensureSeparatorChar();
+          File l2Path = FileKeeper.KEEPER.read( aSr );
+          aSr.ensureSeparatorChar();
+          String cfgFileName = aSr.readQuotedString();
           aSr.ensureSeparatorChar();
 
           // Units
@@ -111,32 +107,14 @@ public class ModbusToS5CfgDoc
             units.add( unit );
           }
 
-          // Nodes
-          // nodes count
-          // int nodesCount = aSr.readInt();
-          // aSr.ensureSeparatorChar();
-          //
-          // IStringMapEdit<CfgOpcUaNode> nodes =
-          // new StringMap<>();
-          // for( int i = 0; i < nodesCount; i++
-          // ) {
-          // // one node
-          // CfgOpcUaNode node =
-          // CfgOpcUaNode.KEEPER.read( aSr );
-          // aSr.ensureSeparatorChar();
-          // nodes.put( node.getNodeId(), node );
-          // }
-          //
-          // System.out.println( "Loaded nodes
-          // count = " + nodes.size() );
-
           if( !aSr.readQuotedString().equals( CHECK_DOC ) ) {
             LoggerUtils.errorLogger().error( STR_ERR_DOC_READ );
           }
 
           ModbusToS5CfgDoc result = new ModbusToS5CfgDoc( id, name, descr );
           result.dataCfgUnits = units;
-          // result.nodesCfgs = nodes;
+          result.setL2Path( l2Path );
+          result.setCfgFilesPrefix( cfgFileName );
           return result;
         }
       };
@@ -150,6 +128,16 @@ public class ModbusToS5CfgDoc
    * List of nodes cfgs.
    */
   private IStringMapEdit<ModbusNode> nodesCfgs = new StringMap<>();
+
+  /**
+   * Path to l2 bridge
+   */
+  private File l2Path;
+
+  /**
+   * Prefix of cfg files ("prefix".dlmcfg, "prefix".devcfg)
+   */
+  private String cfgFilesPrefix;
 
   /**
    * Constructor by id, name and description/
@@ -256,4 +244,33 @@ public class ModbusToS5CfgDoc
       }
     }
   }
+
+  /**
+   * @return path to default directory generate to
+   */
+  public File getL2Path() {
+    return l2Path;
+  }
+
+  /**
+   * @param aL2Path - path to default directory generate to
+   */
+  public void setL2Path( File aL2Path ) {
+    l2Path = aL2Path;
+  }
+
+  /**
+   * @return template name for config files
+   */
+  public String getCfgFilesPrefix() {
+    return cfgFilesPrefix;
+  }
+
+  /**
+   * @param aCfgFilesPrefix - template name for config files
+   */
+  public void setCfgFilesPrefix( String aCfgFilesPrefix ) {
+    cfgFilesPrefix = aCfgFilesPrefix;
+  }
+
 }

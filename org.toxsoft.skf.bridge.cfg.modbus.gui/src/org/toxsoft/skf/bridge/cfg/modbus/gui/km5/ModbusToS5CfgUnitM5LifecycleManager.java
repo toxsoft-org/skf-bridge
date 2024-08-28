@@ -119,10 +119,13 @@ public class ModbusToS5CfgUnitM5LifecycleManager
    * @param aContext - app context
    */
   public void generateDlmFileFromCurrState( ITsGuiContext aContext ) {
+    File pathToL2 = master().getL2Path();
+    String cfgFilename = master().getCfgFilesPrefix();
     Shell shell = aContext.find( Shell.class );
     FileDialog fd = new FileDialog( shell, SWT.SAVE );
     fd.setText( STR_SELECT_FILE_SAVE_DLMCFG );
-    fd.setFilterPath( TsLibUtils.EMPTY_STRING );
+    fd.setFilterPath( pathToL2.getAbsolutePath() );
+    fd.setFileName( cfgFilename );
     String[] filterExt = { ".dlmcfg" }; //$NON-NLS-1$
     fd.setFilterExtensions( filterExt );
     String selected = fd.open();
@@ -139,11 +142,14 @@ public class ModbusToS5CfgUnitM5LifecycleManager
         return new Pair<>( nodeid.getModbusDevice().getDeviceModbusConnectionId(), nodeid.getId() );
       } );
       String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
+      File tmpFile = new File( TMP_DEST_FILE );
       AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
 
       String DLM_CONFIG_STR = "DlmConfig = "; //$NON-NLS-1$
       PinsConfigFileFormatter.format( TMP_DEST_FILE, selected, DLM_CONFIG_STR );
 
+      // remove tmp file
+      tmpFile.delete();
       TsDialogUtils.info( shell, MSG_CONFIG_FILE_DLMCFG_CREATED, selected );
     }
     catch( Exception e ) {
@@ -158,10 +164,13 @@ public class ModbusToS5CfgUnitM5LifecycleManager
    * @param aContext - app context {@link ITsGuiContext}
    */
   public void generateDevFileFromCurrState( ITsGuiContext aContext ) {
+    File pathToL2 = master().getL2Path();
+    String cfgFilename = master().getCfgFilesPrefix();
     Shell shell = aContext.find( Shell.class );
     FileDialog fd = new FileDialog( shell, SWT.SAVE );
     fd.setText( STR_SELECT_FILE_SAVE_DEVCFG );
-    fd.setFilterPath( TsLibUtils.EMPTY_STRING );
+    fd.setFilterPath( pathToL2.getAbsolutePath() );
+    fd.setFileName( cfgFilename );
     String[] filterExt = { ".devcfg" }; //$NON-NLS-1$
     fd.setFilterExtensions( filterExt );
     String selected = fd.open();
@@ -175,11 +184,13 @@ public class ModbusToS5CfgUnitM5LifecycleManager
       TsInternalErrorRtException.checkNull( conn );
       IAvTree avTree = ModbusCfgDocConverter.convertToDevCfgTree( aContext, master() );
       String TMP_DEST_FILE = "destDevFile.tmp"; //$NON-NLS-1$
-      AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
+      File tmpFile = new File( TMP_DEST_FILE );
+      AvTreeKeeper.KEEPER.write( tmpFile, avTree );
 
       String DEV_CONFIG_STR = "DeviceConfig = "; //$NON-NLS-1$
       PinsConfigFileFormatter.format( TMP_DEST_FILE, selected, DEV_CONFIG_STR );
-
+      // remove tmp file
+      tmpFile.delete();
       TsDialogUtils.info( shell, MSG_CONFIG_FILE_DEVCFG_CREATED, selected );
     }
     catch( Exception e ) {

@@ -20,8 +20,8 @@ public interface ISkResources {
 
   //
   // {@link TCPAddressM5LifecycleManager}
-//------------------------------------------------------------------
- //
+  // ------------------------------------------------------------------
+  //
   String MSG_ERR_INVALID_IP_ADDRESS = Messages.MSG_ERR_INVALID_IP_ADDRESS;
   String MSG_ERR_NOT_IDPATH         = Messages.MSG_ERR_NOT_IDPATH;
 
@@ -36,9 +36,13 @@ public interface ISkResources {
 
   //
   // {@link ModbusToS5CfgDoc}
-//------------------------------------------------------------------
- //
-  String STR_ERR_DOC_READ = Messages.STR_ERR_DOC_READ;
+  // ------------------------------------------------------------------
+  //
+  String STR_ERR_DOC_READ    = Messages.STR_ERR_DOC_READ;
+  String STR_N_PATH_TO_L2    = "директория";
+  String STR_D_PATH_TO_L2    = "Директория генерации конфигурационных файлов";
+  String STR_N_CFG_FILE_NAME = "шаблон имени";
+  String STR_D_CFG_FILE_NAME = "Шаблон имени конфигурационного файла";
 
   //
   // {@link ModbusNodesForCfgM5Model}

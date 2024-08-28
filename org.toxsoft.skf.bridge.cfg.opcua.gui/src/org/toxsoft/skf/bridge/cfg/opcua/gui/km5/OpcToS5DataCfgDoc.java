@@ -228,18 +228,30 @@ public class OpcToS5DataCfgDoc
     }
   }
 
+  /**
+   * @return path to default directory generate to
+   */
   public File getL2Path() {
     return l2Path;
   }
 
+  /**
+   * @param aL2Path - path to default directory generate to
+   */
   public void setL2Path( File aL2Path ) {
     l2Path = aL2Path;
   }
 
+  /**
+   * @return template name for config files
+   */
   public String getCfgFilesPrefix() {
     return cfgFilesPrefix;
   }
 
+  /**
+   * @param aCfgFilesPrefix - template name for config files
+   */
   public void setCfgFilesPrefix( String aCfgFilesPrefix ) {
     cfgFilesPrefix = aCfgFilesPrefix;
   }

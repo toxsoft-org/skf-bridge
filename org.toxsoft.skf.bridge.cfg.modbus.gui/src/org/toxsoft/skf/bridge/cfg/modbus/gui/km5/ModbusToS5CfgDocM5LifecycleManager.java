@@ -31,8 +31,11 @@ public class ModbusToS5CfgDocM5LifecycleManager
     String strid = "modbustos5.bridge.cfg.doc.id" + System.currentTimeMillis(); //$NON-NLS-1$
     ModbusToS5CfgDoc newDoc = new ModbusToS5CfgDoc( strid, nameVal.asString(), descrVal.asString() );
 
-    // docs.add( newDoc );
-    // master().writeColl( SECTID_OPC_CFG_DOCS, docs, OpcToS5DataCfgDoc.KEEPER );
+    IAtomicValue cfgFileNameVal = aValues.get( ModbusToS5CfgDocM5Model.CFG_FILE_NAME );
+    IAtomicValue pathToL2Val = aValues.get( ModbusToS5CfgDocM5Model.PATH_TO_L2 );
+
+    newDoc.setCfgFilesPrefix( cfgFileNameVal.asString().trim() );
+    newDoc.setL2Path( pathToL2Val.asValobj() );
 
     master().saveCfgDoc( newDoc );
 
@@ -49,7 +52,11 @@ public class ModbusToS5CfgDocM5LifecycleManager
     origDoc.setName( nameVal.asString() );
     origDoc.setDescription( descrVal.asString() );
 
-    // master().writeColl( SECTID_OPC_CFG_DOCS, docs, OpcToS5DataCfgDoc.KEEPER );
+    IAtomicValue cfgFileNameVal = aValues.get( ModbusToS5CfgDocM5Model.CFG_FILE_NAME );
+    IAtomicValue pathToL2Val = aValues.get( ModbusToS5CfgDocM5Model.PATH_TO_L2 );
+
+    origDoc.setCfgFilesPrefix( cfgFileNameVal.asString().trim() );
+    origDoc.setL2Path( pathToL2Val.asValobj() );
 
     master().saveCfgDoc( origDoc );
 
