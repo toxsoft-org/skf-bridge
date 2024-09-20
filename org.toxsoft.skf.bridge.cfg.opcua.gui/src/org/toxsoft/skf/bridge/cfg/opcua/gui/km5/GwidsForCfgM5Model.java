@@ -27,12 +27,15 @@ import org.toxsoft.core.tslib.av.impl.*;
 import org.toxsoft.core.tslib.bricks.strid.more.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
+import org.toxsoft.core.tslib.gw.ugwi.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.reports.gui.panels.*;
+import org.toxsoft.skf.rri.lib.ugwi.*;
 import org.toxsoft.uskat.core.api.sysdescr.*;
 import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.gui.conn.*;
+import org.toxsoft.uskat.core.gui.valed.ugwi.*;
 
 /**
  * M5 model realization for {@link Gwid} entities using for cfg of map uanodes-gwids
@@ -182,77 +185,34 @@ public class GwidsForCfgM5Model
 
               @Override
               protected Gwid doAddItem() {
-                IdChain connIdChain =
-                    (IdChain)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_S5_CONNECTION );
-                if( connIdChain != null ) {
-                  System.out.println( "Selected conn: " + connIdChain.toString() );
-                }
-                else {
-                  System.out.println( "Selected conn: " + "null" );
-                }
 
                 ECfgUnitType type = ((GwidsForCfgM5Model)model()).getCfgUnitType();
-                ESkClassPropKind kind = ESkClassPropKind.RTDATA;
-                if( type == ECfgUnitType.COMMAND ) {
-                  kind = ESkClassPropKind.CMD;
-                }
-                else
-                  if( type == ECfgUnitType.EVENT ) {
-                    kind = ESkClassPropKind.EVENT;
-                  }
-                // 20.10.23 dima for testing
-                // ISkideExternalConnectionsService connService =
-                // aContext.eclipseContext().get( ISkideExternalConnectionsService.class );
-                // IdChain idChain = connService.selectConfigAndOpenConnection( aContext );
-                Gwid gwid = PanelGwidSelector.selectGwid( null, tsContext(), kind, connIdChain );
-                // Gwid gwid = PanelGwidSelector.selectGwid( null, tsContext(), kind, null );
 
-                if( gwid == null ) {
+                Gwid selGwid = selectGwid( type, null );
+                if( selGwid == null ) {
                   return null;
                 }
 
                 IM5BunchEdit<Gwid> bunch = new M5BunchEdit<>( model() );
-                bunch.set( FID_GWID_STR, avStr( gwid.asString() ) );
+                bunch.set( FID_GWID_STR, avStr( selGwid.canonicalString() ) );
                 aLifecycleManager.create( bunch );
-                return gwid;
+                return selGwid;
               }
 
               @Override
               protected Gwid doEditItem( Gwid aItem ) {
 
-                IdChain connIdChain =
-                    (IdChain)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_S5_CONNECTION );
-                if( connIdChain != null ) {
-                  System.out.println( "Selected conn: " + connIdChain.toString() );
-                }
-                else {
-                  System.out.println( "Selected conn: " + "null" );
-                }
-
                 ECfgUnitType type = ((GwidsForCfgM5Model)model()).getCfgUnitType();
-                ESkClassPropKind kind = ESkClassPropKind.RTDATA;
-                if( type == ECfgUnitType.COMMAND ) {
-                  kind = ESkClassPropKind.CMD;
-                }
-                else
-                  if( type == ECfgUnitType.EVENT ) {
-                    kind = ESkClassPropKind.EVENT;
-                  }
-                // dima 20.10.23 for testing
-                // ISkideExternalConnectionsService connService =
-                // aContext.eclipseContext().get( ISkideExternalConnectionsService.class );
-                // IdChain idChain = connService.selectConfigAndOpenConnection( aContext );
-                Gwid gwid = PanelGwidSelector.selectGwid( aItem, tsContext(), kind, connIdChain );
 
-                // Gwid gwid = PanelGwidSelector.selectGwid( aItem, tsContext(), kind, null );
-                if( gwid == null ) {
-                  return aItem;
+                Gwid selGwid = selectGwid( type, null );
+                if( selGwid == null ) {
+                  return null;
                 }
                 IM5BunchEdit<Gwid> bunch = new M5BunchEdit<>( model() );
                 bunch.fillFrom( aItem, true );
-                bunch.set( FID_GWID_STR, avStr( gwid.asString() ) );
+                bunch.set( FID_GWID_STR, avStr( selGwid.canonicalString() ) );
                 aLifecycleManager.edit( bunch );
-                return gwid;
+                return selGwid;
               }
 
               @Override
@@ -287,5 +247,34 @@ public class GwidsForCfgM5Model
 
   public ECfgUnitType getCfgUnitType() {
     return unitType;
+  }
+
+  private Gwid selectGwid( ECfgUnitType aType, Gwid aItem ) {
+    Gwid retVal = null;
+    IdChain connIdChain = (IdChain)tsContext().find( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_S5_CONNECTION );
+
+    switch( aType ) {
+      case COMMAND:
+        retVal = PanelGwidSelector.selectGwid( aItem, tsContext(), ESkClassPropKind.CMD, connIdChain );
+        break;
+      case DATA:
+        retVal = PanelGwidSelector.selectGwid( aItem, tsContext(), ESkClassPropKind.RTDATA, connIdChain );
+        break;
+      case EVENT:
+        retVal = PanelGwidSelector.selectGwid( aItem, tsContext(), ESkClassPropKind.CMD, connIdChain );
+        break;
+      case RRI:
+        Ugwi currItem = aItem == null ? null : Ugwi.of( UgwiKindRriAttr.KIND_ID, aItem.canonicalString() );
+        Ugwi selUgwi = PanelUgwiSelector.selectUgwiSingleKind( tsContext(), currItem, UgwiKindRriAttr.KIND_ID );
+        if( selUgwi == null ) {
+          return null;
+        }
+        retVal = Gwid.createAttr( UgwiKindRriAttr.getClassId( selUgwi ), UgwiKindRriAttr.getObjStrid( selUgwi ),
+            UgwiKindRriAttr.getAttrId( selUgwi ) );
+        break;
+      default:
+        break;
+    }
+    return retVal;
   }
 }
