@@ -945,4 +945,10 @@ public class OpcUANodesTreeViewer
     return null;
   }
 
+  @Override
+  public ITsNode findChildByEntity( Object aEntity, boolean aQueryChildren ) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 }
