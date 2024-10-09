@@ -30,6 +30,7 @@ import org.toxsoft.core.tslib.bricks.strid.more.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
+import org.toxsoft.core.tslib.utils.login.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.filegen.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
@@ -234,7 +235,14 @@ public class OpcToS5DataCfgDocEditorPanel
       if( aActionId.equals( ACDEF_S5_SERVER_SELECT.id() ) ) {
         ISkideExternalConnectionsService connService =
             ctx.eclipseContext().get( ISkideExternalConnectionsService.class );
-        IdChain idChain = connService.selectConfigAndOpenConnection( ctx );
+        // IdChain idChain = connService.selectConfigAndOpenConnection( ctx );
+
+        IdChain idChain = null;
+        String cfgId = connService.selectConfig( ctx );
+        if( cfgId != null ) {
+          idChain = connService.openConnection( cfgId, ctx, new LoginInfo( "root", "1", "" ) );
+        }
+
         if( idChain != null ) {
           ctx.put( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_S5_CONNECTION, idChain );
           textContr1.setText( STR_SK_CONN_DESCR + idChain.first() );
