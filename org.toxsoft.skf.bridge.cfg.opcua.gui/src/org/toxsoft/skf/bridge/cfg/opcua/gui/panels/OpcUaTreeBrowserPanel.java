@@ -1236,13 +1236,25 @@ public class OpcUaTreeBrowserPanel
       // находим родительский UaNode
       // UaTreeNode parentNode = aItemProvider.nodeById( obj.id() );
       Skid parentSkid = new Skid( aClassInfo.id(), obj.id() );
-      OpcUaUtils.getTreeSectionNameByConfig( OpcUaUtils.SECTID_OPC_UA_NODES_2_SKIDS_TEMPLATE, opcUaServerConnCfg );
+      // OpcUaUtils.getTreeSectionNameByConfig( OpcUaUtils.SECTID_OPC_UA_NODES_2_SKIDS_TEMPLATE, opcUaServerConnCfg );
 
       NodeId parentNodeId = OpcUaUtils.nodeBySkid( aContext, parentSkid, opcUaServerConnCfg );
-      TsIllegalStateRtException.checkNull( parentNodeId,
-          "Can't find nodeId for Skid: %s .\n Check section %s in file data-storage.ktor", parentSkid.toString(),
-          OpcUaUtils.getTreeSectionNameByConfig( OpcUaUtils.SECTID_OPC_UA_NODES_2_SKIDS_TEMPLATE,
-              opcUaServerConnCfg ) );
+      // тут отрабатываем ситуацию когда утеряна метаинформация
+      if( parentNodeId == null ) {
+        ETsDialogCode retCode = TsDialogUtils.askYesNoCancel( getShell(),
+            "Can't find nodeId for Skid: %s .\n Check section %s in file data-storage.ktor .\n Do you want to continue?",
+            parentSkid.toString(), OpcUaUtils
+                .getTreeSectionNameByConfig( OpcUaUtils.SECTID_OPC_UA_NODES_2_SKIDS_TEMPLATE, opcUaServerConnCfg ) );
+        if( retCode == ETsDialogCode.CANCEL || retCode == ETsDialogCode.CLOSE || retCode == ETsDialogCode.NO ) {
+          return;
+        }
+        continue;
+      }
+      // old version
+      // TsIllegalStateRtException.checkNull( parentNodeId,
+      // "Can't find nodeId for Skid: %s .\n Check section %s in file data-storage.ktor", parentSkid.toString(),
+      // OpcUaUtils.getTreeSectionNameByConfig( OpcUaUtils.SECTID_OPC_UA_NODES_2_SKIDS_TEMPLATE,
+      // opcUaServerConnCfg ) );
       UaTreeNode parentNode = findParentNode( treeNodes, parentNodeId );
       // привязываем команды
       for( IDtoCmdInfo cmdInfo : aClassInfo.cmds().list() ) {
