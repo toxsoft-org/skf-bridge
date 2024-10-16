@@ -1236,7 +1236,7 @@ public class OpcUaTreeBrowserPanel
       // находим родительский UaNode
       // UaTreeNode parentNode = aItemProvider.nodeById( obj.id() );
       Skid parentSkid = new Skid( aClassInfo.id(), obj.id() );
-      OpcUaUtils.getTreeSectionNameByConfig( OpcUaUtils.SECTID_OPC_UA_NODES_2_SKIDS_TEMPLATE, opcUaServerConnCfg );
+      // OpcUaUtils.getTreeSectionNameByConfig( OpcUaUtils.SECTID_OPC_UA_NODES_2_SKIDS_TEMPLATE, opcUaServerConnCfg );
 
       NodeId parentNodeId = OpcUaUtils.nodeBySkid( aContext, parentSkid, opcUaServerConnCfg );
       // тут отрабатываем ситуацию когда утеряна метаинформация
@@ -1255,7 +1255,6 @@ public class OpcUaTreeBrowserPanel
       // "Can't find nodeId for Skid: %s .\n Check section %s in file data-storage.ktor", parentSkid.toString(),
       // OpcUaUtils.getTreeSectionNameByConfig( OpcUaUtils.SECTID_OPC_UA_NODES_2_SKIDS_TEMPLATE,
       // opcUaServerConnCfg ) );
-
       UaTreeNode parentNode = findParentNode( treeNodes, parentNodeId );
       // привязываем команды
       for( IDtoCmdInfo cmdInfo : aClassInfo.cmds().list() ) {

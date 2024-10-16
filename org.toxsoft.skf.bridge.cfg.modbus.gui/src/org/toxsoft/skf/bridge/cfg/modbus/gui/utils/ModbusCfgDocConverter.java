@@ -1,5 +1,7 @@
 package org.toxsoft.skf.bridge.cfg.modbus.gui.utils;
 
+import java.util.*;
+
 import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tslib.av.avtree.*;
 import org.toxsoft.core.tslib.av.opset.*;
@@ -9,6 +11,7 @@ import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
+import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.type.*;
 
@@ -20,6 +23,8 @@ import org.toxsoft.skf.bridge.cfg.modbus.gui.type.*;
  */
 @SuppressWarnings( "nls" )
 public class ModbusCfgDocConverter {
+
+  private static final String TRANSLATOR_DETECTOR_STR = "translator=";
 
   private static final String PIN_NODE_ID_FORMAT = "pin.%s.def";
 
@@ -215,7 +220,7 @@ public class ModbusCfgDocConverter {
       pinOpSet1.setStr( PIN_TRANSLATOR_PARAM_NAME, getTranslator( aData ) );
     }
     if( aData.getParams() != null && aData.getParams().length() > 0 ) {
-      pinOpSet1.setStr( PIN_TRANSLATOR_PARAMS_PARAM_ID, aData.getParams() );
+      pinOpSet1.setStr( PIN_TRANSLATOR_PARAMS_PARAM_ID, getParams( aData ) );
     }
 
     IAvTree pinTree1 = null;
@@ -230,26 +235,45 @@ public class ModbusCfgDocConverter {
     return pinTree1;
   }
 
+  private static String getParams( ModbusNode aData ) {
+    if( aData.getParams() != null && aData.getParams().length() > 0 ) {
+      StringBuilder params = new StringBuilder();
+      StringTokenizer st = new StringTokenizer( aData.getParams() );
+      String add = TsLibUtils.EMPTY_STRING;
+      while( st.hasMoreTokens() ) {
+        String token = st.nextToken();
+        if( !token.startsWith( TRANSLATOR_DETECTOR_STR ) ) {
+          params.append( add ).append( token );
+          add = " ";
+        }
+      }
+      return params.toString();
+    }
+    return TsLibUtils.EMPTY_STRING;
+  }
+
   private static String getTranslator( ModbusNode aData ) {
+    if( aData.getParams() != null && aData.getParams().length() > 0 ) {
+      StringTokenizer st = new StringTokenizer( aData.getParams() );
+      while( st.hasMoreTokens() ) {
+        String token = st.nextToken();
+        if( token.startsWith( TRANSLATOR_DETECTOR_STR ) ) {
+          return token.substring( TRANSLATOR_DETECTOR_STR.length() );
+        }
+      }
+    }
+
     if( aData.getRequestType().isDiscret() ) {
       return PIN_DEFAULT_DISCRET_TRANSLATOR_VAL;
 
     }
 
-    switch( aData.getValueType() ) {
-      case BOOLEAN:
-        return PIN_DEFAULT_BOOLEAN_TRANSLATOR_VAL;
-      case FLOATING:
-        return PIN_DEFAULT_FLOAT_TRANSLATOR_VAL;
-      case INTEGER:
-      case NONE:
-      case STRING:
-      case TIMESTAMP:
-      case VALOBJ:
-      default:
-        return PIN_DEFAULT_INTEGER_TRANSLATOR_VAL;
-
-    }
+    return switch( aData.getValueType() ) {
+      case BOOLEAN -> PIN_DEFAULT_BOOLEAN_TRANSLATOR_VAL;
+      case FLOATING -> PIN_DEFAULT_FLOAT_TRANSLATOR_VAL;
+      case INTEGER, NONE, STRING, TIMESTAMP, VALOBJ -> PIN_DEFAULT_INTEGER_TRANSLATOR_VAL;
+      default -> PIN_DEFAULT_INTEGER_TRANSLATOR_VAL;
+    };
 
   }
 
