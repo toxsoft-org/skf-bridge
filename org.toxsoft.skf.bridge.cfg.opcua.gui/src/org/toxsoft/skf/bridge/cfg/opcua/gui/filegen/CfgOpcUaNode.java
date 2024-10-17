@@ -84,7 +84,7 @@ public class CfgOpcUaNode {
             System.out.println( "Error Node Read" ); //$NON-NLS-1$
           }
 
-          CfgOpcUaNode result = new CfgOpcUaNode( id, read, write, synch, type, extraParams );
+          CfgOpcUaNode result = new CfgOpcUaNode( id, synch, read, write, type, extraParams );
           return result;
         }
       };
