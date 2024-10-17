@@ -24,14 +24,15 @@ public class PinsConfigFileFormatter {
     String initFile = args[0];
     String destFile = args[1];
 
-    format( initFile, destFile, args.length >= 3 ? args[2] : null );
+    format( initFile, destFile, args.length >= 3 ? args[2] : null, true );
 
   }
 
-  public static void format( String aInitFile, String aDestFile, String aAdditionStart )
+  public static void format( String aInitFile, String aDestFile, String aAdditionStart, boolean aRemoveInitFile )
       throws FileNotFoundException,
       IOException {
-    BufferedReader br = new BufferedReader( new FileReader( new File( aInitFile ) ) );
+    File initFile = new File( aInitFile );
+    BufferedReader br = new BufferedReader( new FileReader( initFile ) );
 
     String line = br.readLine();
 
@@ -53,6 +54,9 @@ public class PinsConfigFileFormatter {
     FileWriter fw = new FileWriter( new File( aDestFile ) );
     fw.write( outStrBuilder.toString() );
     fw.close();
+    if( aRemoveInitFile ) {
+      initFile.delete();
+    }
   }
 
   private static void formatAndAddLine( StringBuilder aOutStrBuilder, String aLine ) {

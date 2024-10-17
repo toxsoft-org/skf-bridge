@@ -93,9 +93,11 @@ public class OpcUaUtils {
 
   private static final String DEVCFG_FILE_EXTENTION = ".devcfg"; //$NON-NLS-1$
 
-  private static final String DEV_CFG_FILE_RELETIVE_PATH_AND_NAME_FORMAT = "/cfg/hal/thds/%s%s"; //$NON-NLS-1$
+  private static final String DEV_CFG_UNIX_FILE_RELETIVE_PATH_AND_NAME_FORMAT = "/cfg/hal/thds/%s%s";     //$NON-NLS-1$
+  private static final String DEV_CFG_WIN_FILE_RELETIVE_PATH_AND_NAME_FORMAT  = "\\cfg\\hal\\thds\\%s%s"; //$NON-NLS-1$
 
-  private static final String DLM_CFG_FILE_RELETIVE_PATH_AND_NAME_FORMAT = "/cfg/dlms/%s%s"; //$NON-NLS-1$
+  private static final String DLM_CFG_UNIX_FILE_RELETIVE_PATH_AND_NAME_FORMAT = "/cfg/dlms/%s%s";    //$NON-NLS-1$
+  private static final String DLM_CFG_WIN_FILE_RELETIVE_PATH_AND_NAME_FORMAT  = "\\cfg\\dlms\\%s%s"; //$NON-NLS-1$
 
   /**
    * Параметр события: включен.
@@ -229,8 +231,7 @@ public class OpcUaUtils {
    * @param aContext ITsGuiContext - context.
    */
   public static void generateDevCfgFileFromCurrState( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext ) {
-    String selected =
-        formCfgFileFullName( aDoc, aContext, DEV_CFG_FILE_RELETIVE_PATH_AND_NAME_FORMAT, DEVCFG_FILE_EXTENTION );
+    String selected = formCfgFileFullName( aDoc, aContext, getDevCfgRelativeSysPath(), DEVCFG_FILE_EXTENTION );
     if( selected == null ) {
       return;
     }
@@ -242,7 +243,7 @@ public class OpcUaUtils {
       AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
 
       String DLM_CONFIG_STR = "DeviceConfig = "; //$NON-NLS-1$
-      PinsConfigFileFormatter.format( TMP_DEST_FILE, selected, DLM_CONFIG_STR );
+      PinsConfigFileFormatter.format( TMP_DEST_FILE, selected, DLM_CONFIG_STR, true );
 
       TsDialogUtils.info( shell, MSG_CONFIG_FILE_DEVCFG_CREATED, selected );
     }
@@ -252,6 +253,26 @@ public class OpcUaUtils {
     }
   }
 
+  @SuppressWarnings( "nls" )
+  private static String getDevCfgRelativeSysPath() {
+    String retVal = DEV_CFG_UNIX_FILE_RELETIVE_PATH_AND_NAME_FORMAT;
+    String osName = System.getProperty( "os.name" );
+    if( osName.toLowerCase().startsWith( "win" ) ) {
+      retVal = DEV_CFG_WIN_FILE_RELETIVE_PATH_AND_NAME_FORMAT;
+    }
+    return retVal;
+  }
+
+  @SuppressWarnings( "nls" )
+  private static String getDlmCfgRelativeSysPath() {
+    String retVal = DLM_CFG_UNIX_FILE_RELETIVE_PATH_AND_NAME_FORMAT;
+    String osName = System.getProperty( "os.name" );
+    if( osName.toLowerCase().startsWith( "win" ) ) {
+      retVal = DLM_CFG_WIN_FILE_RELETIVE_PATH_AND_NAME_FORMAT;
+    }
+    return retVal;
+  }
+
   /**
    * Generates dlmcfg file from configuration Doc.
    *
@@ -259,8 +280,7 @@ public class OpcUaUtils {
    * @param aContext ITsGuiContext - context.
    */
   public static void generateDlmCfgFileFromCurrState( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext ) {
-    String selected =
-        formCfgFileFullName( aDoc, aContext, DLM_CFG_FILE_RELETIVE_PATH_AND_NAME_FORMAT, DLMCFG_FILE_EXTENTION );
+    String selected = formCfgFileFullName( aDoc, aContext, getDlmCfgRelativeSysPath(), DLMCFG_FILE_EXTENTION );
     if( selected == null ) {
       return;
     }
@@ -284,7 +304,7 @@ public class OpcUaUtils {
         dstFile.createNewFile();
       }
 
-      PinsConfigFileFormatter.format( TMP_DEST_FILE, selected, DLM_CONFIG_STR );
+      PinsConfigFileFormatter.format( TMP_DEST_FILE, selected, DLM_CONFIG_STR, true );
 
       TsDialogUtils.info( shell, MSG_CONFIG_FILE_DLMCFG_CREATED, selected );
     }
@@ -294,13 +314,14 @@ public class OpcUaUtils {
     }
   }
 
+  @SuppressWarnings( "null" )
   private static String formCfgFileFullName( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext, String aReletivePathFormat,
       String aFileExtention ) {
     File pathToL2 = aDoc.getL2Path();
     String cfgFilename = aDoc.getCfgFilesPrefix();
-    // if( pathToL2 != null && pathToL2.length() > 0 && cfgFilename != null && cfgFilename.length() > 0 ) {
-    // return pathToL2 + String.format( aReletivePathFormat, cfgFilename, aFileExtention );
-    // }
+    if( pathToL2 != null && pathToL2.length() > 0 && cfgFilename != null && cfgFilename.length() > 0 ) {
+      return pathToL2 + String.format( aReletivePathFormat, cfgFilename, aFileExtention );
+    }
     Shell shell = aContext.find( Shell.class );
     FileDialog fd = new FileDialog( shell, SWT.SAVE );
     fd.setText( STR_SELECT_FILE_SAVE_DLMCFG );
