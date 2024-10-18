@@ -319,14 +319,15 @@ public class OpcUaUtils {
       String aFileExtention ) {
     File pathToL2 = aDoc.getL2Path();
     String cfgFilename = aDoc.getCfgFilesPrefix();
+    String initPath = pathToL2.getAbsolutePath();
     if( pathToL2 != null && pathToL2.length() > 0 && cfgFilename != null && cfgFilename.length() > 0 ) {
-      return pathToL2 + String.format( aReletivePathFormat, cfgFilename, aFileExtention );
+      initPath = pathToL2 + String.format( aReletivePathFormat, cfgFilename, aFileExtention );
     }
     Shell shell = aContext.find( Shell.class );
     FileDialog fd = new FileDialog( shell, SWT.SAVE );
     fd.setText( STR_SELECT_FILE_SAVE_DLMCFG );
     fd.setFilterPath( pathToL2.getAbsolutePath() );
-    fd.setFileName( cfgFilename );
+    fd.setFileName( initPath );
     String[] filterExt = { aFileExtention };
     fd.setFilterExtensions( filterExt );
     String selected = fd.open();
