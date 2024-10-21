@@ -53,6 +53,15 @@ public class OpcToS5DataCfgDoc
           aSw.writeQuotedString( aEntity.getCfgFilesPrefix() );
           aSw.writeSeparatorChar();
           aSw.writeEol();
+          aSw.writeQuotedString( aEntity.getEndPointURL() );
+          aSw.writeSeparatorChar();
+          aSw.writeEol();
+          aSw.writeQuotedString( aEntity.getUserOPC_UA() );
+          aSw.writeSeparatorChar();
+          aSw.writeEol();
+          aSw.writeQuotedString( aEntity.getPasswordOPC_UA() );
+          aSw.writeSeparatorChar();
+          aSw.writeEol();
 
           // Units
           // units count
@@ -99,6 +108,12 @@ public class OpcToS5DataCfgDoc
           aSr.ensureSeparatorChar();
           String cfgFileName = aSr.readQuotedString();
           aSr.ensureSeparatorChar();
+          String url = aSr.readQuotedString();
+          aSr.ensureSeparatorChar();
+          String userOPC_UA = aSr.readQuotedString();
+          aSr.ensureSeparatorChar();
+          String passwordOPC_UA = aSr.readQuotedString();
+          aSr.ensureSeparatorChar();
 
           // Units
           // units count
@@ -137,6 +152,9 @@ public class OpcToS5DataCfgDoc
           result.nodesCfgs = nodes;
           result.setL2Path( l2Path );
           result.setCfgFilesPrefix( cfgFileName );
+          result.setEndPointURL( url );
+          result.setUserOPC_UA( userOPC_UA );
+          result.setPasswordOPC_UA( passwordOPC_UA );
           return result;
         }
       };
@@ -144,13 +162,27 @@ public class OpcToS5DataCfgDoc
   /**
    * Path to l2 bridge
    */
-  // private String l2Path;
   private File l2Path;
 
   /**
    * Prefix of cfg files ("prefix".dlmcfg, "prefix".devcfg)
    */
   private String cfgFilesPrefix;
+
+  /**
+   * IP address and port
+   */
+  private String endPointURL;
+
+  /**
+   * OPC UA user
+   */
+  private String userOPC_UA;
+
+  /**
+   * OPC UA password
+   */
+  private String passwordOPC_UA;
 
   /**
    * List of data cfg units.
@@ -254,6 +286,48 @@ public class OpcToS5DataCfgDoc
    */
   public void setCfgFilesPrefix( String aCfgFilesPrefix ) {
     cfgFilesPrefix = aCfgFilesPrefix;
+  }
+
+  /**
+   * @return OPC UA server end point URL
+   */
+  public String getEndPointURL() {
+    return endPointURL;
+  }
+
+  /**
+   * @param aEndPointURL - OPC UA server end point URL
+   */
+  public void setEndPointURL( String aEndPointURL ) {
+    endPointURL = aEndPointURL;
+  }
+
+  /**
+   * @return OPC UA user
+   */
+  public String getUserOPC_UA() {
+    return userOPC_UA;
+  }
+
+  /**
+   * @param aUserOPC_UA - OPC UA user
+   */
+  public void setUserOPC_UA( String aUserOPC_UA ) {
+    userOPC_UA = aUserOPC_UA;
+  }
+
+  /**
+   * @return OPC UA password
+   */
+  public String getPasswordOPC_UA() {
+    return passwordOPC_UA;
+  }
+
+  /**
+   * @param aPasswordOPC_UA - OPC UA password
+   */
+  public void setPasswordOPC_UA( String aPasswordOPC_UA ) {
+    passwordOPC_UA = aPasswordOPC_UA;
   }
 
 }

@@ -32,15 +32,25 @@ public class OpcToS5DataCfgDocM5LifecycleManager
     String strid = "opctos5.bridge.cfg.doc.id" + System.currentTimeMillis(); //$NON-NLS-1$
     OpcToS5DataCfgDoc newDoc = new OpcToS5DataCfgDoc( strid, nameVal.asString(), descrVal.asString() );
 
-    IAtomicValue cfgFileNameVal = aValues.get( OpcToS5DataCfgDocM5Model.CFG_FILE_NAME );
-    IAtomicValue pathToL2Val = aValues.get( OpcToS5DataCfgDocM5Model.PATH_TO_L2 );
-
-    newDoc.setCfgFilesPrefix( cfgFileNameVal.asString().trim() );
-    newDoc.setL2Path( pathToL2Val.asValobj() );
+    editCfgDoc( aValues, newDoc );
 
     master().saveCfgDoc( newDoc );
 
     return newDoc;
+  }
+
+  private static void editCfgDoc( IM5Bunch<OpcToS5DataCfgDoc> aValues, OpcToS5DataCfgDoc aEditDoc ) {
+    IAtomicValue cfgFileNameVal = aValues.get( OpcToS5DataCfgDocM5Model.CFG_FILE_NAME );
+    IAtomicValue endPointURL = aValues.get( OpcToS5DataCfgDocM5Model.END_POINT_URL );
+    IAtomicValue userOPC_UA = aValues.get( OpcToS5DataCfgDocM5Model.USER_OPC_UA );
+    IAtomicValue passwordOPC_UA = aValues.get( OpcToS5DataCfgDocM5Model.PASSWORD_OPC_UA );
+    IAtomicValue pathToL2Val = aValues.get( OpcToS5DataCfgDocM5Model.PATH_TO_L2 );
+
+    aEditDoc.setCfgFilesPrefix( cfgFileNameVal.asString().trim() );
+    aEditDoc.setL2Path( pathToL2Val.asValobj() );
+    aEditDoc.setEndPointURL( endPointURL.asString().trim() );
+    aEditDoc.setUserOPC_UA( userOPC_UA.asString().trim() );
+    aEditDoc.setPasswordOPC_UA( passwordOPC_UA.asString().trim() );
   }
 
   @Override
@@ -53,11 +63,7 @@ public class OpcToS5DataCfgDocM5LifecycleManager
     origDoc.setName( nameVal.asString() );
     origDoc.setDescription( descrVal.asString() );
 
-    IAtomicValue cfgFileNameVal = aValues.get( OpcToS5DataCfgDocM5Model.CFG_FILE_NAME );
-    IAtomicValue pathToL2Val = aValues.get( OpcToS5DataCfgDocM5Model.PATH_TO_L2 );
-
-    origDoc.setCfgFilesPrefix( cfgFileNameVal.asString().trim() );
-    origDoc.setL2Path( pathToL2Val.asValobj() );
+    editCfgDoc( aValues, origDoc );
 
     master().saveCfgDoc( origDoc );
 
@@ -66,16 +72,12 @@ public class OpcToS5DataCfgDocM5LifecycleManager
 
   @Override
   protected void doRemove( OpcToS5DataCfgDoc aEntity ) {
-    // docs.remove( aEntity );
-    // master().writeColl( SECTID_OPC_CFG_DOCS, docs, OpcToS5DataCfgDoc.KEEPER );
 
     master().removeCfgDoc( aEntity );
   }
 
   @Override
   protected IList<OpcToS5DataCfgDoc> doListEntities() {
-    // docs = new ElemArrayList<>( master().readColl( SECTID_OPC_CFG_DOCS, OpcToS5DataCfgDoc.KEEPER ) );
-    // return docs;
 
     return master().getCfgDocs();
   }

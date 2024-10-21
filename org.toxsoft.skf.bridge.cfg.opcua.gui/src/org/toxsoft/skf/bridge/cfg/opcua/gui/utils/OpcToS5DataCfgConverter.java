@@ -1073,15 +1073,20 @@ public class OpcToS5DataCfgConverter {
   }
 
   public static IAvTree convertToDevCfgTree( ITsGuiContext aContext, OpcToS5DataCfgDoc aDoc ) {
-    String ipAddress = HOST_PARAM_VAL_TEMPLATE;
+    String endPointURL = HOST_PARAM_VAL_TEMPLATE;
     String user = USER_PARAM_VAL_TEMPLATE;
     String pass = PASSWORD_PARAM_VAL_TEMPLATE;
     OpcUaServerConnCfg conConf =
         (OpcUaServerConnCfg)aContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
     if( conConf != null ) {
-      ipAddress = conConf.host();
+      endPointURL = conConf.host();
       user = conConf.login();
       pass = conConf.passward();
+    }
+    else {
+      endPointURL = aDoc.getEndPointURL();
+      user = aDoc.getUserOPC_UA();
+      pass = aDoc.getPasswordOPC_UA();
     }
 
     IOptionSetEdit opSet = new OptionSet();
@@ -1094,7 +1099,7 @@ public class OpcToS5DataCfgConverter {
 
     bridgeOps.setStr( ID_PARAM_NAME, OPC_TAG_DEVICE_UA );
     bridgeOps.setStr( DESCRIPTION_PARAM_NAME, DESCRIPTION_PARAM_VAL_TEMPLATE );
-    bridgeOps.setStr( HOST_PARAM_NAME, ipAddress );// host
+    bridgeOps.setStr( HOST_PARAM_NAME, endPointURL );// host
     bridgeOps.setStr( USER_PARAM_NAME, user );
     bridgeOps.setStr( PASSWORD_PARAM_NAME, pass );
 
