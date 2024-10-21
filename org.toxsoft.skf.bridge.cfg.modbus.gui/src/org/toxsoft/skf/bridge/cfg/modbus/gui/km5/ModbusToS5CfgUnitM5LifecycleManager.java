@@ -146,7 +146,7 @@ public class ModbusToS5CfgUnitM5LifecycleManager
       AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
 
       String DLM_CONFIG_STR = "DlmConfig = "; //$NON-NLS-1$
-      PinsConfigFileFormatter.format( TMP_DEST_FILE, selected, DLM_CONFIG_STR );
+      PinsConfigFileFormatter.format( TMP_DEST_FILE, selected, DLM_CONFIG_STR, true );
 
       // remove tmp file
       tmpFile.delete();
@@ -188,7 +188,7 @@ public class ModbusToS5CfgUnitM5LifecycleManager
       AvTreeKeeper.KEEPER.write( tmpFile, avTree );
 
       String DEV_CONFIG_STR = "DeviceConfig = "; //$NON-NLS-1$
-      PinsConfigFileFormatter.format( TMP_DEST_FILE, selected, DEV_CONFIG_STR );
+      PinsConfigFileFormatter.format( TMP_DEST_FILE, selected, DEV_CONFIG_STR, true );
       // remove tmp file
       tmpFile.delete();
       TsDialogUtils.info( shell, MSG_CONFIG_FILE_DEVCFG_CREATED, selected );
