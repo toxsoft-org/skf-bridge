@@ -67,8 +67,9 @@ public class OpcToS5DataCfgDocM5Model
    * Attribute {@link OpcToS5DataCfgDoc#getL2Path() } path to l2 dir
    */
   public static final M5AttributeFieldDef<OpcToS5DataCfgDoc> PATH_TO_L2 =
-      new M5AttributeFieldDef<>( FID_PATH_TO_L2, IValedFileConstants.DT_DIRECTORY_FILE, TSID_NAME, STR_N_PATH_TO_L2, //
-          TSID_DESCRIPTION, STR_D_PATH_TO_L2 // , //
+      new M5AttributeFieldDef<>( FID_PATH_TO_L2, IValedFileConstants.DT_DIRECTORY_FILE, //
+          TSID_NAME, STR_N_PATH_TO_L2, //
+          TSID_DESCRIPTION, STR_D_PATH_TO_L2 // 
       // OPID_EDITOR_FACTORY_NAME, ValedFile.FACTORY_NAME // suitable valed
       // OPID_EDITOR_FACTORY_NAME, ValedAvStringFile.FACTORY_NAME // suitable valed
       // OPID_EDITOR_FACTORY_NAME, ValedAvValobjFile.FACTORY_NAME // suitable valed

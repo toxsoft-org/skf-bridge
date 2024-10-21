@@ -1170,7 +1170,8 @@ public class OpcUaTreeBrowserPanel
 
     IDtoAttrInfo atrInfo = DtoAttrInfo.create2( IOpcUaServerConnCfgConstants.OPC_AU_CLASS_MARKER, ddType, //
         TSID_NAME, name, //
-        TSID_DESCRIPTION, descr );
+        TSID_DESCRIPTION, descr, //
+        TSID_DEFAULT_VALUE, AvUtils.AV_TRUE );
 
     aCinf.attrInfos().add( atrInfo );
   }
