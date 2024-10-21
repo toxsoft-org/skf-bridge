@@ -594,7 +594,7 @@ public class OpcUaTreeBrowserPanel
           .getModel( IKM5SdedConstants.MID_SDED_DTO_CLASS_INFO, IDtoClassInfo.class );
       TsDialogInfo cdi = new TsDialogInfo( tsContext(), null, DLG_C_NEW_CLASS, DLG_T_NEW_CLASS, 0 );
       // установим нормальный размер диалога
-      cdi.setMinSize( new TsPoint( -30, -60 ) );
+      cdi.setMinSize( new TsPoint( -30, -70 ) );
       // проверяем наличие класса
       ISkClassInfo existClsInfo = conn.coreApi().sysdescr().findClassInfo( dtoClassInfo.id() );
       // если он уже существует, то обновляем все существующие поля
@@ -604,8 +604,12 @@ public class OpcUaTreeBrowserPanel
         // просим редактировать описание НСИ класса и нажать Ok
         dtoClassInfo =
             M5GuiUtils.askEdit( tsContext(), modelDto, dtoClassInfo, cdi, modelDto.getLifecycleManager( conn ) );
-        // если пользователь нажал Ok, то создаем основной и теневой (НСИ) класс
-        if( dtoClassInfo != null && rriSection != null && !rriDtoClassInfo.attrInfos().isEmpty() ) {
+        if( dtoClassInfo == null ) {
+          // если пользователь нажал Cancel
+          return;
+        }
+        // тут пользователь нажал Ok,но проверяем есть ли смысл возится с НСИ тенью этого класса
+        if( rriSection != null && !rriDtoClassInfo.attrInfos().isEmpty() ) {
           // создаем временный IM5LifecycleManager задача которого ничего не делать, а просто отобразить содержимое
           // описания класса
           IM5LifecycleManager<IDtoClassInfo> localLM = localLifeCycleManager4DtoClassInfo( modelDto );
