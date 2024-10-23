@@ -1,7 +1,10 @@
 package org.toxsoft.skf.bridge.cfg.modbus.gui.type;
 
+import static org.toxsoft.skf.bridge.cfg.modbus.gui.type.ISkResources.*;
+
 import org.toxsoft.core.tslib.bricks.keeper.*;
 import org.toxsoft.core.tslib.bricks.keeper.AbstractEntityKeeper.*;
+import org.toxsoft.core.tslib.bricks.strid.*;
 import org.toxsoft.core.tslib.bricks.strio.*;
 
 /**
@@ -9,27 +12,28 @@ import org.toxsoft.core.tslib.bricks.strio.*;
  *
  * @author max
  */
-public enum ERequestType {
+public enum ERequestType
+    implements IStridable {
 
   /**
    * Чтение дискретного выхода
    */
-  DO, //
+  DO( "do", STR_N_REQ_TYPE_DO ), // //$NON-NLS-1$
 
   /**
    * Чтение аналогового выхода
    */
-  AO, //
+  AO( "ao", STR_N_REQ_TYPE_AO ), // //$NON-NLS-1$
 
   /**
    * Чтение дискретного входа
    */
-  DI, //
+  DI( "di", STR_N_REQ_TYPE_DI ), // //$NON-NLS-1$
 
   /**
    * Чтение аналогового входа
    */
-  AI; //
+  AI( "ai", STR_N_REQ_TYPE_AI ); // //$NON-NLS-1$
 
   /**
    * The keeper ID.
@@ -62,5 +66,28 @@ public enum ERequestType {
    */
   public boolean isDiscret() {
     return this == DO || this == DI;
+  }
+
+  private String id;
+  private String name;
+
+  ERequestType( String aId, String aName ) {
+    id = aId;
+    name = aName;
+  }
+
+  @Override
+  public String id() {
+    return id;
+  }
+
+  @Override
+  public String nmName() {
+    return name;
+  }
+
+  @Override
+  public String description() {
+    return name;
   }
 }

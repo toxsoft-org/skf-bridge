@@ -85,9 +85,12 @@ public class ModbusNodesForCfgM5Model
    */
   public static final String FID_PARAMETERS_STR = "params.str"; //$NON-NLS-1$
 
+  /**
+   * Attribute {@link ModbusNode#getModbusDevice()}.
+   */
   public final M5AttributeFieldDef<IAtomicValue> MODBUS_DEVICE = new M5AttributeFieldDef<>( FID_MODBUS_DEVICE, VALOBJ, //
-      TSID_NAME, "Устройство modbus", //
-      TSID_DESCRIPTION, "Устройство modbus (tcp или rtu)", //
+      TSID_NAME, STR_N_MODBUS_DEVICE, //
+      TSID_DESCRIPTION, STR_D_MODBUS_DEVICE, //
       TSID_KEEPER_ID, ModbusDevice.KEEPER_ID, //
       OPID_EDITOR_FACTORY_NAME, ValedAvValobjModbusDeviceEditor.FACTORY_NAME //
   ) {

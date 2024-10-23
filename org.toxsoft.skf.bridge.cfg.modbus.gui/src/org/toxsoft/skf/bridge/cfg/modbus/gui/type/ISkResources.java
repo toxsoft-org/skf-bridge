@@ -5,7 +5,16 @@ package org.toxsoft.skf.bridge.cfg.modbus.gui.type;
  *
  * @author dima
  */
+@SuppressWarnings( "javadoc" )
 public interface ISkResources {
+
+  /**
+   * {@link ERequestType}
+   */
+  String STR_N_REQ_TYPE_AO = "AO (FC3)"; //$NON-NLS-1$
+  String STR_N_REQ_TYPE_AI = "AI (FC4)"; //$NON-NLS-1$
+  String STR_N_REQ_TYPE_DO = "DO (FC1)"; //$NON-NLS-1$
+  String STR_N_REQ_TYPE_DI = "DI (FC2)"; //$NON-NLS-1$
 
   /**
    * {@link ModbusDeviceOptionsUtils}

@@ -16,6 +16,7 @@ public class Messages
   public static String        STR_D_MODBUS_PARAMETERS_STR;
   public static String        STR_D_MODBUS_WORDS_COUNT;
   public static String        STR_D_PORT_NUMBER;
+  public static String        STR_D_MODBUS_DEVICE;
   public static String        STR_ERR_DOC_READ;
   public static String        STR_N_CONNECTION_NAME;
   public static String        STR_N_IP_ADDRESS;
@@ -25,6 +26,7 @@ public class Messages
   public static String        STR_N_MODBUS_PARAMETERS_STR;
   public static String        STR_N_MODBUS_WORDS_COUNT;
   public static String        STR_N_PORT_NUMBER;
+  public static String        STR_N_MODBUS_DEVICE;
   public static String        STR_N_IS_TCP_INDEX;
   public static String        STR_D_IS_TCP_INDEX;
   public static String        STR_N_DEVICE_CONN_OPTS;
