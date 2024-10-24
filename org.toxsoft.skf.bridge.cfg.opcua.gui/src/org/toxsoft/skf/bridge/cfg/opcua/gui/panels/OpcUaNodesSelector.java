@@ -240,8 +240,8 @@ public class OpcUaNodesSelector
         }
         if( hideVariableNodes && child.getNodeClass().equals( NodeClass.Object ) ) {
           String name = child.getBrowseName();
-          // отрезаем листья Static
-          if( name.compareTo( STATIC_NODE_NAME ) == 0 ) {
+          // отрезаем листья Static & null
+          if( name.compareTo( STATIC_NODE_NAME ) == 0 || name.startsWith( IGNORE_REFIX ) ) {
             continue;
           }
         }
