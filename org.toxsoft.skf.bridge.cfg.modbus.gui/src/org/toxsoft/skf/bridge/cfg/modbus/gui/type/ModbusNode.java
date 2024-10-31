@@ -23,6 +23,8 @@ public class ModbusNode {
 
   private String params = TsLibUtils.EMPTY_STRING;
 
+  private String regTranslator = TsLibUtils.EMPTY_STRING;
+
   private boolean isOutput = false;
 
   /**
@@ -183,6 +185,24 @@ public class ModbusNode {
    */
   public void setParams( String aParams ) {
     params = aParams;
+  }
+
+  /**
+   * Returns register translator idetifier of node as string
+   *
+   * @return String - register translator idetifier as string
+   */
+  public String getRegTranslator() {
+    return regTranslator;
+  }
+
+  /**
+   * Sets register translator idetifier of node as string
+   *
+   * @param aRegTranslator String - register translator idetifier as string
+   */
+  public void setRegTranslator( String aRegTranslator ) {
+    regTranslator = aRegTranslator;
   }
 
   /**

@@ -6,6 +6,7 @@ import org.toxsoft.core.tslib.bricks.keeper.*;
 import org.toxsoft.core.tslib.bricks.keeper.AbstractEntityKeeper.*;
 import org.toxsoft.core.tslib.bricks.strid.*;
 import org.toxsoft.core.tslib.bricks.strio.*;
+import org.toxsoft.core.tslib.utils.errors.*;
 
 /**
  * Типы запросов к modbus
@@ -58,6 +59,23 @@ public enum ERequestType
         }
 
       };
+
+  /**
+   * Returns the constant by the ID.
+   *
+   * @param aId String - the ID
+   * @return {@link ERequestType} - found constant
+   * @throws TsNullArgumentRtException any argument = <code>null</code>
+   * @throws TsItemNotFoundRtException no constant found by specified ID
+   */
+  public static ERequestType getById( String aId ) {
+    for( ERequestType type : values() ) {
+      if( type.id().equals( aId ) ) {
+        return type;
+      }
+    }
+    throw new TsItemNotFoundRtException( "Couldnot find ERequestType with id: %s", aId ); //$NON-NLS-1$
+  }
 
   /**
    * Determines if the item presents discret type.

@@ -20,14 +20,20 @@ import org.toxsoft.core.tsgui.m5.gui.panels.*;
 import org.toxsoft.core.tsgui.m5.gui.panels.impl.*;
 import org.toxsoft.core.tsgui.m5.model.*;
 import org.toxsoft.core.tsgui.m5.model.impl.*;
+import org.toxsoft.core.tsgui.valed.api.*;
 import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.impl.*;
+import org.toxsoft.core.tslib.bricks.strid.impl.*;
 import org.toxsoft.core.tslib.bricks.validator.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.helpers.*;
+import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.utils.*;
+import org.toxsoft.core.tslib.utils.errors.*;
+import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.panels.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.type.*;
+import org.toxsoft.skf.refbooks.lib.*;
 import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.gui.conn.*;
 
@@ -39,6 +45,10 @@ import org.toxsoft.uskat.core.gui.conn.*;
  */
 public class ModbusNodesForCfgM5Model
     extends M5Model<IAtomicValue> {
+
+  private static final String STR_D_TRANSLATOR = "Транслятор регистра";
+
+  private static final String STR_N_TRANSLATOR = "Транслятор";
 
   /**
    * Model ID.
@@ -56,6 +66,31 @@ public class ModbusNodesForCfgM5Model
       TsActionDef.ofPush2( ACTID_EDIT_AS_STR, STR_N_EDIT_AS_STRING, STR_D_EDIT_AS_STRING, ICONID_DOCUMENT_EDIT );
 
   /**
+   * Id of translator refbook.
+   */
+  final static String REG_TRANSLATOR_REFBOOK = "reg.translator"; //$NON-NLS-1$
+
+  /**
+   * Id of parametor words count in translator refbook.
+   */
+  final static String REG_TRANS_REF_ATTR_WORDS_COUNT = "wordsCount"; //$NON-NLS-1$
+
+  /**
+   * Id of parametor request type in translator refbook.
+   */
+  final static String REG_TRANS_REF_ATTR_REQ_TYPE = "requestType"; //$NON-NLS-1$
+
+  /**
+   * Id of parametor value type in translator refbook.
+   */
+  final static String REG_TRANS_REF_ATTR_VAL_TYPE = "valueType"; //$NON-NLS-1$
+
+  /**
+   * Id of parametor params in translator refbook.
+   */
+  final static String REG_TRANS_REF_ATTR_PARAMS = "params"; //$NON-NLS-1$
+
+  /**
    * address
    */
   public static final String FID_MODBUS_DEVICE = "modbus.device"; //$NON-NLS-1$
@@ -64,6 +99,11 @@ public class ModbusNodesForCfgM5Model
    * register
    */
   public static final String FID_REGISTER = "register"; //$NON-NLS-1$
+
+  /**
+   * register
+   */
+  public static final String FID_REG_TRANSLATOR = "reg.translator"; //$NON-NLS-1$
 
   /**
    * words count
@@ -123,6 +163,54 @@ public class ModbusNodesForCfgM5Model
 
         protected IAtomicValue doGetFieldValue( IAtomicValue aEntity ) {
           return avInt( ((ModbusNode)aEntity.asValobj()).getRegister() );
+        }
+
+      };
+
+  /**
+   * Attribute {@link ModbusNode#getRegTranslator() } jr param from design form
+   */
+  public M5SingleLookupFieldDef<IAtomicValue, ISkRefbookItem> REG_TRANSLATOR =
+      new M5SingleLookupFieldDef<>( FID_REG_TRANSLATOR,
+          StridUtils.makeIdPath( ISkRefbookServiceHardConstants.CLSID_PREFIX_REFBOOK_ITEM, REG_TRANSLATOR_REFBOOK ) ) {
+
+        @Override
+        protected void doInit() {
+          setNameAndDescription( STR_N_TRANSLATOR, STR_D_TRANSLATOR );
+          setFlags( M5FF_COLUMN );
+          setLookupProvider( () -> {
+            ISkConnectionSupplier connSupplier = tsContext().get( ISkConnectionSupplier.class );
+            ISkConnection conn = connSupplier.defConn();
+
+            ISkRefbookService skRefServ = (ISkRefbookService)conn.coreApi().getService( ISkRefbookService.SERVICE_ID );
+            ISkRefbook intervalsRefbook = skRefServ.findRefbook( REG_TRANSLATOR_REFBOOK );
+            if( intervalsRefbook == null ) {
+              return new ElemArrayList<>();
+            }
+            return intervalsRefbook.listItems();
+          } );
+        }
+
+        protected ISkRefbookItem doGetFieldValue( IAtomicValue aEntity ) {
+          String regTranslator = ((ModbusNode)aEntity.asValobj()).getRegTranslator();
+          if( regTranslator == null || regTranslator.length() == 0 ) {
+            return null;
+          }
+
+          ISkConnectionSupplier connSupplier = tsContext().get( ISkConnectionSupplier.class );
+          ISkConnection conn = connSupplier.defConn();
+
+          ISkRefbookService skRefServ = (ISkRefbookService)conn.coreApi().getService( ISkRefbookService.SERVICE_ID );
+          ISkRefbook intervalsRefbook = skRefServ.findRefbook( REG_TRANSLATOR_REFBOOK );
+          if( intervalsRefbook == null ) {
+            return null;
+          }
+          return intervalsRefbook.findItem( regTranslator );
+        }
+
+        protected String doGetFieldValueName( IAtomicValue aEntity ) {
+          ISkRefbookItem value = doGetFieldValue( aEntity );
+          return value != null ? value.nmName() : " - "; //$NON-NLS-1$
         }
 
       };
@@ -215,17 +303,26 @@ public class ModbusNodesForCfgM5Model
 
   /**
    * Constructor
+   *
+   * @param aaContext ITsGuiContext - context
    */
-  public ModbusNodesForCfgM5Model() {
+  public ModbusNodesForCfgM5Model( ITsGuiContext aaContext ) {
     super( MODEL_ID, IAtomicValue.class );
-    addFieldDefs( MODBUS_DEVICE, REGISTER, WORDS_COUNT, VALUE_TYPE, REQUEST_TYPE, PARAMETERS_STR );
+
+    addFieldDefs( MODBUS_DEVICE, REGISTER );
+    if( checkTranslatorRefbook( aaContext ) ) {
+      addFieldDefs( REG_TRANSLATOR );
+    }
+
+    addFieldDefs( WORDS_COUNT, VALUE_TYPE, REQUEST_TYPE, PARAMETERS_STR );
     // переопределяю только для того чтобы отключить панель фильтра
     setPanelCreator( new M5DefaultPanelCreator<>() {
 
       protected IM5EntityPanel<IAtomicValue> doCreateEntityEditorPanel( ITsGuiContext aContext,
           IM5LifecycleManager<IAtomicValue> aLifecycleManager ) {
         IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( aContext.params(), AvUtils.AV_FALSE );
-        return new M5DefaultEntityControlledPanel<>( aContext, model(), aLifecycleManager, null );
+
+        return new M5DefaultEntityControlledPanel<>( aContext, model(), aLifecycleManager, new Controller() );
       }
 
       protected IM5CollectionPanel<IAtomicValue> doCreateCollViewerPanel( ITsGuiContext aContext,
@@ -249,6 +346,19 @@ public class ModbusNodesForCfgM5Model
 
   }
 
+  private static boolean checkTranslatorRefbook( ITsGuiContext aContext ) {
+    ISkConnectionSupplier connSupplier = aContext.get( ISkConnectionSupplier.class );
+    ISkConnection conn = connSupplier.defConn();
+
+    ISkRefbookService skRefServ = (ISkRefbookService)conn.coreApi().getService( ISkRefbookService.SERVICE_ID );
+    ISkRefbook intervalsRefbook = skRefServ.findRefbook( REG_TRANSLATOR_REFBOOK );
+
+    // Проверка наличия справочника
+    return intervalsRefbook != null;
+    // TDOD
+    // Проверка правильности структуры справочника - атрибутов
+  }
+
   @Override
   protected IM5LifecycleManager<IAtomicValue> doCreateDefaultLifecycleManager() {
     ISkConnectionSupplier cs = tsContext().get( ISkConnectionSupplier.class );
@@ -260,6 +370,91 @@ public class ModbusNodesForCfgM5Model
   @Override
   protected IM5LifecycleManager<IAtomicValue> doCreateLifecycleManager( Object aMaster ) {
     return new ModbusNodesForCfgM5LifecycleManager( this, ISkConnection.class.cast( aMaster ) );
+  }
+
+  class Controller
+      extends M5EntityPanelWithValedsController<IAtomicValue> {
+
+    public Controller() {
+      super();
+    }
+
+    @SuppressWarnings( "unchecked" )
+    @Override
+    public boolean doProcessEditorValueChange( IValedControl<?> aEditor, IM5FieldDef<IAtomicValue, ?> aFieldDef,
+        boolean aEditFinished ) {
+      switch( aFieldDef.id() ) {
+        case FID_REG_TRANSLATOR:
+
+          // when changing the Gwid then autocomplete name and description
+          ISkRefbookItem item = (ISkRefbookItem)editors().getByKey( FID_REG_TRANSLATOR ).getValue();
+
+          if( item == null ) {
+            break;
+          }
+
+          IAtomicValue wordsCountVal = item.attrs().findValue( REG_TRANS_REF_ATTR_WORDS_COUNT );
+
+          if( wordsCountVal != null && wordsCountVal.isAssigned() ) {
+
+            IValedControl<IAtomicValue> wordsCountValed =
+                (IValedControl<IAtomicValue>)editors().getByKey( FID_WORDS_COUNT );
+
+            wordsCountValed.setValue( wordsCountVal );
+          }
+
+          IAtomicValue requestTypeVal = item.attrs().findValue( REG_TRANS_REF_ATTR_REQ_TYPE );
+
+          if( requestTypeVal != null && requestTypeVal.isAssigned() ) {
+            try {
+              ERequestType rType = ERequestType.getById( requestTypeVal.asString() );
+
+              IValedControl<IAtomicValue> requestTypeValed =
+                  (IValedControl<IAtomicValue>)editors().getByKey( FID_REQUEST_TYPE );
+
+              requestTypeValed.setValue( AvUtils.avFromObj( rType ) );
+            }
+            catch( TsItemNotFoundRtException e ) {
+              LoggerUtils.errorLogger().error( e, "Couldnot find ERequestType with id: %s", requestTypeVal.asString() ); //$NON-NLS-1$
+              // nop
+            }
+          }
+
+          IAtomicValue valueTypeVal = item.attrs().findValue( REG_TRANS_REF_ATTR_VAL_TYPE );
+
+          if( valueTypeVal != null && valueTypeVal.isAssigned() ) {
+
+            try {
+              EAtomicType vType = EAtomicType.getById( valueTypeVal.asString() );
+
+              IValedControl<IAtomicValue> valueTypeValed =
+                  (IValedControl<IAtomicValue>)editors().getByKey( FID_VALUE_TYPE );
+
+              valueTypeValed.setValue( AvUtils.avFromObj( vType ) );
+            }
+            catch( TsItemNotFoundRtException e ) {
+              LoggerUtils.errorLogger().error( e, "Couldnot find EAtomicType with id: &s", valueTypeVal.asString() ); //$NON-NLS-1$
+              // nop
+            }
+          }
+
+          IAtomicValue paramsVal = item.attrs().findValue( REG_TRANS_REF_ATTR_PARAMS );
+
+          if( paramsVal != null && paramsVal.isAssigned() ) {
+
+            IValedControl<IAtomicValue> paramsValed =
+                (IValedControl<IAtomicValue>)editors().getByKey( FID_PARAMETERS_STR );
+
+            paramsValed.setValue( paramsVal );
+          }
+
+          break;
+        default:
+          break;
+      }
+      return true;
+    }
+
   }
 
   static class ModbusNodesForCfgM5LifecycleManager
@@ -307,8 +502,15 @@ public class ModbusNodesForCfgM5Model
       ERequestType type = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_REQUEST_TYPE )).asValobj();
       String params = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_PARAMETERS_STR )).asString();
 
-      // return AvUtils.avValobj( new ModbusNode( reg, count, type ) );
-      return AvUtils.avValobj( new ModbusNode( address, reg, count, valueType, type, params ) );
+      ModbusNode modbusNode = new ModbusNode( address, reg, count, valueType, type, params );
+      if( aValues.model().fieldDefs().hasKey( ModbusNodesForCfgM5Model.FID_REG_TRANSLATOR ) ) {
+        ISkRefbookItem regTranslator = aValues.get( ModbusNodesForCfgM5Model.FID_REG_TRANSLATOR );
+        if( regTranslator != null ) {
+          modbusNode.setRegTranslator( regTranslator.id() );
+        }
+      }
+
+      return AvUtils.avValobj( modbusNode );
     }
 
     /**
@@ -344,8 +546,15 @@ public class ModbusNodesForCfgM5Model
       ERequestType type = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_REQUEST_TYPE )).asValobj();
       String params = ((IAtomicValue)aValues.get( ModbusNodesForCfgM5Model.FID_PARAMETERS_STR )).asString();
 
-      // return AvUtils.avValobj( new ModbusNode( reg, count, type ) );
-      return AvUtils.avValobj( new ModbusNode( address, reg, count, valueType, type, params ) );
+      ModbusNode modbusNode = new ModbusNode( address, reg, count, valueType, type, params );
+      if( aValues.model().fieldDefs().hasKey( ModbusNodesForCfgM5Model.FID_REG_TRANSLATOR ) ) {
+        ISkRefbookItem regTranslator = aValues.get( ModbusNodesForCfgM5Model.FID_REG_TRANSLATOR );
+        if( regTranslator != null ) {
+          modbusNode.setRegTranslator( regTranslator.id() );
+        }
+      }
+
+      return AvUtils.avValobj( modbusNode );
     }
 
     /**

@@ -45,7 +45,7 @@ public class KM5ModbusContributor
     addIfNotAlreadyAdded( new GwidsForCfgM5Model() );
     addIfNotAlreadyAdded( new OpcToS5DataCfgUnitM5Model( OpcToS5DataCfgUnitM5Model.MODEL_ID_TEMPLATE + ".modbus", //$NON-NLS-1$
         ModbusNodesForCfgM5Model.MODEL_ID ) );
-    addIfNotAlreadyAdded( new ModbusNodesForCfgM5Model() );
+    addIfNotAlreadyAdded( new ModbusNodesForCfgM5Model( m5().tsContext() ) );
     addIfNotAlreadyAdded( new CfgUnitRealizationTypeM5Model() );
     addIfNotAlreadyAdded( new ModbusDeviceM5Model() );
 

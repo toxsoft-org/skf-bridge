@@ -47,6 +47,11 @@ public class ModbusNodeKeeper
     aSw.writeSeparatorChar();
     aSw.writeEol();
     aSw.writeQuotedString( aEntity.getParams() );
+    if( aEntity.getRegTranslator() != null ) {
+      aSw.writeSeparatorChar();
+      aSw.writeEol();
+      aSw.writeQuotedString( aEntity.getRegTranslator() );
+    }
     aSw.decNewLine();
   }
 
@@ -64,7 +69,17 @@ public class ModbusNodeKeeper
     aSr.ensureSeparatorChar();
     String params = aSr.readQuotedString();
 
-    return new ModbusNode( address, register, wordsCount, valueType, type, params );
+    ModbusNode node = new ModbusNode( address, register, wordsCount, valueType, type, params );
+    try {
+      aSr.ensureSeparatorChar();
+      String translator = aSr.readQuotedString();
+      node.setRegTranslator( translator );
+    }
+    catch( @SuppressWarnings( "unused" ) StrioRtException se ) {
+      // nop
+    }
+
+    return node;
   }
 
 }
