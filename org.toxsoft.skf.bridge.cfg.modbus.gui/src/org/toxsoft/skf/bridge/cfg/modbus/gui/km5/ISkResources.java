@@ -60,4 +60,6 @@ public interface ISkResources {
   String STR_D_MODBUS_PARAMETERS_STR = Messages.STR_D_MODBUS_PARAMETERS_STR;
   String STR_D_MODBUS_DEVICE         = Messages.STR_D_MODBUS_DEVICE;
   String STR_N_MODBUS_DEVICE         = Messages.STR_N_MODBUS_DEVICE;
+  String STR_D_TRANSLATOR            = Messages.STR_D_TRANSLATOR;
+  String STR_N_TRANSLATOR            = Messages.STR_N_TRANSLATOR;
 }

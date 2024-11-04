@@ -46,10 +46,6 @@ import org.toxsoft.uskat.core.gui.conn.*;
 public class ModbusNodesForCfgM5Model
     extends M5Model<IAtomicValue> {
 
-  private static final String STR_D_TRANSLATOR = "Транслятор регистра";
-
-  private static final String STR_N_TRANSLATOR = "Транслятор";
-
   /**
    * Model ID.
    */
@@ -376,7 +372,6 @@ public class ModbusNodesForCfgM5Model
       extends M5EntityPanelWithValedsController<IAtomicValue> {
 
     public Controller() {
-      super();
     }
 
     @SuppressWarnings( "unchecked" )
@@ -407,7 +402,7 @@ public class ModbusNodesForCfgM5Model
 
           if( requestTypeVal != null && requestTypeVal.isAssigned() ) {
             try {
-              ERequestType rType = ERequestType.getById( requestTypeVal.asString() );
+              ERequestType rType = requestTypeVal.asValobj();
 
               IValedControl<IAtomicValue> requestTypeValed =
                   (IValedControl<IAtomicValue>)editors().getByKey( FID_REQUEST_TYPE );
@@ -425,7 +420,7 @@ public class ModbusNodesForCfgM5Model
           if( valueTypeVal != null && valueTypeVal.isAssigned() ) {
 
             try {
-              EAtomicType vType = EAtomicType.getById( valueTypeVal.asString() );
+              EAtomicType vType = valueTypeVal.asValobj();
 
               IValedControl<IAtomicValue> valueTypeValed =
                   (IValedControl<IAtomicValue>)editors().getByKey( FID_VALUE_TYPE );

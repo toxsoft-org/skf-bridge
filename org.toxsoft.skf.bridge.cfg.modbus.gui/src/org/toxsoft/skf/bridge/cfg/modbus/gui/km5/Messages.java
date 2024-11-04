@@ -27,6 +27,8 @@ public class Messages
   public static String        STR_N_MODBUS_WORDS_COUNT;
   public static String        STR_N_PORT_NUMBER;
   public static String        STR_N_MODBUS_DEVICE;
+  public static String        STR_N_TRANSLATOR;
+  public static String        STR_D_TRANSLATOR;
   public static String        STR_N_IS_TCP_INDEX;
   public static String        STR_D_IS_TCP_INDEX;
   public static String        STR_N_DEVICE_CONN_OPTS;
