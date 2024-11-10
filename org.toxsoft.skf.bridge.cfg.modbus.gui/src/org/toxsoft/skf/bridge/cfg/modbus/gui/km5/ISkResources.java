@@ -39,10 +39,10 @@ public interface ISkResources {
   // ------------------------------------------------------------------
   //
   String STR_ERR_DOC_READ    = Messages.STR_ERR_DOC_READ;
-  String STR_N_PATH_TO_L2    = "директория";
-  String STR_D_PATH_TO_L2    = "Директория генерации конфигурационных файлов";
-  String STR_N_CFG_FILE_NAME = "шаблон имени";
-  String STR_D_CFG_FILE_NAME = "Шаблон имени конфигурационного файла";
+  String STR_N_PATH_TO_L2    = Messages.STR_N_PATH_TO_L2;
+  String STR_D_PATH_TO_L2    = Messages.STR_D_PATH_TO_L2;
+  String STR_N_CFG_FILE_NAME = Messages.STR_N_CFG_FILE_NAME;
+  String STR_D_CFG_FILE_NAME = Messages.STR_D_CFG_FILE_NAME;
 
   //
   // {@link ModbusNodesForCfgM5Model}

@@ -33,6 +33,10 @@ public class Messages
   public static String        STR_D_IS_TCP_INDEX;
   public static String        STR_N_DEVICE_CONN_OPTS;
   public static String        STR_D_DEVICE_CONN_OPTS;
+  public static String        STR_N_PATH_TO_L2;
+  public static String        STR_D_PATH_TO_L2;
+  public static String        STR_N_CFG_FILE_NAME;
+  public static String        STR_D_CFG_FILE_NAME;
 
   static {
     // initialize resource bundle
