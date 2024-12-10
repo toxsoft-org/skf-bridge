@@ -12,9 +12,11 @@ import org.toxsoft.core.tslib.av.opset.impl.OptionSet;
 import org.toxsoft.core.tslib.bricks.strid.coll.IStridablesList;
 import org.toxsoft.core.tslib.bricks.strid.coll.IStridablesListEdit;
 import org.toxsoft.core.tslib.bricks.strid.coll.impl.StridablesList;
+import org.toxsoft.core.tslib.coll.primtypes.*;
+import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.utils.errors.TsNullArgumentRtException;
 import org.toxsoft.skf.bridge.s5.lib.*;
-import org.toxsoft.skf.bridge.s5.lib.impl.ISkBackendGatewayConfig;
+import org.toxsoft.skf.bridge.s5.lib.impl.S5BackendGatewayConfig;
 import org.toxsoft.skf.bridge.s5.lib.impl.SkGatewayConfigurationList;
 import org.toxsoft.skf.dq.s5.supports.IS5BackendDataQualitySingleton;
 import org.toxsoft.skf.dq.s5.supports.S5BackendDataQualitySingleton;
@@ -158,14 +160,21 @@ public class S5BackendGatewaySingleton
   // Реализация шаблонных методов S5SingletonBase
   //
   @Override
+  protected IStringList doConfigurationPaths() {
+    IStringListEdit retValue = new StringArrayList();
+    retValue.addAll( S5BackendGatewayConfig.ALL_GATEWAYS_OPDEFS.keys() );
+    return retValue;
+  }
+
+  @Override
   protected IOptionSet doCreateConfiguration() {
     return super.doCreateConfiguration();
   }
 
   @Override
   protected void onConfigChanged( IOptionSet aPrevConfig, IOptionSet aNewConfig ) {
-    SkGatewayConfigurationList prevGateways = ISkBackendGatewayConfig.GATEWAYS.getValue( aPrevConfig ).asValobj();
-    SkGatewayConfigurationList newGateways = ISkBackendGatewayConfig.GATEWAYS.getValue( aNewConfig ).asValobj();
+    SkGatewayConfigurationList prevGateways = S5BackendGatewayConfig.GATEWAYS.getValue( aPrevConfig ).asValobj();
+    SkGatewayConfigurationList newGateways = S5BackendGatewayConfig.GATEWAYS.getValue( aNewConfig ).asValobj();
     if( !newGateways.equals( prevGateways ) ) {
       // Чтобы не вызвать блокировку при создании S5Connection делаем сохранение конфигурации через businessApi
       IS5BackendGatewaySingleton businessApi = sessionContext().getBusinessObject( IS5BackendGatewaySingleton.class );
@@ -219,11 +228,11 @@ public class S5BackendGatewaySingleton
     IOptionSetEdit newConfigurations = new OptionSet( configuration() );
     // Список описаний шлюзов в конфигурации службы
     SkGatewayConfigurationList gatewayConfigs =
-        ISkBackendGatewayConfig.GATEWAYS.getValue( newConfigurations ).asValobj();
+        S5BackendGatewayConfig.GATEWAYS.getValue( newConfigurations ).asValobj();
     // Добавление описания нового шлюза
     gatewayConfigs.add( aGatewayConfig );
     // Обновление списка описаний в конфигурации
-    ISkBackendGatewayConfig.GATEWAYS.setValue( newConfigurations, AvUtils.avValobj( gatewayConfigs ) );
+    S5BackendGatewayConfig.GATEWAYS.setValue( newConfigurations, AvUtils.avValobj( gatewayConfigs ) );
     // Сохранение конфигурации может быть только в транзакции
     IS5BackendGatewaySingleton businessApi = sessionContext().getBusinessObject( IS5BackendGatewaySingleton.class );
     // Сохранение настроек в базе данных
@@ -238,11 +247,11 @@ public class S5BackendGatewaySingleton
     IOptionSetEdit newConfigurations = new OptionSet( configuration() );
     // Список описаний шлюзов в конфигурации службы
     SkGatewayConfigurationList gatewayConfigs =
-        ISkBackendGatewayConfig.GATEWAYS.getValue( newConfigurations ).asValobj();
+        S5BackendGatewayConfig.GATEWAYS.getValue( newConfigurations ).asValobj();
     // Удаление описания шлюза
     gatewayConfigs.removeById( aGatewayId );
     // Обновление списка описаний в конфигурации
-    ISkBackendGatewayConfig.GATEWAYS.setValue( newConfigurations, AvUtils.avValobj( gatewayConfigs ) );
+    S5BackendGatewayConfig.GATEWAYS.setValue( newConfigurations, AvUtils.avValobj( gatewayConfigs ) );
     // Сохранение конфигурации может быть только в транзакции
     IS5BackendGatewaySingleton businessApi = sessionContext().getBusinessObject( IS5BackendGatewaySingleton.class );
     // Сохранение настроек в базе данных
@@ -266,7 +275,7 @@ public class S5BackendGatewaySingleton
   @Override
   public void updateGateways() {
     IStridablesList<ISkGatewayConfiguration> config =
-        ISkBackendGatewayConfig.GATEWAYS.getValue( configuration() ).asValobj();
+        S5BackendGatewayConfig.GATEWAYS.getValue( configuration() ).asValobj();
     // Количество добавленных шлюзов
     int addedCount = 0;
     // Количество обновленных шлюзов
