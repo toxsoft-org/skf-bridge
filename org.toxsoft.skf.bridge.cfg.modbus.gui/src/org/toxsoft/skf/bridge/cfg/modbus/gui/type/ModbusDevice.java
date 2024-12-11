@@ -177,4 +177,10 @@ public class ModbusDevice
     }
     return result.toString().replace( ".", "_" );
   }
+
+  @Override
+  public String toString() {
+    return nmName(); // just to dispalay without id
+  }
+
 }

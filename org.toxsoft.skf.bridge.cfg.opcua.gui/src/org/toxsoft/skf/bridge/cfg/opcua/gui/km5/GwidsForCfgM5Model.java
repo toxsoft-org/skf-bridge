@@ -204,7 +204,7 @@ public class GwidsForCfgM5Model
 
                 ECfgUnitType type = ((GwidsForCfgM5Model)model()).getCfgUnitType();
 
-                Gwid selGwid = selectGwid( type, null );
+                Gwid selGwid = selectGwid( type, aItem );
                 if( selGwid == null ) {
                   return null;
                 }
