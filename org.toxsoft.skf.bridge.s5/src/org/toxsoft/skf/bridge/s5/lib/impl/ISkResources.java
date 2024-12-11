@@ -9,7 +9,7 @@ package org.toxsoft.skf.bridge.s5.lib.impl;
 interface ISkResources {
 
   // ------------------------------------------------------------------------------------
-  // Строковые константы ISkBackendGatewayConfig
+  // Строковые константы S5BackendGatewayConfig
   //
   String D_GATEWAYS = "Список описаний шлюзов с которыми работает сервер";
   String N_GATEWAYS = "Список шлюзов";
