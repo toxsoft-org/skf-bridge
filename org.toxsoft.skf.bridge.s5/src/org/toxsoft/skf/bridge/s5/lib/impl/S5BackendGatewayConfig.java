@@ -27,6 +27,24 @@ public final class S5BackendGatewayConfig
   public static final String SYBSYSTEM_ID_PREFIX = ISkHardConstants.SK_SYSEXT_SERVICE_ID_PREFIX + ".gateways";
 
   /**
+   * Хост удаленного сервера по умолчанию.
+   */
+  public static final IDataDef DEFAULT_HOST = register( SYBSYSTEM_ID_PREFIX + ".host", STRING, //$NON-NLS-1$
+      TSID_NAME, N_HOST, //
+      TSID_DESCRIPTION, D_HOST, //
+      TSID_IS_NULL_ALLOWED, AV_FALSE, //
+      TSID_DEFAULT_VALUE, avStr( "localhost" ) );
+
+  /**
+   * Порт удаленного сервера по умолчанию.
+   */
+  public static final IDataDef DEFAULT_PORT = register( SYBSYSTEM_ID_PREFIX + ".port", INTEGER, //$NON-NLS-1$
+      TSID_NAME, N_PORT, //
+      TSID_DESCRIPTION, D_PORT, //
+      TSID_IS_NULL_ALLOWED, AV_FALSE, //
+      TSID_DEFAULT_VALUE, avInt( 8080 ) );
+
+  /**
    * Логин пользователя для подключения к удаленному серверу по умолчанию.
    */
   public static final IDataDef DEFAULT_LOGIN = register( SYBSYSTEM_ID_PREFIX + ".login", STRING, //$NON-NLS-1$
