@@ -1,56 +1,60 @@
 package org.toxsoft.skf.bridge.s5.supports;
 
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
+import static org.toxsoft.core.tslib.bricks.time.impl.TimeUtils.*;
+import static org.toxsoft.skf.bridge.s5.lib.impl.S5BackendGatewayConfig.*;
 import static org.toxsoft.skf.bridge.s5.lib.impl.SkGatewayGwidConfigs.*;
 import static org.toxsoft.skf.bridge.s5.supports.IS5Resources.*;
 import static org.toxsoft.uskat.s5.common.IS5CommonResources.*;
 
-import org.toxsoft.core.log4j.LoggerWrapper;
-import org.toxsoft.core.tslib.av.IAtomicValue;
-import org.toxsoft.core.tslib.av.temporal.ITemporalAtomicValue;
-import org.toxsoft.core.tslib.bricks.ctx.ITsContext;
-import org.toxsoft.core.tslib.bricks.ctx.impl.TsContext;
-import org.toxsoft.core.tslib.bricks.events.change.IGenericChangeListener;
-import org.toxsoft.core.tslib.bricks.strid.impl.Stridable;
-import org.toxsoft.core.tslib.bricks.threadexec.ITsThreadExecutor;
-import org.toxsoft.core.tslib.bricks.time.ITimeInterval;
-import org.toxsoft.core.tslib.bricks.time.ITimedList;
-import org.toxsoft.core.tslib.coll.IMap;
-import org.toxsoft.core.tslib.coll.IMapEdit;
-import org.toxsoft.core.tslib.coll.impl.ElemMap;
-import org.toxsoft.core.tslib.coll.synch.SynchronizedMap;
+import org.toxsoft.core.log4j.*;
+import org.toxsoft.core.tslib.av.*;
+import org.toxsoft.core.tslib.av.opset.*;
+import org.toxsoft.core.tslib.av.opset.impl.*;
+import org.toxsoft.core.tslib.av.temporal.*;
+import org.toxsoft.core.tslib.bricks.ctx.*;
+import org.toxsoft.core.tslib.bricks.ctx.impl.*;
+import org.toxsoft.core.tslib.bricks.events.change.*;
+import org.toxsoft.core.tslib.bricks.strid.coll.*;
+import org.toxsoft.core.tslib.bricks.strid.impl.*;
+import org.toxsoft.core.tslib.bricks.threadexec.*;
+import org.toxsoft.core.tslib.bricks.time.*;
+import org.toxsoft.core.tslib.bricks.time.impl.*;
+import org.toxsoft.core.tslib.coll.*;
+import org.toxsoft.core.tslib.coll.impl.*;
+import org.toxsoft.core.tslib.coll.synch.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
-import org.toxsoft.core.tslib.gw.skid.Skid;
-import org.toxsoft.core.tslib.utils.Pair;
+import org.toxsoft.core.tslib.gw.skid.*;
+import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
-import org.toxsoft.core.tslib.utils.login.ILoginInfo;
-import org.toxsoft.core.tslib.utils.logs.ELogSeverity;
-import org.toxsoft.core.tslib.utils.logs.ILogger;
-import org.toxsoft.skf.bridge.s5.lib.IBaGateway;
-import org.toxsoft.skf.bridge.s5.lib.ISkGatewayConfiguration;
-import org.toxsoft.skf.dq.lib.ISkDataQualityChangeListener;
-import org.toxsoft.skf.dq.lib.ISkDataQualityService;
-import org.toxsoft.skf.dq.lib.impl.SkDataQualityService;
-import org.toxsoft.uskat.core.ISkCoreApi;
+import org.toxsoft.core.tslib.utils.login.*;
+import org.toxsoft.core.tslib.utils.logs.*;
+import org.toxsoft.skf.alarms.lib.*;
+import org.toxsoft.skf.alarms.lib.impl.*;
+import org.toxsoft.skf.bridge.s5.lib.*;
+import org.toxsoft.skf.dq.lib.*;
+import org.toxsoft.skf.dq.lib.impl.*;
+import org.toxsoft.uskat.core.*;
 import org.toxsoft.uskat.core.api.cmdserv.*;
 import org.toxsoft.uskat.core.api.evserv.*;
-import org.toxsoft.uskat.core.api.gwids.ISkGwidService;
+import org.toxsoft.uskat.core.api.gwids.*;
+import org.toxsoft.uskat.core.api.hqserv.*;
 import org.toxsoft.uskat.core.api.rtdserv.*;
-import org.toxsoft.uskat.core.backend.ISkBackendProvider;
+import org.toxsoft.uskat.core.backend.*;
 import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.impl.*;
-import org.toxsoft.uskat.s5.client.IS5ConnectionParams;
-import org.toxsoft.uskat.s5.client.remote.connection.IS5ConnectionInfo;
-import org.toxsoft.uskat.s5.common.S5Module;
-import org.toxsoft.uskat.s5.server.IS5ServerHardConstants;
-import org.toxsoft.uskat.s5.server.backend.supports.currdata.IS5BackendCurrDataSingleton;
-import org.toxsoft.uskat.s5.server.backend.supports.currdata.impl.IS5CurrDataInterceptor;
-import org.toxsoft.uskat.s5.server.backend.supports.histdata.IS5HistDataInterceptor;
-import org.toxsoft.uskat.s5.server.frontend.IS5FrontendRear;
-import org.toxsoft.uskat.s5.server.sessions.IS5SessionInterceptor;
-import org.toxsoft.uskat.s5.server.startup.IS5InitialImplementation;
-import org.toxsoft.uskat.s5.utils.jobs.IS5ServerJob;
-import org.toxsoft.uskat.s5.utils.progress.IS5ProgressMonitor;
+import org.toxsoft.uskat.s5.client.*;
+import org.toxsoft.uskat.s5.client.remote.connection.*;
+import org.toxsoft.uskat.s5.common.*;
+import org.toxsoft.uskat.s5.server.*;
+import org.toxsoft.uskat.s5.server.backend.supports.currdata.*;
+import org.toxsoft.uskat.s5.server.backend.supports.currdata.impl.*;
+import org.toxsoft.uskat.s5.server.backend.supports.histdata.*;
+import org.toxsoft.uskat.s5.server.frontend.*;
+import org.toxsoft.uskat.s5.server.sessions.*;
+import org.toxsoft.uskat.s5.server.startup.*;
+import org.toxsoft.uskat.s5.utils.jobs.*;
+import org.toxsoft.uskat.s5.utils.progress.*;
 
 /**
  * Шлюз службы {@link IBaGateway}
@@ -177,6 +181,11 @@ class S5Gateway
   private ISkDataQualityService remoteDataQualityService;
 
   /**
+   * Служба служба (чтение)
+   */
+  // private ISkAlarmService localAlarmService;
+
+  /**
    * Признак готовности для синхронизации данных соединений
    */
   private boolean readyForSynchronize;
@@ -227,6 +236,7 @@ class S5Gateway
 
     // Регистрация расширений API соединения
     SkCoreUtils.registerSkServiceCreator( SkDataQualityService.CREATOR );
+    SkCoreUtils.registerSkServiceCreator( SkAlarmService.CREATOR );
 
     // Создание соединения с локальным сервером
     String programName = getClass().getSimpleName() + '_' + configuration.id();
@@ -753,6 +763,9 @@ class S5Gateway
       // Служба качества данных: чтение/запись
       localDataQualityService = localApi.getService( ISkDataQualityService.SERVICE_ID );
       remoteDataQualityService = remoteApi.getService( ISkDataQualityService.SERVICE_ID );
+
+      // Служба алармов
+      ISkAlarmService localAlarmService = localApi.getService( ISkAlarmService.SERVICE_ID );
       // Создание портов передачи текущих данных
       localToRemoteCurrdataPort = new S5GatewayCurrDataPort( "localToRemote", localRtDataService, //$NON-NLS-1$
           remoteRtDataService, logger );
@@ -777,6 +790,48 @@ class S5Gateway
         if( ignored != null ) {
           configureCurrdataPortForImport( owner.currdataBackend(), remoteToLocalCurrdataPort, ignored, logger );
         }
+        //
+        remoteEventService.registerHandler( new GwidList(
+            Gwid.createEvent( ISkAlarmConstants.CLSID_ALARM, Gwid.STR_MULTI_ID, ISkAlarmConstants.EVID_ACKNOWLEDGE ) ),
+            aEvents -> {
+              // Квитирование алармов локального сервера по событиям квитирования удаленного сервера
+              for( SkEvent event : aEvents ) {
+                Skid alarmId = event.eventGwid().skid();
+                Skid authorId = event.paramValues().getValobj( ISkAlarmConstants.EVPRMID_ACK_AUTHOR );
+                String comment = event.paramValues().getValobj( ISkAlarmConstants.EVPRMID_ACK_COMMNET );
+                ISkAlarm alarm = localAlarmService.findAlarm( alarmId.strid() );
+                if( alarm != null ) {
+                  alarm.sendAcknowledge( authorId, comment );
+                }
+              }
+            } );
+        long currTime = System.currentTimeMillis();
+        long startTime = currTime - SYNC_INTERVAL.getValue( owner.configuration() ).asInt() * 24 * 60 * 60 * 1000;
+        // Определение интервала синхронизации
+        IQueryInterval interval = new QueryInterval( EQueryIntervalType.CSCE, startTime, MAX_FORMATTABLE_TIMESTAMP );
+        // Синхронизация истории алармов
+        IStridablesList<ISkAlarm> localAlarms = localAlarmService.listAlarms();
+        // Формирование списка gwid и синхронизируемых событий
+        GwidList eventIds = new GwidList();
+        for( ISkAlarm alarm : localAlarms ) {
+          eventIds.add( Gwid.createEvent( alarm.classId(), alarm.strid(), Gwid.STR_MULTI_ID ) );
+        }
+        ITimedList<SkEvent> localEvents = loadEvents( localApi.hqService(), eventIds, interval );
+        ITimedList<SkEvent> remoteEvents = loadEvents( remoteApi.hqService(), eventIds, interval );
+        // Синхронизация списка событий между серверами
+        if( localEvents.size() > 0
+            && (remoteEvents.size() == 0 || localEvents.last().timestamp() > remoteEvents.last().timestamp()) ) {
+          // События пересылаются из локального сервера в удаленный сервер
+          remoteEventService.fireEvents(
+              remoteEvents.size() > 0 ? localEvents.selectAfter( remoteEvents.last().timestamp() ) : remoteEvents );
+        }
+        if( remoteEvents.size() > 0
+            && (localEvents.size() == 0 || remoteEvents.last().timestamp() > localEvents.last().timestamp()) ) {
+          // События пересылаются из удаленного сервера в локальный сервер
+          remoteEventService.fireEvents(
+              localEvents.size() > 0 ? remoteEvents.selectAfter( localEvents.last().timestamp() ) : localEvents );
+        }
+
       } );
       // Шлюз завершил инициализацию
       logger.info( MSG_GW_INIT_FINISH, this );
@@ -1072,5 +1127,33 @@ class S5Gateway
     Integer g = Integer.valueOf( gwids.size() );
     aLogger.debug( "configureCurrdataPortForImport(...): readed = %d, ignored = %d, imported = %d", rdg, idg, g ); //$NON-NLS-1$
     aCurrDataPort.setDataIds( gwids );
+  }
+
+  /**
+   * Загружает список указанных событий сервера
+   *
+   * @param aHqService {@link ISkHistoryQueryService} служба запросов сервера.
+   * @param aEventIds {@link GwidList} список идентификаторов запрашиваемых событий
+   * @return {@link ITimedList}&lt; {@link SkEvent}&gt; список загруженных событий
+   * @throws TsNullArgumentRtException любой аргумент = null
+   */
+  private static ITimedList<SkEvent> loadEvents( ISkHistoryQueryService aHqService, GwidList aEventIds,
+      IQueryInterval aInterval ) {
+    TsNullArgumentRtException.checkNulls( aHqService, aEventIds, aInterval );
+    // Параметры запроса
+    IOptionSetEdit options = new OptionSet( OptionSetUtils.createOpSet( //
+    // ISkHistoryQueryServiceConstants.OP_SK_MAX_EXECUTION_TIME, AvUtils.avInt( 10000 ) //
+    ) );
+    ISkQueryRawHistory query = aHqService.createHistoricQuery( options );
+    query.prepare( aEventIds );
+    query.exec( aInterval );
+
+    IListEdit<ITimedList<SkEvent>> queryResults = new ElemArrayList<>();
+    for( Gwid gwid : query.listGwids() ) {
+      ITimedList<SkEvent> cmds = query.get( gwid );
+      queryResults.add( cmds );
+    }
+    ITimedList<SkEvent> retValue = TimeUtils.uniteTimeporaLists( queryResults );
+    return retValue;
   }
 }

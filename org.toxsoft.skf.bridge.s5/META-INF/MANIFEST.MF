@@ -13,7 +13,8 @@ Require-Bundle: org.toxsoft.extlibs.log4j,
  org.toxsoft.uskat.core,
  org.toxsoft.uskat.s5,
  org.toxsoft.skf.dq.lib,
- org.toxsoft.skf.dq.s5
+ org.toxsoft.skf.dq.s5,
+ org.toxsoft.skf.alarms.lib
 Automatic-Module-Name: org.toxsoft.skf.bridge.s5
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: org.toxsoft.skf.bridge.s5,
