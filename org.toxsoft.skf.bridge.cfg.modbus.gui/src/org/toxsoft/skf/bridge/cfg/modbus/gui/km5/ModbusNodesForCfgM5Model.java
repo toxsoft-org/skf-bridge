@@ -174,6 +174,7 @@ public class ModbusNodesForCfgM5Model
         protected void doInit() {
           setNameAndDescription( STR_N_TRANSLATOR, STR_D_TRANSLATOR );
           setFlags( M5FF_COLUMN );
+          params().setBool( TSID_IS_NULL_ALLOWED, AV_TRUE.asBool() );
           setLookupProvider( () -> {
             ISkConnectionSupplier connSupplier = tsContext().get( ISkConnectionSupplier.class );
             ISkConnection conn = connSupplier.defConn();
