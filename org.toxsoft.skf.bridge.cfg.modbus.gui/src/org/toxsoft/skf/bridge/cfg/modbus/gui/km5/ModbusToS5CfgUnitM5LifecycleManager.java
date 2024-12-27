@@ -51,6 +51,15 @@ public class ModbusToS5CfgUnitM5LifecycleManager
     return master().dataUnits();
   }
 
+  /**
+   * dima 27.12.24 open access to guts to reoder items
+   *
+   * @return {@link IListEdit} list of data units
+   */
+  public IListEdit<OpcToS5DataCfgUnit> getListEditEntities() {
+    return master().dataUnits();
+  }
+
   @Override
   protected OpcToS5DataCfgUnit doCreate( IM5Bunch<OpcToS5DataCfgUnit> aValues ) {
     String name = aValues.getAsAv( OpcToS5DataCfgUnitM5Model.FID_DISPLAY_NAME ).asString();
