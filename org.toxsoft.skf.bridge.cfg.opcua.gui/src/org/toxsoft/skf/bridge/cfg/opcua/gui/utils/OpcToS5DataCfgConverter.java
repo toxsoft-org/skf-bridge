@@ -414,7 +414,10 @@ public class OpcToS5DataCfgConverter {
 
     for( int i = 0; i < aCfgUnits.size(); i++ ) {
       OpcToS5DataCfgUnit unit = aCfgUnits.get( i );
-
+      // dima 29.12.24 ignore empty unit
+      if( unit.getDataGwids().isEmpty() ) {
+        continue;
+      }
       if( unit.getTypeOfCfgUnit() == ECfgUnitType.DATA ) {
         pinsMassivTree.addElement( createDataPin( unit ) );
       }
