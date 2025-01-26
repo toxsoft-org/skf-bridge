@@ -57,7 +57,7 @@ import org.toxsoft.uskat.s5.utils.jobs.*;
 import org.toxsoft.uskat.s5.utils.progress.*;
 
 /**
- * Шлюз службы {@link IBaGateway}
+ * Шлюз службы {@link IBaGateway}.
  *
  * @author mvk
  */
