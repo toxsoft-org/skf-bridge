@@ -225,14 +225,6 @@ class S5Gateway
     configuration = aConfiguration;
     paused = aConfiguration.isPaused();
     logger.info( MSG_GW_STARTED, this, Boolean.valueOf( paused ) );
-    // Перехват событий бекенда (интерсепция)
-    owner.sessionManager().addSessionInterceptor( this, 0 );
-    // owner.objectsBackend().addObjectsInterceptor( new
-    // S5GatewayObjectsInterceptor( this ), 0 );
-    owner.currdataBackend().addCurrDataInterceptor( this, 0 );
-    owner.histdataBackend().addHistDataInterceptor( this, 0 );
-    // owner.lobsBackend().addLobsInterceptor( new S5GatewayLobsInterceptor( this ),
-    // 0 );
 
     // Регистрация расширений API соединения
     SkCoreUtils.registerSkServiceCreator( SkDataQualityService.CREATOR );
@@ -250,6 +242,15 @@ class S5Gateway
     // Попытка открыть соединение с удаленном сервером
     // 2021-01-19 mvk tryOpenRemote должна работать под блокировкой
     tryOpenRemote();
+
+    // Перехват событий бекенда (интерсепция)
+    owner.sessionManager().addSessionInterceptor( this, 0 );
+    // owner.objectsBackend().addObjectsInterceptor( new
+    // S5GatewayObjectsInterceptor( this ), 0 );
+    owner.currdataBackend().addCurrDataInterceptor( this, 0 );
+    owner.histdataBackend().addHistDataInterceptor( this, 0 );
+    // owner.lobsBackend().addLobsInterceptor( new S5GatewayLobsInterceptor( this ),
+    // 0 );
   }
 
   // ------------------------------------------------------------------------------------
