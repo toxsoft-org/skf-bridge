@@ -1143,6 +1143,7 @@ class S5Gateway
     TsNullArgumentRtException.checkNulls( aHqService, aEventIds, aInterval );
     // TODO: mvkd ошибка обращения к query service у которой еше не инициализировано sharedConnection
     if( true ) {
+
       return (ITimedList<SkEvent>)ITimedList.EMPTY;
     }
     // Параметры запроса
