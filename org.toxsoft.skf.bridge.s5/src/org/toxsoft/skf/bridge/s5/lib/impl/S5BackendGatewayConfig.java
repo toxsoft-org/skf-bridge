@@ -2,6 +2,7 @@ package org.toxsoft.skf.bridge.s5.lib.impl;
 
 import static org.toxsoft.core.tslib.av.EAtomicType.*;
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
+import static org.toxsoft.core.tslib.av.impl.DataDef.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
 import static org.toxsoft.skf.bridge.s5.lib.impl.ISkResources.*;
 
@@ -10,7 +11,6 @@ import org.toxsoft.core.tslib.bricks.strid.coll.*;
 import org.toxsoft.core.tslib.bricks.strid.coll.impl.*;
 import org.toxsoft.skf.bridge.s5.lib.*;
 import org.toxsoft.uskat.core.*;
-import org.toxsoft.uskat.s5.utils.*;
 
 /**
  * Конфигурация службы {@link ISkGatewayService}.
@@ -18,8 +18,7 @@ import org.toxsoft.uskat.s5.utils.*;
  * @author mvk
  */
 @SuppressWarnings( "nls" )
-public final class S5BackendGatewayConfig
-    extends S5RegisteredConstants {
+public final class S5BackendGatewayConfig {
 
   /**
    * Префикс идентфикаторов подсистемы
@@ -29,7 +28,7 @@ public final class S5BackendGatewayConfig
   /**
    * Хост удаленного сервера по умолчанию.
    */
-  public static final IDataDef DEFAULT_HOST = register( SYBSYSTEM_ID_PREFIX + ".host", STRING, //$NON-NLS-1$
+  public static final IDataDef DEFAULT_HOST = create( SYBSYSTEM_ID_PREFIX + ".host", STRING, //$NON-NLS-1$
       TSID_NAME, N_HOST, //
       TSID_DESCRIPTION, D_HOST, //
       TSID_IS_NULL_ALLOWED, AV_FALSE, //
@@ -38,7 +37,7 @@ public final class S5BackendGatewayConfig
   /**
    * Порт удаленного сервера по умолчанию.
    */
-  public static final IDataDef DEFAULT_PORT = register( SYBSYSTEM_ID_PREFIX + ".port", INTEGER, //$NON-NLS-1$
+  public static final IDataDef DEFAULT_PORT = create( SYBSYSTEM_ID_PREFIX + ".port", INTEGER, //$NON-NLS-1$
       TSID_NAME, N_PORT, //
       TSID_DESCRIPTION, D_PORT, //
       TSID_IS_NULL_ALLOWED, AV_FALSE, //
@@ -47,7 +46,7 @@ public final class S5BackendGatewayConfig
   /**
    * Логин пользователя для подключения к удаленному серверу по умолчанию.
    */
-  public static final IDataDef DEFAULT_LOGIN = register( SYBSYSTEM_ID_PREFIX + ".login", STRING, //$NON-NLS-1$
+  public static final IDataDef DEFAULT_LOGIN = create( SYBSYSTEM_ID_PREFIX + ".login", STRING, //$NON-NLS-1$
       TSID_NAME, N_LOGING, //
       TSID_DESCRIPTION, D_LOGING, //
       TSID_IS_NULL_ALLOWED, AV_FALSE, //
@@ -56,7 +55,7 @@ public final class S5BackendGatewayConfig
   /**
    * Пароль пользователя для подключения к удаленному серверу по умолчанию.
    */
-  public static final IDataDef DEFAULT_PASSWORD = register( SYBSYSTEM_ID_PREFIX + ".password", STRING, //$NON-NLS-1$
+  public static final IDataDef DEFAULT_PASSWORD = create( SYBSYSTEM_ID_PREFIX + ".password", STRING, //$NON-NLS-1$
       TSID_NAME, N_PASSWORD, //
       TSID_DESCRIPTION, D_PASSWORD, //
       TSID_IS_NULL_ALLOWED, AV_FALSE, //
@@ -67,7 +66,7 @@ public final class S5BackendGatewayConfig
    * образовании связи.
    * <p>
    */
-  public static final IDataDef SYNC_INTERVAL = register( SYBSYSTEM_ID_PREFIX + ".syncInterval", INTEGER, //$NON-NLS-1$
+  public static final IDataDef SYNC_INTERVAL = create( SYBSYSTEM_ID_PREFIX + ".syncInterval", INTEGER, //$NON-NLS-1$
       TSID_NAME, N_SYNC_INTERVAL, //
       TSID_DESCRIPTION, D_SYNC_INTERVAL, //
       TSID_IS_NULL_ALLOWED, AV_FALSE, //
@@ -78,7 +77,7 @@ public final class S5BackendGatewayConfig
    * <p>
    * TODO: register SkGatewayConfigurationListKeeper.KEEPER
    */
-  public static final IDataDef GATEWAYS = register( SYBSYSTEM_ID_PREFIX + ".configurations", VALOBJ, //$NON-NLS-1$
+  public static final IDataDef GATEWAYS = create( SYBSYSTEM_ID_PREFIX + ".configurations", VALOBJ, //$NON-NLS-1$
       TSID_NAME, N_GATEWAYS, //
       TSID_DESCRIPTION, D_GATEWAYS, //
       TSID_IS_NULL_ALLOWED, AV_FALSE, //

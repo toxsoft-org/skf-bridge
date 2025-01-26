@@ -2,19 +2,17 @@ package org.toxsoft.skf.bridge.s5.addons;
 
 import static org.toxsoft.uskat.s5.server.IS5ImplementConstants.*;
 
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import javax.ejb.*;
 
-import org.toxsoft.core.tslib.bricks.strid.coll.IStridablesList;
-import org.toxsoft.core.tslib.utils.errors.TsNullArgumentRtException;
+import org.toxsoft.core.tslib.bricks.strid.coll.*;
+import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.skf.bridge.s5.lib.*;
-import org.toxsoft.skf.bridge.s5.supports.IS5BackendGatewaySingleton;
-import org.toxsoft.uskat.s5.server.backend.addons.IS5BackendAddonSessionControl;
-import org.toxsoft.uskat.s5.server.backend.addons.S5AbstractBackendAddonSession;
-import org.toxsoft.uskat.s5.server.sessions.init.IS5SessionInitData;
-import org.toxsoft.uskat.s5.server.sessions.init.S5SessionInitResult;
-import org.toxsoft.uskat.s5.server.sessions.pas.S5SessionMessenger;
+import org.toxsoft.skf.bridge.s5.supports.*;
+import org.toxsoft.uskat.s5.server.backend.addons.*;
+import org.toxsoft.uskat.s5.server.sessions.init.*;
+import org.toxsoft.uskat.s5.server.sessions.pas.*;
 
 /**
  * Сессия реализации службы {@link IBaGateway}.
@@ -26,7 +24,6 @@ import org.toxsoft.uskat.s5.server.sessions.pas.S5SessionMessenger;
 @AccessTimeout( value = ACCESS_TIMEOUT_DEFAULT, unit = TimeUnit.MILLISECONDS )
 @TransactionManagement( TransactionManagementType.CONTAINER )
 @TransactionAttribute( TransactionAttributeType.SUPPORTS )
-@SuppressWarnings( "unused" )
 public class S5BaGatewaySession
     extends S5AbstractBackendAddonSession
     implements IS5BaGatewaySession, IS5BackendAddonSessionControl {
