@@ -1141,6 +1141,10 @@ class S5Gateway
   private static ITimedList<SkEvent> loadEvents( ISkHistoryQueryService aHqService, GwidList aEventIds,
       IQueryInterval aInterval ) {
     TsNullArgumentRtException.checkNulls( aHqService, aEventIds, aInterval );
+    // TODO: mvkd ошибка обращения к query service у которой еше не инициализировано sharedConnection
+    if( true ) {
+      return (ITimedList<SkEvent>)ITimedList.EMPTY;
+    }
     // Параметры запроса
     IOptionSetEdit options = new OptionSet( OptionSetUtils.createOpSet( //
     // ISkHistoryQueryServiceConstants.OP_SK_MAX_EXECUTION_TIME, AvUtils.avInt( 10000 ) //
