@@ -95,5 +95,8 @@ public interface ISkResources {
   String STR_D_GENERATE_CFG                 = "Сгенерировать конфигурационные файлы моста OPC UA <-> USkat";
   String STR_SAVE_CONFIG                    = "Сохранение конфигурации в файл плагина SkIDE...";
   String STR_UPDATE_NODES_INFO              = "Обновление информации об OPC UA nodes.";
-
+  String STR_N_UP_SELECTED_ITEM             = "поднять";
+  String STR_D_UP_SELECTED_ITEM             = "Поднять на одну позицию в списке";
+  String STR_N_DOWN_SELECTED_ITEM           = "опустить";
+  String STR_D_DOWN_SELECTED_ITEM           = "Опустить на одну позицию в списке";
 }

@@ -175,7 +175,7 @@ public class ModbusToS5CfgDoc
   /**
    * @return list of {@link OpcToS5DataCfgUnit}
    */
-  public IList<OpcToS5DataCfgUnit> dataUnits() {
+  public IListEdit<OpcToS5DataCfgUnit> dataUnits() {
     return dataCfgUnits;
   }
 

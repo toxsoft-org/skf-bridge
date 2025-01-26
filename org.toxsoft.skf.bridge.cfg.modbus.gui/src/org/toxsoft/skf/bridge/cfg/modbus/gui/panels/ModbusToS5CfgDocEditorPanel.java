@@ -82,6 +82,9 @@ public class ModbusToS5CfgDocEditorPanel
 
   final static String ACTID_COPY_ALL = SK_ID + "bridge.cfg.modbus.copy.all"; //$NON-NLS-1$
 
+  final static String ACTID_UP_SEL_ITEM   = SK_ID + "bridge.cfg.modbus.up.selected.item";   //$NON-NLS-1$
+  final static String ACTID_DOWN_SEL_ITEM = SK_ID + "bridge.cfg.modbus.down.selected.item"; //$NON-NLS-1$
+
   final static TsActionDef ACDEF_S5_SERVER_SELECT = TsActionDef.ofPush2( ACTID_S5_SERVER_SELECT, STR_N_SELECT_S5_SERVER,
       STR_D_SELECT_S5_SERVER, ICONID_S5_SERVER_SELECT );
 
@@ -93,6 +96,12 @@ public class ModbusToS5CfgDocEditorPanel
 
   final static TsActionDef ACDEF_COPY_ALL = TsActionDef.ofPush2( ACTID_COPY_ALL, ISkResources.STR_N_COPY_ALL,
       ISkResources.STR_D_COPY_ALL, ITsStdIconIds.ICONID_LIST_ADD_ALL );
+
+  final static TsActionDef ACDEF_UP_SEL_ITEM = TsActionDef.ofPush2( ACTID_UP_SEL_ITEM, STR_N_UP_SELECTED_ITEM,
+      STR_D_UP_SELECTED_ITEM, ITsStdIconIds.ICONID_ARROW_UP );
+
+  final static TsActionDef ACDEF_DOWN_SEL_ITEM = TsActionDef.ofPush2( ACTID_DOWN_SEL_ITEM, STR_N_DOWN_SELECTED_ITEM,
+      STR_D_DOWN_SELECTED_ITEM, ITsStdIconIds.ICONID_ARROW_DOWN );
 
   final ISkConnection conn;
 
@@ -291,6 +300,9 @@ public class ModbusToS5CfgDocEditorPanel
             aActs.add( ACDEF_SEPARATOR );
             aActs.add( ACDEF_COPY_ALL );
             aActs.add( ACDEF_IP_ADDRESS_SELECT );
+            aActs.add( ACDEF_SEPARATOR );
+            aActs.add( ACDEF_UP_SEL_ITEM );
+            aActs.add( ACDEF_DOWN_SEL_ITEM );
 
             ITsToolbar toolbar = super.doCreateToolbar( aContext, aName, aIconSize, aActs );
 
@@ -386,6 +398,29 @@ public class ModbusToS5CfgDocEditorPanel
                     M5GuiUtils.askCreate( tsContext(), model(), initVals, cdi, lifecycleManager() );
                 if( item != null ) {
                   fillViewer( item );
+                }
+                break;
+              }
+              case ACTID_UP_SEL_ITEM: {
+                OpcToS5DataCfgUnit selected = tree().selectedItem();
+                ModbusToS5CfgUnitM5LifecycleManager lm = (ModbusToS5CfgUnitM5LifecycleManager)lifecycleManager();
+                int currIndex = lm.getListEditEntities().indexOf( selected );
+                if( currIndex - 1 >= 0 ) {
+                  lm.getListEditEntities().removeByIndex( currIndex );
+                  lm.getListEditEntities().insert( --currIndex, selected );
+                  fillViewer( selected );
+                }
+                break;
+              }
+
+              case ACTID_DOWN_SEL_ITEM: {
+                OpcToS5DataCfgUnit selected = tree().selectedItem();
+                ModbusToS5CfgUnitM5LifecycleManager lm = (ModbusToS5CfgUnitM5LifecycleManager)lifecycleManager();
+                int currIndex = lm.getListEditEntities().indexOf( selected );
+                if( currIndex + 1 < lm.getListEditEntities().size() ) {
+                  lm.getListEditEntities().removeByIndex( currIndex );
+                  lm.getListEditEntities().insert( ++currIndex, selected );
+                  fillViewer( selected );
                 }
                 break;
               }
