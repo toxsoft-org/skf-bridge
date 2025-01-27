@@ -1,39 +1,35 @@
 package org.toxsoft.skf.bridge.s5.supports;
 
 import static org.toxsoft.skf.bridge.s5.supports.IS5Resources.*;
+import static org.toxsoft.uskat.s5.server.IS5ImplementConstants.*;
 import static org.toxsoft.uskat.s5.utils.threads.impl.S5Lockable.*;
 
 import javax.ejb.*;
 
-import org.toxsoft.core.tslib.av.impl.AvUtils;
-import org.toxsoft.core.tslib.av.opset.IOptionSet;
-import org.toxsoft.core.tslib.av.opset.IOptionSetEdit;
-import org.toxsoft.core.tslib.av.opset.impl.OptionSet;
-import org.toxsoft.core.tslib.bricks.strid.coll.IStridablesList;
-import org.toxsoft.core.tslib.bricks.strid.coll.IStridablesListEdit;
-import org.toxsoft.core.tslib.bricks.strid.coll.impl.StridablesList;
+import org.toxsoft.core.tslib.av.impl.*;
+import org.toxsoft.core.tslib.av.opset.*;
+import org.toxsoft.core.tslib.av.opset.impl.*;
+import org.toxsoft.core.tslib.bricks.strid.coll.*;
+import org.toxsoft.core.tslib.bricks.strid.coll.impl.*;
 import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
-import org.toxsoft.core.tslib.utils.errors.TsNullArgumentRtException;
+import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.skf.bridge.s5.lib.*;
-import org.toxsoft.skf.bridge.s5.lib.impl.S5BackendGatewayConfig;
-import org.toxsoft.skf.bridge.s5.lib.impl.SkGatewayConfigurationList;
-import org.toxsoft.skf.dq.s5.supports.IS5BackendDataQualitySingleton;
-import org.toxsoft.skf.dq.s5.supports.S5BackendDataQualitySingleton;
-import org.toxsoft.uskat.core.backend.ISkBackendProvider;
-import org.toxsoft.uskat.s5.client.local.IS5LocalConnectionSingleton;
-import org.toxsoft.uskat.s5.client.remote.S5RemoteBackendProvider;
-import org.toxsoft.uskat.s5.server.backend.impl.S5BackendSupportSingleton;
-import org.toxsoft.uskat.s5.server.backend.supports.clobs.IS5BackendClobsSingleton;
-import org.toxsoft.uskat.s5.server.backend.supports.commands.IS5BackendCommandSingleton;
-import org.toxsoft.uskat.s5.server.backend.supports.currdata.IS5BackendCurrDataSingleton;
-import org.toxsoft.uskat.s5.server.backend.supports.histdata.IS5BackendHistDataSingleton;
-import org.toxsoft.uskat.s5.server.backend.supports.objects.IS5BackendObjectsSingleton;
-import org.toxsoft.uskat.s5.server.sessions.IS5SessionManager;
-import org.toxsoft.uskat.s5.server.startup.IS5InitialImplementSingleton;
-import org.toxsoft.uskat.s5.server.startup.IS5InitialImplementation;
-import org.toxsoft.uskat.s5.utils.jobs.IS5ServerJob;
-import org.toxsoft.uskat.s5.utils.threads.impl.S5Lockable;
+import org.toxsoft.skf.bridge.s5.lib.impl.*;
+import org.toxsoft.skf.dq.s5.supports.*;
+import org.toxsoft.uskat.core.backend.*;
+import org.toxsoft.uskat.s5.client.local.*;
+import org.toxsoft.uskat.s5.client.remote.*;
+import org.toxsoft.uskat.s5.server.backend.impl.*;
+import org.toxsoft.uskat.s5.server.backend.supports.clobs.*;
+import org.toxsoft.uskat.s5.server.backend.supports.commands.*;
+import org.toxsoft.uskat.s5.server.backend.supports.currdata.*;
+import org.toxsoft.uskat.s5.server.backend.supports.histdata.*;
+import org.toxsoft.uskat.s5.server.backend.supports.objects.*;
+import org.toxsoft.uskat.s5.server.sessions.*;
+import org.toxsoft.uskat.s5.server.startup.*;
+import org.toxsoft.uskat.s5.utils.jobs.*;
+import org.toxsoft.uskat.s5.utils.threads.impl.*;
 
 /**
  * Синглетон backend {@link IBaGateway} предоставляемый s5-сервером.
@@ -44,11 +40,7 @@ import org.toxsoft.uskat.s5.utils.threads.impl.S5Lockable;
 @Singleton
 @LocalBean
 @DependsOn( { //
-    // BACKEND_RTDATA_SINGLETON, // уже включено неявным образом
-    // BACKEND_COMMANDS_SINGLETON, // уже включено неявным образом
-    // BACKEND_EVENTS_SINGLETON, // уже включено неявным образом
-    // PROJECT_INITIAL_SYSDESCR_SINGLETON, // уже включено неявным образом
-    S5BackendDataQualitySingleton.BACKEND_DATA_QUALITY_ID,//
+    BACKEND_SKATLET_SINGLETON,//
 } )
 @TransactionManagement( TransactionManagementType.CONTAINER )
 @TransactionAttribute( TransactionAttributeType.SUPPORTS )
