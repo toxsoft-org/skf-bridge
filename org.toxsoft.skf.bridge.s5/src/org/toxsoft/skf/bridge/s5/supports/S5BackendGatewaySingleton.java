@@ -146,6 +146,7 @@ public class S5BackendGatewaySingleton
    */
   public S5BackendGatewaySingleton() {
     super( BACKEND_GATEWAYS_ID, ISkGatewayHardConstants.BAINF_GATEWAYS.nmName() );
+    logger().info( "S5BackendGatewaySingleton_test0" );
   }
 
   // ------------------------------------------------------------------------------------
@@ -155,16 +156,19 @@ public class S5BackendGatewaySingleton
   protected IStringList doConfigurationPaths() {
     IStringListEdit retValue = new StringArrayList();
     retValue.addAll( S5BackendGatewayConfig.ALL_GATEWAYS_OPDEFS.keys() );
+    logger().info( "S5BackendGatewaySingleton_test1" );
     return retValue;
   }
 
   @Override
   protected IOptionSet doCreateConfiguration() {
+    logger().info( "S5BackendGatewaySingleton_test2" );
     return super.doCreateConfiguration();
   }
 
   @Override
   protected void onConfigChanged( IOptionSet aPrevConfig, IOptionSet aNewConfig ) {
+    logger().info( "S5BackendGatewaySingleton_test3" );
     SkGatewayConfigurationList prevGateways = S5BackendGatewayConfig.GATEWAYS.getValue( aPrevConfig ).asValobj();
     SkGatewayConfigurationList newGateways = S5BackendGatewayConfig.GATEWAYS.getValue( aNewConfig ).asValobj();
     if( !newGateways.equals( prevGateways ) ) {
@@ -176,17 +180,22 @@ public class S5BackendGatewaySingleton
 
   @Override
   protected void doInit() {
+    logger().info( "S5BackendGatewaySingleton_test4" );
     super.doInit();
   }
 
   @Override
   protected void doInitSupport() {
+    logger().info( "S5BackendGatewaySingleton_test5" );
     // Инициализация базового класса
     super.doInitSupport();
+    logger().info( "S5BackendGatewaySingleton_test6" );
     // Запуск doJob
     addOwnDoJob( DOJOB_INTERVAL );
+    logger().info( "S5BackendGatewaySingleton_test7" );
     // TODO: 2020-03-21 mvk
     updateGateways();
+    logger().info( "S5BackendGatewaySingleton_test8" );
   }
 
   @Override
