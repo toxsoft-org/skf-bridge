@@ -36,7 +36,7 @@ public final class S5BaGatewayLocal
    */
   public S5BaGatewayLocal( IS5BackendLocal aOwner ) {
     super( aOwner, ISkGatewayHardConstants.BAINF_GATEWAYS );
-    gatewaySupport = aOwner.backendSingleton().get( S5BackendGatewaySingleton.BACKEND_GATEWAYS_ID,
+    gatewaySupport = aOwner.backendSingleton().findSupport( S5BackendGatewaySingleton.BACKEND_GATEWAYS_ID,
         IS5BackendGatewaySingleton.class );
     // Установка конфигурации фронтенда
     frontend().frontendData().setBackendAddonData( IBaGateway.ADDON_ID, baData );
@@ -59,12 +59,12 @@ public final class S5BaGatewayLocal
   // Реализация IBaGateway
   //
   @Override
-  public IStridablesList<ISkGatewayConfiguration> gatewayConfigs() {
+  public IStridablesList<ISkGatewayInfo> gatewayConfigs() {
     return gatewaySupport.gatewayConfigs();
   }
 
   @Override
-  public void defineGateway( ISkGatewayConfiguration aGatewayConfig ) {
+  public void defineGateway( ISkGatewayInfo aGatewayConfig ) {
     TsNullArgumentRtException.checkNull( aGatewayConfig );
     gatewaySupport.defineGateway( aGatewayConfig );
   }

@@ -11,16 +11,16 @@ import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.utils.TsLibUtils;
 import org.toxsoft.core.tslib.utils.errors.TsNullArgumentRtException;
 import org.toxsoft.core.tslib.utils.valobj.TsValobjUtils;
-import org.toxsoft.skf.bridge.s5.lib.ISkGatewayGwidConfigs;
+import org.toxsoft.skf.bridge.s5.lib.ISkGatewayGwids;
 import org.toxsoft.uskat.core.api.gwids.ISkGwidService;
 
 /**
- * Реализация {@link ISkGatewayGwidConfigs}
+ * Реализация {@link ISkGatewayGwids}
  *
  * @author mvk
  */
-public class SkGatewayGwidConfigs
-    implements ISkGatewayGwidConfigs, Serializable {
+public class SkGatewayGwids
+    implements ISkGatewayGwids, Serializable {
 
   private static final long serialVersionUID = 157157L;
 
@@ -32,11 +32,11 @@ public class SkGatewayGwidConfigs
   /**
    * Keeper singleton.
    */
-  public static final IEntityKeeper<ISkGatewayGwidConfigs> KEEPER =
-      new AbstractEntityKeeper<>( ISkGatewayGwidConfigs.class, EEncloseMode.ENCLOSES_BASE_CLASS, null ) {
+  public static final IEntityKeeper<ISkGatewayGwids> KEEPER =
+      new AbstractEntityKeeper<>( ISkGatewayGwids.class, EEncloseMode.ENCLOSES_BASE_CLASS, null ) {
 
         @Override
-        protected void doWrite( IStrioWriter aSw, ISkGatewayGwidConfigs aEntity ) {
+        protected void doWrite( IStrioWriter aSw, ISkGatewayGwids aEntity ) {
           aSw.writeAsIs( aEntity.gwidKind().id() );
           aSw.writeSeparatorChar();
           GwidList.KEEPER.write( aSw, aEntity.includeGwids() );
@@ -47,8 +47,8 @@ public class SkGatewayGwidConfigs
         }
 
         @Override
-        protected ISkGatewayGwidConfigs doRead( IStrioReader aSr ) {
-          SkGatewayGwidConfigs configs = new SkGatewayGwidConfigs( EGwidKind.findById( aSr.readIdName() ) );
+        protected ISkGatewayGwids doRead( IStrioReader aSr ) {
+          SkGatewayGwids configs = new SkGatewayGwids( EGwidKind.findById( aSr.readIdName() ) );
           aSr.ensureSeparatorChar();
           configs.setIncludeGwids( GwidList.KEEPER.read( aSr ) );
           aSr.ensureSeparatorChar();
@@ -60,7 +60,7 @@ public class SkGatewayGwidConfigs
       };
 
   /**
-   * Формат текстового представления {@link SkGatewayGwidConfigs}
+   * Формат текстового представления {@link SkGatewayGwids}
    */
   private static final String TO_STRING_FORMAT = "%s, includes = %s, excludes = %s, dq = %b"; //$NON-NLS-1$
 
@@ -75,7 +75,7 @@ public class SkGatewayGwidConfigs
    * @param aGwidKind {@link EGwidKind} тип идентификаторов хранимых в конфигурации
    * @throws TsNullArgumentRtException аргумент = null
    */
-  public SkGatewayGwidConfigs( EGwidKind aGwidKind ) {
+  public SkGatewayGwids( EGwidKind aGwidKind ) {
     TsNullArgumentRtException.checkNull( aGwidKind );
     gwidKind = aGwidKind;
   }
@@ -127,7 +127,7 @@ public class SkGatewayGwidConfigs
   }
 
   // ------------------------------------------------------------------------------------
-  // Реализация ISkGatewayGwidConfigs
+  // Реализация ISkGatewayGwids
   //
   @Override
   public EGwidKind gwidKind() {
@@ -179,7 +179,7 @@ public class SkGatewayGwidConfigs
     if( getClass() != aObject.getClass() ) {
       return false;
     }
-    ISkGatewayGwidConfigs other = (ISkGatewayGwidConfigs)aObject;
+    ISkGatewayGwids other = (ISkGatewayGwids)aObject;
     if( !gwidKind.equals( other.gwidKind() ) ) {
       return false;
     }
@@ -202,11 +202,11 @@ public class SkGatewayGwidConfigs
    * Возвращает список идентификаторов конфигурации
    *
    * @param aService {@link ISkGwidService} служба {@link Gwid} идентификаторов
-   * @param aConfig {@link ISkGatewayGwidConfigs} идентификаторы {@link Gwid} для подсистемы
+   * @param aConfig {@link ISkGatewayGwids} идентификаторы {@link Gwid} для подсистемы
    * @param aQualityGwids {@link IGwidList} список идентификаторов предоставляемых службой качества
    * @return {@link IGwidList} список идентификаторов
    */
-  public static IGwidList getConfigGwids( ISkGwidService aService, ISkGatewayGwidConfigs aConfig,
+  public static IGwidList getConfigGwids( ISkGwidService aService, ISkGatewayGwids aConfig,
       IGwidList aQualityGwids ) {
     TsNullArgumentRtException.checkNulls( aService, aConfig, aQualityGwids );
     // Добавление идентификаторов в результат

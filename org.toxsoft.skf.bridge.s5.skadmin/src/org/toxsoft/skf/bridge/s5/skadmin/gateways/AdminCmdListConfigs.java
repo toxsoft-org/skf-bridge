@@ -8,9 +8,9 @@ import org.toxsoft.core.tslib.bricks.strid.coll.IStridablesList;
 import org.toxsoft.core.tslib.coll.IList;
 import org.toxsoft.core.tslib.coll.primtypes.IStringList;
 import org.toxsoft.core.tslib.coll.primtypes.IStringMap;
-import org.toxsoft.skf.bridge.s5.lib.ISkGatewayConfiguration;
+import org.toxsoft.skf.bridge.s5.lib.ISkGatewayInfo;
 import org.toxsoft.skf.bridge.s5.lib.ISkGatewayService;
-import org.toxsoft.skf.bridge.s5.lib.impl.SkGatewayGwidConfigs;
+import org.toxsoft.skf.bridge.s5.lib.impl.SkGatewayGwids;
 import org.toxsoft.uskat.core.ISkCoreApi;
 import org.toxsoft.uskat.legacy.plexy.IPlexyType;
 import org.toxsoft.uskat.legacy.plexy.IPlexyValue;
@@ -75,9 +75,9 @@ public class AdminCmdListConfigs
     try {
       long startTime = System.currentTimeMillis();
       // Список конфигураций
-      IStridablesList<ISkGatewayConfiguration> configs = service.gatewayConfigs();
+      IStridablesList<ISkGatewayInfo> configs = service.gatewayConfigs();
       // Вывод конфигурации мостов
-      for( ISkGatewayConfiguration config : configs ) {
+      for( ISkGatewayInfo config : configs ) {
         printConfig( config );
       }
       long delta = (System.currentTimeMillis() - startTime) / 1000;
@@ -97,17 +97,17 @@ public class AdminCmdListConfigs
   // ------------------------------------------------------------------------------------
   // Внутренняя реализация
   //
-  private void printConfig( ISkGatewayConfiguration aConfig ) {
+  private void printConfig( ISkGatewayInfo aConfig ) {
     addResultInfo( MSG_CONFIG_LINE );
     String id = aConfig.id();
     String name = aConfig.nmName();
     String descr = aConfig.description();
     String login = aConfig.loginInfo().login();
     IS5ConnectionInfo address = aConfig.connectionInfo();
-    String currdata = SkGatewayGwidConfigs.KEEPER.ent2str( aConfig.exportCurrData() );
-    String histdata = SkGatewayGwidConfigs.KEEPER.ent2str( aConfig.exportHistData() );
-    String events = SkGatewayGwidConfigs.KEEPER.ent2str( aConfig.exportEvents() );
-    String executors = SkGatewayGwidConfigs.KEEPER.ent2str( aConfig.exportCmdExecutors() );
+    String currdata = SkGatewayGwids.KEEPER.ent2str( aConfig.exportCurrData() );
+    String histdata = SkGatewayGwids.KEEPER.ent2str( aConfig.exportHistData() );
+    String events = SkGatewayGwids.KEEPER.ent2str( aConfig.exportEvents() );
+    String executors = SkGatewayGwids.KEEPER.ent2str( aConfig.exportCmdExecutors() );
     addResultInfo( MSG_CONFIG, id, name, descr, login, address, currdata, histdata, events, executors );
   }
 }

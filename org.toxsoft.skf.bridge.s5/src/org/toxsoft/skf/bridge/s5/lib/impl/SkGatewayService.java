@@ -55,12 +55,12 @@ public class SkGatewayService
   // Реализация методов класса IBaGateway
   //
   @Override
-  public IStridablesList<ISkGatewayConfiguration> gatewayConfigs() {
+  public IStridablesList<ISkGatewayInfo> gatewayConfigs() {
     return remote().gatewayConfigs();
   }
 
   @Override
-  public void defineGateway( ISkGatewayConfiguration aGatewayConfig ) {
+  public void defineGateway( ISkGatewayInfo aGatewayConfig ) {
     TsNullArgumentRtException.checkNull( aGatewayConfig );
     remote().defineGateway( aGatewayConfig );
   }

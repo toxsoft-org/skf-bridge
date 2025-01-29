@@ -14,9 +14,9 @@ public class SkGatewayValobjUtils {
    * Регистрация известных хранителей.
    */
   public static void registerS5Keepers() {
-    TsValobjUtils.registerKeeperIfNone( SkGatewayGwidConfigs.KEEPER_ID, SkGatewayGwidConfigs.KEEPER );
-    TsValobjUtils.registerKeeperIfNone( SkGatewayConfigurationKeeper.KEEPER_ID, SkGatewayConfigurationKeeper.KEEPER );
-    TsValobjUtils.registerKeeperIfNone( SkGatewayConfigurationListKeeper.KEEPER_ID,
-        SkGatewayConfigurationListKeeper.KEEPER );
+    TsValobjUtils.registerKeeperIfNone( SkGatewayGwids.KEEPER_ID, SkGatewayGwids.KEEPER );
+    TsValobjUtils.registerKeeperIfNone( SkGatewayInfoKeeper.KEEPER_ID, SkGatewayInfoKeeper.KEEPER );
+    TsValobjUtils.registerKeeperIfNone( SkGatewayInfosKeeper.KEEPER_ID,
+        SkGatewayInfosKeeper.KEEPER );
   }
 }

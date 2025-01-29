@@ -16,7 +16,7 @@ import org.toxsoft.uskat.s5.client.remote.connection.IS5ConnectionInfo;
  *
  * @author mvk
  */
-public interface ISkGatewayConfiguration
+public interface ISkGatewayInfo
     extends IStridable {
 
   /**
@@ -36,30 +36,30 @@ public interface ISkGatewayConfiguration
   /**
    * Конфигурация идентификаторов по экспортируемым текущим данным
    *
-   * @return {@link ISkGatewayGwidConfigs} конфигурация идентификаторов
+   * @return {@link ISkGatewayGwids} конфигурация идентификаторов
    */
-  ISkGatewayGwidConfigs exportCurrData();
+  ISkGatewayGwids exportCurrData();
 
   /**
    * Конфигурация идентификаторов по экспортируемым хранимым данным
    *
-   * @return {@link ISkGatewayGwidConfigs} конфигурация идентификаторов
+   * @return {@link ISkGatewayGwids} конфигурация идентификаторов
    */
-  ISkGatewayGwidConfigs exportHistData();
+  ISkGatewayGwids exportHistData();
 
   /**
    * Конфигурация идентификаторов по экспортируемым событиям
    *
-   * @return {@link ISkGatewayGwidConfigs} конфигурация идентификаторов
+   * @return {@link ISkGatewayGwids} конфигурация идентификаторов
    */
-  ISkGatewayGwidConfigs exportEvents();
+  ISkGatewayGwids exportEvents();
 
   /**
    * Конфигурация идентификаторов по экспортируемым исполнителям команд
    *
-   * @return {@link ISkGatewayGwidConfigs} конфигурация идентификаторов
+   * @return {@link ISkGatewayGwids} конфигурация идентификаторов
    */
-  ISkGatewayGwidConfigs exportCmdExecutors();
+  ISkGatewayGwids exportCmdExecutors();
 
   /**
    * Возвращает признак того, что передача данных через шлюз временно приостановлена клиентом

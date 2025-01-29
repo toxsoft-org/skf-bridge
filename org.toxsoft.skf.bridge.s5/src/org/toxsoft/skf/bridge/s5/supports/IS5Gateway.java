@@ -1,6 +1,6 @@
 package org.toxsoft.skf.bridge.s5.supports;
 
-import org.toxsoft.skf.bridge.s5.lib.ISkGatewayConfiguration;
+import org.toxsoft.skf.bridge.s5.lib.ISkGatewayInfo;
 import org.toxsoft.uskat.core.connection.ISkConnection;
 
 /**
@@ -13,9 +13,9 @@ public interface IS5Gateway {
   /**
    * Возвращает конфигурацию шлюза
    *
-   * @return {@link ISkGatewayConfiguration} конфигурация шлюза
+   * @return {@link ISkGatewayInfo} конфигурация шлюза
    */
-  ISkGatewayConfiguration configuration();
+  ISkGatewayInfo configuration();
 
   /**
    * Возвращает признак того, что мост приостановил свою работу и не передает данные

@@ -15,8 +15,8 @@ import org.toxsoft.core.tslib.utils.errors.TsIllegalArgumentRtException;
 import org.toxsoft.core.tslib.utils.errors.TsNullArgumentRtException;
 import org.toxsoft.core.tslib.utils.login.LoginInfo;
 import org.toxsoft.skf.bridge.s5.lib.*;
-import org.toxsoft.skf.bridge.s5.lib.impl.SkGatewayConfiguration;
-import org.toxsoft.skf.bridge.s5.lib.impl.SkGatewayGwidConfigs;
+import org.toxsoft.skf.bridge.s5.lib.impl.SkGatewayInfo;
+import org.toxsoft.skf.bridge.s5.lib.impl.SkGatewayGwids;
 import org.toxsoft.uskat.core.ISkCoreApi;
 import org.toxsoft.uskat.legacy.plexy.IPlexyType;
 import org.toxsoft.uskat.legacy.plexy.IPlexyValue;
@@ -114,14 +114,14 @@ public class AdminCmdAddConfig
     try {
       long startTime = System.currentTimeMillis();
       // Список конфигураций
-      IStridablesListEdit<ISkGatewayConfiguration> configs = new StridablesList<>( service.gatewayConfigs() );
+      IStridablesListEdit<ISkGatewayInfo> configs = new StridablesList<>( service.gatewayConfigs() );
       boolean needUpdate = (configs.findByKey( id ) != null);
 
       // Формирование конфигурации моста
       S5HostList hosts = new S5HostList();
       hosts.add( new S5Host( host, port ) );
-      SkGatewayConfiguration config =
-          new SkGatewayConfiguration( id, descr, name, new S5ConnectionInfo( hosts ), new LoginInfo( login, passw ) );
+      SkGatewayInfo config =
+          new SkGatewayInfo( id, descr, name, new S5ConnectionInfo( hosts ), new LoginInfo( login, passw ) );
       config.setExportCurrData( readGwidConfigArg( EGwidKind.GW_RTDATA, ARG_CURRDATA ) );
       config.setExportHistData( readGwidConfigArg( EGwidKind.GW_RTDATA, ARG_HISTDATA ) );
       config.setExportEvents( readGwidConfigArg( EGwidKind.GW_EVENT, ARG_EVENTS ) );
@@ -149,22 +149,22 @@ public class AdminCmdAddConfig
   // Внутренняя реализация
   //
   /**
-   * Читает значение аргумента представляющего {@link ISkGatewayGwidConfigs} в текстовом виде
+   * Читает значение аргумента представляющего {@link ISkGatewayGwids} в текстовом виде
    *
    * @param aGwidKind {@link EGwidKind} тип конфигурации
    * @param aArg {@link IAdminCmdArgDef} аргумент
-   * @return {@link ISkGatewayGwidConfigs} конфигурация
+   * @return {@link ISkGatewayGwids} конфигурация
    * @throws TsNullArgumentRtException аргумент = null
    */
-  private ISkGatewayGwidConfigs readGwidConfigArg( EGwidKind aGwidKind, IAdminCmdArgDef aArg ) {
+  private ISkGatewayGwids readGwidConfigArg( EGwidKind aGwidKind, IAdminCmdArgDef aArg ) {
     TsNullArgumentRtException.checkNulls( aGwidKind, aArg );
     IAtomicValue av = argSingleValue( aArg );
     if( !av.isAssigned() ) {
       // Значение не указано, установка значения по умолчанию
-      return new SkGatewayGwidConfigs( aGwidKind );
+      return new SkGatewayGwids( aGwidKind );
     }
     try {
-      ISkGatewayGwidConfigs retValue = SkGatewayGwidConfigs.KEEPER.str2ent( av.asString() );
+      ISkGatewayGwids retValue = SkGatewayGwids.KEEPER.str2ent( av.asString() );
       return retValue;
     }
     catch( Throwable e ) {

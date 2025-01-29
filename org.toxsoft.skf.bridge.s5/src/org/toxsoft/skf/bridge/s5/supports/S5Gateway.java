@@ -3,7 +3,7 @@ package org.toxsoft.skf.bridge.s5.supports;
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.bricks.time.impl.TimeUtils.*;
 import static org.toxsoft.skf.bridge.s5.lib.impl.S5BackendGatewayConfig.*;
-import static org.toxsoft.skf.bridge.s5.lib.impl.SkGatewayGwidConfigs.*;
+import static org.toxsoft.skf.bridge.s5.lib.impl.SkGatewayGwids.*;
 import static org.toxsoft.skf.bridge.s5.supports.IS5Resources.*;
 import static org.toxsoft.uskat.s5.common.IS5CommonResources.*;
 
@@ -77,7 +77,7 @@ class S5Gateway
   /**
    * Конфигурация шлюза
    */
-  private final ISkGatewayConfiguration configuration;
+  private final ISkGatewayInfo configuration;
 
   /**
    * Соединение с локальным сервером
@@ -216,10 +216,10 @@ class S5Gateway
    * Конструктор шлюза
    *
    * @param aOwner {@link S5BackendGatewaySingleton} синглетон службы
-   * @param aConfiguration {@link ISkGatewayConfiguration} конфигурация шлюза
+   * @param aConfiguration {@link ISkGatewayInfo} конфигурация шлюза
    * @throws TsNullArgumentRtException любой аргумент = null
    */
-  S5Gateway( S5BackendGatewaySingleton aOwner, ISkGatewayConfiguration aConfiguration ) {
+  S5Gateway( S5BackendGatewaySingleton aOwner, ISkGatewayInfo aConfiguration ) {
     super( aConfiguration.id(), aConfiguration.nmName(), aConfiguration.description() );
     owner = aOwner;
     configuration = aConfiguration;
@@ -257,7 +257,7 @@ class S5Gateway
   // IS5Gateway
   //
   @Override
-  public ISkGatewayConfiguration configuration() {
+  public ISkGatewayInfo configuration() {
     return configuration;
   }
 
@@ -851,7 +851,7 @@ class S5Gateway
    * @param aConnection {@link ISkConnection} открываемое удаленное соединение
    * @param aProvider {@link ISkConnection} поставщик соединений с сервером
    * @param aTreadExecutor {@link ITsThreadExecutor} исполнитель потоков
-   * @param aConfiguration {@link ISkGatewayConfiguration} конфигурация шлюза
+   * @param aConfiguration {@link ISkGatewayInfo} конфигурация шлюза
    * @param aInitialImplementaion {@link IS5InitialImplementation} начальная, неизменяемая конфигурация локального
    *          сервера
    * @return {@link ISkConnection} соединение с сервером
@@ -859,7 +859,7 @@ class S5Gateway
    * @throws TsIllegalArgumentRtException ошибка подключения к серверу
    */
   public static ISkConnection openRemoteConnection( ISkConnection aConnection, ISkBackendProvider aProvider,
-      ITsThreadExecutor aTreadExecutor, ISkGatewayConfiguration aConfiguration,
+      ITsThreadExecutor aTreadExecutor, ISkGatewayInfo aConfiguration,
       IS5InitialImplementation aInitialImplementaion ) {
     TsNullArgumentRtException.checkNulls( aConnection, aProvider, aTreadExecutor, aConfiguration );
 
@@ -1143,7 +1143,7 @@ class S5Gateway
     TsNullArgumentRtException.checkNulls( aHqService, aEventIds, aInterval );
     // TODO: mvkd ошибка обращения к query service у которой еше не инициализировано sharedConnection
     if( true ) {
-      return new TimedList<SkEvent>();
+      // return new TimedList<SkEvent>();
     }
     // Параметры запроса
     IOptionSetEdit options = new OptionSet( OptionSetUtils.createOpSet( //

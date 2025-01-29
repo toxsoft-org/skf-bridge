@@ -67,12 +67,12 @@ public class S5BaGatewaySession
   // Реализация IBaGateway
   //
   @Override
-  public IStridablesList<ISkGatewayConfiguration> gatewayConfigs() {
+  public IStridablesList<ISkGatewayInfo> gatewayConfigs() {
     return gatewaysSupport.gatewayConfigs();
   }
 
   @Override
-  public void defineGateway( ISkGatewayConfiguration aGatewayConfig ) {
+  public void defineGateway( ISkGatewayInfo aGatewayConfig ) {
     TsNullArgumentRtException.checkNull( aGatewayConfig );
     gatewaysSupport.defineGateway( aGatewayConfig );
   }

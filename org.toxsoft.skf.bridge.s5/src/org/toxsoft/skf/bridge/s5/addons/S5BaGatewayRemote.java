@@ -50,12 +50,12 @@ public final class S5BaGatewayRemote
   // Реализация IBaGateway
   //
   @Override
-  public IStridablesList<ISkGatewayConfiguration> gatewayConfigs() {
+  public IStridablesList<ISkGatewayInfo> gatewayConfigs() {
     return session().gatewayConfigs();
   }
 
   @Override
-  public void defineGateway( ISkGatewayConfiguration aGatewayConfig ) {
+  public void defineGateway( ISkGatewayInfo aGatewayConfig ) {
     TsNullArgumentRtException.checkNull( aGatewayConfig );
     session().defineGateway( aGatewayConfig );
   }

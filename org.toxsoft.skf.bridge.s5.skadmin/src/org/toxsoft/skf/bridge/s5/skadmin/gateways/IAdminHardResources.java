@@ -53,5 +53,5 @@ interface IAdminHardResources {
 
   String MSG_CMD_TIME         = "Время выполнения команды: %d (мсек).";
   String ERR_READ_GWID_CONFIG =
-      "Ошибка чтения значения аргумента %s. Значение должно быть в формате SkGatewayGwidConfigs.KEEPER. Причина: %s";
+      "Ошибка чтения значения аргумента %s. Значение должно быть в формате SkGatewayGwids.KEEPER. Причина: %s";
 }

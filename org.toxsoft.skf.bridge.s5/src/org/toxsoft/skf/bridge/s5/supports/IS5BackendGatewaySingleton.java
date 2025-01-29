@@ -6,7 +6,7 @@ import org.toxsoft.core.tslib.bricks.strid.coll.IStridablesList;
 import org.toxsoft.core.tslib.utils.errors.TsIllegalArgumentRtException;
 import org.toxsoft.core.tslib.utils.errors.TsNullArgumentRtException;
 import org.toxsoft.skf.bridge.s5.lib.IBaGateway;
-import org.toxsoft.skf.bridge.s5.lib.ISkGatewayConfiguration;
+import org.toxsoft.skf.bridge.s5.lib.ISkGatewayInfo;
 import org.toxsoft.uskat.s5.server.backend.IS5BackendSupportSingleton;
 
 /**
@@ -21,27 +21,27 @@ public interface IS5BackendGatewaySingleton
   /**
    * Возвращает список конфигураций мостов зарегистрированных службой
    *
-   * @return {@link IStridablesList}&lt;{@link ISkGatewayConfiguration}&gt; список конфигураций мостов
+   * @return {@link IStridablesList}&lt;{@link ISkGatewayInfo}&gt; список конфигураций мостов
    */
-  IStridablesList<ISkGatewayConfiguration> gatewayConfigs();
+  IStridablesList<ISkGatewayInfo> gatewayConfigs();
 
   /**
    * Регистрация шлюза.
    * <p>
-   * Если в службе уже зарегистирован шлюз {@link ISkGatewayConfiguration#id()}, то заменяет его конфигурацию
+   * Если в службе уже зарегистирован шлюз {@link ISkGatewayInfo#id()}, то заменяет его конфигурацию
    *
-   * @param aGatewayConfig {@link ISkGatewayConfiguration} конфигурация шлюза.
+   * @param aGatewayConfig {@link ISkGatewayInfo} конфигурация шлюза.
    * @throws TsNullArgumentRtException аргумент = null
    * @throws TsIllegalArgumentRtException ошибка подключения к удаленному серверу
    */
-  void defineGateway( ISkGatewayConfiguration aGatewayConfig );
+  void defineGateway( ISkGatewayInfo aGatewayConfig );
 
   /**
    * Удаляет шлюз из службы
    * <p>
    * Если в службе уже зарегистирован шлюз aGatewayId, то ничего не делает
    *
-   * @param aGatewayId String текстовый идентификатор (ИД-имя) шлюза {@link ISkGatewayConfiguration#id()}.
+   * @param aGatewayId String текстовый идентификатор (ИД-имя) шлюза {@link ISkGatewayInfo#id()}.
    * @throws TsNullArgumentRtException любой аргумент = null
    */
   void removeGateway( String aGatewayId );
@@ -49,7 +49,7 @@ public interface IS5BackendGatewaySingleton
   /**
    * Возвращает шлюз по его идентификатору
    *
-   * @param aGatewayId String текстовый идентификатор (ИД-имя) шлюза {@link ISkGatewayConfiguration#id()}.
+   * @param aGatewayId String текстовый идентификатор (ИД-имя) шлюза {@link ISkGatewayInfo#id()}.
    * @return {@link IS5Gateway} шлюз. null: шлюз не найден
    * @throws TsNullArgumentRtException любой аргумент = null
    */

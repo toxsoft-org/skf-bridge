@@ -10,7 +10,7 @@ import org.toxsoft.core.tslib.bricks.validator.ValidationResult;
 import org.toxsoft.core.tslib.coll.IList;
 import org.toxsoft.core.tslib.coll.primtypes.IStringList;
 import org.toxsoft.core.tslib.coll.primtypes.IStringMap;
-import org.toxsoft.skf.bridge.s5.lib.ISkGatewayConfiguration;
+import org.toxsoft.skf.bridge.s5.lib.ISkGatewayInfo;
 import org.toxsoft.skf.bridge.s5.lib.ISkGatewayService;
 import org.toxsoft.uskat.core.ISkCoreApi;
 import org.toxsoft.uskat.legacy.plexy.IPlexyType;
@@ -90,7 +90,7 @@ public class AdminCmdRemoveConfig
     try {
       long startTime = System.currentTimeMillis();
       // Список конфигураций
-      IStridablesListEdit<ISkGatewayConfiguration> configs = new StridablesList<>( service.gatewayConfigs() );
+      IStridablesListEdit<ISkGatewayInfo> configs = new StridablesList<>( service.gatewayConfigs() );
       service.removeGateway( id );
       boolean success = (configs.removeById( id ) != null);
       addResultInfo( success ? MSG_CMD_REMOVED : MSG_CMD_NOT_FOUND );

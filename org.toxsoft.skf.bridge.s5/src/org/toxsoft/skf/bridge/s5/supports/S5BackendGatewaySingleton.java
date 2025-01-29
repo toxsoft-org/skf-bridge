@@ -1,5 +1,6 @@
 package org.toxsoft.skf.bridge.s5.supports;
 
+import static org.toxsoft.skf.bridge.s5.lib.impl.S5BackendGatewayConfig.*;
 import static org.toxsoft.skf.bridge.s5.supports.IS5Resources.*;
 import static org.toxsoft.uskat.s5.server.IS5ImplementConstants.*;
 import static org.toxsoft.uskat.s5.utils.threads.impl.S5Lockable.*;
@@ -46,6 +47,7 @@ import org.toxsoft.uskat.s5.utils.threads.impl.*;
 @TransactionAttribute( TransactionAttributeType.SUPPORTS )
 @ConcurrencyManagement( ConcurrencyManagementType.BEAN )
 @Lock( LockType.READ )
+@SuppressWarnings( "nls" )
 public class S5BackendGatewaySingleton
     extends S5BackendSupportSingleton
     implements IS5BackendGatewaySingleton, IS5ServerJob {
@@ -154,8 +156,7 @@ public class S5BackendGatewaySingleton
   //
   @Override
   protected IStringList doConfigurationPaths() {
-    IStringListEdit retValue = new StringArrayList();
-    retValue.addAll( S5BackendGatewayConfig.ALL_GATEWAYS_OPDEFS.keys() );
+    IStringListEdit retValue = new StringArrayList( SYBSYSTEM_ID_PREFIX );
     logger().info( "S5BackendGatewaySingleton_test1" );
     return retValue;
   }
@@ -164,18 +165,6 @@ public class S5BackendGatewaySingleton
   protected IOptionSet doCreateConfiguration() {
     logger().info( "S5BackendGatewaySingleton_test2" );
     return super.doCreateConfiguration();
-  }
-
-  @Override
-  protected void onConfigChanged( IOptionSet aPrevConfig, IOptionSet aNewConfig ) {
-    logger().info( "S5BackendGatewaySingleton_test3" );
-    SkGatewayConfigurationList prevGateways = S5BackendGatewayConfig.GATEWAYS.getValue( aPrevConfig ).asValobj();
-    SkGatewayConfigurationList newGateways = S5BackendGatewayConfig.GATEWAYS.getValue( aNewConfig ).asValobj();
-    if( !newGateways.equals( prevGateways ) ) {
-      // Чтобы не вызвать блокировку при создании S5Connection делаем сохранение конфигурации через businessApi
-      IS5BackendGatewaySingleton businessApi = sessionContext().getBusinessObject( IS5BackendGatewaySingleton.class );
-      businessApi.updateGateways();
-    }
   }
 
   @Override
@@ -207,8 +196,8 @@ public class S5BackendGatewaySingleton
   // IS5BackendGatewaySingleton
   //
   @Override
-  public IStridablesList<ISkGatewayConfiguration> gatewayConfigs() {
-    IStridablesListEdit<ISkGatewayConfiguration> retValue = new StridablesList<>();
+  public IStridablesList<ISkGatewayInfo> gatewayConfigs() {
+    IStridablesListEdit<ISkGatewayInfo> retValue = new StridablesList<>();
     lockRead( gatewaysLock );
     try {
       for( S5Gateway gateway : gateways ) {
@@ -223,21 +212,22 @@ public class S5BackendGatewaySingleton
 
   @Lock( LockType.WRITE )
   @Override
-  public void defineGateway( ISkGatewayConfiguration aGatewayConfig ) {
-    TsNullArgumentRtException.checkNull( aGatewayConfig );
+  public void defineGateway( ISkGatewayInfo aGatewayInfo ) {
+    TsNullArgumentRtException.checkNull( aGatewayInfo );
     // Новая конфигурация службы
     IOptionSetEdit newConfigurations = new OptionSet( configuration() );
     // Список описаний шлюзов в конфигурации службы
-    SkGatewayConfigurationList gatewayConfigs =
-        S5BackendGatewayConfig.GATEWAYS.getValue( newConfigurations ).asValobj();
+    SkGatewayInfos gatewayInfos = new SkGatewayInfos( GATEWAY_INFOS.getValue( newConfigurations ).asValobj() );
     // Добавление описания нового шлюза
-    gatewayConfigs.add( aGatewayConfig );
+    gatewayInfos.add( aGatewayInfo );
     // Обновление списка описаний в конфигурации
-    S5BackendGatewayConfig.GATEWAYS.setValue( newConfigurations, AvUtils.avValobj( gatewayConfigs ) );
+    GATEWAY_INFOS.setValue( newConfigurations, AvUtils.avValobj( gatewayInfos ) );
     // Сохранение конфигурации может быть только в транзакции
     IS5BackendGatewaySingleton businessApi = sessionContext().getBusinessObject( IS5BackendGatewaySingleton.class );
     // Сохранение настроек в базе данных
     businessApi.saveConfiguration( newConfigurations );
+    // Запрос на обновление
+    businessApi.updateGateways();
   }
 
   @Lock( LockType.WRITE )
@@ -247,16 +237,17 @@ public class S5BackendGatewaySingleton
     // Новая конфигурация службы
     IOptionSetEdit newConfigurations = new OptionSet( configuration() );
     // Список описаний шлюзов в конфигурации службы
-    SkGatewayConfigurationList gatewayConfigs =
-        S5BackendGatewayConfig.GATEWAYS.getValue( newConfigurations ).asValobj();
+    SkGatewayInfos gatewayConfigs = GATEWAY_INFOS.getValue( newConfigurations ).asValobj();
     // Удаление описания шлюза
     gatewayConfigs.removeById( aGatewayId );
     // Обновление списка описаний в конфигурации
-    S5BackendGatewayConfig.GATEWAYS.setValue( newConfigurations, AvUtils.avValobj( gatewayConfigs ) );
+    GATEWAY_INFOS.setValue( newConfigurations, AvUtils.avValobj( gatewayConfigs ) );
     // Сохранение конфигурации может быть только в транзакции
     IS5BackendGatewaySingleton businessApi = sessionContext().getBusinessObject( IS5BackendGatewaySingleton.class );
     // Сохранение настроек в базе данных
     businessApi.saveConfiguration( newConfigurations );
+    // Запрос на обновление
+    businessApi.updateGateways();
   }
 
   @Lock( LockType.READ )
@@ -275,8 +266,13 @@ public class S5BackendGatewaySingleton
   @Asynchronous
   @Override
   public void updateGateways() {
-    IStridablesList<ISkGatewayConfiguration> config =
-        S5BackendGatewayConfig.GATEWAYS.getValue( configuration() ).asValobj();
+    // Конфигурация подсистемы
+    IOptionSet config = configuration();
+    // Список описаний мостов из конфигурации
+    IStridablesList<ISkGatewayInfo> infos = GATEWAY_INFOS.getValue( config ).asValobj();
+
+    logger().info( "updateGateways(...): infos.size = %d", Integer.valueOf( infos.size() ) );
+
     // Количество добавленных шлюзов
     int addedCount = 0;
     // Количество обновленных шлюзов
@@ -288,29 +284,29 @@ public class S5BackendGatewaySingleton
     try {
       for( S5Gateway gateway : new StridablesList<>( gateways ) ) {
         String gatewayId = gateway.id();
-        ISkGatewayConfiguration configuration = config.findByKey( gatewayId );
-        if( configuration == null ) {
+        ISkGatewayInfo info = infos.findByKey( gatewayId );
+        if( info == null ) {
           // Шлюз удален
           gateway.close();
           gateways.removeById( gatewayId );
           removedCount++;
         }
-        if( configuration != null && !configuration.equals( gateway.configuration() ) ) {
+        if( info != null && !info.equals( gateway.configuration() ) ) {
           // Запись в журнал об пересоздании шлюза (изменение конфигурации)
-          logger().info( MSG_RECREATE_GATEWAY_BY_UPDATE_CONFIG, gateway.id(), gateway.configuration(), configuration );
+          logger().info( MSG_RECREATE_GATEWAY_BY_UPDATE_CONFIG, gateway.id(), gateway.configuration(), info );
           // Шлюз обновлен
           gateway.close();
           gateways.removeById( gatewayId );
-          gateways.add( new S5Gateway( this, configuration ) );
+          gateways.add( new S5Gateway( this, info ) );
           updatedCount++;
         }
       }
       // Проход по всем конфигурациям, добавление новых
-      for( ISkGatewayConfiguration configuration : config ) {
-        if( gateways.hasKey( configuration.id() ) ) {
+      for( ISkGatewayInfo info : infos ) {
+        if( gateways.hasKey( info.id() ) ) {
           continue;
         }
-        gateways.add( new S5Gateway( this, configuration ) );
+        gateways.add( new S5Gateway( this, info ) );
         addedCount++;
       }
     }
