@@ -25,7 +25,7 @@ public class SkGatewayGwids
   /**
    * Value-object registration identifier for {@link TsValobjUtils}.
    */
-  public static final String KEEPER_ID = "Host"; //$NON-NLS-1$
+  public static final String KEEPER_ID = "SkGatewayGwids"; //$NON-NLS-1$
 
   /**
    * Keeper singleton.
