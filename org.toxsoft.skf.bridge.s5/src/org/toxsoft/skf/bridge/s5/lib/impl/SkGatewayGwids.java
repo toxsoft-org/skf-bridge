@@ -207,32 +207,39 @@ public class SkGatewayGwids
   public static IGwidList getConfigGwids( ISkGwidService aService, ISkGatewayGwids aConfig, IGwidList aQualityGwids ) {
     TsNullArgumentRtException.checkNulls( aService, aConfig, aQualityGwids );
     // Добавление идентификаторов в результат
-    GwidList retValue = new GwidList( aConfig.includeGwids() );
+    GwidList retValue = new GwidList();
+
+    for( Gwid includeGwid : aConfig.includeGwids() ) {
+      // Добавляется только идентификаторы конфигурации
+      if( includeGwid.kind() == aConfig.gwidKind() ) {
+        retValue.addAll( aService.expandGwid( includeGwid ) );
+      }
+    }
     if( aConfig.includeQualityGwids() ) {
-      for( Gwid gwid : aQualityGwids ) {
+      for( Gwid qualityGwid : aQualityGwids ) {
         // Добавляется только идентификаторы конфигурации
-        if( gwid.kind() == aConfig.gwidKind() ) {
-          retValue.add( gwid );
+        if( qualityGwid.kind() == aConfig.gwidKind() ) {
+          retValue.addAll( aService.expandGwid( qualityGwid ) );
         }
       }
     }
     // Вырезание идентификаторов из результата
     if( aConfig.excludeGwids().size() > 0 ) {
       // Получение полного списка идентификаторов исключений
-      GwidList fullExcludeList = new GwidList();
-      for( Gwid gwid : aConfig.excludeGwids() ) {
-        fullExcludeList.addAll( aService.expandGwid( gwid ) );
-      }
-      // Получение полного списка идентификаторов результата
-      GwidList fullList = new GwidList();
-      for( Gwid gwid : retValue ) {
-        for( Gwid g : aService.expandGwid( gwid ) ) {
-          if( !fullExcludeList.hasElem( g ) ) {
-            fullList.add( g );
-          }
+      GwidList excludeList = new GwidList();
+      for( Gwid excludeGwid : aConfig.excludeGwids() ) {
+        if( excludeGwid.kind() == aConfig.gwidKind() ) {
+          excludeList.addAll( aService.expandGwid( excludeGwid ) );
         }
       }
-      retValue = fullList;
+      // Получение полного списка идентификаторов результата
+      GwidList tmp = new GwidList();
+      for( Gwid gwid : retValue ) {
+        if( !excludeList.hasElem( gwid ) ) {
+          tmp.add( gwid );
+        }
+      }
+      retValue = tmp;
     }
     return retValue;
   }
