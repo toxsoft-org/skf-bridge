@@ -472,7 +472,7 @@ class S5Gateway
     Integer count = Integer.valueOf( aValues.size() );
     Gwid first = aValues.keys().first();
     // Передача текущих данных
-    logger.debug( MSG_GW_HISTDATA_TRANSFER, count, first );
+    logger.info( MSG_GW_HISTDATA_TRANSFER, count, first );
     // Передача данных синхронизируется через исполнитель потоков соединения
     threadExecutor.asyncExec( () -> {
       try {
@@ -480,7 +480,7 @@ class S5Gateway
           ISkWriteHistDataChannel writeChannel = writeHistData.findByKey( gwid );
           if( writeChannel == null ) {
             // Не найден канал записи хранимых данных
-            logger.warning( ERR_HISTDATA_WRITE_CHANNEL_NOT_FOUND, gwid );
+            logger.debug( ERR_HISTDATA_WRITE_CHANNEL_NOT_FOUND, gwid );
             continue;
           }
           Pair<ITimeInterval, ITimedList<ITemporalAtomicValue>> sequence = aValues.getByKey( gwid );
@@ -489,11 +489,12 @@ class S5Gateway
           writeChannel.writeValues( interval, values );
         }
         // Завершение передачи хранимых данных
-        logger.debug( MSG_GW_HISTDATA_TRANSFER_FINISH, count, first );
+        logger.info( MSG_GW_HISTDATA_TRANSFER_FINISH, count, first );
       }
       catch( Throwable e ) {
-        // Ошибка передачи хранимых данных. Запланирована синхронизация
+        // Ошибка передачи хранимых данных.
         logger.error( e, ERR_SEND_HISTDATA, cause( e ) );
+        // Запланирована синхронизация
         needSynchronize = true;
       }
     } );

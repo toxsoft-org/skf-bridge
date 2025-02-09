@@ -1,18 +1,16 @@
 package org.toxsoft.skf.bridge.s5.lib.impl;
 
-import java.io.Serializable;
+import java.io.*;
 
-import org.toxsoft.core.tslib.bricks.keeper.AbstractEntityKeeper;
-import org.toxsoft.core.tslib.bricks.keeper.AbstractEntityKeeper.EEncloseMode;
-import org.toxsoft.core.tslib.bricks.keeper.IEntityKeeper;
-import org.toxsoft.core.tslib.bricks.strio.IStrioReader;
-import org.toxsoft.core.tslib.bricks.strio.IStrioWriter;
+import org.toxsoft.core.tslib.bricks.keeper.*;
+import org.toxsoft.core.tslib.bricks.keeper.AbstractEntityKeeper.*;
+import org.toxsoft.core.tslib.bricks.strio.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
-import org.toxsoft.core.tslib.utils.TsLibUtils;
-import org.toxsoft.core.tslib.utils.errors.TsNullArgumentRtException;
-import org.toxsoft.core.tslib.utils.valobj.TsValobjUtils;
-import org.toxsoft.skf.bridge.s5.lib.ISkGatewayGwids;
-import org.toxsoft.uskat.core.api.gwids.ISkGwidService;
+import org.toxsoft.core.tslib.utils.*;
+import org.toxsoft.core.tslib.utils.errors.*;
+import org.toxsoft.core.tslib.utils.valobj.*;
+import org.toxsoft.skf.bridge.s5.lib.*;
+import org.toxsoft.uskat.core.api.gwids.*;
 
 /**
  * Реализация {@link ISkGatewayGwids}
@@ -206,8 +204,7 @@ public class SkGatewayGwids
    * @param aQualityGwids {@link IGwidList} список идентификаторов предоставляемых службой качества
    * @return {@link IGwidList} список идентификаторов
    */
-  public static IGwidList getConfigGwids( ISkGwidService aService, ISkGatewayGwids aConfig,
-      IGwidList aQualityGwids ) {
+  public static IGwidList getConfigGwids( ISkGwidService aService, ISkGatewayGwids aConfig, IGwidList aQualityGwids ) {
     TsNullArgumentRtException.checkNulls( aService, aConfig, aQualityGwids );
     // Добавление идентификаторов в результат
     GwidList retValue = new GwidList( aConfig.includeGwids() );
@@ -221,7 +218,7 @@ public class SkGatewayGwids
     }
     // Вырезание идентификаторов из результата
     if( aConfig.excludeGwids().size() > 0 ) {
-      // Получение полного списка идентификаторов исключени
+      // Получение полного списка идентификаторов исключений
       GwidList fullExcludeList = new GwidList();
       for( Gwid gwid : aConfig.excludeGwids() ) {
         fullExcludeList.addAll( aService.expandGwid( gwid ) );
