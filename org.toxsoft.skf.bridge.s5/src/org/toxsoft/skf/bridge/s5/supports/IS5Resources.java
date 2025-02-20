@@ -1,6 +1,6 @@
 package org.toxsoft.skf.bridge.s5.supports;
 
-import org.toxsoft.uskat.s5.common.IS5CommonResources;
+import org.toxsoft.uskat.s5.common.*;
 
 /**
  * Локализуемые ресурсы.
@@ -21,7 +21,7 @@ interface IS5Resources
   String MSG_DOJOB                                      = "Gateway backend doJob";
   String MSG_GW_CONFIGURATIONS_UPDATED                  =
       "Обновление конфигурации шлюзов. Новых: %d. Обновленных: %d. Удаленных: %d";
-  String MSG_GW_STARTED                                 = "%s. Запуск шлюза. paused = %b";
+  String MSG_GW_STARTED                                 = "%s. Запуск шлюза.";
   String MSG_GW_INIT_START                              = "%s. Начало инициализации шлюза";
   String MSG_GW_INIT_FINISH                             = "%s. Завершение инициализации шлюза";
   String MSG_GW_CLOSE                                   = "%s. Шлюз завершает работу";
@@ -67,8 +67,7 @@ interface IS5Resources
       "Завершение передача состояния команды отправителю: %s. Время запроса: %d (msec)";
   String MSG_TRANSFER_EXECUTORS_START                   =
       "onExecutableCommandGwidsChanged(...). Cообщение об изменении списка исполнителей команд: %d, first: %s";
-  String MSG_CHANGE_CMD_EXECUTORS                       =
-      "Изменение списка исполнителей команд. aPaused = %b, cmdGwids:\n%s";
+  String MSG_CHANGE_CMD_EXECUTORS                       = "Изменение списка исполнителей команд. cmdGwids:\n%s";
   String MSG_TRANSFER_EXECUTORS_FINISH                  =
       "Завершение передачи списка исполнителей команд. . Количество исполнителей: %d, first: %s. Время запроса: %d (msec)";
   String MSG_SYNCHONIZE_BY_DATAQUALITY_RESOURCES        =
@@ -85,63 +84,62 @@ interface IS5Resources
       "В описании шлюза %s не найден объект-исполнитель команды: %d.";
   String MSG_GW_ALIEN_COMMAND                           =
       "%s. Команда не отправлялась шлюзом (отправил другой клиент?)";
-  String MSG_GW_PAUSE_QUERY                             = "%s. Запрос клиента приостановить передачу данных через шлюз";
-  String MSG_GW_START_QUERY                             = "%s. Запрос клиента возобновить передачу данных через шлюз";
-  String MSG_GW_PAUSED                                  = "%s. Передача данных через шлюз временно приостановлена";
   String MSG_SYNC_COMPLETED                             =
       "Завершение синхронизации данных между соединениями. aPaused = %b. Время: %d (msec)";
   String MSG_DATA_CHANNELS_CLOSE                        =
       "%s. Завершение работы каналов передачи данных. rcd: %d, wcd: %d, rhd: %d, whd: %d";
-  String MSG_REGISTER_DATA_ON_REMOTE                    =
-      "Регистрация передаваемых данных на удаленном сервере. Количество данных: %d";
-  String MSG_REGISTER_QUALITY_COMPLETED                 =
-      "Завершение регистрации в удаленной службе качества данных. Количество: %d";
-  String MSG_REGISTER_CHANNELS_COMPLETED                =
-      "Завершение регистрации каналов передачи данных. Количество: %d";
+  String MSG_REGISTER_CURRDATA_ON_REMOTE                =
+      "Регистрация передаваемых текущих данных на удаленном сервере (%d)";
+  String MSG_REGISTER_CURRDATA_ON_LOCAL                 =
+      "Регистрация принимаемых текущих данных на локальном сервере (%d)";
+  String MSG_REGISTER_HISTDATA_ON_REMOTE                =
+      "Регистрация передаваемых хранимых данных на удаленном сервере (%d)";
+  String MSG_REGISTER_HISTDATA_ON_LOCAL                 =
+      "Регистрация принимаемых хранимых данных на локальном сервере (%d)";
   String MSG_RECREATE_GATEWAY_BY_UPDATE_CONFIG          =
       "reconfigure gateway %s. \n   old config = %s \n   new config = %s";
 
   // ------------------------------------------------------------------------------------
   // Тексты ошибок
   //
-  String ERR_CREATE_CONNECTION                 = "Ошибка установки соединения с удаленным сервером. Причина: %s";
-  String ERR_DOJOB_NOT_CONNECTION              = "doJob(...): нет соединения с удаленным сервером %s";
-  String ERR_COMMAND_NOT_FOUND                 =
+  String ERR_CREATE_CONNECTION                = "Ошибка установки соединения с удаленным сервером. Причина: %s";
+  String ERR_DOJOB_NOT_CONNECTION             = "doJob(...): нет соединения с удаленным сервером %s";
+  String ERR_COMMAND_NOT_FOUND                =
       "%s. Не найдена команда отправителя (executingCommands). Команда исполнителя: %s";
-  String ERR_COMMAND_REMOVE_BY_TIMEOUT         = "%s. Команда исполнителя: %s (отправителя: %s) удалена по таймауту";
-  String ERR_TRACE_DEREG                       = "%s. Ошибка дерегистрации наблюдателя команд. Причина: %s";
-  String ERR_EXECUTOR_DEREG                    = "%s. Ошибка дерегистрации исполнителя команд. Причина: %s";
-  String ERR_EVENT_CONSUMER                    = "%s. Ошибка дерегистрации получателя событий. Причина: %s";
-  String ERR_READ_CURRDATA_DEREG               = "%s. Ошибка завершения набора чтения текущих данных. Причина: %s";
-  String ERR_READ_HISTDATA_DEREG               = "%s. Ошибка завершения набора чтения хранимых данных. Причина: %s";
-  String ERR_WRITE_CURRDATA_DEREG              = "%s. Ошибка завершения набора записи текущих данных. Причина: %s";
-  String ERR_WRITE_HISTDATA_DEREG              = "%s. Ошибка завершения набора записи хранимых данных. Причина: %s";
-  String ERR_EVENT_AUTHOR_NOT_FOUND            = "%s. В описании шлюза не найден объект-автор события: %d. Событие: %s";
-  String ERR_CMD_AUTHOR_NOT_FOUND              = "%s. В описании шлюза не найден объект-автор команды: %d. Команда: %s";
-  String ERR_CMD_EXECUTOR_NOT_FOUND            =
+  String ERR_COMMAND_REMOVE_BY_TIMEOUT        = "%s. Команда исполнителя: %s (отправителя: %s) удалена по таймауту";
+  String ERR_TRACE_DEREG                      = "%s. Ошибка дерегистрации наблюдателя команд. Причина: %s";
+  String ERR_EXECUTOR_DEREG                   = "%s. Ошибка дерегистрации исполнителя команд. Причина: %s";
+  String ERR_EVENT_CONSUMER                   = "%s. Ошибка дерегистрации получателя событий. Причина: %s";
+  String ERR_READ_CURRDATA_DEREG              = "%s. Ошибка завершения набора чтения текущих данных. Причина: %s";
+  String ERR_READ_HISTDATA_DEREG              = "%s. Ошибка завершения набора чтения хранимых данных. Причина: %s";
+  String ERR_WRITE_CURRDATA_DEREG             = "%s. Ошибка завершения набора записи текущих данных. Причина: %s";
+  String ERR_WRITE_HISTDATA_DEREG             = "%s. Ошибка завершения набора записи хранимых данных. Причина: %s";
+  String ERR_EVENT_AUTHOR_NOT_FOUND           = "%s. В описании шлюза не найден объект-автор события: %d. Событие: %s";
+  String ERR_CMD_AUTHOR_NOT_FOUND             = "%s. В описании шлюза не найден объект-автор команды: %d. Команда: %s";
+  String ERR_CMD_EXECUTOR_NOT_FOUND           =
       "%s. В описании шлюза не найден объект-исполнитель команды: %d. Команда: %s";
-  String ERR_GATEWAY_ALREADY_INITED            = "%s. Инициализация уже выполнена";
-  String ERR_NOT_READY_FOR_SYNC                = "%s. Нет готовности к синхронизации соединений";
-  String ERR_SEND_CURRDATA                     =
+  String ERR_GATEWAY_ALREADY_INITED           = "%s. Инициализация уже выполнена";
+  String ERR_NOT_READY_FOR_SYNC               = "%s. Нет готовности к синхронизации соединений";
+  String ERR_SEND_CURRDATA                    =
       "%s. Ошибка передачи текущих данных. Запланирована синхронизация. Время запроса: %d (msec). Причина: %s";
-  String ERR_SEND_HISTDATA                     =
+  String ERR_SEND_HISTDATA                    =
       "Ошибка передачи хранимых данных. Запланирована синхронизация. Причина: %s";
-  String ERR_SEND_CMD                          =
+  String ERR_SEND_CMD                         =
       "Ошибка передачи команды. Запланирована синхронизация. Время запроса: %d (msec). Причина: %s";
-  String ERR_SEND_CMD_STATE                    =
+  String ERR_SEND_CMD_STATE                   =
       "Ошибка передачи состояния команды. Запланирована синхронизация. Время запроса: %d (msec). Причина: %s";
-  String ERR_READ_WRITE_CD_NOT_EQUALS          = "Неодинаковые наборы чтения и записи текущих данных";
-  String ERR_REGISTER_CMD_GWIDS                =
+  String ERR_READ_WRITE_CD_NOT_EQUALS         = "Неодинаковые наборы чтения и записи текущих данных";
+  String ERR_REGISTER_CMD_GWIDS               =
       "%s. Ошибка регистрации исполнителей команд на удаленном сервере. Соединение будет закрыто. Количество исполнителей: %d, first: %s. Время запроса: %d (msec). Причина: %s";
-  String ERR_SYNCHONIZE                        =
+  String ERR_SYNCHONIZE                       =
       "%s. Ошибка синхронизации с удаленным сервером. Соединение будет закрыто. Причина: %s";
-  String ERR_CMD_EXECUTORS_NOT_CHANGED         =
+  String ERR_CMD_EXECUTORS_NOT_CHANGED        =
       "synchronizeCmdExecutors(): список исполнителей команд не изменился. aCmdGwids.size() = %d";
-  String ERR_TRY_SYNCH_FROM_DOJOB              = "Попытка запуска отложенной синхронизации из doJob";
-  String ERR_HISTDATA_WRITE_CHANNEL_NOT_FOUND  =
+  String ERR_TRY_SYNCH_FROM_DOJOB             = "Попытка запуска отложенной синхронизации из doJob";
+  String ERR_CURRDATA_WRITE_CHANNEL_NOT_FOUND = "onCurrData(...): %s. Не найден канал записи текущих данных для %s";
+  String ERR_HISTDATA_WRITE_CHANNEL_NOT_FOUND =
       "beforeWriteHistData(...): не найден канал записи хранимых данных для %s";
-  String ERR_HISTDATA_WRITE_CHANNEL_NOT_FOUND2 = "onCurrData(...): %s. Не найден канал записи хранимых данных для %s";
-  String ERR_TRY_LOCK                          = "doJob(...): ошибка получения блокировки %s.";
-  String ERR_CURRDATA_DOUBLE                   =
+  String ERR_TRY_LOCK                         = "doJob(...): ошибка получения блокировки %s.";
+  String ERR_CURRDATA_DOUBLE                  =
       "Попытка повторной регистрации канала записи текущего данного %s - игнорировано";
 }

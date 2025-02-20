@@ -2,17 +2,16 @@ package org.toxsoft.skf.bridge.s5.supports;
 
 import static org.toxsoft.skf.bridge.s5.supports.IS5Resources.*;
 
-import org.toxsoft.core.tslib.av.IAtomicValue;
-import org.toxsoft.core.tslib.bricks.strid.impl.StridableParameterizedSer;
-import org.toxsoft.core.tslib.coll.IMap;
-import org.toxsoft.core.tslib.coll.IMapEdit;
-import org.toxsoft.core.tslib.coll.impl.ElemMap;
-import org.toxsoft.core.tslib.coll.synch.SynchronizedMap;
+import org.toxsoft.core.tslib.av.*;
+import org.toxsoft.core.tslib.bricks.strid.impl.*;
+import org.toxsoft.core.tslib.coll.*;
+import org.toxsoft.core.tslib.coll.impl.*;
+import org.toxsoft.core.tslib.coll.synch.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
-import org.toxsoft.core.tslib.utils.ICloseable;
-import org.toxsoft.core.tslib.utils.errors.TsNullArgumentRtException;
-import org.toxsoft.core.tslib.utils.logs.ILogger;
-import org.toxsoft.skf.bridge.s5.lib.IBaGateway;
+import org.toxsoft.core.tslib.utils.*;
+import org.toxsoft.core.tslib.utils.errors.*;
+import org.toxsoft.core.tslib.utils.logs.*;
+import org.toxsoft.skf.bridge.s5.lib.*;
 import org.toxsoft.uskat.core.api.rtdserv.*;
 
 /**
@@ -51,11 +50,6 @@ class S5GatewayCurrDataPort
    * Служба записи данных реального времени
    */
   private final ISkRtdataService writeRtDataService;
-
-  /**
-   * Признак приостановки передачи значений текущих данных
-   */
-  private boolean paused;
 
   /**
    * Журнал работы
@@ -120,26 +114,11 @@ class S5GatewayCurrDataPort
     readCurrData.setAll( readRtDataService.createReadCurrDataChannels( gwids ) );
   }
 
-  /**
-   * Устанавливает признак того, что мост приостановил свою работу и не передает данные
-   *
-   * @param aPause boolean <b>true</b> мост приостановил работу, но возможно установлена связь с удаленным
-   *          сервером;<b>false</b> мост работает в штатном режиме, но возможна потеря связи с удаленным сервером
-   */
-  void setPaused( boolean aPause ) {
-    paused = aPause;
-  }
-
   // ------------------------------------------------------------------------------------
   // ISkCurrDataChangeListener
   //
   @Override
   public void onCurrData( IMap<Gwid, IAtomicValue> aNewValues ) {
-    if( paused ) {
-      // Передача данных через шлюз временно приостановлена
-      logger.info( MSG_GW_PAUSED, id() );
-      return;
-    }
     // Время начала запроса
     long traceStartTime = System.currentTimeMillis();
     Integer count = Integer.valueOf( aNewValues.size() );
@@ -151,7 +130,7 @@ class S5GatewayCurrDataPort
       ISkWriteCurrDataChannel writeChannel = writeCurrData.findByKey( gwid );
       if( writeChannel == null ) {
         // Не найден канал записи хранимых данных
-        logger.error( ERR_HISTDATA_WRITE_CHANNEL_NOT_FOUND2, id(), gwid );
+        logger.error( ERR_CURRDATA_WRITE_CHANNEL_NOT_FOUND, id(), gwid );
         continue;
       }
       writeChannel.setValue( value );

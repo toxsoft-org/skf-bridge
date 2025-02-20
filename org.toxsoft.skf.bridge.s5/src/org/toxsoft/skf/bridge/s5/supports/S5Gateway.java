@@ -8,7 +8,6 @@ import static org.toxsoft.skf.bridge.s5.supports.IS5Resources.*;
 import static org.toxsoft.uskat.s5.common.IS5CommonResources.*;
 
 import org.toxsoft.core.log4j.*;
-import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.*;
 import org.toxsoft.core.tslib.av.temporal.*;
@@ -48,10 +47,7 @@ import org.toxsoft.uskat.s5.client.remote.connection.*;
 import org.toxsoft.uskat.s5.common.*;
 import org.toxsoft.uskat.s5.server.*;
 import org.toxsoft.uskat.s5.server.backend.supports.currdata.*;
-import org.toxsoft.uskat.s5.server.backend.supports.currdata.impl.*;
 import org.toxsoft.uskat.s5.server.backend.supports.histdata.*;
-import org.toxsoft.uskat.s5.server.frontend.*;
-import org.toxsoft.uskat.s5.server.sessions.*;
 import org.toxsoft.uskat.s5.server.startup.*;
 import org.toxsoft.uskat.s5.utils.jobs.*;
 import org.toxsoft.uskat.s5.utils.progress.*;
@@ -64,8 +60,6 @@ import org.toxsoft.uskat.s5.utils.progress.*;
 class S5Gateway
     extends Stridable
     implements IS5Gateway, IS5ServerJob, //
-    IS5SessionInterceptor, //
-    IS5CurrDataInterceptor, //
     IS5HistDataInterceptor, //
     ISkCommandExecutor, ISkEventHandler, ISkDataQualityChangeListener, ISkConnectionListener {
 
@@ -201,13 +195,6 @@ class S5Gateway
   private volatile boolean needSynchronize;
 
   /**
-   * Признак того, что мост приостановил свою работу.
-   * <p>
-   * В режиме остановки моста, данные через него не пересылаются
-   */
-  private boolean paused;
-
-  /**
    * Журнал работы
    */
   private ILogger logger = LoggerWrapper.getLogger( getClass() );
@@ -223,8 +210,7 @@ class S5Gateway
     super( aConfiguration.id(), aConfiguration.nmName(), aConfiguration.description() );
     owner = aOwner;
     configuration = aConfiguration;
-    paused = aConfiguration.isPaused();
-    logger.info( MSG_GW_STARTED, this, Boolean.valueOf( paused ) );
+    logger.info( MSG_GW_STARTED, this );
 
     // Регистрация расширений API соединения
     SkCoreUtils.registerSkServiceCreator( SkDataQualityService.CREATOR );
@@ -243,11 +229,8 @@ class S5Gateway
     // 2021-01-19 mvk tryOpenRemote должна работать под блокировкой
     tryOpenRemote();
 
-    // Перехват событий бекенда (интерсепция)
-    owner.sessionManager().addSessionInterceptor( this, 0 );
     // owner.objectsBackend().addObjectsInterceptor( new
     // S5GatewayObjectsInterceptor( this ), 0 );
-    owner.currdataBackend().addCurrDataInterceptor( this, 0 );
     owner.histdataBackend().addHistDataInterceptor( this, 0 );
     // owner.lobsBackend().addLobsInterceptor( new S5GatewayLobsInterceptor( this ),
     // 0 );
@@ -259,22 +242,6 @@ class S5Gateway
   @Override
   public ISkGatewayInfo configuration() {
     return configuration;
-  }
-
-  @Override
-  public boolean isPaused() {
-    return paused;
-  }
-
-  @Override
-  public void setPaused( boolean aPause ) {
-    if( paused != aPause ) {
-      // Запрос клиента приостановить/возобновить передачу данных через шлюз
-      logger.info( (aPause ? MSG_GW_PAUSE_QUERY : MSG_GW_START_QUERY), this );
-      // Синхронизация наборов данных, слушателей подключенных соединений
-      synchronize( aPause );
-    }
-    paused = aPause;
   }
 
   @Override
@@ -309,7 +276,7 @@ class S5Gateway
       // Попытка запуска отложенной синхронизации из doJob
       logger.warning( ERR_TRY_SYNCH_FROM_DOJOB );
       // Синхронизация данных с удаленным сервером
-      synchronize( paused );
+      synchronize();
     }
   }
 
@@ -322,8 +289,7 @@ class S5Gateway
   public void close() {
     // Шлюз завершает работу
     logger.info( MSG_GW_CLOSE, this );
-    // paused = true
-    synchronize( true );
+    synchronize();
     // Завершение работы наборов данных
     if( localToRemoteCurrdataPort != null ) {
       localToRemoteCurrdataPort.close();
@@ -347,7 +313,6 @@ class S5Gateway
     remoteConnection.close();
     localConnection.close();
     // Дерегистрация интерсепторов
-    owner.currdataBackend().removeCurrDataInterceptor( this );
     owner.histdataBackend().removeHistDataInterceptor( this );
     // Шлюз выгружен
     completed = true;
@@ -355,120 +320,10 @@ class S5Gateway
   }
 
   // ------------------------------------------------------------------------------------
-  // IS5SessionInterceptor
-  //
-  @Override
-  public void beforeCreateSession( Skid aSessionID ) {
-    // nop
-  }
-
-  @Override
-  public void afterCreateSession( Skid aSessionID ) {
-    // nop
-  }
-
-  @Override
-  public void beforeCloseSession( Skid aSessionID ) {
-    // nop
-  }
-
-  @SuppressWarnings( "nls" )
-  @Override
-  public void afterCloseSession( Skid aSessionID ) {
-    // Синхронизация вызова
-    threadExecutor.asyncExec( () -> {
-      // Данные игнорируемые для чтения. null: настройка не требуется
-      IGwidList ignored = null;
-      // От локального сервера отключился один клиентов. Требуется перенастроить порт
-      // приема текущих данных от сервера,
-      // так как совокупный список получаемых данных может быть изменен (нет больше
-      // необходимости в некоторых данных)
-      logger.debug( "afterCloseSession(...). remoteToLocalCurrdataPort = %s", remoteToLocalCurrdataPort );
-      logger.debug( "afterCloseSession(...). get connLock (write). remoteToLocalCurrdataPort = %s",
-          remoteToLocalCurrdataPort );
-      // Конфигурация порта передачи текущих данных от удаленного сервера на локальный
-      if( remoteToLocalCurrdataPort != null ) {
-        // Настройка порта текущих данных для импорта значений
-        ignored = (localDataQualityService != null ? localToRemoteCurrdataPort.dataIds() : IGwidList.EMPTY);
-      }
-      logger.debug( "afterCloseSession(...): is completed" );
-      // 2021-01-19 mvk настройка импорта делается вне блокировки
-      if( ignored != null ) {
-        configureCurrdataPortForImport( owner.currdataBackend(), remoteToLocalCurrdataPort, ignored, logger );
-      }
-    } );
-  }
-
-  // ------------------------------------------------------------------------------------
-  // IS5CurrDataInterceptor
-  //
-  @Override
-  public boolean beforeReconfigureCurrData( IGwidList aRemovedGwids, IMap<Gwid, IAtomicValue> aAddedGwids ) {
-    // nop
-    return true;
-  }
-
-  @Override
-  public void afterReconfigureCurrData( IGwidList aRemovedGwids, IMap<Gwid, IAtomicValue> aAddedGwids ) {
-    // nop
-  }
-
-  @Override
-  public boolean beforeConfigureCurrDataReader( IS5FrontendRear aFrontend, IGwidList aToRemove, IGwidList aToAdd ) {
-    return true;
-  }
-
-  @Override
-  public void afterConfigureCurrDataReader( IS5FrontendRear aFrontend, IGwidList aToRemove, IGwidList aToAdd ) {
-    // Синхронизация вызова (вызов должен быть асинхронным, иначе возможны проблемы при запуске сервера)
-    threadExecutor.asyncExec( () -> {
-      // Данные игнорируемые для чтения. null: настройка не требуется
-      IGwidList ignored = null;
-      // Конфигурация порта передачи текущих данных от удаленного сервера на локальный
-      if( remoteToLocalCurrdataPort != null ) {
-        // Настройка порта текущих данных для импорта значений
-        ignored = (localDataQualityService != null ? localToRemoteCurrdataPort.dataIds() : IGwidList.EMPTY);
-      }
-      // 2021-01-19 mvk настройка импорта делается вне блокировки
-      if( ignored != null ) {
-        configureCurrdataPortForImport( owner.currdataBackend(), remoteToLocalCurrdataPort, ignored, logger );
-      }
-    } );
-  }
-
-  @Override
-  public boolean beforeConfigureCurrDataWriter( IS5FrontendRear aFrontend, IGwidList aToRemove, IGwidList aToAdd ) {
-    // nop
-    return true;
-  }
-
-  @Override
-  public void afterConfigureCurrDataWriter( IS5FrontendRear aFrontend, IGwidList aToRemove, IGwidList aToAdd ) {
-    // nop
-  }
-
-  @Override
-  public boolean beforeWriteCurrData( IMap<Gwid, IAtomicValue> aValues ) {
-    // Требование продолжить запись текущих данных в систему
-    return true;
-  }
-
-  @Override
-  public void afterWriteCurrData( IMap<Gwid, IAtomicValue> aValues ) {
-    // nop
-  }
-
-  // ------------------------------------------------------------------------------------
   // IS5HistDataInterceptor
   //
   @Override
   public boolean beforeWriteHistData( IMap<Gwid, Pair<ITimeInterval, ITimedList<ITemporalAtomicValue>>> aValues ) {
-    if( paused ) {
-      // Передача данных через шлюз временно приостановлена
-      logger.info( MSG_GW_PAUSED, this );
-      // Разрешить дальшейшее выполнение операции
-      return true;
-    }
     Integer count = Integer.valueOf( aValues.size() );
     Gwid first = aValues.keys().first();
     // Передача текущих данных
@@ -614,7 +469,7 @@ class S5Gateway
         // Текстовое представление идентификаторов для журнала
         String cmdGwidsString = getGwidsString( cmdGwids );
         // Изменение списка исполнителей команд
-        logger.debug( MSG_CHANGE_CMD_EXECUTORS, Boolean.valueOf( paused ), cmdGwidsString );
+        logger.debug( MSG_CHANGE_CMD_EXECUTORS, cmdGwidsString );
       }
       // Исполнители команд синхронизируются через исполнитель потоков соединения
       threadExecutor.asyncExec( () -> {
@@ -629,11 +484,6 @@ class S5Gateway
   //
   @Override
   public void onEvents( ISkEventList aEvents ) {
-    if( paused ) {
-      // Передача данных через шлюз временно приостановлена
-      logger.info( MSG_GW_PAUSED, this );
-      return;
-    }
     // Передача событий синхронизируется через исполнитель потоков соединения
     threadExecutor.asyncExec( () -> {
       Integer count = Integer.valueOf( aEvents.size() );
@@ -660,7 +510,7 @@ class S5Gateway
         // Выставление признака необходимости синхронизации
         needSynchronize = true;
         // Попытка синхронизации данных
-        synchronize( paused );
+        synchronize();
       }
       catch( Throwable e ) {
         // Ошибка синхронизации с удаленным сервером. Соединение будет закрыто
@@ -692,7 +542,7 @@ class S5Gateway
         // Выставление признака необходимости синхронизации
         needSynchronize = true;
         // Попытка синхронизации данных соединений
-        synchronize( paused );
+        synchronize();
         break;
       case INACTIVE:
       case CLOSED:
@@ -783,7 +633,7 @@ class S5Gateway
         // Выставление признака необходимости синхронизации
         needSynchronize = true;
         // Попытка синхронизации наборов данных, слушателей подключенных соединений
-        synchronize( paused );
+        synchronize();
       } );
       threadExecutor.syncExec( () -> {
         // Данные игнорируемые для чтения. null: настройка не требуется
@@ -897,22 +747,16 @@ class S5Gateway
 
   /**
    * Синхронизация наборов данных, слушателей подключенных соединений
-   *
-   * @param aPaused boolean <b>true</b> мост приостановил работу, но возможно установлена связь с удаленным
-   *          сервером;<b>false</b> мост работает в штатном режиме, но возможна потеря связи с удаленным сервером
    */
-  private void synchronize( boolean aPaused ) {
+  private void synchronize() {
     // Синхронизация вызова
-    threadExecutor.syncExec( () -> synchronizeRun( aPaused ) );
+    threadExecutor.syncExec( this::synchronizeRun );
   }
 
   /**
    * Запуск задачи синхронизации наборов данных, слушателей подключенных соединений
-   *
-   * @param aPaused boolean <b>true</b> мост приостановил работу, но возможно установлена связь с удаленным
-   *          сервером;<b>false</b> мост работает в штатном режиме, но возможна потеря связи с удаленным сервером
    */
-  private void synchronizeRun( boolean aPaused ) {
+  private void synchronizeRun() {
     if( !readyForSynchronize ) {
       // Нет готовности к синхронизации соединений
       logger.warning( ERR_NOT_READY_FOR_SYNC, this );
@@ -920,58 +764,40 @@ class S5Gateway
     }
     // Время начала синхронизации
     long traceStartTime = System.currentTimeMillis();
+    // Отписываемся от всех событий
+    localEventService.unregisterHandler( this );
     // Дерегистрация исполнителей команд
     remoteCmdService.unregisterExecutor( this );
     // Завершение работы предыдущих каналов
     closeRtdataChannels();
-    // Отписываемся от всех событий
-    localEventService.unregisterHandler( this );
-    // Синхронизация данных в зависимости от режима
-    if( !aPaused ) {
-      // Синхронизация в "штатном режиме"
-      // Данные по которым предоставляется качество
-      IGwidList qualityGwids = owner.dataQualityBackend().getConnectedResources( Skid.NONE );
-      // Количество данных
-      Integer dataCount = Integer.valueOf( qualityGwids.size() );
-      // Регистрация данных в удаленном сервере
-      logger.info( MSG_REGISTER_DATA_ON_REMOTE, dataCount );
-      // Передача списка целевой службе качества данных
-      remoteDataQualityService.setConnectedResources( qualityGwids );
-      // Завершение регистрации в удаленной службе качества данных
-      logger.info( MSG_REGISTER_QUALITY_COMPLETED, dataCount );
-      // Создание каналов передачи данных
-      createRtdataChannels( qualityGwids );
-      // Завершение регистрации каналов передачи данных
-      logger.info( MSG_REGISTER_CHANNELS_COMPLETED, dataCount );
-      // Регистрация исполнителей команд
-      IGwidList cmdGwids = getExecutableCmdGwids( qualityGwids );
-      synchronizeCmdExecutors( cmdGwids );
-      // Подписка на события
-      IGwidList eventGwids = getConfigGwids( localGwidService, configuration.exportEvents(), qualityGwids );
-      // Запись в протокол
-      logger.info( MSG_GW_GWIDS_LIST, this, //
-          Integer.valueOf( localToRemoteCurrdataPort.dataIds().size() ), //
-          Integer.valueOf( writeHistData.size() ), //
-          Integer.valueOf( cmdGwids.size() ), //
-          Integer.valueOf( eventGwids.size() ) );
-      localEventService.registerHandler( eventGwids, this );
-      // Сброс признака необходимости синхронизации
-      needSynchronize = false;
-      // Время выполнения синхронизации
-      Long traceTime = Long.valueOf( System.currentTimeMillis() - traceStartTime );
-      // Завершение синронизации данных между соединениями
-      logger.info( MSG_SYNC_COMPLETED, Boolean.FALSE, traceTime );
-      return;
-    }
-    if( remoteConnection.state() == ESkConnState.ACTIVE ) {
-      remoteDataQualityService.setConnectedResources( IGwidList.EMPTY );
-    }
+    // Данные локального сервера по которым предоставляется качество. aOwnInclude = false, aNotOwnInclude = true
+    IGwidList localDqGwids = localDataQualityService.getConnectedResources( false, true );
+    // Данные удаленного сервера по которым предоставляется качество. aOwnInclude = false, aNotOwnInclude = true
+    IGwidList remoteDqGwids = remoteDataQualityService.getConnectedResources( false, true );
+
+    // Создание каналов передачи данных
+    createRtdChannels( localDqGwids, remoteDqGwids );
+
+    // Регистрация исполнителей команд
+    IGwidList cmdGwids = getExecutableCmdGwids( localDqGwids );
+    synchronizeCmdExecutors( cmdGwids );
+
+    // Подписка на события
+    IGwidList eventGwids = getConfigGwids( localGwidService, configuration.exportEvents(), localDqGwids );
+    // Запись в протокол
+    logger.info( MSG_GW_GWIDS_LIST, this, //
+        Integer.valueOf( localToRemoteCurrdataPort.dataIds().size() ), //
+        Integer.valueOf( writeHistData.size() ), //
+        Integer.valueOf( cmdGwids.size() ), //
+        Integer.valueOf( eventGwids.size() ) );
+    localEventService.registerHandler( eventGwids, this );
+
     // Сброс признака необходимости синхронизации
     needSynchronize = false;
     // Время выполнения синхронизации
     Long traceTime = Long.valueOf( System.currentTimeMillis() - traceStartTime );
-    // Завершение синхронизации данных между соединениями
-    logger.info( MSG_SYNC_COMPLETED, Boolean.TRUE, traceTime );
+    // Завершение синронизации данных между соединениями
+    logger.info( MSG_SYNC_COMPLETED, Boolean.FALSE, traceTime );
   }
 
   /**
@@ -1015,29 +841,60 @@ class S5Gateway
   }
 
   /**
-   * Настройка конфигурации передаваемых данных
+   * Настройка конфигурации каналов передаваемых данных реального времени от локального удаленному севреру и обратно
    *
-   * @param aQualityGwids {@link IGwidList} список идентификаторов данных по которым предоставляется качество
+   * @param aLocalQualityGwids {@link IGwidList} список идентификаторов данных локального сервера по которым
+   *          предоставляется качество
+   * @param aRemoteQualityGwids {@link IGwidList} список идентификаторов данных удаленного сервера по которым
+   *          предоставляется качество
    * @throws TsNullArgumentRtException аргумент = null
    */
-  private void createRtdataChannels( IGwidList aQualityGwids ) {
-    TsNullArgumentRtException.checkNull( aQualityGwids );
-    // Завершение текущих каналов
-    closeRtdataChannels();
+  private void createRtdChannels( IGwidList aLocalQualityGwids, IGwidList aRemoteQualityGwids ) {
+    TsNullArgumentRtException.checkNulls( aLocalQualityGwids, aRemoteQualityGwids );
+
+    // ЭКСПОРТ (передача с локального на удаленный севрер)
     // Идентификаторы для текущих данных
-    IGwidList currdataGwids = getConfigGwids( localGwidService, configuration.exportCurrData(), aQualityGwids );
+    IGwidList currdataGwids = getConfigGwids( localGwidService, configuration.exportCurrData(), aLocalQualityGwids );
     // Добавление вновь добавленных каналов
     if( currdataGwids.size() > 0 ) {
+      // Регистрация передаваемых текущих данных на удаленном сервере
+      logger.info( MSG_REGISTER_CURRDATA_ON_REMOTE, Integer.valueOf( currdataGwids.size() ) );
       // Текущие данные (прием/передача)
       localToRemoteCurrdataPort.setDataIds( currdataGwids );
     }
     // Идентификаторы для хранимых данных
-    IGwidList histdataGwids = getConfigGwids( localGwidService, configuration.exportHistData(), aQualityGwids );
+    IGwidList histdataGwids = getConfigGwids( localGwidService, configuration.exportHistData(), aLocalQualityGwids );
     // Добавление вновь добавленных каналов
     if( histdataGwids.size() > 0 ) {
+      // Регистрация передаваемых хранимых данных на удаленном сервере
+      logger.info( MSG_REGISTER_HISTDATA_ON_REMOTE, Integer.valueOf( currdataGwids.size() ) );
       // Создание новых каналов хранимых данных.
       writeHistData.putAll( remoteRtDataService.createWriteHistDataChannels( histdataGwids ) );
     }
+    // Передача списка экспортируемых данных удаленной службе качества данных
+    remoteDataQualityService.setConnectedResources( currdataGwids );
+
+    // ИМПОРТ (передача с удаленного на локальный севрер)
+    // Идентификаторы для текущих данных
+    currdataGwids = getConfigGwids( localGwidService, configuration.importCurrData(), aRemoteQualityGwids );
+    // Добавление вновь добавленных каналов
+    if( currdataGwids.size() > 0 ) {
+      // Регистрация принимаемых текущих данных на локальном сервере
+      logger.info( MSG_REGISTER_CURRDATA_ON_LOCAL, Integer.valueOf( currdataGwids.size() ) );
+      // Текущие данные (прием/передача)
+      remoteToLocalCurrdataPort.setDataIds( currdataGwids );
+    }
+    // Идентификаторы для хранимых данных
+    histdataGwids = getConfigGwids( localGwidService, configuration.importHistData(), aRemoteQualityGwids );
+    // Добавление вновь добавленных каналов
+    if( histdataGwids.size() > 0 ) {
+      // Регистрация принимаемых хранимых данных на локальном сервере
+      logger.info( MSG_REGISTER_HISTDATA_ON_LOCAL, Integer.valueOf( histdataGwids.size() ) );
+      // Создание новых каналов хранимых данных.
+      writeHistData.putAll( localRtDataService.createWriteHistDataChannels( histdataGwids ) );
+    }
+    // Передача списка импортируемых данных локальной службе качества данных
+    localDataQualityService.setConnectedResources( currdataGwids );
   }
 
   /**

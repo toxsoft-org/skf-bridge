@@ -1,15 +1,11 @@
 package org.toxsoft.skf.bridge.s5.lib.impl;
 
-import org.toxsoft.core.tslib.bricks.keeper.AbstractEntityKeeper;
-import org.toxsoft.core.tslib.bricks.keeper.IEntityKeeper;
-import org.toxsoft.core.tslib.bricks.strio.IStrioReader;
-import org.toxsoft.core.tslib.bricks.strio.IStrioWriter;
-import org.toxsoft.core.tslib.utils.login.ILoginInfo;
-import org.toxsoft.core.tslib.utils.login.LoginInfo;
-import org.toxsoft.core.tslib.utils.valobj.TsValobjUtils;
-import org.toxsoft.skf.bridge.s5.lib.ISkGatewayInfo;
-import org.toxsoft.uskat.s5.client.remote.connection.IS5ConnectionInfo;
-import org.toxsoft.uskat.s5.client.remote.connection.S5ConnectionInfo;
+import org.toxsoft.core.tslib.bricks.keeper.*;
+import org.toxsoft.core.tslib.bricks.strio.*;
+import org.toxsoft.core.tslib.utils.login.*;
+import org.toxsoft.core.tslib.utils.valobj.*;
+import org.toxsoft.skf.bridge.s5.lib.*;
+import org.toxsoft.uskat.s5.client.remote.connection.*;
 
 /**
  * Хранитель объектов типа {@link ISkGatewayInfo}.
@@ -60,7 +56,13 @@ public class SkGatewayInfoKeeper
     aSw.writeSeparatorChar();
     SkGatewayGwids.KEEPER.write( aSw, aEntity.exportCmdExecutors() );
     aSw.writeSeparatorChar();
-    aSw.writeInt( aEntity.isPaused() ? 1 : 0 );
+    SkGatewayGwids.KEEPER.write( aSw, aEntity.importCurrData() );
+    aSw.writeSeparatorChar();
+    SkGatewayGwids.KEEPER.write( aSw, aEntity.importHistData() );
+    aSw.writeSeparatorChar();
+    SkGatewayGwids.KEEPER.write( aSw, aEntity.importEvents() );
+    aSw.writeSeparatorChar();
+    SkGatewayGwids.KEEPER.write( aSw, aEntity.importCmdExecutors() );
   }
 
   @Override
@@ -87,7 +89,13 @@ public class SkGatewayInfoKeeper
     aSr.ensureSeparatorChar();
     retValue.setExportCmdExecutors( SkGatewayGwids.KEEPER.read( aSr ) );
     aSr.ensureSeparatorChar();
-    retValue.setPaused( aSr.readInt() != 0 );
+    retValue.setImportCurrData( SkGatewayGwids.KEEPER.read( aSr ) );
+    aSr.ensureSeparatorChar();
+    retValue.setImportHistData( SkGatewayGwids.KEEPER.read( aSr ) );
+    aSr.ensureSeparatorChar();
+    retValue.setImportEvents( SkGatewayGwids.KEEPER.read( aSr ) );
+    aSr.ensureSeparatorChar();
+    retValue.setImportCmdExecutors( SkGatewayGwids.KEEPER.read( aSr ) );
 
     return retValue;
   }

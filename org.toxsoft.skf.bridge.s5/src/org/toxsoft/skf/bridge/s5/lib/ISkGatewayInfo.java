@@ -1,8 +1,8 @@
 package org.toxsoft.skf.bridge.s5.lib;
 
-import org.toxsoft.core.tslib.bricks.strid.IStridable;
-import org.toxsoft.core.tslib.utils.login.ILoginInfo;
-import org.toxsoft.uskat.s5.client.remote.connection.IS5ConnectionInfo;
+import org.toxsoft.core.tslib.bricks.strid.*;
+import org.toxsoft.core.tslib.utils.login.*;
+import org.toxsoft.uskat.s5.client.remote.connection.*;
 
 /**
  * Описание конфигурации шлюза службы {@link IBaGateway}
@@ -62,9 +62,30 @@ public interface ISkGatewayInfo
   ISkGatewayGwids exportCmdExecutors();
 
   /**
-   * Возвращает признак того, что передача данных через шлюз временно приостановлена клиентом
+   * Конфигурация идентификаторов по импортируемым текущим данным
    *
-   * @return boolean <b>true</b> передача данных приостановлена;<b>false</b> шлюз работает в штатном режиме
+   * @return {@link ISkGatewayGwids} конфигурация идентификаторов
    */
-  boolean isPaused();
+  ISkGatewayGwids importCurrData();
+
+  /**
+   * Конфигурация идентификаторов по импортируемым хранимым данным
+   *
+   * @return {@link ISkGatewayGwids} конфигурация идентификаторов
+   */
+  ISkGatewayGwids importHistData();
+
+  /**
+   * Конфигурация идентификаторов по импортируемым событиям
+   *
+   * @return {@link ISkGatewayGwids} конфигурация идентификаторов
+   */
+  ISkGatewayGwids importEvents();
+
+  /**
+   * Конфигурация идентификаторов по импортируемым исполнителям команд
+   *
+   * @return {@link ISkGatewayGwids} конфигурация идентификаторов
+   */
+  ISkGatewayGwids importCmdExecutors();
 }
