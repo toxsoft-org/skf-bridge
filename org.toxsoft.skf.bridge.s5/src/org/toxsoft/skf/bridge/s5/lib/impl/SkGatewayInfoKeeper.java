@@ -56,13 +56,6 @@ public class SkGatewayInfoKeeper
     aSw.writeSeparatorChar();
     SkGatewayGwids.KEEPER.write( aSw, aEntity.exportCmdExecutors() );
     aSw.writeSeparatorChar();
-    SkGatewayGwids.KEEPER.write( aSw, aEntity.importCurrData() );
-    aSw.writeSeparatorChar();
-    SkGatewayGwids.KEEPER.write( aSw, aEntity.importHistData() );
-    aSw.writeSeparatorChar();
-    SkGatewayGwids.KEEPER.write( aSw, aEntity.importEvents() );
-    aSw.writeSeparatorChar();
-    SkGatewayGwids.KEEPER.write( aSw, aEntity.importCmdExecutors() );
   }
 
   @Override
@@ -88,14 +81,6 @@ public class SkGatewayInfoKeeper
     retValue.setExportEvents( SkGatewayGwids.KEEPER.read( aSr ) );
     aSr.ensureSeparatorChar();
     retValue.setExportCmdExecutors( SkGatewayGwids.KEEPER.read( aSr ) );
-    aSr.ensureSeparatorChar();
-    retValue.setImportCurrData( SkGatewayGwids.KEEPER.read( aSr ) );
-    aSr.ensureSeparatorChar();
-    retValue.setImportHistData( SkGatewayGwids.KEEPER.read( aSr ) );
-    aSr.ensureSeparatorChar();
-    retValue.setImportEvents( SkGatewayGwids.KEEPER.read( aSr ) );
-    aSr.ensureSeparatorChar();
-    retValue.setImportCmdExecutors( SkGatewayGwids.KEEPER.read( aSr ) );
 
     return retValue;
   }

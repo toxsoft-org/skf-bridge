@@ -2,10 +2,14 @@ package org.toxsoft.skf.bridge.s5.lib;
 
 import org.toxsoft.core.tslib.bricks.strid.*;
 import org.toxsoft.core.tslib.utils.login.*;
+import org.toxsoft.uskat.core.*;
+import org.toxsoft.uskat.core.api.rtdserv.*;
 import org.toxsoft.uskat.s5.client.remote.connection.*;
+import org.toxsoft.uskat.s5.server.backend.*;
+import org.toxsoft.uskat.s5.server.interceptors.*;
 
 /**
- * Описание конфигурации шлюза службы {@link IBaGateway}
+ * Описание конфигурации однонаправленного(!) шлюза службы {@link IBaGateway}
  * <p>
  * Этот интерфейс реализует {@link IStridable}, поля которого имеют следующий смысл:
  * <ul>
@@ -13,6 +17,16 @@ import org.toxsoft.uskat.s5.client.remote.connection.*;
  * <li><b>description</b>() - удобочитаемое описание шлюза;</li>
  * <li><b>nmName</b>() - краткое название шлюза.</li>
  * </ul>
+ * <p>
+ * <b>Причины по которым шлюз определяется только как однонаправленный: </b><br>
+ * {@link ISkCoreApi} не позволяет перехватывать в полном объеме вызовы и делегировать их шлюзу. Например, нельзя
+ * перехватить поступление хранимых данных в режиме реального времени (как c текущими данными с их слушателем
+ * {@link ISkCurrDataChangeListener}). Такая же ситуация может возникнуть с любой службой (core, skf) и требовать от их
+ * API методы поддержки шлюза является явно неправильным.
+ * <p>
+ * По этой причине (чтобы не менять API служб под нужны шлюза), предлагается делать перехват необходимых потоков данных
+ * для шлюза в самом бекенде. Например, в бекенде s5-сервера для этого используется механизм интерсепции
+ * {@link IS5Interceptor} который реализуется синглетонами поддержки бекенда {@link IS5BackendSupportSingleton}.
  *
  * @author mvk
  */
@@ -60,32 +74,4 @@ public interface ISkGatewayInfo
    * @return {@link ISkGatewayGwids} конфигурация идентификаторов
    */
   ISkGatewayGwids exportCmdExecutors();
-
-  /**
-   * Конфигурация идентификаторов по импортируемым текущим данным
-   *
-   * @return {@link ISkGatewayGwids} конфигурация идентификаторов
-   */
-  ISkGatewayGwids importCurrData();
-
-  /**
-   * Конфигурация идентификаторов по импортируемым хранимым данным
-   *
-   * @return {@link ISkGatewayGwids} конфигурация идентификаторов
-   */
-  ISkGatewayGwids importHistData();
-
-  /**
-   * Конфигурация идентификаторов по импортируемым событиям
-   *
-   * @return {@link ISkGatewayGwids} конфигурация идентификаторов
-   */
-  ISkGatewayGwids importEvents();
-
-  /**
-   * Конфигурация идентификаторов по импортируемым исполнителям команд
-   *
-   * @return {@link ISkGatewayGwids} конфигурация идентификаторов
-   */
-  ISkGatewayGwids importCmdExecutors();
 }

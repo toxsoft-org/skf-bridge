@@ -2,12 +2,17 @@ package org.toxsoft.skf.bridge.s5.supports;
 
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.bricks.time.impl.TimeUtils.*;
+import static org.toxsoft.core.tslib.coll.impl.TsCollectionsUtils.*;
 import static org.toxsoft.skf.bridge.s5.lib.impl.S5BackendGatewayConfig.*;
 import static org.toxsoft.skf.bridge.s5.lib.impl.SkGatewayGwids.*;
 import static org.toxsoft.skf.bridge.s5.supports.IS5Resources.*;
 import static org.toxsoft.uskat.s5.common.IS5CommonResources.*;
+import static org.toxsoft.uskat.s5.server.IS5ServerHardConstants.*;
 
 import org.toxsoft.core.log4j.*;
+import org.toxsoft.core.tslib.av.*;
+import org.toxsoft.core.tslib.av.impl.*;
+import org.toxsoft.core.tslib.av.metainfo.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.*;
 import org.toxsoft.core.tslib.av.temporal.*;
@@ -21,6 +26,8 @@ import org.toxsoft.core.tslib.bricks.time.*;
 import org.toxsoft.core.tslib.bricks.time.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
+import org.toxsoft.core.tslib.coll.primtypes.*;
+import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.coll.synch.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.gw.skid.*;
@@ -33,6 +40,7 @@ import org.toxsoft.skf.alarms.lib.impl.*;
 import org.toxsoft.skf.bridge.s5.lib.*;
 import org.toxsoft.skf.dq.lib.*;
 import org.toxsoft.skf.dq.lib.impl.*;
+import org.toxsoft.uskat.classes.*;
 import org.toxsoft.uskat.core.*;
 import org.toxsoft.uskat.core.api.cmdserv.*;
 import org.toxsoft.uskat.core.api.evserv.*;
@@ -40,20 +48,32 @@ import org.toxsoft.uskat.core.api.gwids.*;
 import org.toxsoft.uskat.core.api.hqserv.*;
 import org.toxsoft.uskat.core.api.rtdserv.*;
 import org.toxsoft.uskat.core.backend.*;
+import org.toxsoft.uskat.core.backend.api.*;
 import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.impl.*;
 import org.toxsoft.uskat.s5.client.*;
 import org.toxsoft.uskat.s5.client.remote.connection.*;
 import org.toxsoft.uskat.s5.common.*;
 import org.toxsoft.uskat.s5.server.*;
-import org.toxsoft.uskat.s5.server.backend.supports.currdata.*;
+import org.toxsoft.uskat.s5.server.backend.*;
 import org.toxsoft.uskat.s5.server.backend.supports.histdata.*;
+import org.toxsoft.uskat.s5.server.interceptors.*;
 import org.toxsoft.uskat.s5.server.startup.*;
 import org.toxsoft.uskat.s5.utils.jobs.*;
 import org.toxsoft.uskat.s5.utils.progress.*;
 
 /**
- * Шлюз службы {@link IBaGateway}.
+ * Однонаправленный(!) шлюз службы {@link IBaGateway}.
+ * <p>
+ * <b>Причины по которым шлюз определяется только как однонаправленный: </b><br>
+ * {@link ISkCoreApi} не позволяет перехватывать в полном объеме вызовы и делегировать их шлюзу. Например, нельзя
+ * перехватить поступление хранимых данных в режиме реального времени (как c текущими данными с их слушателем
+ * {@link ISkCurrDataChangeListener}). Такая же ситуация может возникнуть с любой службой (core, skf) и требовать от их
+ * API методы поддержки шлюза является явно неправильным.
+ * <p>
+ * По этой причине (чтобы не менять API служб под нужны шлюза), предлагается делать перехват необходимых потоков данных
+ * для шлюза в самом бекенде. Например, в бекенде s5-сервера для этого используется механизм интерсепции
+ * {@link IS5Interceptor} который реализуется синглетонами поддержки бекенда {@link IS5BackendSupportSingleton}.
  *
  * @author mvk
  */
@@ -64,6 +84,18 @@ class S5Gateway
     ISkCommandExecutor, ISkEventHandler, ISkDataQualityChangeListener, ISkConnectionListener {
 
   /**
+   * Направление передачи данных: от локального к удаленному серверу.
+   */
+  private static final String LOCAL_TO_REMOTE = "localToRemote"; //$NON-NLS-1$
+
+  /**
+   * Тикет качества данных: список идентификаторов (объекты класса {@link ISkNetNode}) пройденных сетевых узлов.
+   * <p>
+   * Тип тикета: {@link EAtomicType#VALOBJ} {@link IStringList}.
+   */
+  private static final String TICKET_ROUTE = "route"; //$NON-NLS-1$
+
+  /**
    * Служба шлюзов
    */
   private S5BackendGatewaySingleton owner;
@@ -72,6 +104,11 @@ class S5Gateway
    * Конфигурация шлюза
    */
   private final ISkGatewayInfo configuration;
+
+  /**
+   * Идентификатор локального сервера {@link ISkServer}.
+   */
+  private final Skid localServerId;
 
   /**
    * Соединение с локальным сервером
@@ -94,6 +131,11 @@ class S5Gateway
   private final ISkBackendProvider remoteBackendProvider;
 
   /**
+   * Порт передачи текущих данных от локального сервера на удаленный
+   */
+  private S5GatewayCurrDataPort localToRemoteCurrdataPort;
+
+  /**
    * Служба данных реального времени локального сервера
    */
   private ISkRtdataService localRtDataService;
@@ -104,14 +146,13 @@ class S5Gateway
   private ISkRtdataService remoteRtDataService;
 
   /**
-   * Порт передачи текущих данных от локального сервера на удаленный
+   * Карта значений метки "пройденный маршрут значения данного" по идентификаторам передаваемых через мост данных
+   * определенные через локальную службу качества.
+   * <p>
+   * Ключ: идентификатор данного значения которого могут быть переданы через шлюз; Значение: значение метки "пройденный
+   * маршрут значения данного" для данного.
    */
-  private S5GatewayCurrDataPort localToRemoteCurrdataPort;
-
-  /**
-   * Порт передачи текущих данных от удаленного сервера на локальный
-   */
-  private S5GatewayCurrDataPort remoteToLocalCurrdataPort;
+  private IMap<Gwid, IAtomicValue> routeByGwids;
 
   /**
    * Карта каналов записи исторических данных
@@ -220,6 +261,10 @@ class S5Gateway
     String programName = getClass().getSimpleName() + '_' + configuration.id();
     // Создание локального соединения
     localConnection = aOwner.localConnection().open( programName );
+    // Информация о бекенде локального сервера
+    ISkBackendInfo info = localConnection.backendInfo();
+    // Идентификатор сервера
+    localServerId = OP_SERVER_ID.getValue( info.params() ).asValobj();
     // Создание соединения с удаленным сервером
     remoteBackendProvider = aOwner.remoteConnectionProvider();
     remoteConnection = SkCoreUtils.createConnection();
@@ -295,10 +340,6 @@ class S5Gateway
       localToRemoteCurrdataPort.close();
       localToRemoteCurrdataPort = null;
     }
-    if( remoteToLocalCurrdataPort != null ) {
-      remoteToLocalCurrdataPort.close();
-      remoteToLocalCurrdataPort = null;
-    }
     if( writeHistData != null ) {
       for( ISkRtdataChannel channel : writeHistData ) {
         try {
@@ -326,8 +367,8 @@ class S5Gateway
   public boolean beforeWriteHistData( IMap<Gwid, Pair<ITimeInterval, ITimedList<ITemporalAtomicValue>>> aValues ) {
     Integer count = Integer.valueOf( aValues.size() );
     Gwid first = aValues.keys().first();
-    // Передача текущих данных
-    logger.info( MSG_GW_HISTDATA_TRANSFER, count, first );
+    // Передача хранимых данных
+    logger.info( MSG_GW_HISTDATA_TRANSFER, LOCAL_TO_REMOTE, count, first );
     // Передача данных синхронизируется через исполнитель потоков соединения
     threadExecutor.asyncExec( () -> {
       try {
@@ -344,7 +385,7 @@ class S5Gateway
           writeChannel.writeValues( interval, values );
         }
         // Завершение передачи хранимых данных
-        logger.info( MSG_GW_HISTDATA_TRANSFER_FINISH, count, first );
+        logger.info( MSG_GW_HISTDATA_TRANSFER_FINISH, LOCAL_TO_REMOTE, count, first );
       }
       catch( Throwable e ) {
         // Ошибка передачи хранимых данных.
@@ -503,10 +544,23 @@ class S5Gateway
   //
   @Override
   public void onResourcesStateChanged( ISkDataQualityService aSource, String aTicketId ) {
+    if( !aTicketId.equals( ISkDataQualityService.TICKET_ID_NO_CONNECTION ) ) {
+      // Обработка только качества данных потеря/восстановление связи
+      return;
+    }
     // Сообщение об изменении списка отслеживаемых ресурсов
     logger.info( MSG_SYNCHONIZE_BY_DATAQUALITY_RESOURCES );
     try {
       try {
+        if( aSource.equals( localDataQualityService ) ) {
+          // Данные локального сервера которые могут быть переданы через мост
+          IMap<Gwid, IAtomicValue> gwids = getRouteByGwids( localServerId.strid(), id(), localDataQualityService );
+          if( isListsSameContent( routeByGwids.keys(), gwids.keys() ) ) {
+            // Набор не изменился
+            return;
+          }
+          routeByGwids = gwids;
+        }
         // Выставление признака необходимости синхронизации
         needSynchronize = true;
         // Попытка синхронизации данных
@@ -615,34 +669,32 @@ class S5Gateway
       // Служба качества данных: чтение/запись
       localDataQualityService = localApi.getService( ISkDataQualityService.SERVICE_ID );
       remoteDataQualityService = remoteApi.getService( ISkDataQualityService.SERVICE_ID );
+      // Регистрация обновление тикета "пройденных мостов"
+      IDataType dt = new DataType( EAtomicType.VALOBJ );
+      localDataQualityService.defineTicket( TICKET_ROUTE, STR_ROUTE, STR_ROUTE_D, dt );
+      remoteDataQualityService.defineTicket( TICKET_ROUTE, STR_ROUTE, STR_ROUTE_D, dt );
 
       // Служба алармов
       ISkAlarmService localAlarmService = localApi.getService( ISkAlarmService.SERVICE_ID );
       // Создание портов передачи текущих данных
-      localToRemoteCurrdataPort = new S5GatewayCurrDataPort( "localToRemote", localRtDataService, //$NON-NLS-1$
-          remoteRtDataService, logger );
-      remoteToLocalCurrdataPort = new S5GatewayCurrDataPort( "remoteToLocal", remoteRtDataService, //$NON-NLS-1$
-          localRtDataService, logger );
+      localToRemoteCurrdataPort =
+          new S5GatewayCurrDataPort( LOCAL_TO_REMOTE, localRtDataService, remoteRtDataService, logger );
 
       // Регистрация слушателей служб
       threadExecutor.syncExec( () -> {
-        localCmdService.globallyHandledGwidsEventer().addListener( new InternalGloballyHandledGwidsListener() );
         localDataQualityService.eventer().addListener( this );
+        localCmdService.globallyHandledGwidsEventer().addListener( new InternalGloballyHandledGwidsListener() );
         // Признак готовности для синхронизации
         readyForSynchronize = true;
         // Выставление признака необходимости синхронизации
         needSynchronize = true;
+        // Данные локального сервера которые могут быть переданы через мост
+        routeByGwids = getRouteByGwids( localServerId.strid(), id(), localDataQualityService );
         // Попытка синхронизации наборов данных, слушателей подключенных соединений
         synchronize();
       } );
       threadExecutor.syncExec( () -> {
-        // Данные игнорируемые для чтения. null: настройка не требуется
-        IGwidList ignored = (localDataQualityService != null ? localToRemoteCurrdataPort.dataIds() : IGwidList.EMPTY);
-        // Настройка импорта
-        if( ignored != null ) {
-          configureCurrdataPortForImport( owner.currdataBackend(), remoteToLocalCurrdataPort, ignored, logger );
-        }
-        //
+        // TODO: в разработке события, команды
         remoteEventService.registerHandler( new GwidList(
             Gwid.createEvent( ISkAlarmConstants.CLSID_ALARM, Gwid.STR_MULTI_ID, ISkAlarmConstants.EVID_ACKNOWLEDGE ) ),
             aEvents -> {
@@ -768,22 +820,20 @@ class S5Gateway
     localEventService.unregisterHandler( this );
     // Дерегистрация исполнителей команд
     remoteCmdService.unregisterExecutor( this );
-    // Завершение работы предыдущих каналов
-    closeRtdataChannels();
-    // Данные локального сервера по которым предоставляется качество. aOwnInclude = false, aNotOwnInclude = true
-    IGwidList localDqGwids = localDataQualityService.getConnectedResources( false, true );
-    // Данные удаленного сервера по которым предоставляется качество. aOwnInclude = false, aNotOwnInclude = true
-    IGwidList remoteDqGwids = remoteDataQualityService.getConnectedResources( false, true );
 
+    // Публикация значений тикетов "маршрутов прохождения значений данных"
+    remoteDataQualityService.setMarkValues( TICKET_ROUTE, routeByGwids );
+
+    IGwidList localGwids = new GwidList( routeByGwids.keys() );
     // Создание каналов передачи данных
-    createRtdChannels( localDqGwids, remoteDqGwids );
+    createRtdChannels( localGwids );
 
     // Регистрация исполнителей команд
-    IGwidList cmdGwids = getExecutableCmdGwids( localDqGwids );
+    IGwidList cmdGwids = getExecutableCmdGwids( localGwids );
     synchronizeCmdExecutors( cmdGwids );
 
     // Подписка на события
-    IGwidList eventGwids = getConfigGwids( localGwidService, configuration.exportEvents(), localDqGwids );
+    IGwidList eventGwids = getConfigGwids( localGwidService, configuration.exportEvents(), localGwids );
     // Запись в протокол
     logger.info( MSG_GW_GWIDS_LIST, this, //
         Integer.valueOf( localToRemoteCurrdataPort.dataIds().size() ), //
@@ -791,6 +841,9 @@ class S5Gateway
         Integer.valueOf( cmdGwids.size() ), //
         Integer.valueOf( eventGwids.size() ) );
     localEventService.registerHandler( eventGwids, this );
+
+    // Передача списка экспортируемых данных удаленной службе качества данных
+    remoteDataQualityService.setConnectedResources( localGwids );
 
     // Сброс признака необходимости синхронизации
     needSynchronize = false;
@@ -841,17 +894,47 @@ class S5Gateway
   }
 
   /**
+   * Возвращает карту значений меток "маршрут прохождения значений данного" по передаваемым через шлюз данным.
+   *
+   * @param aRemoteId String идентификатор удаленного сервера {@link ISkServer}.
+   * @param aDataQualityService {@link ISkDataQualityService} служба качества данных
+   * @return {@link IMap}&lt;{@link Gwid},{@link IOptionSet}&gt; карта значений меток. <br>
+   *         Ключ: идентификатор данного;<br>
+   *         Значение: значение метки "маршрут прохождения значений данного".
+   * @throws TsNullArgumentRtException любой аргумент = null
+   */
+  private static IMap<Gwid, IAtomicValue> getRouteByGwids( String aLocalId, String aRemoteId,
+      ISkDataQualityService aDataQualityService ) {
+    TsNullArgumentRtException.checkNulls( aRemoteId, aDataQualityService );
+    IGwidList gwids = aDataQualityService.getConnectedResources();
+    IMap<Gwid, IOptionSet> marksMap = aDataQualityService.getResourcesMarks( gwids );
+    IMapEdit<Gwid, IAtomicValue> retValue = new ElemMap<>();
+    for( Gwid gwid : gwids ) {
+      IOptionSet marks = marksMap.getByKey( gwid );
+      IStringList oldRoute = marks.getValobj( TICKET_ROUTE, IStringList.EMPTY );
+      if( !oldRoute.hasElem( aRemoteId ) ) {
+        IStringListEdit newRoute = new StringArrayList( oldRoute );
+        newRoute.add( aLocalId );
+        retValue.put( gwid, avValobj( newRoute ) );
+      }
+    }
+    return retValue;
+  }
+
+  /**
    * Настройка конфигурации каналов передаваемых данных реального времени от локального удаленному севреру и обратно
    *
    * @param aLocalQualityGwids {@link IGwidList} список идентификаторов данных локального сервера по которым
    *          предоставляется качество
-   * @param aRemoteQualityGwids {@link IGwidList} список идентификаторов данных удаленного сервера по которым
-   *          предоставляется качество
    * @throws TsNullArgumentRtException аргумент = null
    */
-  private void createRtdChannels( IGwidList aLocalQualityGwids, IGwidList aRemoteQualityGwids ) {
-    TsNullArgumentRtException.checkNulls( aLocalQualityGwids, aRemoteQualityGwids );
-
+  private void createRtdChannels( IGwidList aLocalQualityGwids ) {
+    TsNullArgumentRtException.checkNull( aLocalQualityGwids );
+    // Завершение работы портов
+    localToRemoteCurrdataPort.close();
+    for( ISkRtdataChannel channel : writeHistData.values() ) {
+      channel.close();
+    }
     // ЭКСПОРТ (передача с локального на удаленный севрер)
     // Идентификаторы для текущих данных
     IGwidList currdataGwids = getConfigGwids( localGwidService, configuration.exportCurrData(), aLocalQualityGwids );
@@ -871,44 +954,6 @@ class S5Gateway
       // Создание новых каналов хранимых данных.
       writeHistData.putAll( remoteRtDataService.createWriteHistDataChannels( histdataGwids ) );
     }
-    // Передача списка экспортируемых данных удаленной службе качества данных
-    remoteDataQualityService.setConnectedResources( currdataGwids );
-
-    // ИМПОРТ (передача с удаленного на локальный севрер)
-    // Идентификаторы для текущих данных
-    currdataGwids = getConfigGwids( localGwidService, configuration.importCurrData(), aRemoteQualityGwids );
-    // Добавление вновь добавленных каналов
-    if( currdataGwids.size() > 0 ) {
-      // Регистрация принимаемых текущих данных на локальном сервере
-      logger.info( MSG_REGISTER_CURRDATA_ON_LOCAL, Integer.valueOf( currdataGwids.size() ) );
-      // Текущие данные (прием/передача)
-      remoteToLocalCurrdataPort.setDataIds( currdataGwids );
-    }
-    // Идентификаторы для хранимых данных
-    histdataGwids = getConfigGwids( localGwidService, configuration.importHistData(), aRemoteQualityGwids );
-    // Добавление вновь добавленных каналов
-    if( histdataGwids.size() > 0 ) {
-      // Регистрация принимаемых хранимых данных на локальном сервере
-      logger.info( MSG_REGISTER_HISTDATA_ON_LOCAL, Integer.valueOf( histdataGwids.size() ) );
-      // Создание новых каналов хранимых данных.
-      writeHistData.putAll( localRtDataService.createWriteHistDataChannels( histdataGwids ) );
-    }
-    // Передача списка импортируемых данных локальной службе качества данных
-    localDataQualityService.setConnectedResources( currdataGwids );
-  }
-
-  /**
-   * Завершает работу каналов чтения записи
-   */
-  private void closeRtdataChannels() {
-    // Завершение передачи порта
-    if( localToRemoteCurrdataPort != null ) {
-      localToRemoteCurrdataPort.close();
-    }
-    for( ISkRtdataChannel channel : writeHistData.values() ) {
-      channel.close();
-    }
-    writeHistData.clear();
   }
 
   /**
@@ -954,38 +999,6 @@ class S5Gateway
       sb.append( "   " + aGwids.get( index ) + "\n" ); //$NON-NLS-1$ //$NON-NLS-2$
     }
     return sb.toString();
-  }
-
-  /**
-   * Настроить порт передачи текущих данных для импорта значений с удаленного сервера
-   *
-   * @param aCurrdataBackend {@link IS5BackendCurrDataSingleton} поддержка службы текущих данных
-   * @param aCurrDataPort {@link S5GatewayCurrDataPort} порт передачи текущих данных
-   * @param aIgnoredDataIds {@link IGwidList} список данных которые не должны быть импортированы
-   * @param aLogger {@link ILogger} журнал работы
-   * @throws TsNullArgumentRtException любой аргумент = null
-   */
-  private static void configureCurrdataPortForImport( IS5BackendCurrDataSingleton aCurrdataBackend,
-      S5GatewayCurrDataPort aCurrDataPort, IGwidList aIgnoredDataIds, ILogger aLogger ) {
-    TsNullArgumentRtException.checkNulls( aCurrdataBackend, aCurrDataPort, aIgnoredDataIds, aLogger );
-
-    // Завершаем старый список
-    aCurrDataPort.setDataIds( IGwidList.EMPTY );
-    // Фильтрация данных значения которых не формируются другими (не gateway)
-    // писателями
-    IGwidList readDataGwids = aCurrdataBackend.readRtdGwids();
-    GwidList gwids = new GwidList();
-    for( Gwid gwid : readDataGwids ) {
-      if( !aIgnoredDataIds.hasElem( gwid ) ) {
-        aLogger.debug( "configureCurrdataPortForImport(...): import data gwid = %s", gwid ); //$NON-NLS-1$
-        gwids.add( gwid );
-      }
-    }
-    Integer rdg = Integer.valueOf( readDataGwids.size() );
-    Integer idg = Integer.valueOf( aIgnoredDataIds.size() );
-    Integer g = Integer.valueOf( gwids.size() );
-    aLogger.debug( "configureCurrdataPortForImport(...): readed = %d, ignored = %d, imported = %d", rdg, idg, g ); //$NON-NLS-1$
-    aCurrDataPort.setDataIds( gwids );
   }
 
   /**

@@ -23,8 +23,7 @@ public class SkGatewayInfo
   /**
    * Формат текстового представления {@link SkGatewayInfo}
    */
-  private static final String TO_STRING_FORMAT =
-      "%s [%s@%s]. import[currdata{%s}, histdata{%s}, events{%s}, executors{%s}], export[currdata{%s}, histdata{%s}, events{%s}, executors{%s}]"; //$NON-NLS-1$
+  private static final String TO_STRING_FORMAT = "%s [%s@%s]. currdata{%s}, histdata{%s}, events{%s}, executors{%s}"; //$NON-NLS-1$
 
   private IS5ConnectionInfo connectionInfo;
   private ILoginInfo        loginInfo;
@@ -32,10 +31,6 @@ public class SkGatewayInfo
   private ISkGatewayGwids   exportHistData     = new SkGatewayGwids( EGwidKind.GW_RTDATA );
   private ISkGatewayGwids   exportEvents       = new SkGatewayGwids( EGwidKind.GW_EVENT );
   private ISkGatewayGwids   exportCmdExecutors = new SkGatewayGwids( EGwidKind.GW_CMD );
-  private ISkGatewayGwids   importCurrData     = new SkGatewayGwids( EGwidKind.GW_RTDATA );
-  private ISkGatewayGwids   importHistData     = new SkGatewayGwids( EGwidKind.GW_RTDATA );
-  private ISkGatewayGwids   importEvents       = new SkGatewayGwids( EGwidKind.GW_EVENT );
-  private ISkGatewayGwids   importCmdExecutors = new SkGatewayGwids( EGwidKind.GW_CMD );
 
   /**
    * Конструктор
@@ -130,54 +125,6 @@ public class SkGatewayInfo
     exportCmdExecutors = aGwidConfigs;
   }
 
-  /**
-   * Установить идентификаторы текущих данных принимаемых через шлюз
-   *
-   * @param aGwidConfigs {@link ISkGatewayGwids} конфигурация идентификаторов
-   * @throws TsNullArgumentRtException любой аргумент = null
-   */
-  public void setImportCurrData( ISkGatewayGwids aGwidConfigs ) {
-    TsNullArgumentRtException.checkNull( aGwidConfigs );
-    TsIllegalArgumentRtException.checkFalse( aGwidConfigs.gwidKind() == EGwidKind.GW_RTDATA );
-    importCurrData = aGwidConfigs;
-  }
-
-  /**
-   * Установить идентификаторы хранимых данных принимаемых через шлюз
-   *
-   * @param aGwidConfigs {@link ISkGatewayGwids} конфигурация идентификаторов
-   * @throws TsNullArgumentRtException любой аргумент = null
-   */
-  public void setImportHistData( ISkGatewayGwids aGwidConfigs ) {
-    TsNullArgumentRtException.checkNull( aGwidConfigs );
-    TsIllegalArgumentRtException.checkFalse( aGwidConfigs.gwidKind() == EGwidKind.GW_RTDATA );
-    importHistData = aGwidConfigs;
-  }
-
-  /**
-   * Установить идентификаторы событий принимаемых через шлюз
-   *
-   * @param aGwidConfigs {@link ISkGatewayGwids} конфигурация идентификаторов
-   * @throws TsNullArgumentRtException любой аргумент = null
-   */
-  public void setImportEvents( ISkGatewayGwids aGwidConfigs ) {
-    TsNullArgumentRtException.checkNull( aGwidConfigs );
-    TsIllegalArgumentRtException.checkFalse( aGwidConfigs.gwidKind() == EGwidKind.GW_EVENT );
-    importEvents = aGwidConfigs;
-  }
-
-  /**
-   * Установить идентификаторы команд обрабатываемых удаленным сервером
-   *
-   * @param aGwidConfigs {@link ISkGatewayGwids} конфигурация идентификаторов
-   * @throws TsNullArgumentRtException любой аргумент = null
-   */
-  public void setImportCmdExecutors( ISkGatewayGwids aGwidConfigs ) {
-    TsNullArgumentRtException.checkNull( aGwidConfigs );
-    TsIllegalArgumentRtException.checkFalse( aGwidConfigs.gwidKind() == EGwidKind.GW_CMD );
-    importCmdExecutors = aGwidConfigs;
-  }
-
   // ------------------------------------------------------------------------------------
   // Реализация ISkGatewayInfo
   //
@@ -211,34 +158,13 @@ public class SkGatewayInfo
     return exportCmdExecutors;
   }
 
-  @Override
-  public ISkGatewayGwids importCurrData() {
-    return importCurrData;
-  }
-
-  @Override
-  public ISkGatewayGwids importHistData() {
-    return importHistData;
-  }
-
-  @Override
-  public ISkGatewayGwids importEvents() {
-    return importEvents;
-  }
-
-  @Override
-  public ISkGatewayGwids importCmdExecutors() {
-    return importCmdExecutors;
-  }
-
   // ------------------------------------------------------------------------------------
   // Реализация Object
   //
   @Override
   public String toString() {
     return String.format( TO_STRING_FORMAT, id(), loginInfo.login(), connectionInfo, //
-        exportCurrData, exportHistData, exportEvents, exportCmdExecutors, //
-        importCurrData, importHistData, importEvents, importCmdExecutors );
+        exportCurrData, exportHistData, exportEvents, exportCmdExecutors );
   }
 
   @Override
@@ -253,10 +179,6 @@ public class SkGatewayInfo
     result = TsLibUtils.PRIME * result + exportHistData.hashCode();
     result = TsLibUtils.PRIME * result + exportEvents.hashCode();
     result = TsLibUtils.PRIME * result + exportCmdExecutors.hashCode();
-    result = TsLibUtils.PRIME * result + importCurrData.hashCode();
-    result = TsLibUtils.PRIME * result + importHistData.hashCode();
-    result = TsLibUtils.PRIME * result + importEvents.hashCode();
-    result = TsLibUtils.PRIME * result + importCmdExecutors.hashCode();
     return result;
   }
 
@@ -298,18 +220,6 @@ public class SkGatewayInfo
       return false;
     }
     if( !exportCmdExecutors.equals( other.exportCmdExecutors() ) ) {
-      return false;
-    }
-    if( !importCurrData.equals( other.exportCurrData() ) ) {
-      return false;
-    }
-    if( !importHistData.equals( other.exportHistData() ) ) {
-      return false;
-    }
-    if( !importEvents.equals( other.exportEvents() ) ) {
-      return false;
-    }
-    if( !importCmdExecutors.equals( other.exportCmdExecutors() ) ) {
       return false;
     }
     return true;
