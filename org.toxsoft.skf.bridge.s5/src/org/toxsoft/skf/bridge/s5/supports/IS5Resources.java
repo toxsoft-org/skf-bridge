@@ -55,9 +55,10 @@ interface IS5Resources
       "%s. Передача текущих данных. Количество данных: %d. first: %s";
   String MSG_GW_CURRDATA_TRANSFER_FINISH                =
       "%s. Завершение передачи текущих данных. Количество данных: %d. first: %s. Время запроса: %d (msec)";
-  String MSG_GW_HISTDATA_TRANSFER                       = "Передача хранимых данных. Количество данных: %d. first: %s";
+  String MSG_GW_HISTDATA_TRANSFER                       =
+      "%s: передача хранимых данных. Количество данных: %d. first: %s";
   String MSG_GW_HISTDATA_TRANSFER_FINISH                =
-      "Завершение передачи хранимых данных. Количество данных: %d. first: %s.";
+      "%s: завершение передачи хранимых данных. Количество данных: %d. first: %s.";
   String MSG_GW_EVENT_TRANSFER                          = "Передача событий. Количество событий: %d. first: %s";
   String MSG_GW_EVENT_TRANSFER_FINISH                   =
       "Завершение передачи событий. Количество событий: %d. first: %s";
