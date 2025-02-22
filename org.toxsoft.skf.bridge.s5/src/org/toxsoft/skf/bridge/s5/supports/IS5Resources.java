@@ -52,13 +52,13 @@ interface IS5Resources
   String MSG_GW_REGISTER_COMMAND_TRACER                 =
       "%s. Регистрация наблюдателя за исполнением команд объектами шлюза. Количество команд: %d";
   String MSG_GW_CURRDATA_TRANSFER                       =
-      "%s. Передача текущих данных. Количество данных: %d. first: %s";
+      "[%s]. Передача текущих данных. Количество данных: %d. first: %s";
   String MSG_GW_CURRDATA_TRANSFER_FINISH                =
-      "%s. Завершение передачи текущих данных. Количество данных: %d. first: %s. Время запроса: %d (msec)";
+      "[%s]. Завершение передачи текущих данных. Количество данных: %d. first: %s. Время запроса: %d (msec)";
   String MSG_GW_HISTDATA_TRANSFER                       =
-      "%s: передача хранимых данных. Количество данных: %d. first: %s";
+      "[%s]: передача хранимых данных. Количество данных: %d. first: %s";
   String MSG_GW_HISTDATA_TRANSFER_FINISH                =
-      "%s: завершение передачи хранимых данных. Количество данных: %d. first: %s.";
+      "[%s]: завершение передачи хранимых данных. Количество данных: %d. first: %s.";
   String MSG_GW_EVENT_TRANSFER                          = "Передача событий. Количество событий: %d. first: %s";
   String MSG_GW_EVENT_TRANSFER_FINISH                   =
       "Завершение передачи событий. Количество событий: %d. first: %s";

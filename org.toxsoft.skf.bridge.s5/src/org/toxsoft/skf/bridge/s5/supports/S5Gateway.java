@@ -84,11 +84,6 @@ class S5Gateway
     ISkCommandExecutor, ISkEventHandler, ISkDataQualityChangeListener, ISkConnectionListener {
 
   /**
-   * Направление передачи данных: от локального к удаленному серверу.
-   */
-  private static final String LOCAL_TO_REMOTE = "localToRemote"; //$NON-NLS-1$
-
-  /**
    * Тикет качества данных: список идентификаторов (объекты класса {@link ISkNetNode}) пройденных сетевых узлов.
    * <p>
    * Тип тикета: {@link EAtomicType#VALOBJ} {@link IStringList}.
@@ -368,7 +363,7 @@ class S5Gateway
     Integer count = Integer.valueOf( aValues.size() );
     Gwid first = aValues.keys().first();
     // Передача хранимых данных
-    logger.info( MSG_GW_HISTDATA_TRANSFER, LOCAL_TO_REMOTE, count, first );
+    logger.debug( MSG_GW_HISTDATA_TRANSFER, id(), count, first );
     // Передача данных синхронизируется через исполнитель потоков соединения
     threadExecutor.asyncExec( () -> {
       try {
@@ -385,7 +380,7 @@ class S5Gateway
           writeChannel.writeValues( interval, values );
         }
         // Завершение передачи хранимых данных
-        logger.info( MSG_GW_HISTDATA_TRANSFER_FINISH, LOCAL_TO_REMOTE, count, first );
+        logger.info( MSG_GW_HISTDATA_TRANSFER_FINISH, id(), count, first );
       }
       catch( Throwable e ) {
         // Ошибка передачи хранимых данных.
@@ -677,8 +672,7 @@ class S5Gateway
       // Служба алармов
       ISkAlarmService localAlarmService = localApi.getService( ISkAlarmService.SERVICE_ID );
       // Создание портов передачи текущих данных
-      localToRemoteCurrdataPort =
-          new S5GatewayCurrDataPort( LOCAL_TO_REMOTE, localRtDataService, remoteRtDataService, logger );
+      localToRemoteCurrdataPort = new S5GatewayCurrDataPort( id(), localRtDataService, remoteRtDataService, logger );
 
       // Регистрация слушателей служб
       threadExecutor.syncExec( () -> {

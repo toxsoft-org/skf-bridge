@@ -138,7 +138,7 @@ class S5GatewayCurrDataPort
     // Время выполнения
     Long traceTime = Long.valueOf( System.currentTimeMillis() - traceStartTime );
     // Завершение передачи текущих данных
-    logger.debug( MSG_GW_CURRDATA_TRANSFER_FINISH, id(), count, first, traceTime );
+    logger.info( MSG_GW_CURRDATA_TRANSFER_FINISH, id(), count, first, traceTime );
   }
 
   // ------------------------------------------------------------------------------------
