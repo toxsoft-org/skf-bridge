@@ -86,7 +86,7 @@ class S5Gateway
    * <p>
    * Тип тикета: {@link EAtomicType#VALOBJ} {@link IStringList}.
    */
-  private static final String TICKET_ROUTE = "route"; //$NON-NLS-1$
+  private static final String TICKET_ROUTE = "transmittedServers"; //$NON-NLS-1$
 
   /**
    * Служба шлюзов
@@ -96,7 +96,7 @@ class S5Gateway
   /**
    * Список идентификаторов всех серверов {@link ISkServer} в направлении которых производится передача
    */
-  private final IStringList routedServers;
+  private final IStringList transmittingServers;
 
   /**
    * Конфигурация шлюза
@@ -145,7 +145,7 @@ class S5Gateway
    * Ключ: идентификатор данного значения которого могут быть переданы через шлюз; Значение: значение метки "пройденный
    * маршрут значения данного" для данного.
    */
-  private IMap<Gwid, IAtomicValue> routeByGwids;
+  private IMap<Gwid, IAtomicValue> transmittingGwids;
 
   /**
    * Карта каналов записи исторических данных
@@ -263,7 +263,7 @@ class S5Gateway
   S5Gateway( S5BackendGatewaySingleton aOwner, ISkGatewayInfo aConfiguration ) {
     super( aConfiguration.id(), aConfiguration.nmName(), aConfiguration.description() );
     owner = aOwner;
-    routedServers = owner.gatewayConfigs().ids();
+    transmittingServers = owner.gatewayConfigs().ids();
     configuration = aConfiguration;
     logger.info( MSG_GW_STARTED, this );
 
@@ -339,7 +339,7 @@ class S5Gateway
     long currSlot = currTime / TRANSMITTED_INTERVAL;
     if( prevSlot != currSlot ) {
       // Вывод в журнал количества переданных данных
-      logger.info( MSG_TRANSIMITTED, id(), transmittedCurrdata, transmittedHistdata );
+      logger.info( MSG_TRANSIMITTED, id(), transmittingGwids.size(), transmittedCurrdata, transmittedHistdata );
       // Сброс статистики
       transmittedCurrdata = 0;
       transmittedHistdata = 0;
@@ -578,12 +578,12 @@ class S5Gateway
       try {
         if( aSource.equals( localDataQualityService ) ) {
           // Данные локального сервера которые могут быть переданы через мост
-          IMap<Gwid, IAtomicValue> gwids = getRouteByGwids( routedServers, localDataQualityService );
-          if( isListsSameContent( routeByGwids.keys(), gwids.keys() ) ) {
+          IMap<Gwid, IAtomicValue> gwids = getTransmittingGwids( transmittingServers, localDataQualityService );
+          if( isListsSameContent( transmittingGwids.keys(), gwids.keys() ) ) {
             // Набор не изменился
             return;
           }
-          routeByGwids = gwids;
+          transmittingGwids = gwids;
         }
         // Выставление признака необходимости синхронизации
         needSynchronize = true;
@@ -719,7 +719,7 @@ class S5Gateway
         // Выставление признака необходимости синхронизации
         needSynchronize = true;
         // Данные локального сервера которые могут быть переданы через мост
-        routeByGwids = getRouteByGwids( routedServers, localDataQualityService );
+        transmittingGwids = getTransmittingGwids( transmittingServers, localDataQualityService );
         // Попытка синхронизации наборов данных, слушателей подключенных соединений
         synchronize();
       } );
@@ -852,9 +852,9 @@ class S5Gateway
     remoteCmdService.unregisterExecutor( this );
 
     // Публикация значений тикетов "маршрутов прохождения значений данных"
-    remoteDataQualityService.setConnectedAndMarkValues( TICKET_ROUTE, routeByGwids );
+    remoteDataQualityService.setConnectedAndMarkValues( TICKET_ROUTE, transmittingGwids );
 
-    IGwidList localGwids = new GwidList( routeByGwids.keys() );
+    IGwidList localGwids = new GwidList( transmittingGwids.keys() );
     // Создание каналов передачи данных
     createRtdChannels( localGwids );
 
@@ -923,29 +923,27 @@ class S5Gateway
   /**
    * Возвращает карту значений меток "маршрут прохождения значений данного" по передаваемым через шлюз данным.
    *
-   * @param aRemoteIds IStringList идентификаторы удаленных серверов {@link ISkServer} в направлении которых проводится
-   *          передача данных.
+   * @param aTransmittingServers IStringList идентификаторы удаленных серверов {@link ISkServer} в направлении которых
+   *          проводится передача данных.
    * @param aDataQualityService {@link ISkDataQualityService} служба качества данных
    * @return {@link IMap}&lt;{@link Gwid},{@link IOptionSet}&gt; карта значений меток. <br>
    *         Ключ: идентификатор данного;<br>
    *         Значение: значение метки "маршрут прохождения значений данного".
    * @throws TsNullArgumentRtException любой аргумент = null
    */
-  private static IMap<Gwid, IAtomicValue> getRouteByGwids( IStringList aRemoteIds,
+  private static IMap<Gwid, IAtomicValue> getTransmittingGwids( IStringList aTransmittingServers,
       ISkDataQualityService aDataQualityService ) {
-    TsNullArgumentRtException.checkNulls( aRemoteIds, aDataQualityService );
+    TsNullArgumentRtException.checkNulls( aTransmittingServers, aDataQualityService );
     IGwidList gwids = aDataQualityService.getConnectedResources();
     IMap<Gwid, IOptionSet> marksMap = aDataQualityService.getResourcesMarks( gwids );
     IMapEdit<Gwid, IAtomicValue> retValue = new ElemMap<>();
     for( Gwid gwid : gwids ) {
       IOptionSet marks = marksMap.getByKey( gwid );
-      IStringList oldRoute = marks.getValobj( TICKET_ROUTE, IStringList.EMPTY );
-      for( String remoteId : aRemoteIds ) {
-        if( !oldRoute.hasElem( remoteId ) ) {
-          IStringListEdit newRoute = new StringArrayList( oldRoute );
-          newRoute.addAll( aRemoteIds );
-          retValue.put( gwid, avValobj( newRoute ) );
-        }
+      IStringList route = marks.getValobj( TICKET_ROUTE, IStringList.EMPTY );
+      if( !TsCollectionsUtils.intersects( aTransmittingServers, route ) ) {
+        IStringListEdit newRoute = new StringArrayList( route );
+        newRoute.addAll( aTransmittingServers );
+        retValue.put( gwid, avValobj( newRoute ) );
       }
     }
     return retValue;
