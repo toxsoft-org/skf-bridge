@@ -101,7 +101,8 @@ interface IS5Resources
       "Регистрация принимаемых хранимых данных на локальном сервере (%d)";
   String MSG_RECREATE_GATEWAY_BY_UPDATE_CONFIG          =
       "reconfigure gateway %s. \n   old config = %s \n   new config = %s";
-  String MSG_TRANSIMITTED                               = "%s transmitted: currdata = %d, histdata = %d.";
+  String MSG_TRANSIMITTED                               =
+      "%s: transmittingGwids = %d. transmitted: currdata = %d, histdata = %d.";
 
   // ------------------------------------------------------------------------------------
   // Тексты ошибок
