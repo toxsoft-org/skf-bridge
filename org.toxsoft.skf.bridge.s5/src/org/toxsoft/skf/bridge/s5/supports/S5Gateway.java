@@ -852,7 +852,7 @@ class S5Gateway
     remoteCmdService.unregisterExecutor( this );
 
     // Публикация значений тикетов "маршрутов прохождения значений данных"
-    remoteDataQualityService.setMarkValues( TICKET_ROUTE, routeByGwids );
+    remoteDataQualityService.setConnectedAndMarkValues( TICKET_ROUTE, routeByGwids );
 
     IGwidList localGwids = new GwidList( routeByGwids.keys() );
     // Создание каналов передачи данных
@@ -871,9 +871,6 @@ class S5Gateway
         Integer.valueOf( cmdGwids.size() ), //
         Integer.valueOf( eventGwids.size() ) );
     localEventService.registerHandler( eventGwids, this );
-
-    // Передача списка экспортируемых данных удаленной службе качества данных
-    remoteDataQualityService.setConnectedResources( localGwids );
 
     // Сброс признака необходимости синхронизации
     needSynchronize = false;
