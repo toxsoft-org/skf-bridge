@@ -7,7 +7,6 @@ import static org.toxsoft.skf.bridge.s5.lib.impl.S5BackendGatewayConfig.*;
 import static org.toxsoft.skf.bridge.s5.lib.impl.SkGatewayGwids.*;
 import static org.toxsoft.skf.bridge.s5.supports.IS5Resources.*;
 import static org.toxsoft.uskat.s5.common.IS5CommonResources.*;
-import static org.toxsoft.uskat.s5.server.IS5ServerHardConstants.*;
 
 import org.toxsoft.core.log4j.*;
 import org.toxsoft.core.tslib.av.*;
@@ -48,7 +47,6 @@ import org.toxsoft.uskat.core.api.gwids.*;
 import org.toxsoft.uskat.core.api.hqserv.*;
 import org.toxsoft.uskat.core.api.rtdserv.*;
 import org.toxsoft.uskat.core.backend.*;
-import org.toxsoft.uskat.core.backend.api.*;
 import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.impl.*;
 import org.toxsoft.uskat.s5.client.*;
@@ -96,14 +94,14 @@ class S5Gateway
   private S5BackendGatewaySingleton owner;
 
   /**
+   * Список идентификаторов всех серверов {@link ISkServer} в направлении которых производится передача
+   */
+  private final IStringList routedServers;
+
+  /**
    * Конфигурация шлюза
    */
   private final ISkGatewayInfo configuration;
-
-  /**
-   * Идентификатор локального сервера {@link ISkServer}.
-   */
-  private final Skid localServerId;
 
   /**
    * Соединение с локальным сервером
@@ -231,7 +229,27 @@ class S5Gateway
   private volatile boolean needSynchronize;
 
   /**
-   * Журнал работы
+   * Интервал вывода статистики.
+   */
+  private static final long TRANSMITTED_INTERVAL = 10 * 1000;
+
+  /**
+   * Количество переданных текущих данных.
+   */
+  private int transmittedCurrdata;
+
+  /**
+   * Количество переданных хранимых данных.
+   */
+  private int transmittedHistdata;
+
+  /**
+   * Метка вывода статистики.
+   */
+  private long transmittedTimestamp = System.currentTimeMillis();
+
+  /**
+   * Журнал работы.
    */
   private ILogger logger = LoggerWrapper.getLogger( getClass() );
 
@@ -245,6 +263,7 @@ class S5Gateway
   S5Gateway( S5BackendGatewaySingleton aOwner, ISkGatewayInfo aConfiguration ) {
     super( aConfiguration.id(), aConfiguration.nmName(), aConfiguration.description() );
     owner = aOwner;
+    routedServers = owner.gatewayConfigs().ids();
     configuration = aConfiguration;
     logger.info( MSG_GW_STARTED, this );
 
@@ -256,10 +275,6 @@ class S5Gateway
     String programName = getClass().getSimpleName() + '_' + configuration.id();
     // Создание локального соединения
     localConnection = aOwner.localConnection().open( programName );
-    // Информация о бекенде локального сервера
-    ISkBackendInfo info = localConnection.backendInfo();
-    // Идентификатор сервера
-    localServerId = OP_SERVER_ID.getValue( info.params() ).asValobj();
     // Создание соединения с удаленным сервером
     remoteBackendProvider = aOwner.remoteConnectionProvider();
     remoteConnection = SkCoreUtils.createConnection();
@@ -302,6 +317,7 @@ class S5Gateway
     // nop
   }
 
+  @SuppressWarnings( "boxing" )
   @Override
   public void doJob() {
     if( remoteConnection.state() == ESkConnState.CLOSED && !completed ) {
@@ -317,6 +333,18 @@ class S5Gateway
       logger.warning( ERR_TRY_SYNCH_FROM_DOJOB );
       // Синхронизация данных с удаленным сервером
       synchronize();
+    }
+    long currTime = System.currentTimeMillis();
+    long prevSlot = transmittedTimestamp / TRANSMITTED_INTERVAL;
+    long currSlot = currTime / TRANSMITTED_INTERVAL;
+    if( prevSlot != currSlot ) {
+      // Вывод в журнал количества переданных данных
+      logger.info( MSG_TRANSIMITTED, id(), transmittedCurrdata, transmittedHistdata );
+      // Сброс статистики
+      transmittedCurrdata = 0;
+      transmittedHistdata = 0;
+      // Фиксируем время начала текущего временного слота
+      transmittedTimestamp = currTime / TRANSMITTED_INTERVAL * TRANSMITTED_INTERVAL;
     }
   }
 
@@ -378,9 +406,10 @@ class S5Gateway
           ITimeInterval interval = sequence.left();
           ITimedList<ITemporalAtomicValue> values = sequence.right();
           writeChannel.writeValues( interval, values );
+          transmittedHistdata++;
         }
         // Завершение передачи хранимых данных
-        logger.info( MSG_GW_HISTDATA_TRANSFER_FINISH, id(), count, first );
+        logger.debug( MSG_GW_HISTDATA_TRANSFER_FINISH, id(), count, first );
       }
       catch( Throwable e ) {
         // Ошибка передачи хранимых данных.
@@ -549,7 +578,7 @@ class S5Gateway
       try {
         if( aSource.equals( localDataQualityService ) ) {
           // Данные локального сервера которые могут быть переданы через мост
-          IMap<Gwid, IAtomicValue> gwids = getRouteByGwids( localServerId.strid(), id(), localDataQualityService );
+          IMap<Gwid, IAtomicValue> gwids = getRouteByGwids( routedServers, localDataQualityService );
           if( isListsSameContent( routeByGwids.keys(), gwids.keys() ) ) {
             // Набор не изменился
             return;
@@ -672,7 +701,14 @@ class S5Gateway
       // Служба алармов
       ISkAlarmService localAlarmService = localApi.getService( ISkAlarmService.SERVICE_ID );
       // Создание портов передачи текущих данных
-      localToRemoteCurrdataPort = new S5GatewayCurrDataPort( id(), localRtDataService, remoteRtDataService, logger );
+      localToRemoteCurrdataPort = new S5GatewayCurrDataPort( id(), localRtDataService, remoteRtDataService, logger ) {
+
+        @Override
+        public void onCurrData( IMap<Gwid, IAtomicValue> aNewValues ) {
+          super.onCurrData( aNewValues );
+          transmittedCurrdata++;
+        }
+      };
 
       // Регистрация слушателей служб
       threadExecutor.syncExec( () -> {
@@ -683,7 +719,7 @@ class S5Gateway
         // Выставление признака необходимости синхронизации
         needSynchronize = true;
         // Данные локального сервера которые могут быть переданы через мост
-        routeByGwids = getRouteByGwids( localServerId.strid(), id(), localDataQualityService );
+        routeByGwids = getRouteByGwids( routedServers, localDataQualityService );
         // Попытка синхронизации наборов данных, слушателей подключенных соединений
         synchronize();
       } );
@@ -735,8 +771,8 @@ class S5Gateway
       logger.info( MSG_GW_INIT_FINISH, this );
     }
     catch( Throwable e ) {
-      // Ошибка инициализации
-      logger.error( e );
+      // Ошибка установки соединения с удаленным сервером
+      logger.error( e, ERR_CREATE_CONNECTION, id(), cause( e ) );
       // Требуется повторная инициализация
       remoteConnection.close();
     }
@@ -890,26 +926,29 @@ class S5Gateway
   /**
    * Возвращает карту значений меток "маршрут прохождения значений данного" по передаваемым через шлюз данным.
    *
-   * @param aRemoteId String идентификатор удаленного сервера {@link ISkServer}.
+   * @param aRemoteIds IStringList идентификаторы удаленных серверов {@link ISkServer} в направлении которых проводится
+   *          передача данных.
    * @param aDataQualityService {@link ISkDataQualityService} служба качества данных
    * @return {@link IMap}&lt;{@link Gwid},{@link IOptionSet}&gt; карта значений меток. <br>
    *         Ключ: идентификатор данного;<br>
    *         Значение: значение метки "маршрут прохождения значений данного".
    * @throws TsNullArgumentRtException любой аргумент = null
    */
-  private static IMap<Gwid, IAtomicValue> getRouteByGwids( String aLocalId, String aRemoteId,
+  private static IMap<Gwid, IAtomicValue> getRouteByGwids( IStringList aRemoteIds,
       ISkDataQualityService aDataQualityService ) {
-    TsNullArgumentRtException.checkNulls( aRemoteId, aDataQualityService );
+    TsNullArgumentRtException.checkNulls( aRemoteIds, aDataQualityService );
     IGwidList gwids = aDataQualityService.getConnectedResources();
     IMap<Gwid, IOptionSet> marksMap = aDataQualityService.getResourcesMarks( gwids );
     IMapEdit<Gwid, IAtomicValue> retValue = new ElemMap<>();
     for( Gwid gwid : gwids ) {
       IOptionSet marks = marksMap.getByKey( gwid );
       IStringList oldRoute = marks.getValobj( TICKET_ROUTE, IStringList.EMPTY );
-      if( !oldRoute.hasElem( aRemoteId ) ) {
-        IStringListEdit newRoute = new StringArrayList( oldRoute );
-        newRoute.add( aLocalId );
-        retValue.put( gwid, avValobj( newRoute ) );
+      for( String remoteId : aRemoteIds ) {
+        if( !oldRoute.hasElem( remoteId ) ) {
+          IStringListEdit newRoute = new StringArrayList( oldRoute );
+          newRoute.addAll( aRemoteIds );
+          retValue.put( gwid, avValobj( newRoute ) );
+        }
       }
     }
     return retValue;

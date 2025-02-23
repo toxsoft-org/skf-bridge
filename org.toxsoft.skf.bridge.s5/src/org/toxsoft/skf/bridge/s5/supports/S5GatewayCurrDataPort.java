@@ -20,10 +20,8 @@ import org.toxsoft.uskat.core.api.rtdserv.*;
  * @author mvk
  */
 class S5GatewayCurrDataPort
-    extends StridableParameterizedSer
+    extends Stridable
     implements ISkCurrDataChangeListener, ICloseable {
-
-  private static final long serialVersionUID = 157157L;
 
   /**
    * Карта каналов чтения текущих данных
@@ -138,7 +136,7 @@ class S5GatewayCurrDataPort
     // Время выполнения
     Long traceTime = Long.valueOf( System.currentTimeMillis() - traceStartTime );
     // Завершение передачи текущих данных
-    logger.info( MSG_GW_CURRDATA_TRANSFER_FINISH, id(), count, first, traceTime );
+    logger.debug( MSG_GW_CURRDATA_TRANSFER_FINISH, id(), count, first, traceTime );
   }
 
   // ------------------------------------------------------------------------------------

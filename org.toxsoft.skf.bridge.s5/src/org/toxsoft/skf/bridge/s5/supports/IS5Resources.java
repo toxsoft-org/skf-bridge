@@ -101,11 +101,12 @@ interface IS5Resources
       "Регистрация принимаемых хранимых данных на локальном сервере (%d)";
   String MSG_RECREATE_GATEWAY_BY_UPDATE_CONFIG          =
       "reconfigure gateway %s. \n   old config = %s \n   new config = %s";
+  String MSG_TRANSIMITTED                               = "%s transmitted: currdata = %d, histdata = %d.";
 
   // ------------------------------------------------------------------------------------
   // Тексты ошибок
   //
-  String ERR_CREATE_CONNECTION                = "Ошибка установки соединения с удаленным сервером. Причина: %s";
+  String ERR_CREATE_CONNECTION                = "%s: ошибка установки соединения с удаленным сервером. Причина: %s";
   String ERR_DOJOB_NOT_CONNECTION             = "doJob(...): нет соединения с удаленным сервером %s";
   String ERR_COMMAND_NOT_FOUND                =
       "%s. Не найдена команда отправителя (executingCommands). Команда исполнителя: %s";
