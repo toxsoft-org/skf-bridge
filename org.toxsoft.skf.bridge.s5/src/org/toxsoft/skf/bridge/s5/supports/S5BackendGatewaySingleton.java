@@ -320,7 +320,7 @@ public class S5BackendGatewaySingleton
     // 2021-01-19 mvk попытка избавится от странной блокировки
     if( !tryLockWrite( gatewaysLock, LOCK_TIMEOUT ) ) {
       // Ошибка получения блокировки
-      logger().warning( ERR_TRY_LOCK, gatewaysLock );
+      logger().warning( ERR_TRY_LOCK, id(), gatewaysLock );
       return;
     }
     try {

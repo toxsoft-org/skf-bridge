@@ -98,7 +98,7 @@ class S5GatewayCurrDataPort
     GwidList gwids = new GwidList();
     for( Gwid gwid : aGwids ) {
       if( gwids.hasElem( gwid ) ) {
-        logger.warning( ERR_CURRDATA_DOUBLE, gwid );
+        logger.warning( ERR_CURRDATA_DOUBLE, id(), gwid );
         continue;
       }
       gwids.add( gwid );

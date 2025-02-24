@@ -265,7 +265,7 @@ class S5Gateway
     owner = aOwner;
     transmittingServers = owner.gatewayConfigs().ids();
     configuration = aConfiguration;
-    logger.info( MSG_GW_STARTED, this );
+    logger.info( MSG_GW_STARTED, id() );
 
     // Регистрация расширений API соединения
     SkCoreUtils.registerSkServiceCreator( SkDataQualityService.CREATOR );
@@ -326,11 +326,11 @@ class S5Gateway
     }
     if( remoteConnection.state() != ESkConnState.ACTIVE ) {
       // Нет связи с удаленным сервером
-      logger.error( ERR_DOJOB_NOT_CONNECTION, remoteConnection );
+      logger.error( ERR_DOJOB_NOT_CONNECTION, id(), remoteConnection );
     }
     if( remoteConnection.state() == ESkConnState.ACTIVE && needSynchronize ) {
       // Попытка запуска отложенной синхронизации из doJob
-      logger.warning( ERR_TRY_SYNCH_FROM_DOJOB );
+      logger.warning( ERR_TRY_SYNCH_FROM_DOJOB, id() );
       // Синхронизация данных с удаленным сервером
       synchronize();
     }
@@ -356,7 +356,7 @@ class S5Gateway
   @Override
   public void close() {
     // Шлюз завершает работу
-    logger.info( MSG_GW_CLOSE, this );
+    logger.info( MSG_GW_CLOSE, id() );
     synchronize();
     // Завершение работы наборов данных
     if( localToRemoteCurrdataPort != null ) {
@@ -380,7 +380,7 @@ class S5Gateway
     owner.histdataBackend().removeHistDataInterceptor( this );
     // Шлюз выгружен
     completed = true;
-    logger.info( MSG_GW_CLOSED, this );
+    logger.info( MSG_GW_CLOSED, id() );
   }
 
   // ------------------------------------------------------------------------------------
@@ -394,12 +394,14 @@ class S5Gateway
     logger.debug( MSG_GW_HISTDATA_TRANSFER, id(), count, first );
     // Передача данных синхронизируется через исполнитель потоков соединения
     threadExecutor.asyncExec( () -> {
+      // Текущий канал по которому проводится запись
+      ISkWriteHistDataChannel writeChannel = null;
       try {
         for( Gwid gwid : aValues.keys() ) {
-          ISkWriteHistDataChannel writeChannel = writeHistData.findByKey( gwid );
+          writeChannel = writeHistData.findByKey( gwid );
           if( writeChannel == null ) {
             // Не найден канал записи хранимых данных
-            logger.debug( ERR_HISTDATA_WRITE_CHANNEL_NOT_FOUND, gwid );
+            logger.debug( ERR_HISTDATA_WRITE_CHANNEL_NOT_FOUND, id(), gwid );
             continue;
           }
           Pair<ITimeInterval, ITimedList<ITemporalAtomicValue>> sequence = aValues.getByKey( gwid );
@@ -413,7 +415,7 @@ class S5Gateway
       }
       catch( Throwable e ) {
         // Ошибка передачи хранимых данных.
-        logger.error( e, ERR_SEND_HISTDATA, cause( e ) );
+        logger.error( e, ERR_SEND_HISTDATA, id(), writeChannel != null ? writeChannel.gwid() : "N/A", cause( e ) ); //$NON-NLS-1$
         // Запланирована синхронизация
         needSynchronize = true;
       }
@@ -433,7 +435,7 @@ class S5Gateway
   @Override
   public void executeCommand( IDtoCommand aCmd ) {
     // Передача команды исполнителю
-    logger.info( MSG_GW_COMMAND_TRANSFER, aCmd );
+    logger.info( MSG_GW_COMMAND_TRANSFER, id(), aCmd );
     // Время начала запроса
     long traceStartTime = System.currentTimeMillis();
     // Передача команды синхронизируется через исполнитель потоков соединения
@@ -446,13 +448,13 @@ class S5Gateway
         // Время выполнения
         Long traceTime = Long.valueOf( System.currentTimeMillis() - traceStartTime );
         // Завершение передачи команды исполнителю
-        logger.info( MSG_GW_COMMAND_TRANSFER_FINISH, aCmd, traceTime );
+        logger.info( MSG_GW_COMMAND_TRANSFER_FINISH, id(), aCmd, traceTime );
       }
       catch( Throwable e ) {
         // Время выполнения
         Long traceTime = Long.valueOf( System.currentTimeMillis() - traceStartTime );
         // Ошибка передачи команды. Запланирована синхронизация
-        logger.error( e, ERR_SEND_CMD, traceTime, cause( e ) );
+        logger.error( e, ERR_SEND_CMD, id(), traceTime, cause( e ) );
         needSynchronize = true;
       }
     } );
@@ -475,7 +477,7 @@ class S5Gateway
       threadExecutor.asyncExec( () -> {
         ISkCommand aCommand = (SkCommand)aSource;
         // Передача состояния команды отправителю
-        logger.info( MSG_GW_COMMAND_STATE_TRANSFER, aCommand );
+        logger.info( MSG_GW_COMMAND_STATE_TRANSFER, id(), aCommand );
         // Признак завершения выполнения команды
         boolean complete = aCommand.state().state().isComplete();
         // Команда полученная от удаленного сервера
@@ -483,7 +485,7 @@ class S5Gateway
         IDtoCommand cmd = (complete ? executingCommands.removeByKey( gwid ) : executingCommands.findByKey( gwid ));
         if( cmd == null ) {
           // Команда не отправлялась шлюзом (отправил другой клиент?)
-          logger.warning( MSG_GW_ALIEN_COMMAND, this );
+          logger.warning( MSG_GW_ALIEN_COMMAND, id() );
           return;
         }
         // Время начала запроса
@@ -493,13 +495,13 @@ class S5Gateway
           // Время выполнения
           Long traceTime = Long.valueOf( System.currentTimeMillis() - traceStartTime );
           // Завершение передачи состояния команды отправителю
-          logger.info( mSG_GW_COMMAND_STATE_TRANSFER_FINISH, aCommand, traceTime );
+          logger.info( mSG_GW_COMMAND_STATE_TRANSFER_FINISH, id(), aCommand, traceTime );
         }
         catch( Throwable e ) {
           // Время выполнения
           Long traceTime = Long.valueOf( System.currentTimeMillis() - traceStartTime );
           // Ошибка передачи команды. Запланирована синхронизация
-          logger.error( e, ERR_SEND_CMD_STATE, traceTime, cause( e ) );
+          logger.error( e, ERR_SEND_CMD_STATE, id(), traceTime, cause( e ) );
           needSynchronize = true;
         }
       } );
@@ -524,7 +526,7 @@ class S5Gateway
       // Передача списка исполнителей команд
       Integer count = Integer.valueOf( listGloballyHandledCommandGwids.size() );
       Gwid firstCmdGwid = listGloballyHandledCommandGwids.first();
-      logger.info( MSG_TRANSFER_EXECUTORS_START, count, firstCmdGwid );
+      logger.info( MSG_TRANSFER_EXECUTORS_START, id(), count, firstCmdGwid );
       // Данные по которым предоставляется качество
       IGwidList qualityGwids = owner.dataQualityBackend().getConnectedResources( Skid.NONE );
       // Список команд которые могут быть выполнены службой команд
@@ -534,7 +536,7 @@ class S5Gateway
         // Текстовое представление идентификаторов для журнала
         String cmdGwidsString = getGwidsString( cmdGwids );
         // Изменение списка исполнителей команд
-        logger.debug( MSG_CHANGE_CMD_EXECUTORS, cmdGwidsString );
+        logger.debug( MSG_CHANGE_CMD_EXECUTORS, id(), cmdGwidsString );
       }
       // Исполнители команд синхронизируются через исполнитель потоков соединения
       threadExecutor.asyncExec( () -> {
@@ -554,12 +556,12 @@ class S5Gateway
       Integer count = Integer.valueOf( aEvents.size() );
       SkEvent first = aEvents.first();
       // Передача событий
-      logger.info( MSG_GW_EVENT_TRANSFER, count, first );
+      logger.info( MSG_GW_EVENT_TRANSFER, id(), count, first );
       for( SkEvent event : aEvents ) {
         remoteEventService.fireEvent( event );
       }
       // Завершение передачи событий
-      logger.info( MSG_GW_EVENT_TRANSFER_FINISH, count, first );
+      logger.info( MSG_GW_EVENT_TRANSFER_FINISH, id(), count, first );
     } );
   }
 
@@ -573,7 +575,7 @@ class S5Gateway
       return;
     }
     // Сообщение об изменении списка отслеживаемых ресурсов
-    logger.info( MSG_SYNCHONIZE_BY_DATAQUALITY_RESOURCES );
+    logger.info( MSG_SYNCHONIZE_BY_DATAQUALITY_RESOURCES, id() );
     try {
       try {
         if( aSource.equals( localDataQualityService ) ) {
@@ -592,7 +594,7 @@ class S5Gateway
       }
       catch( Throwable e ) {
         // Ошибка синхронизации с удаленным сервером. Соединение будет закрыто
-        logger.error( e, ERR_SYNCHONIZE, this, cause( e ) );
+        logger.error( e, ERR_SYNCHONIZE, id(), cause( e ) );
         // 2021-01-24 mvk
         // Завершение текущего соединения
         // remoteConnection.close();
@@ -600,7 +602,7 @@ class S5Gateway
     }
     finally {
       // Завершение синхронизации по отслеживаемым ресурсам ISkDataQualityService
-      logger.info( MSG_SYNCHONIZE_BY_DATAQUALITY_RESOURCES_FINISH );
+      logger.info( MSG_SYNCHONIZE_BY_DATAQUALITY_RESOURCES_FINISH, id() );
     }
   }
 
@@ -616,7 +618,7 @@ class S5Gateway
     switch( aSource.state() ) {
       case ACTIVE:
         // Подключение к удаленному серверу
-        logger.info( MSG_GW_REMOTE_CONNECTED, this );
+        logger.info( MSG_GW_REMOTE_CONNECTED, id() );
         // Выставление признака необходимости синхронизации
         needSynchronize = true;
         // Попытка синхронизации данных соединений
@@ -625,7 +627,7 @@ class S5Gateway
       case INACTIVE:
       case CLOSED:
         // Закрыто соединение с удаленным сервером
-        logger.info( MSG_GW_REMOTE_DISCONNECTED, this );
+        logger.info( MSG_GW_REMOTE_DISCONNECTED, id() );
         // Очистка списка исполняемых команд
         synchronized (remoteCmdGwids) {
           remoteCmdGwids.clear();
@@ -663,7 +665,7 @@ class S5Gateway
   private void tryOpenRemote() {
     if( remoteConnection.state() != ESkConnState.CLOSED ) {
       // Инициализация уже выполнена
-      logger.warning( ERR_GATEWAY_ALREADY_INITED, this );
+      logger.warning( ERR_GATEWAY_ALREADY_INITED, id() );
       return;
     }
     try {
@@ -677,7 +679,7 @@ class S5Gateway
       // Удаленное API
       ISkCoreApi remoteApi = remoteConnection.coreApi();
       // Начало инициализации шлюза
-      logger.info( MSG_GW_INIT_START, this );
+      logger.info( MSG_GW_INIT_START, id() );
       // Служба идентификаторов
       localGwidService = localApi.gwidService();
       // Службы текущих данных: чтение/запись
@@ -768,7 +770,7 @@ class S5Gateway
 
       } );
       // Шлюз завершил инициализацию
-      logger.info( MSG_GW_INIT_FINISH, this );
+      logger.info( MSG_GW_INIT_FINISH, id() );
     }
     catch( Throwable e ) {
       // Ошибка установки соединения с удаленным сервером
@@ -841,7 +843,7 @@ class S5Gateway
   private void synchronizeRun() {
     if( !readyForSynchronize ) {
       // Нет готовности к синхронизации соединений
-      logger.warning( ERR_NOT_READY_FOR_SYNC, this );
+      logger.warning( ERR_NOT_READY_FOR_SYNC, id() );
       return;
     }
     // Время начала синхронизации
@@ -865,7 +867,7 @@ class S5Gateway
     // Подписка на события
     IGwidList eventGwids = getConfigGwids( localGwidService, configuration.exportEvents(), localGwids );
     // Запись в протокол
-    logger.info( MSG_GW_GWIDS_LIST, this, //
+    logger.info( MSG_GW_GWIDS_LIST, id(), //
         Integer.valueOf( localToRemoteCurrdataPort.dataIds().size() ), //
         Integer.valueOf( writeHistData.size() ), //
         Integer.valueOf( cmdGwids.size() ), //
@@ -877,7 +879,7 @@ class S5Gateway
     // Время выполнения синхронизации
     Long traceTime = Long.valueOf( System.currentTimeMillis() - traceStartTime );
     // Завершение синронизации данных между соединениями
-    logger.info( MSG_SYNC_COMPLETED, Boolean.FALSE, traceTime );
+    logger.info( MSG_SYNC_COMPLETED, id(), Boolean.FALSE, traceTime );
   }
 
   /**
@@ -897,7 +899,7 @@ class S5Gateway
       synchronized (remoteCmdGwids) {
         if( remoteCmdGwids.equals( aCmdGwids ) ) {
           // Список исполнителей команд не изменился
-          logger.warning( ERR_CMD_EXECUTORS_NOT_CHANGED, Integer.valueOf( aCmdGwids.size() ) );
+          logger.warning( ERR_CMD_EXECUTORS_NOT_CHANGED, id(), Integer.valueOf( aCmdGwids.size() ) );
           return;
         }
         remoteCmdGwids.setAll( aCmdGwids );
@@ -907,14 +909,14 @@ class S5Gateway
       // Время выполнения запроса
       Long traceTime = Long.valueOf( System.currentTimeMillis() - traceStartTime );
       // Завершение передачи списка исполнителей команд
-      logger.info( MSG_TRANSFER_EXECUTORS_FINISH, count, firstCmdGwid, traceTime );
+      logger.info( MSG_TRANSFER_EXECUTORS_FINISH, id(), count, firstCmdGwid, traceTime );
     }
     catch( Throwable e ) {
       // Время выполнения запроса
       Long traceTime = Long.valueOf( System.currentTimeMillis() - traceStartTime );
       // Ошибка регистрации исполнителей команд на удаленном сервере. Соединение будет
       // закрыто
-      logger.error( e, ERR_REGISTER_CMD_GWIDS, this, count, firstCmdGwid, traceTime, cause( e ) );
+      logger.error( e, ERR_REGISTER_CMD_GWIDS, id(), count, firstCmdGwid, traceTime, cause( e ) );
       // Завершение текущего соединения
       remoteConnection.close();
     }
@@ -969,7 +971,7 @@ class S5Gateway
     // Добавление вновь добавленных каналов
     if( currdataGwids.size() > 0 ) {
       // Регистрация передаваемых текущих данных на удаленном сервере
-      logger.info( MSG_REGISTER_CURRDATA_ON_REMOTE, Integer.valueOf( currdataGwids.size() ) );
+      logger.info( MSG_REGISTER_CURRDATA_ON_REMOTE, id(), Integer.valueOf( currdataGwids.size() ) );
       // Текущие данные (прием/передача)
       localToRemoteCurrdataPort.setDataIds( currdataGwids );
     }
@@ -978,7 +980,7 @@ class S5Gateway
     // Добавление вновь добавленных каналов
     if( histdataGwids.size() > 0 ) {
       // Регистрация передаваемых хранимых данных на удаленном сервере
-      logger.info( MSG_REGISTER_HISTDATA_ON_REMOTE, Integer.valueOf( currdataGwids.size() ) );
+      logger.info( MSG_REGISTER_HISTDATA_ON_REMOTE, id(), Integer.valueOf( currdataGwids.size() ) );
       // Создание новых каналов хранимых данных.
       writeHistData.putAll( remoteRtDataService.createWriteHistDataChannels( histdataGwids ) );
     }
