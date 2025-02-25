@@ -112,6 +112,8 @@ interface IS5Resources
       "[%s] Ошибка синхронизации с удаленным сервером. Соединение будет закрыто. Причина: %s.";
   String ERR_CMD_EXECUTORS_NOT_CHANGED        =
       "[%s] synchronizeCmdExecutors(): список исполнителей команд не изменился. aCmdGwids.size() = %d.";
+  String ERR_TRY_RECREATE_FROM_DOJOB          =
+      "[%s] Попытка запуска отложенного пересоздания соединения с удаленным сервером из doJob.";
   String ERR_TRY_SYNCH_FROM_DOJOB             = "[%s] Попытка запуска отложенной синхронизации из doJob.";
   String ERR_CURRDATA_WRITE_CHANNEL_NOT_FOUND = "[%s] onCurrData(...): Не найден канал записи текущих данных для %s.";
   String ERR_HISTDATA_WRITE_CHANNEL_NOT_FOUND =

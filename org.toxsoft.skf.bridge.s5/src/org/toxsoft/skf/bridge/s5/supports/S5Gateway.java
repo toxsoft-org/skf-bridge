@@ -327,7 +327,7 @@ class S5Gateway
   public void doJob() {
     if( needRecreate ) {
       // Попытка запуска отложенной синхронизации из doJob
-      logger.warning( ERR_TRY_SYNCH_FROM_DOJOB, id() );
+      logger.warning( ERR_TRY_RECREATE_FROM_DOJOB, id() );
       // Завершение старого соединения
       threadExecutor.syncExec( () -> remoteConnection.close() );
       // Создание нового соединения
