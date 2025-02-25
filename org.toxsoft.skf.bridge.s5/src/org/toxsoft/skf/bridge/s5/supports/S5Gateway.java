@@ -111,7 +111,7 @@ class S5Gateway
   /**
    * Соединение с удаленным сервером
    */
-  private final ISkConnection remoteConnection;
+  private ISkConnection remoteConnection;
 
   /**
    * Исполнитель потоков uskat-соединений (один на весь шлюз)
@@ -320,6 +320,14 @@ class S5Gateway
   @SuppressWarnings( "boxing" )
   @Override
   public void doJob() {
+    if( remoteConnection.state() == ESkConnState.ACTIVE && needSynchronize ) {
+      // Попытка запуска отложенной синхронизации из doJob
+      logger.warning( ERR_TRY_SYNCH_FROM_DOJOB, id() );
+      // Синхронизация данных с удаленным сервером
+      remoteConnection.close();
+      // Новое соединение
+      remoteConnection = SkCoreUtils.createConnection();
+    }
     if( remoteConnection.state() == ESkConnState.CLOSED && !completed ) {
       // Повторная попытка открыть соединение с удаленном сервером
       tryOpenRemote();
@@ -327,12 +335,6 @@ class S5Gateway
     if( remoteConnection.state() != ESkConnState.ACTIVE ) {
       // Нет связи с удаленным сервером
       logger.error( ERR_DOJOB_NOT_CONNECTION, id(), remoteConnection );
-    }
-    if( remoteConnection.state() == ESkConnState.ACTIVE && needSynchronize ) {
-      // Попытка запуска отложенной синхронизации из doJob
-      logger.warning( ERR_TRY_SYNCH_FROM_DOJOB, id() );
-      // Синхронизация данных с удаленным сервером
-      synchronize();
     }
     long currTime = System.currentTimeMillis();
     long prevSlot = transmittedTimestamp / TRANSMITTED_INTERVAL;
