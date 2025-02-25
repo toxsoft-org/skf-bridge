@@ -24,7 +24,7 @@ interface IS5Resources
   String MSG_GW_CONFIGURATIONS_UPDATED                  =
       "Обновление конфигурации шлюзов. Новых: %d. Обновленных: %d. Удаленных: %d.";
   String MSG_GW_STARTED                                 = "[%s] Запуск шлюза.";
-  String MSG_GW_INIT_START                              = "[%s] Начало инициализации шлюза.";
+  String MSG_GW_INIT_START                              = "[%s] Начало инициализации шлюза. executor thread = %s.";
   String MSG_GW_INIT_FINISH                             = "[%s] Завершение инициализации шлюза,";
   String MSG_GW_CLOSE                                   = "[%s] Шлюз завершает работу.";
   String MSG_GW_CLOSED                                  = "[%s] Шлюз выгружен.";

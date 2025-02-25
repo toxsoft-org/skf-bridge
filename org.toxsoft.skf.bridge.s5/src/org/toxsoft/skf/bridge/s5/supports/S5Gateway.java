@@ -686,6 +686,8 @@ class S5Gateway
       return;
     }
     try {
+      // Начало инициализации шлюза
+      logger.info( MSG_GW_INIT_START, id(), threadExecutor.thread().getName() );
       // Установка слушателя соединения
       remoteConnection.addConnectionListener( this );
       // Попытка открыть удаленное соединение
@@ -695,8 +697,6 @@ class S5Gateway
       ISkCoreApi localApi = localConnection.coreApi();
       // Удаленное API
       ISkCoreApi remoteApi = remoteConnection.coreApi();
-      // Начало инициализации шлюза
-      logger.info( MSG_GW_INIT_START, id() );
       // Служба идентификаторов
       localGwidService = localApi.gwidService();
       // Службы текущих данных: чтение/запись
