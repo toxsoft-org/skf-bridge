@@ -224,7 +224,12 @@ class S5Gateway
   private boolean completed;
 
   /**
-   * Признак требование провести синхронизацию с удаленным сервером
+   * Признак требование пересоздать соединение с удаленным сервером
+   */
+  private volatile boolean needRecreate;
+
+  /**
+   * /** Признак требование провести синхронизацию с удаленным сервером
    */
   private volatile boolean needSynchronize;
 
@@ -320,13 +325,15 @@ class S5Gateway
   @SuppressWarnings( "boxing" )
   @Override
   public void doJob() {
-    if( remoteConnection.state() == ESkConnState.ACTIVE && needSynchronize ) {
+    if( needRecreate ) {
       // Попытка запуска отложенной синхронизации из doJob
       logger.warning( ERR_TRY_SYNCH_FROM_DOJOB, id() );
-      // Синхронизация данных с удаленным сервером
-      remoteConnection.close();
-      // Новое соединение
+      // Завершение старого соединения
+      threadExecutor.syncExec( () -> remoteConnection.close() );
+      // Создание нового соединения
       remoteConnection = SkCoreUtils.createConnection();
+      // Сброс требования
+      needRecreate = false;
     }
     if( remoteConnection.state() == ESkConnState.CLOSED && !completed ) {
       // Повторная попытка открыть соединение с удаленном сервером
@@ -335,6 +342,12 @@ class S5Gateway
     if( remoteConnection.state() != ESkConnState.ACTIVE ) {
       // Нет связи с удаленным сервером
       logger.error( ERR_DOJOB_NOT_CONNECTION, id(), remoteConnection );
+    }
+    if( remoteConnection.state() == ESkConnState.ACTIVE && needSynchronize ) {
+      // Попытка запуска отложенной синхронизации из doJob
+      logger.warning( ERR_TRY_SYNCH_FROM_DOJOB, id() );
+      // Синхронизация данных с удаленным сервером
+      synchronize();
     }
     long currTime = System.currentTimeMillis();
     long prevSlot = transmittedTimestamp / TRANSMITTED_INTERVAL;
@@ -418,8 +431,10 @@ class S5Gateway
       catch( Throwable e ) {
         // Ошибка передачи хранимых данных.
         logger.error( e, ERR_SEND_HISTDATA, id(), writeChannel != null ? writeChannel.gwid() : "N/A", cause( e ) ); //$NON-NLS-1$
-        // Запланирована синхронизация
-        needSynchronize = true;
+        //// Запланирована синхронизация
+        //// needSynchronize = true;
+        // Требование пересоздания соединения
+        needRecreate = true;
       }
     } );
     // Разрешить дальшейшее выполнение операции
