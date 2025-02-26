@@ -90,7 +90,7 @@ interface IS5Resources
   String MSG_RECREATE_GATEWAY_BY_UPDATE_CONFIG          =
       "[%s] reconfigure gateway.\n   old config = %s \n   new config = %s.";
   String MSG_TRANSIMITTED                               =
-      "[%s] transmittingGwids = %d. transmitted: currdata = %d, histdata = %d.";
+      "[%s] transmittingGwids = %d. transmitted: currdata = %d, histdata = %d (values = %d).";
 
   // ------------------------------------------------------------------------------------
   // Тексты ошибок

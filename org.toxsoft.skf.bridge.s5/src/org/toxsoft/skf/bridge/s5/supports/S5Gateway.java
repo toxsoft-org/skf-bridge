@@ -249,6 +249,11 @@ class S5Gateway
   private int transmittedHistdata;
 
   /**
+   * Количество значений переданных хранимых данных.
+   */
+  private int transmittedHistdataValues;
+
+  /**
    * Метка вывода статистики.
    */
   private long transmittedTimestamp = System.currentTimeMillis();
@@ -354,10 +359,12 @@ class S5Gateway
     long currSlot = currTime / TRANSMITTED_INTERVAL;
     if( prevSlot != currSlot ) {
       // Вывод в журнал количества переданных данных
-      logger.info( MSG_TRANSIMITTED, id(), transmittingGwids.size(), transmittedCurrdata, transmittedHistdata );
+      logger.info( MSG_TRANSIMITTED, id(), transmittingGwids.size(), transmittedCurrdata, transmittedHistdata,
+          transmittedHistdataValues );
       // Сброс статистики
       transmittedCurrdata = 0;
       transmittedHistdata = 0;
+      transmittedHistdataValues = 0;
       // Фиксируем время начала текущего временного слота
       transmittedTimestamp = currTime / TRANSMITTED_INTERVAL * TRANSMITTED_INTERVAL;
     }
@@ -424,6 +431,7 @@ class S5Gateway
           ITimedList<ITemporalAtomicValue> values = sequence.right();
           writeChannel.writeValues( interval, values );
           transmittedHistdata++;
+          transmittedHistdataValues += values.size();
         }
         // Завершение передачи хранимых данных
         logger.debug( MSG_GW_HISTDATA_TRANSFER_FINISH, id(), count, first );
