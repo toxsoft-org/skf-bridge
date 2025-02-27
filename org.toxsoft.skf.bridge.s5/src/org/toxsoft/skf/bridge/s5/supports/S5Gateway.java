@@ -381,6 +381,8 @@ class S5Gateway
       transmittedCurrdataItems = 0;
       transmittedHistdata = 0;
       transmittedHistdataItems = 0;
+      transmittedEvents = 0;
+      transmittedEventItems = 0;
       // Фиксируем время начала текущего временного слота
       transmittedTimestamp = currTime / TRANSMITTED_INTERVAL * TRANSMITTED_INTERVAL;
     }
