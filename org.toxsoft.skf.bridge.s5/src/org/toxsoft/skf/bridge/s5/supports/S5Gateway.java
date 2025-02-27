@@ -800,8 +800,8 @@ class S5Gateway
         for( ISkAlarm alarm : localAlarms ) {
           eventIds.add( Gwid.createEvent( alarm.classId(), alarm.strid(), Gwid.STR_MULTI_ID ) );
         }
-        ITimedList<SkEvent> localEvents = loadEvents( localApi.hqService(), eventIds, interval );
-        ITimedList<SkEvent> remoteEvents = loadEvents( remoteApi.hqService(), eventIds, interval );
+        ISkEventList localEvents = loadEvents( localApi.hqService(), eventIds, interval );
+        ISkEventList remoteEvents = loadEvents( remoteApi.hqService(), eventIds, interval );
         // Синхронизация списка событий между серверами
         if( localEvents.size() > 0
             && (remoteEvents.size() == 0 || localEvents.last().timestamp() > remoteEvents.last().timestamp()) ) {
@@ -1072,7 +1072,7 @@ class S5Gateway
    * @return {@link ITimedList}&lt; {@link SkEvent}&gt; список загруженных событий
    * @throws TsNullArgumentRtException любой аргумент = null
    */
-  private static ITimedList<SkEvent> loadEvents( ISkHistoryQueryService aHqService, GwidList aEventIds,
+  private static ISkEventList loadEvents( ISkHistoryQueryService aHqService, GwidList aEventIds,
       IQueryInterval aInterval ) {
     TsNullArgumentRtException.checkNulls( aHqService, aEventIds, aInterval );
     // TODO: mvkd ошибка обращения к query service у которой еше не инициализировано sharedConnection
@@ -1092,7 +1092,7 @@ class S5Gateway
       ITimedList<SkEvent> cmds = query.get( gwid );
       queryResults.add( cmds );
     }
-    ITimedList<SkEvent> retValue = TimeUtils.uniteTimeporaLists( queryResults );
+    SkEventList retValue = TimeUtils.uniteTimeporaLists( queryResults, SkEventList::new );
     return retValue;
   }
 }
