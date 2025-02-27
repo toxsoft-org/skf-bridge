@@ -25,6 +25,7 @@ import org.toxsoft.uskat.s5.server.backend.impl.*;
 import org.toxsoft.uskat.s5.server.backend.supports.clobs.*;
 import org.toxsoft.uskat.s5.server.backend.supports.commands.*;
 import org.toxsoft.uskat.s5.server.backend.supports.currdata.*;
+import org.toxsoft.uskat.s5.server.backend.supports.events.*;
 import org.toxsoft.uskat.s5.server.backend.supports.histdata.*;
 import org.toxsoft.uskat.s5.server.backend.supports.objects.*;
 import org.toxsoft.uskat.s5.server.sessions.*;
@@ -93,6 +94,12 @@ public class S5BackendGatewaySingleton
    */
   @EJB
   private IS5BackendHistDataSingleton histdataBackend;
+
+  /**
+   * Бекенд поддержки службы событий
+   */
+  @EJB
+  private IS5BackendEventSingleton eventBackend;
 
   /**
    * Бекенд поддержки службы команд
@@ -405,6 +412,15 @@ public class S5BackendGatewaySingleton
    */
   IS5BackendHistDataSingleton histdataBackend() {
     return histdataBackend;
+  }
+
+  /**
+   * Возвращает бекенд поддержки службы событий
+   *
+   * @return {@link IS5BackendEventSingleton} бекенд поддержки событий
+   */
+  IS5BackendEventSingleton eventBackend() {
+    return eventBackend;
   }
 
   /**

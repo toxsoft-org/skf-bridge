@@ -54,6 +54,7 @@ import org.toxsoft.uskat.s5.client.remote.connection.*;
 import org.toxsoft.uskat.s5.common.*;
 import org.toxsoft.uskat.s5.server.*;
 import org.toxsoft.uskat.s5.server.backend.*;
+import org.toxsoft.uskat.s5.server.backend.supports.events.*;
 import org.toxsoft.uskat.s5.server.backend.supports.histdata.*;
 import org.toxsoft.uskat.s5.server.interceptors.*;
 import org.toxsoft.uskat.s5.server.startup.*;
@@ -78,8 +79,8 @@ import org.toxsoft.uskat.s5.utils.progress.*;
 class S5Gateway
     extends Stridable
     implements IS5Gateway, IS5ServerJob, //
-    IS5HistDataInterceptor, //
-    ISkCommandExecutor, ISkEventHandler, ISkDataQualityChangeListener, ISkConnectionListener {
+    IS5HistDataInterceptor, IS5EventInterceptor, //
+    ISkCommandExecutor, ISkDataQualityChangeListener, ISkConnectionListener {
 
   /**
    * Тикет качества данных: список идентификаторов (объекты класса {@link ISkNetNode}) пройденных сетевых узлов.
@@ -297,6 +298,7 @@ class S5Gateway
     // owner.objectsBackend().addObjectsInterceptor( new
     // S5GatewayObjectsInterceptor( this ), 0 );
     owner.histdataBackend().addHistDataInterceptor( this, 0 );
+    owner.eventBackend().addEventInterceptor( this, 0 );
     // owner.lobsBackend().addLobsInterceptor( new S5GatewayLobsInterceptor( this ),
     // 0 );
   }
@@ -455,6 +457,32 @@ class S5Gateway
   }
 
   // ------------------------------------------------------------------------------------
+  // IS5EventInterceptor
+  //
+  @Override
+  public boolean beforeWriteEvents( ISkEventList aEvents ) {
+    // Передача событий синхронизируется через исполнитель потоков соединения
+    threadExecutor.asyncExec( () -> {
+      Integer count = Integer.valueOf( aEvents.size() );
+      SkEvent first = aEvents.first();
+      // Передача событий
+      logger.info( MSG_GW_EVENT_TRANSFER, id(), count, first );
+      for( SkEvent event : aEvents ) {
+        remoteEventService.fireEvent( event );
+      }
+      // Завершение передачи событий
+      logger.info( MSG_GW_EVENT_TRANSFER_FINISH, id(), count, first );
+    } );
+    // Разрешить дальшейшее выполнение операции
+    return true;
+  }
+
+  @Override
+  public void afterWriteEvents( ISkEventList aEvents ) {
+    // nop
+  }
+
+  // ------------------------------------------------------------------------------------
   // ISkCommandExecutor
   //
   @Override
@@ -569,25 +597,6 @@ class S5Gateway
         synchronizeCmdExecutors( cmdGwids );
       } );
     }
-  }
-
-  // ------------------------------------------------------------------------------------
-  // ISkEventHandler
-  //
-  @Override
-  public void onEvents( ISkEventList aEvents ) {
-    // Передача событий синхронизируется через исполнитель потоков соединения
-    threadExecutor.asyncExec( () -> {
-      Integer count = Integer.valueOf( aEvents.size() );
-      SkEvent first = aEvents.first();
-      // Передача событий
-      logger.info( MSG_GW_EVENT_TRANSFER, id(), count, first );
-      for( SkEvent event : aEvents ) {
-        remoteEventService.fireEvent( event );
-      }
-      // Завершение передачи событий
-      logger.info( MSG_GW_EVENT_TRANSFER_FINISH, id(), count, first );
-    } );
   }
 
   // ------------------------------------------------------------------------------------
@@ -784,15 +793,8 @@ class S5Gateway
             && (remoteEvents.size() == 0 || localEvents.last().timestamp() > remoteEvents.last().timestamp()) ) {
           // События пересылаются из локального сервера в удаленный сервер
           remoteEventService.fireEvents(
-              remoteEvents.size() > 0 ? localEvents.selectAfter( remoteEvents.last().timestamp() ) : remoteEvents );
+              remoteEvents.size() > 0 ? localEvents.selectAfter( remoteEvents.last().timestamp() ) : localEvents );
         }
-        if( remoteEvents.size() > 0
-            && (localEvents.size() == 0 || remoteEvents.last().timestamp() > localEvents.last().timestamp()) ) {
-          // События пересылаются из удаленного сервера в локальный сервер
-          remoteEventService.fireEvents(
-              localEvents.size() > 0 ? remoteEvents.selectAfter( localEvents.last().timestamp() ) : localEvents );
-        }
-
       } );
       // Шлюз завершил инициализацию
       logger.info( MSG_GW_INIT_FINISH, id() );
@@ -873,8 +875,6 @@ class S5Gateway
     }
     // Время начала синхронизации
     long traceStartTime = System.currentTimeMillis();
-    // Отписываемся от всех событий
-    localEventService.unregisterHandler( this );
     // Дерегистрация исполнителей команд
     remoteCmdService.unregisterExecutor( this );
 
@@ -890,14 +890,8 @@ class S5Gateway
     synchronizeCmdExecutors( cmdGwids );
 
     // Подписка на события
-    IGwidList eventGwids = getConfigGwids( localGwidService, configuration.exportEvents(), localGwids );
-    // Запись в протокол
-    logger.info( MSG_GW_GWIDS_LIST, id(), //
-        Integer.valueOf( localToRemoteCurrdataPort.dataIds().size() ), //
-        Integer.valueOf( writeHistData.size() ), //
-        Integer.valueOf( cmdGwids.size() ), //
-        Integer.valueOf( eventGwids.size() ) );
-    localEventService.registerHandler( eventGwids, this );
+    // TODO: 2025-02-27 mvk: vetrol, на данный момент пересылаются все события через IS5EventInterceptor
+    // IGwidList eventGwids = getConfigGwids( localGwidService, configuration.exportEvents(), localGwids );
 
     // Сброс признака необходимости синхронизации
     needSynchronize = false;
