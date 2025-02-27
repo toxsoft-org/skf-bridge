@@ -245,6 +245,11 @@ class S5Gateway
   private int transmittedCurrdata;
 
   /**
+   * Количество переданных значений текущих данных.
+   */
+  private int transmittedCurrdataItems;
+
+  /**
    * Количество переданных хранимых данных.
    */
   private int transmittedHistdata;
@@ -252,7 +257,17 @@ class S5Gateway
   /**
    * Количество значений переданных хранимых данных.
    */
-  private int transmittedHistdataValues;
+  private int transmittedHistdataItems;
+
+  /**
+   * Количество передач событий.
+   */
+  private int transmittedEvents;
+
+  /**
+   * Количество переданных событий.
+   */
+  private int transmittedEventItems;
 
   /**
    * Метка вывода статистики.
@@ -361,12 +376,16 @@ class S5Gateway
     long currSlot = currTime / TRANSMITTED_INTERVAL;
     if( prevSlot != currSlot ) {
       // Вывод в журнал количества переданных данных
-      logger.info( MSG_TRANSIMITTED, id(), transmittingGwids.size(), transmittedCurrdata, transmittedHistdata,
-          transmittedHistdataValues );
+      logger.info( MSG_TRANSIMITTED, id(), transmittingGwids.size(), //
+          transmittedCurrdata, transmittedCurrdataItems, //
+          transmittedHistdata, transmittedHistdataItems, //
+          transmittedEvents, transmittedEventItems //
+      );
       // Сброс статистики
       transmittedCurrdata = 0;
+      transmittedCurrdataItems = 0;
       transmittedHistdata = 0;
-      transmittedHistdataValues = 0;
+      transmittedHistdataItems = 0;
       // Фиксируем время начала текущего временного слота
       transmittedTimestamp = currTime / TRANSMITTED_INTERVAL * TRANSMITTED_INTERVAL;
     }
@@ -433,7 +452,7 @@ class S5Gateway
           ITimedList<ITemporalAtomicValue> values = sequence.right();
           writeChannel.writeValues( interval, values );
           transmittedHistdata++;
-          transmittedHistdataValues += values.size();
+          transmittedHistdataItems += values.size();
         }
         // Завершение передачи хранимых данных
         logger.debug( MSG_GW_HISTDATA_TRANSFER_FINISH, id(), count, first );
@@ -467,9 +486,9 @@ class S5Gateway
       SkEvent first = aEvents.first();
       // Передача событий
       logger.info( MSG_GW_EVENT_TRANSFER, id(), count, first );
-      for( SkEvent event : aEvents ) {
-        remoteEventService.fireEvent( event );
-      }
+      remoteEventService.fireEvents( aEvents );
+      transmittedEvents++;
+      transmittedEventItems += aEvents.size();
       // Завершение передачи событий
       logger.info( MSG_GW_EVENT_TRANSFER_FINISH, id(), count, first );
     } );
@@ -743,6 +762,7 @@ class S5Gateway
         public void onCurrData( IMap<Gwid, IAtomicValue> aNewValues ) {
           super.onCurrData( aNewValues );
           transmittedCurrdata++;
+          transmittedCurrdataItems += aNewValues.size();
         }
       };
 

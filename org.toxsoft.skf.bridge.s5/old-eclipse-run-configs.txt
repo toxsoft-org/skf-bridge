@@ -1,0 +1,18 @@
+"-Dprogram.name=JBossTools: val-vetrol-server" -Xms4096m -Xmx4096m -Dorg.jboss.resolver.warning=true -Djava.net.preferIPv4Stack=true -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000 -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true "-Dorg.jboss.boot.log.file=/home/tsdev/works/tswildfly-26.1.1.Final/standalone-vetrol-local/log/boot.log" "-Dlogging.configuration=file:/home/tsdev/works/tswildfly-26.1.1.Final/standalone-vetrol-local/configuration/logging.properties" "-Djboss.home.dir=/home/tsdev/works/tswildfly-26.1.1.Final" -Dorg.jboss.logmanager.nocolor=true --add-exports=java.desktop/sun.awt=ALL-UNNAMED --add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.security=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.management/javax.management=ALL-UNNAMED --add-opens=java.naming/javax.naming=ALL-UNNAMED --add-exports=java.base/sun.nio.ch=ALL-UNNAMED --add-exports=jdk.unsupported/sun.misc=ALL-UNNAMED --add-exports=jdk.unsupported/sun.reflect=ALL-UNNAMED --add-modules=java.se -Djboss.bind.address.management=localhost 
+ -Duskat.server.id="valcom.server.local1"           
+ -Duskat.server.name="valcom-server.-local1"
+ -Duskat.server.descr="Valcom Local1 Server"
+ -Dorg.toxsoft.uskat.s5.server.startTimeMin=120
+ -Dorg.toxsoft.uskat.s5.server.startTimeMax=180
+ -Dorg.toxsoft.uskat.s5.server.boosted.average=0.9
+ -Dorg.toxsoft.uskat.s5.server.overloaded.delay=60
+ -Dorg.toxsoft.uskat.s5.server.overloaded.average=5.0
+ -Dorg.toxsoft.uskat.s5.server.db.schema="val"
+ -Dorg.toxsoft.uskat.s5.server.db.depth=1800
+ -Dorg.toxsoft.uskat.s5.client.doJobTimeout=10
+ -Dorg.toxsoft.uskat.skatlets.virtdata.netnode.skid0=@Skid[sk.Server[valcom.local1]]
+ -Dorg.toxsoft.uskat.skatlets.virtdata.netnode.resources0=@GwidList[]
+ -Dsk.service.sysext.gateways.infos="@SkGatewayInfosKeeper{[{\"valcom.main\",\"valcom.main\",\"valcom.main\",{[{\"192.168.0.120\",8080}],5000,13000,1000,1000},\"valcom.server.local1\",\"root\",{rtdata,[sk.Server[*]$rtdata(*), sk.ServerNode[*]$rtdata(*), sk.ServerHistorable[*]$rtdata(*), val.AnalogChannel[*]$rtdata(*)],[],0}, {rtdata,[sk.Server[*]$rtdata(*), sk.ServerNode[*]$rtdata(*), sk.ServerHistorable[*]$rtdata(*), val.AnalogChannel[*]$rtdata(*)],[],0},{event,[],[],0},{cmd,[],[],0}} ] }}"
+
+ -Dsk.service.sysext.gateways.infos="@SkGatewayInfosKeeper{[{\"valcom.main\",\"valcom.main\",\"valcom.main\",{[{\"192.168.0.120\",8080}],5000,13000,1000,1000},\"valcom.server.local1\",\"root\",{rtdata,[],[],1}, {rtdata,[],[],1}, {event,[],[],0}, {cmd,[],[],0}} ]},  {rtdata,[],[],1}, {rtdata,[],[],1}, {event,[],[],0}, {cmd,[],[],0}} ]} }"
+
