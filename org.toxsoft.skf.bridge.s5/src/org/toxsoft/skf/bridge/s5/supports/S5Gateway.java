@@ -190,11 +190,6 @@ class S5Gateway
   private ISkGwidService localGwidService;
 
   /**
-   * Служба событий (чтение)
-   */
-  private ISkEventService localEventService;
-
-  /**
    * Служба событий (запись)
    */
   private ISkEventService remoteEventService;
@@ -743,7 +738,6 @@ class S5Gateway
       remoteCmdService = remoteApi.cmdService();
       localCmdService = localApi.cmdService();
       // Служба событий: чтение/запись
-      localEventService = localApi.eventService();
       remoteEventService = remoteApi.eventService();
       // Служба качества данных: чтение/запись
       localDataQualityService = localApi.getService( ISkDataQualityService.SERVICE_ID );
