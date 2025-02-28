@@ -53,6 +53,7 @@ interface IS5Resources
       "[%s] Регистрация наблюдателя за исполнением команд объектами шлюза. Количество команд: %d.";
   String MSG_GW_CURRDATA_TRANSFER                       =
       "[%s] Передача текущих данных. Количество данных: %d. first: %s.";
+  String MSG_GW_CURRDATA_TRANSFER_VALUE                 = "[%s] onCurrData(...): передача значения: %s = %s.";
   String MSG_GW_CURRDATA_TRANSFER_FINISH                =
       "[%s] Завершение передачи текущих данных. Количество данных: %d. first: %s. Время запроса: %d (msec).";
   String MSG_GW_HISTDATA_TRANSFER                       =

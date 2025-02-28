@@ -132,6 +132,8 @@ class S5GatewayCurrDataPort
         continue;
       }
       writeChannel.setValue( value );
+      // Журналирование
+      logger.error( MSG_GW_CURRDATA_TRANSFER_VALUE, id(), gwid, value );
     }
     // Время выполнения
     Long traceTime = Long.valueOf( System.currentTimeMillis() - traceStartTime );
