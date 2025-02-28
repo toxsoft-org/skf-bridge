@@ -127,13 +127,13 @@ class S5GatewayCurrDataPort
       IAtomicValue value = aNewValues.getByKey( gwid );
       ISkWriteCurrDataChannel writeChannel = writeCurrData.findByKey( gwid );
       if( writeChannel == null ) {
-        // Не найден канал записи хранимых данных
+        // Не найден канал записи текущих данных
         logger.error( ERR_CURRDATA_WRITE_CHANNEL_NOT_FOUND, id(), gwid );
         continue;
       }
       writeChannel.setValue( value );
       // Журналирование
-      logger.error( MSG_GW_CURRDATA_TRANSFER_VALUE, id(), gwid, value );
+      logger.debug( MSG_GW_CURRDATA_TRANSFER_VALUE, id(), gwid, value );
     }
     // Время выполнения
     Long traceTime = Long.valueOf( System.currentTimeMillis() - traceStartTime );
