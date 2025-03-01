@@ -7,8 +7,6 @@ import org.toxsoft.skf.bridge.cfg.modbus.skide.*;
 import org.toxsoft.skf.bridge.cfg.modbus.skide.main.*;
 import org.toxsoft.skide.core.api.*;
 
-import ru.toxsoft.val.lib.*;
-
 /**
  * Plugin addon.
  *
@@ -22,8 +20,6 @@ public class AddonSkidePluginBridgeCfgModbus
    */
   public AddonSkidePluginBridgeCfgModbus() {
     super( Activator.PLUGIN_ID );
-    // dima 18.12.24 FIXME тупо заплатка для того чтобы использовать в SkIDE enum'ы предметной оласти проекта VALCOM
-    ValcomUtils.initialize();
   }
 
   // ------------------------------------------------------------------------------------
