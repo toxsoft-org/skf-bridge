@@ -1,9 +1,7 @@
 package org.toxsoft.skf.bridge.s5.supports;
 
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
-import static org.toxsoft.core.tslib.bricks.time.impl.TimeUtils.*;
 import static org.toxsoft.core.tslib.coll.impl.TsCollectionsUtils.*;
-import static org.toxsoft.skf.bridge.s5.lib.impl.S5BackendGatewayConfig.*;
 import static org.toxsoft.skf.bridge.s5.lib.impl.SkGatewayGwids.*;
 import static org.toxsoft.skf.bridge.s5.supports.IS5Resources.*;
 import static org.toxsoft.uskat.s5.common.IS5CommonResources.*;
@@ -18,7 +16,6 @@ import org.toxsoft.core.tslib.av.temporal.*;
 import org.toxsoft.core.tslib.bricks.ctx.*;
 import org.toxsoft.core.tslib.bricks.ctx.impl.*;
 import org.toxsoft.core.tslib.bricks.events.change.*;
-import org.toxsoft.core.tslib.bricks.strid.coll.*;
 import org.toxsoft.core.tslib.bricks.strid.impl.*;
 import org.toxsoft.core.tslib.bricks.threadexec.*;
 import org.toxsoft.core.tslib.bricks.time.*;
@@ -34,7 +31,6 @@ import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.login.*;
 import org.toxsoft.core.tslib.utils.logs.*;
-import org.toxsoft.skf.alarms.lib.*;
 import org.toxsoft.skf.alarms.lib.impl.*;
 import org.toxsoft.skf.bridge.s5.lib.*;
 import org.toxsoft.skf.dq.lib.*;
@@ -750,7 +746,7 @@ class S5Gateway
       remoteDataQualityService.defineTicket( TICKET_ROUTE, STR_ROUTE, STR_ROUTE_D, dt );
 
       // Служба алармов
-      ISkAlarmService localAlarmService = localApi.getService( ISkAlarmService.SERVICE_ID );
+      // ISkAlarmService localAlarmService = localApi.getService( ISkAlarmService.SERVICE_ID );
       // Создание портов передачи текущих данных
       localToRemoteCurrdataPort = new S5GatewayCurrDataPort( id(), localRtDataService, remoteRtDataService, logger ) {
 
@@ -775,47 +771,51 @@ class S5Gateway
         // Попытка синхронизации наборов данных, слушателей подключенных соединений
         synchronize();
       } );
-      threadExecutor.syncExec( () -> {
-        // TODO: в разработке события, команды
-        remoteEventService.registerHandler( new GwidList(
-            Gwid.createEvent( ISkAlarmConstants.CLSID_ALARM, Gwid.STR_MULTI_ID, ISkAlarmConstants.EVID_ACKNOWLEDGE ) ),
-            aEvents -> {
-              // Квитирование алармов локального сервера по событиям квитирования удаленного сервера
-              for( SkEvent event : aEvents ) {
-                Skid alarmId = event.eventGwid().skid();
-                Skid authorId = event.paramValues().getValobj( ISkAlarmConstants.EVPRMID_ACK_AUTHOR );
-                String comment = event.paramValues().getValobj( ISkAlarmConstants.EVPRMID_ACK_COMMNET );
-                ISkAlarm alarm = localAlarmService.findAlarm( alarmId.strid() );
-                if( alarm != null ) {
-                  alarm.sendAcknowledge( authorId, comment );
-                }
-              }
-            } );
-        long currTime = System.currentTimeMillis();
-        long startTime = currTime - SYNC_INTERVAL.getValue( owner.configuration() ).asInt() * 24 * 60 * 60 * 1000;
-        // Определение интервала синхронизации
-        IQueryInterval interval = new QueryInterval( EQueryIntervalType.CSCE, startTime, MAX_FORMATTABLE_TIMESTAMP );
-        // Синхронизация истории алармов
-        IStridablesList<ISkAlarm> localAlarms = localAlarmService.listAlarms();
-        // Формирование списка gwid и синхронизируемых событий
-        GwidList eventIds = new GwidList();
-        for( ISkAlarm alarm : localAlarms ) {
-          eventIds.add( Gwid.createEvent( alarm.classId(), alarm.strid(), Gwid.STR_MULTI_ID ) );
-        }
-        ISkEventList localEvents = loadEvents( localApi.hqService(), eventIds, interval );
-        ISkEventList remoteEvents = loadEvents( remoteApi.hqService(), eventIds, interval );
-        // Синхронизация списка событий между серверами
-        if( localEvents.size() > 0
-            && (remoteEvents.size() == 0 || localEvents.last().timestamp() > remoteEvents.last().timestamp()) ) {
-          // События пересылаются из локального сервера в удаленный сервер
-          remoteEventService.fireEvents(
-              remoteEvents.size() > 0 ? localEvents.selectAfter( remoteEvents.last().timestamp() ) : localEvents );
-        }
-      } );
+
+      // threadExecutor.syncExec( () -> {
+      // // TODO: в разработке события, команды
+      // remoteEventService.registerHandler( new GwidList(
+      // Gwid.createEvent( ISkAlarmConstants.CLSID_ALARM, Gwid.STR_MULTI_ID, ISkAlarmConstants.EVID_ACKNOWLEDGE ) ),
+      // aEvents -> {
+      // // Квитирование алармов локального сервера по событиям квитирования удаленного сервера
+      // for( SkEvent event : aEvents ) {
+      // Skid alarmId = event.eventGwid().skid();
+      // Skid authorId = event.paramValues().getValobj( ISkAlarmConstants.EVPRMID_ACK_AUTHOR );
+      // String comment = event.paramValues().getValobj( ISkAlarmConstants.EVPRMID_ACK_COMMNET );
+      // ISkAlarm alarm = localAlarmService.findAlarm( alarmId.strid() );
+      // if( alarm != null ) {
+      // alarm.sendAcknowledge( authorId, comment );
+      // }
+      // }
+      // } );
+
+      // long currTime = System.currentTimeMillis();
+      // long startTime = currTime - SYNC_INTERVAL.getValue( owner.configuration() ).asInt() * 24 * 60 * 60 * 1000;
+      // Определение интервала синхронизации
+      // IQueryInterval interval = new QueryInterval( EQueryIntervalType.CSCE, startTime, MAX_FORMATTABLE_TIMESTAMP );
+      // Синхронизация истории алармов
+      // IStridablesList<ISkAlarm> localAlarms = localAlarmService.listAlarms();
+      // // Формирование списка gwid и синхронизируемых событий
+      // GwidList eventIds = new GwidList();
+      // for( ISkAlarm alarm : localAlarms ) {
+      // eventIds.add( Gwid.createEvent( alarm.classId(), alarm.strid(), Gwid.STR_MULTI_ID ) );
+      // }
+      // ISkEventList localEvents = loadEvents( localApi.hqService(), eventIds, interval );
+      // ISkEventList remoteEvents = loadEvents( remoteApi.hqService(), eventIds, interval );
+      // // Синхронизация списка событий между серверами
+      // if( localEvents.size() > 0
+      // && (remoteEvents.size() == 0 || localEvents.last().timestamp() > remoteEvents.last().timestamp()) ) {
+      // // События пересылаются из локального сервера в удаленный сервер
+      // remoteEventService.fireEvents(
+      // remoteEvents.size() > 0 ? localEvents.selectAfter( remoteEvents.last().timestamp() ) : localEvents );
+      // }
+      // } )
       // Шлюз завершил инициализацию
       logger.info( MSG_GW_INIT_FINISH, id() );
     }
-    catch( Throwable e ) {
+    catch(
+
+    Throwable e ) {
       // Ошибка установки соединения с удаленным сервером
       logger.error( e, ERR_CREATE_CONNECTION, id(), cause( e ) );
       // Требуется повторная инициализация
