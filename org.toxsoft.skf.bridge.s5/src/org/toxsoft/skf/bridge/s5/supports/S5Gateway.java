@@ -54,6 +54,7 @@ import org.toxsoft.uskat.s5.server.backend.supports.events.*;
 import org.toxsoft.uskat.s5.server.backend.supports.histdata.*;
 import org.toxsoft.uskat.s5.server.interceptors.*;
 import org.toxsoft.uskat.s5.server.startup.*;
+import org.toxsoft.uskat.s5.utils.*;
 import org.toxsoft.uskat.s5.utils.jobs.*;
 import org.toxsoft.uskat.s5.utils.progress.*;
 
@@ -261,9 +262,9 @@ class S5Gateway
   private int transmittedEventItems;
 
   /**
-   * Метка вывода статистики.
+   * Таймер статистики
    */
-  private long transmittedTimestamp = System.currentTimeMillis();
+  private final S5IntervalTimer transmittedTimer = new S5IntervalTimer( TRANSMITTED_INTERVAL );
 
   /**
    * Журнал работы.
@@ -362,10 +363,7 @@ class S5Gateway
       // Синхронизация данных с удаленным сервером
       synchronize();
     }
-    long currTime = System.currentTimeMillis();
-    long prevSlot = transmittedTimestamp / TRANSMITTED_INTERVAL;
-    long currSlot = currTime / TRANSMITTED_INTERVAL;
-    if( prevSlot != currSlot ) {
+    if( transmittedTimer.update() ) {
       // Вывод в журнал количества переданных данных
       logger.info( MSG_TRANSIMITTED, id(), transmittingGwids.size(), //
           transmittedCurrdata, transmittedCurrdataItems, //
@@ -379,8 +377,6 @@ class S5Gateway
       transmittedHistdataItems = 0;
       transmittedEvents = 0;
       transmittedEventItems = 0;
-      // Фиксируем время начала текущего временного слота
-      transmittedTimestamp = currTime / TRANSMITTED_INTERVAL * TRANSMITTED_INTERVAL;
     }
   }
 
