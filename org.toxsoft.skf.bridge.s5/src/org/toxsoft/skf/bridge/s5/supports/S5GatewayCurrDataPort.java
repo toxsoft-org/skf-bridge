@@ -110,6 +110,14 @@ class S5GatewayCurrDataPort
     writeCurrData.setAll( writeRtDataService.createWriteCurrDataChannels( gwids ) );
     readRtDataService.eventer().addListener( this );
     readCurrData.setAll( readRtDataService.createReadCurrDataChannels( gwids ) );
+    // Инициализация значений портов записи
+    for( Gwid gwid : readCurrData.keys() ) {
+      ISkReadCurrDataChannel readChannel = readCurrData.findByKey( gwid );
+      ISkWriteCurrDataChannel writeChannel = writeCurrData.findByKey( gwid );
+      if( readChannel != null && writeChannel != null ) {
+        writeChannel.setValue( readChannel.getValue() );
+      }
+    }
   }
 
   // ------------------------------------------------------------------------------------
