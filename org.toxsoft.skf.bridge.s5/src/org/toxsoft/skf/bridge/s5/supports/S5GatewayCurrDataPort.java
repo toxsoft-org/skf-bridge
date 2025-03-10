@@ -115,6 +115,8 @@ class S5GatewayCurrDataPort
       ISkReadCurrDataChannel readChannel = readCurrData.findByKey( gwid );
       ISkWriteCurrDataChannel writeChannel = writeCurrData.findByKey( gwid );
       if( readChannel != null && writeChannel != null ) {
+        IAtomicValue value = readChannel.getValue();
+        logger.info( MSG_INIT_CURRDATA, id(), gwid, value );
         writeChannel.setValue( readChannel.getValue() );
       }
     }
