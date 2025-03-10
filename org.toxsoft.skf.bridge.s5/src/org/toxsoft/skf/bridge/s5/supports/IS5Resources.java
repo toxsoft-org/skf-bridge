@@ -92,6 +92,7 @@ interface IS5Resources
       "[%s] reconfigure gateway.\n   old config = %s \n   new config = %s.";
   String MSG_TRANSIMITTED                               =
       "[%s] gwids = %d. transfers/items: currdata = %d/%d, histdata = %d/%d, events = %d/%d.";
+  String MSG_INIT_CURRDATA                              = "[%s]: S5GatewayCurrDataPort.setDataIds(...) init %s = %s";
 
   // ------------------------------------------------------------------------------------
   // Тексты ошибок
