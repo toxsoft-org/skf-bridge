@@ -229,14 +229,15 @@ public class GwidsForCfgM5Model
   @Override
   protected IM5LifecycleManager<Gwid> doCreateDefaultLifecycleManager() {
     ISkConnectionSupplier cs = tsContext().get( ISkConnectionSupplier.class );
-    // TODO which connection to use?
     ISkConnection conn = cs.defConn();
     return new GwidsForCfgM5LifecycleManager( this, conn );
   }
 
   @Override
   protected IM5LifecycleManager<Gwid> doCreateLifecycleManager( Object aMaster ) {
-    return new GwidsForCfgM5LifecycleManager( this, ISkConnection.class.cast( aMaster ) );
+    ISkConnectionSupplier cs = tsContext().get( ISkConnectionSupplier.class );
+    ISkConnection conn = cs.defConn();
+    return new GwidsForCfgM5LifecycleManager( this, conn );
   }
 
   private ECfgUnitType unitType = ECfgUnitType.DATA;

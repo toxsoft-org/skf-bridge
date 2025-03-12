@@ -359,14 +359,15 @@ public class ModbusNodesForCfgM5Model
   @Override
   protected IM5LifecycleManager<IAtomicValue> doCreateDefaultLifecycleManager() {
     ISkConnectionSupplier cs = tsContext().get( ISkConnectionSupplier.class );
-    // TODO which connection to use?
     ISkConnection conn = cs.defConn();
     return new ModbusNodesForCfgM5LifecycleManager( this, conn );
   }
 
   @Override
   protected IM5LifecycleManager<IAtomicValue> doCreateLifecycleManager( Object aMaster ) {
-    return new ModbusNodesForCfgM5LifecycleManager( this, ISkConnection.class.cast( aMaster ) );
+    ISkConnectionSupplier cs = tsContext().get( ISkConnectionSupplier.class );
+    ISkConnection conn = cs.defConn();
+    return new ModbusNodesForCfgM5LifecycleManager( this, conn );
   }
 
   class Controller
