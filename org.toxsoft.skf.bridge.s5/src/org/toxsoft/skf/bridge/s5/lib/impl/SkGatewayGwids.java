@@ -199,27 +199,27 @@ public class SkGatewayGwids
   /**
    * Возвращает список идентификаторов конфигурации
    *
-   * @param aService {@link ISkGwidService} служба {@link Gwid} идентификаторов
+   * @param aGwidService {@link ISkGwidService} служба {@link Gwid} идентификаторов
    * @param aConfig {@link ISkGatewayGwids} идентификаторы {@link Gwid} для подсистемы
    * @param aQualityGwids {@link IGwidList} список идентификаторов предоставляемых службой качества
    * @return {@link IGwidList} список идентификаторов
    */
-  public static IGwidList getConfigGwids( ISkGwidService aService, ISkGatewayGwids aConfig, IGwidList aQualityGwids ) {
-    TsNullArgumentRtException.checkNulls( aService, aConfig, aQualityGwids );
+  public static IGwidList getConfigGwids( ISkGwidService aGwidService, ISkGatewayGwids aConfig, IGwidList aQualityGwids ) {
+    TsNullArgumentRtException.checkNulls( aGwidService, aConfig, aQualityGwids );
     // Добавление идентификаторов в результат
     GwidList retValue = new GwidList();
 
     for( Gwid includeGwid : aConfig.includeGwids() ) {
       // Добавляется только идентификаторы конфигурации
       if( includeGwid.kind() == aConfig.gwidKind() ) {
-        retValue.addAll( aService.expandGwid( includeGwid ) );
+        retValue.addAll( aGwidService.expandGwid( includeGwid ) );
       }
     }
     if( aConfig.includeQualityGwids() ) {
       for( Gwid qualityGwid : aQualityGwids ) {
         // Добавляется только идентификаторы конфигурации
         if( qualityGwid.kind() == aConfig.gwidKind() ) {
-          retValue.addAll( aService.expandGwid( qualityGwid ) );
+          retValue.addAll( aGwidService.expandGwid( qualityGwid ) );
         }
       }
     }
@@ -229,7 +229,7 @@ public class SkGatewayGwids
       GwidList excludeList = new GwidList();
       for( Gwid excludeGwid : aConfig.excludeGwids() ) {
         if( excludeGwid.kind() == aConfig.gwidKind() ) {
-          excludeList.addAll( aService.expandGwid( excludeGwid ) );
+          excludeList.addAll( aGwidService.expandGwid( excludeGwid ) );
         }
       }
       // Получение полного списка идентификаторов результата
