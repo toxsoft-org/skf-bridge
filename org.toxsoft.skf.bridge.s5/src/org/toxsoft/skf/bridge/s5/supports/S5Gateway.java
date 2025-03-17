@@ -6,6 +6,8 @@ import static org.toxsoft.skf.bridge.s5.lib.impl.SkGatewayGwids.*;
 import static org.toxsoft.skf.bridge.s5.supports.IS5Resources.*;
 import static org.toxsoft.uskat.s5.common.IS5CommonResources.*;
 
+import java.util.*;
+
 import org.toxsoft.core.log4j.*;
 import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.impl.*;
@@ -170,6 +172,11 @@ class S5Gateway
    * Значение: выполняемая команда
    */
   private IMapEdit<Gwid, IDtoCommand> executingCommands = new SynchronizedMap<>( new ElemMap<>() );
+
+  /**
+   * Идентификаторы событий передаваемых на удаленный сервера
+   */
+  private HashSet<Gwid> eventGwids = new HashSet<>();
 
   /**
    * Слушатель исполнения команд
@@ -471,13 +478,23 @@ class S5Gateway
   public boolean beforeWriteEvents( ISkEventList aEvents ) {
     // Передача событий синхронизируется через исполнитель потоков соединения
     threadExecutor.asyncExec( () -> {
-      Integer count = Integer.valueOf( aEvents.size() );
-      SkEvent first = aEvents.first();
+      // Список событий пересылаемых на удаленный сервер
+      SkEventList events = new SkEventList( aEvents.size() );
+      for( SkEvent event : aEvents ) {
+        if( eventGwids.contains( event.eventGwid() ) ) {
+          events.add( event );
+        }
+      }
+      if( events.size() == 0 ) {
+        return;
+      }
+      Integer count = Integer.valueOf( events.size() );
+      SkEvent first = events.first();
       // Передача событий
       logger.info( MSG_GW_EVENT_TRANSFER, id(), count, first );
-      remoteEventService.fireEvents( aEvents );
+      remoteEventService.fireEvents( events );
       transmittedEvents++;
-      transmittedEventItems += aEvents.size();
+      transmittedEventItems += events.size();
       // Завершение передачи событий
       logger.info( MSG_GW_EVENT_TRANSFER_FINISH, id(), count, first );
     } );
@@ -902,8 +919,10 @@ class S5Gateway
     synchronizeCmdExecutors( cmdGwids );
 
     // Подписка на события
-    // TODO: 2025-02-27 mvk: vetrol, на данный момент пересылаются все события через IS5EventInterceptor
-    // IGwidList eventGwids = getConfigGwids( localGwidService, configuration.exportEvents(), localGwids );
+    eventGwids.clear();
+    for( Gwid g : getConfigGwids( localGwidService, configuration.exportEvents(), localGwids ) ) {
+      eventGwids.add( g );
+    }
 
     // Сброс признака необходимости синхронизации
     needSynchronize = false;
