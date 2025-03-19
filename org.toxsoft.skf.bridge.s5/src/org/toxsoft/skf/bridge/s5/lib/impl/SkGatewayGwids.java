@@ -1,5 +1,7 @@
 package org.toxsoft.skf.bridge.s5.lib.impl;
 
+import static org.toxsoft.uskat.core.utils.SkHelperUtils.*;
+
 import java.io.*;
 
 import org.toxsoft.core.tslib.bricks.keeper.*;
@@ -10,7 +12,7 @@ import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.valobj.*;
 import org.toxsoft.skf.bridge.s5.lib.*;
-import org.toxsoft.uskat.core.api.gwids.*;
+import org.toxsoft.uskat.core.*;
 
 /**
  * Реализация {@link ISkGatewayGwids}
@@ -199,39 +201,30 @@ public class SkGatewayGwids
   /**
    * Возвращает список идентификаторов конфигурации
    *
-   * @param aGwidService {@link ISkGwidService} служба {@link Gwid} идентификаторов
+   * @param aCoreApi {@link ISkCoreApi} API сервера
    * @param aConfig {@link ISkGatewayGwids} идентификаторы {@link Gwid} для подсистемы
    * @param aQualityGwids {@link IGwidList} список идентификаторов предоставляемых службой качества
+   * @param aOutputKind {@link EGwidKind} тип выходных идентификаторов
    * @return {@link IGwidList} список идентификаторов
    */
-  public static IGwidList getConfigGwids( ISkGwidService aGwidService, ISkGatewayGwids aConfig, IGwidList aQualityGwids ) {
-    TsNullArgumentRtException.checkNulls( aGwidService, aConfig, aQualityGwids );
+  public static IGwidList getConfigGwids( ISkCoreApi aCoreApi, ISkGatewayGwids aConfig, IGwidList aQualityGwids,
+      EGwidKind aOutputKind ) {
+    TsNullArgumentRtException.checkNulls( aCoreApi, aConfig, aQualityGwids );
     // Добавление идентификаторов в результат
     GwidList retValue = new GwidList();
 
-    for( Gwid includeGwid : aConfig.includeGwids() ) {
-      // Добавляется только идентификаторы конфигурации
-      if( includeGwid.kind() == aConfig.gwidKind() ) {
-        retValue.addAll( aGwidService.expandGwid( includeGwid ) );
-      }
-    }
+    // Добавление идентификаторов конфигурации
+    retValue.addAll( expandGwids( aCoreApi, aConfig.includeGwids(), aOutputKind ) );
+
+    // Добавление идентификаторов качества данных
     if( aConfig.includeQualityGwids() ) {
-      for( Gwid qualityGwid : aQualityGwids ) {
-        // Добавляется только идентификаторы конфигурации
-        if( qualityGwid.kind() == aConfig.gwidKind() ) {
-          retValue.addAll( aGwidService.expandGwid( qualityGwid ) );
-        }
-      }
+      retValue.addAll( expandGwids( aCoreApi, aQualityGwids, aOutputKind ) );
     }
-    // Вырезание идентификаторов из результата
+
+    // Исключение идентификаторов из результата
     if( aConfig.excludeGwids().size() > 0 ) {
       // Получение полного списка идентификаторов исключений
-      GwidList excludeList = new GwidList();
-      for( Gwid excludeGwid : aConfig.excludeGwids() ) {
-        if( excludeGwid.kind() == aConfig.gwidKind() ) {
-          excludeList.addAll( aGwidService.expandGwid( excludeGwid ) );
-        }
-      }
+      IGwidList excludeList = expandGwids( aCoreApi, aConfig.excludeGwids(), aOutputKind );
       // Получение полного списка идентификаторов результата
       GwidList tmp = new GwidList();
       for( Gwid gwid : retValue ) {

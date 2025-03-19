@@ -2,6 +2,7 @@ package org.toxsoft.skf.bridge.s5.supports;
 
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.coll.impl.TsCollectionsUtils.*;
+import static org.toxsoft.core.tslib.gw.gwid.EGwidKind.*;
 import static org.toxsoft.skf.bridge.s5.lib.impl.SkGatewayGwids.*;
 import static org.toxsoft.skf.bridge.s5.supports.IS5Resources.*;
 import static org.toxsoft.uskat.s5.common.IS5CommonResources.*;
@@ -13,7 +14,6 @@ import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.impl.*;
 import org.toxsoft.core.tslib.av.metainfo.*;
 import org.toxsoft.core.tslib.av.opset.*;
-import org.toxsoft.core.tslib.av.opset.impl.*;
 import org.toxsoft.core.tslib.av.temporal.*;
 import org.toxsoft.core.tslib.bricks.ctx.*;
 import org.toxsoft.core.tslib.bricks.ctx.impl.*;
@@ -21,7 +21,6 @@ import org.toxsoft.core.tslib.bricks.events.change.*;
 import org.toxsoft.core.tslib.bricks.strid.impl.*;
 import org.toxsoft.core.tslib.bricks.threadexec.*;
 import org.toxsoft.core.tslib.bricks.time.*;
-import org.toxsoft.core.tslib.bricks.time.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.coll.primtypes.*;
@@ -42,7 +41,6 @@ import org.toxsoft.uskat.core.*;
 import org.toxsoft.uskat.core.api.cmdserv.*;
 import org.toxsoft.uskat.core.api.evserv.*;
 import org.toxsoft.uskat.core.api.gwids.*;
-import org.toxsoft.uskat.core.api.hqserv.*;
 import org.toxsoft.uskat.core.api.rtdserv.*;
 import org.toxsoft.uskat.core.backend.*;
 import org.toxsoft.uskat.core.connection.*;
@@ -918,9 +916,10 @@ class S5Gateway
     IGwidList cmdGwids = getExecutableCmdGwids( localGwids );
     synchronizeCmdExecutors( cmdGwids );
 
+    ISkCoreApi coreApi = localConnection.coreApi();
     // Подписка на события
     eventGwids.clear();
-    for( Gwid g : getConfigGwids( localGwidService, configuration.exportEvents(), localGwids ) ) {
+    for( Gwid g : getConfigGwids( coreApi, configuration.exportEvents(), localGwids, GW_EVENT ) ) {
       eventGwids.add( g );
     }
 
@@ -1015,9 +1014,10 @@ class S5Gateway
     for( ISkRtdataChannel channel : writeHistData.values() ) {
       channel.close();
     }
+    ISkCoreApi coreApi = localConnection.coreApi();
     // ЭКСПОРТ (передача с локального на удаленный севрер)
     // Идентификаторы для текущих данных
-    IGwidList currdataGwids = getConfigGwids( localGwidService, configuration.exportCurrData(), aLocalQualityGwids );
+    IGwidList currdataGwids = getConfigGwids( coreApi, configuration.exportCurrData(), aLocalQualityGwids, GW_RTDATA );
     // Добавление вновь добавленных каналов
     if( currdataGwids.size() > 0 ) {
       // Регистрация передаваемых текущих данных на удаленном сервере
@@ -1026,7 +1026,7 @@ class S5Gateway
       localToRemoteCurrdataPort.setDataIds( currdataGwids );
     }
     // Идентификаторы для хранимых данных
-    IGwidList histdataGwids = getConfigGwids( localGwidService, configuration.exportHistData(), aLocalQualityGwids );
+    IGwidList histdataGwids = getConfigGwids( coreApi, configuration.exportHistData(), aLocalQualityGwids, GW_RTDATA );
     // Добавление вновь добавленных каналов
     if( histdataGwids.size() > 0 ) {
       // Регистрация передаваемых хранимых данных на удаленном сервере
@@ -1045,13 +1045,14 @@ class S5Gateway
    */
   private IGwidList getExecutableCmdGwids( IGwidList aQualityGwids ) {
     TsNullArgumentRtException.checkNull( aQualityGwids );
+    ISkCoreApi coreApi = localConnection.coreApi();
     // Получение полного списка идентификаторов исключени
     GwidList allExecutorGwids = new GwidList();
     for( Gwid gwid : owner.commandBackend().listGloballyHandledCommandGwids() ) {
       allExecutorGwids.addAll( localGwidService.expandGwid( gwid ) );
     }
     GwidList allConfigGwids = new GwidList();
-    for( Gwid gwid : getConfigGwids( localGwidService, configuration.exportCmdExecutors(), aQualityGwids ) ) {
+    for( Gwid gwid : getConfigGwids( coreApi, configuration.exportCmdExecutors(), aQualityGwids, GW_CMD ) ) {
       allConfigGwids.addAll( localGwidService.expandGwid( gwid ) );
     }
     if( allConfigGwids.size() == 0 && configuration.exportCmdExecutors().excludeGwids().size() == 0 ) {
@@ -1079,37 +1080,5 @@ class S5Gateway
       sb.append( "   " + aGwids.get( index ) + "\n" ); //$NON-NLS-1$ //$NON-NLS-2$
     }
     return sb.toString();
-  }
-
-  /**
-   * Загружает список указанных событий сервера
-   *
-   * @param aHqService {@link ISkHistoryQueryService} служба запросов сервера.
-   * @param aEventIds {@link GwidList} список идентификаторов запрашиваемых событий
-   * @return {@link ITimedList}&lt; {@link SkEvent}&gt; список загруженных событий
-   * @throws TsNullArgumentRtException любой аргумент = null
-   */
-  private static ISkEventList loadEvents( ISkHistoryQueryService aHqService, GwidList aEventIds,
-      IQueryInterval aInterval ) {
-    TsNullArgumentRtException.checkNulls( aHqService, aEventIds, aInterval );
-    // TODO: mvkd ошибка обращения к query service у которой еше не инициализировано sharedConnection
-    if( true ) {
-      // return new TimedList<SkEvent>();
-    }
-    // Параметры запроса
-    IOptionSetEdit options = new OptionSet( OptionSetUtils.createOpSet( //
-    // ISkHistoryQueryServiceConstants.OP_SK_MAX_EXECUTION_TIME, AvUtils.avInt( 10000 ) //
-    ) );
-    ISkQueryRawHistory query = aHqService.createHistoricQuery( options );
-    query.prepare( aEventIds );
-    query.exec( aInterval );
-
-    IListEdit<ITimedList<SkEvent>> queryResults = new ElemArrayList<>();
-    for( Gwid gwid : query.listGwids() ) {
-      ITimedList<SkEvent> cmds = query.get( gwid );
-      queryResults.add( cmds );
-    }
-    SkEventList retValue = TimeUtils.uniteTimeporaLists( queryResults, SkEventList::new );
-    return retValue;
   }
 }
