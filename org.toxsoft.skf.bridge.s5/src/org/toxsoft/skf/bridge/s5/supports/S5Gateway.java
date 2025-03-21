@@ -1,7 +1,6 @@
 package org.toxsoft.skf.bridge.s5.supports;
 
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
-import static org.toxsoft.core.tslib.coll.impl.TsCollectionsUtils.*;
 import static org.toxsoft.core.tslib.gw.gwid.EGwidKind.*;
 import static org.toxsoft.skf.bridge.s5.lib.impl.SkGatewayGwids.*;
 import static org.toxsoft.skf.bridge.s5.supports.IS5Resources.*;
@@ -27,7 +26,6 @@ import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.coll.synch.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
-import org.toxsoft.core.tslib.gw.skid.*;
 import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.login.*;
@@ -137,13 +135,18 @@ class S5Gateway
   private ISkRtdataService remoteRtDataService;
 
   /**
+   * Набор идентификаторов данных реального времени локального сервера имеющих качество
+   */
+  private IGwidList localDataQualitiesIds = IGwidList.EMPTY;
+
+  /**
    * Карта значений метки "пройденный маршрут значения данного" по идентификаторам передаваемых через мост данных
    * определенные через локальную службу качества.
    * <p>
    * Ключ: идентификатор данного значения которого могут быть переданы через шлюз; Значение: значение метки "пройденный
    * маршрут значения данного" для данного.
    */
-  private IMap<Gwid, IAtomicValue> transmittingGwids;
+  private IMap<Gwid, IAtomicValue> transmittingMap;
 
   /**
    * Карта каналов записи исторических данных
@@ -370,7 +373,7 @@ class S5Gateway
     }
     if( transmittedTimer.update() ) {
       // Вывод в журнал количества переданных данных
-      logger.info( MSG_TRANSIMITTED, id(), transmittingGwids.size(), //
+      logger.info( MSG_TRANSIMITTED, id(), transmittingMap.size(), //
           transmittedCurrdata, transmittedCurrdataItems, //
           transmittedHistdata, transmittedHistdataItems, //
           transmittedEvents, transmittedEventItems //
@@ -603,10 +606,8 @@ class S5Gateway
       Integer count = Integer.valueOf( listGloballyHandledCommandGwids.size() );
       Gwid firstCmdGwid = listGloballyHandledCommandGwids.first();
       logger.info( MSG_TRANSFER_EXECUTORS_START, id(), count, firstCmdGwid );
-      // Данные по которым предоставляется качество
-      IGwidList qualityGwids = owner.dataQualityBackend().getConnectedResources( Skid.NONE );
       // Список команд которые могут быть выполнены службой команд
-      IGwidList cmdGwids = getExecutableCmdGwids( qualityGwids );
+      IGwidList cmdGwids = getExecutableCmdGwids( localDataQualitiesIds );
       // Вывод в журнал в отладке
       if( logger.isSeverityOn( ELogSeverity.DEBUG ) ) {
         // Текстовое представление идентификаторов для журнала
@@ -636,18 +637,25 @@ class S5Gateway
     try {
       try {
         if( aSource.equals( localDataQualityService ) ) {
-          // Данные локального сервера которые могут быть переданы через мост
-          IMap<Gwid, IAtomicValue> gwids = getTransmittingGwids( transmittingServers, localDataQualityService );
-          if( isListsSameContent( transmittingGwids.keys(), gwids.keys() ) ) {
+          // // Данные локального сервера которые могут быть переданы через мост
+          // IMap<Gwid, IAtomicValue> gwids = getTransmittingGwids( transmittingServers, localDataQualityService );
+          // if( TsCollectionsUtils.isListsSameContent( transmittingMap.keys(), gwids.keys() ) ) {
+          // // Набор не изменился
+          // return;
+          // }
+          // transmittingMap = gwids;
+          // Попытка обновить набор идентификаторов данных реального времени локального сервера имеющих качество
+          IGwidList newIds = localDataQualityService.getConnectedResources();
+          if( TsCollectionsUtils.isListsSameContent( localDataQualitiesIds, newIds ) ) {
             // Набор не изменился
             return;
           }
-          transmittingGwids = gwids;
+          localDataQualitiesIds = newIds;
+          // Выставление признака необходимости синхронизации
+          needSynchronize = true;
+          // Попытка синхронизации данных
+          synchronize();
         }
-        // Выставление признака необходимости синхронизации
-        needSynchronize = true;
-        // Попытка синхронизации данных
-        synchronize();
       }
       catch( Throwable e ) {
         // Ошибка синхронизации с удаленным сервером. Соединение будет закрыто
@@ -777,8 +785,8 @@ class S5Gateway
         readyForSynchronize = true;
         // Выставление признака необходимости синхронизации
         needSynchronize = true;
-        // Данные локального сервера которые могут быть переданы через мост
-        transmittingGwids = getTransmittingGwids( transmittingServers, localDataQualityService );
+        // Получение набора идентификаторов данных реального времени локального сервера имеющих качество
+        localDataQualitiesIds = localDataQualityService.getConnectedResources();
         // Попытка синхронизации наборов данных, слушателей подключенных соединений
         synchronize();
       } );
@@ -905,21 +913,30 @@ class S5Gateway
     // Дерегистрация исполнителей команд
     remoteCmdService.unregisterExecutor( this );
 
+    ISkCoreApi coreApi = localConnection.coreApi();
+    // Идентификаторы передаваемых текущих данных
+    IGwidList currdataGwids =
+        getConfigGwids( coreApi, configuration.exportCurrData(), localDataQualitiesIds, GW_RTDATA );
+    // Идентификаторы передаваемых хранимых данных
+    IGwidList histdataGwids =
+        getConfigGwids( coreApi, configuration.exportHistData(), localDataQualitiesIds, GW_RTDATA );
+    // Набор всех передаваемых данных реального времени
+    IGwidList transmittingIds = GwidList.createDirect( TsCollectionsUtils.union( currdataGwids, histdataGwids ) );
+    // Формирование карты передаваемых данных
+    transmittingMap = getTransmittingMap( localDataQualityService, transmittingServers, transmittingIds );
     // Публикация значений тикетов "маршрутов прохождения значений данных"
-    remoteDataQualityService.setConnectedAndMarkValues( TICKET_ROUTE, transmittingGwids );
+    remoteDataQualityService.setConnectedAndMarkValues( TICKET_ROUTE, transmittingMap );
 
-    IGwidList localGwids = new GwidList( transmittingGwids.keys() );
     // Создание каналов передачи данных
-    createRtdChannels( localGwids );
+    createRtdChannels( currdataGwids, histdataGwids );
 
     // Регистрация исполнителей команд
-    IGwidList cmdGwids = getExecutableCmdGwids( localGwids );
+    IGwidList cmdGwids = getExecutableCmdGwids( localDataQualitiesIds );
     synchronizeCmdExecutors( cmdGwids );
 
-    ISkCoreApi coreApi = localConnection.coreApi();
     // Подписка на события
     eventGwids.clear();
-    for( Gwid g : getConfigGwids( coreApi, configuration.exportEvents(), localGwids, GW_EVENT ) ) {
+    for( Gwid g : getConfigGwids( coreApi, configuration.exportEvents(), localDataQualitiesIds, GW_EVENT ) ) {
       eventGwids.add( g );
     }
 
@@ -974,21 +991,21 @@ class S5Gateway
   /**
    * Возвращает карту значений меток "маршрут прохождения значений данного" по передаваемым через шлюз данным.
    *
+   * @param aDataQualityService {@link ISkDataQualityService} служба качества данных
    * @param aTransmittingServers IStringList идентификаторы удаленных серверов {@link ISkServer} в направлении которых
    *          проводится передача данных.
-   * @param aDataQualityService {@link ISkDataQualityService} служба качества данных
+   * @param aTransimittingRtDataIds {@link IGwidList} список идентификаторов передаваемых данных.
    * @return {@link IMap}&lt;{@link Gwid},{@link IOptionSet}&gt; карта значений меток. <br>
    *         Ключ: идентификатор данного;<br>
    *         Значение: значение метки "маршрут прохождения значений данного".
    * @throws TsNullArgumentRtException любой аргумент = null
    */
-  private static IMap<Gwid, IAtomicValue> getTransmittingGwids( IStringList aTransmittingServers,
-      ISkDataQualityService aDataQualityService ) {
+  private static IMap<Gwid, IAtomicValue> getTransmittingMap( ISkDataQualityService aDataQualityService,
+      IStringList aTransmittingServers, IGwidList aTransimittingRtDataIds ) {
     TsNullArgumentRtException.checkNulls( aTransmittingServers, aDataQualityService );
-    IGwidList gwids = aDataQualityService.getConnectedResources();
-    IMap<Gwid, IOptionSet> marksMap = aDataQualityService.getResourcesMarks( gwids );
+    IMap<Gwid, IOptionSet> marksMap = aDataQualityService.getResourcesMarks( aTransimittingRtDataIds );
     IMapEdit<Gwid, IAtomicValue> retValue = new ElemMap<>();
-    for( Gwid gwid : gwids ) {
+    for( Gwid gwid : aTransimittingRtDataIds ) {
       IOptionSet marks = marksMap.getByKey( gwid );
       IStringList route = marks.getValobj( TICKET_ROUTE, IStringList.EMPTY );
       if( !TsCollectionsUtils.intersects( aTransmittingServers, route ) ) {
@@ -1001,38 +1018,32 @@ class S5Gateway
   }
 
   /**
-   * Настройка конфигурации каналов передаваемых данных реального времени от локального удаленному севреру и обратно
+   * Создание каналов передачи данных реального времени от локального удаленному севреру.
    *
-   * @param aLocalQualityGwids {@link IGwidList} список идентификаторов данных локального сервера по которым
-   *          предоставляется качество
+   * @param aCurrDataIds {@link IGwidList} список идентификаторов текущих данных
+   * @param aHistDataIds {@link IGwidList} список идентификаторов текущих данных
    * @throws TsNullArgumentRtException аргумент = null
    */
-  private void createRtdChannels( IGwidList aLocalQualityGwids ) {
-    TsNullArgumentRtException.checkNull( aLocalQualityGwids );
+  private void createRtdChannels( IGwidList aCurrDataIds, IGwidList aHistDataIds ) {
+    TsNullArgumentRtException.checkNulls( aCurrDataIds, aHistDataIds );
     // Завершение работы портов
     localToRemoteCurrdataPort.close();
     for( ISkRtdataChannel channel : writeHistData.values() ) {
       channel.close();
     }
-    ISkCoreApi coreApi = localConnection.coreApi();
-    // ЭКСПОРТ (передача с локального на удаленный севрер)
-    // Идентификаторы для текущих данных
-    IGwidList currdataGwids = getConfigGwids( coreApi, configuration.exportCurrData(), aLocalQualityGwids, GW_RTDATA );
-    // Добавление вновь добавленных каналов
-    if( currdataGwids.size() > 0 ) {
+    // Создание каналов текущих данных
+    if( aCurrDataIds.size() > 0 ) {
       // Регистрация передаваемых текущих данных на удаленном сервере
-      logger.info( MSG_REGISTER_CURRDATA_ON_REMOTE, id(), Integer.valueOf( currdataGwids.size() ) );
+      logger.info( MSG_REGISTER_CURRDATA_ON_REMOTE, id(), Integer.valueOf( aCurrDataIds.size() ) );
       // Текущие данные (прием/передача)
-      localToRemoteCurrdataPort.setDataIds( currdataGwids );
+      localToRemoteCurrdataPort.setDataIds( aCurrDataIds );
     }
-    // Идентификаторы для хранимых данных
-    IGwidList histdataGwids = getConfigGwids( coreApi, configuration.exportHistData(), aLocalQualityGwids, GW_RTDATA );
-    // Добавление вновь добавленных каналов
-    if( histdataGwids.size() > 0 ) {
+    // Создание каналов хранимых данных
+    if( aHistDataIds.size() > 0 ) {
       // Регистрация передаваемых хранимых данных на удаленном сервере
-      logger.info( MSG_REGISTER_HISTDATA_ON_REMOTE, id(), Integer.valueOf( currdataGwids.size() ) );
+      logger.info( MSG_REGISTER_HISTDATA_ON_REMOTE, id(), Integer.valueOf( aHistDataIds.size() ) );
       // Создание новых каналов хранимых данных.
-      writeHistData.putAll( remoteRtDataService.createWriteHistDataChannels( histdataGwids ) );
+      writeHistData.putAll( remoteRtDataService.createWriteHistDataChannels( aHistDataIds ) );
     }
   }
 

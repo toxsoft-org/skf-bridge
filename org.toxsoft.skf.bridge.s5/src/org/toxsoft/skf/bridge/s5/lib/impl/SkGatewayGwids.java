@@ -7,6 +7,7 @@ import java.io.*;
 import org.toxsoft.core.tslib.bricks.keeper.*;
 import org.toxsoft.core.tslib.bricks.keeper.AbstractEntityKeeper.*;
 import org.toxsoft.core.tslib.bricks.strio.*;
+import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
@@ -211,10 +212,7 @@ public class SkGatewayGwids
       EGwidKind aOutputKind ) {
     TsNullArgumentRtException.checkNulls( aCoreApi, aConfig, aQualityGwids );
     // Добавление идентификаторов в результат
-    GwidList retValue = new GwidList();
-
-    // Добавление идентификаторов конфигурации
-    retValue.addAll( expandGwids( aCoreApi, aConfig.includeGwids(), aOutputKind ) );
+    GwidList retValue = new GwidList( expandGwids( aCoreApi, aConfig.includeGwids(), aOutputKind ) );
 
     // Добавление идентификаторов качества данных
     if( aConfig.includeQualityGwids() ) {
@@ -234,6 +232,6 @@ public class SkGatewayGwids
       }
       retValue = tmp;
     }
-    return retValue;
+    return GwidList.createDirect( TsCollectionsUtils.union( IGwidList.EMPTY, retValue ) );
   }
 }
