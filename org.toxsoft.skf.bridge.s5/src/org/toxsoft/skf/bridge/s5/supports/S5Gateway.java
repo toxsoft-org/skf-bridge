@@ -2,6 +2,7 @@ package org.toxsoft.skf.bridge.s5.supports;
 
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.gw.gwid.EGwidKind.*;
+import static org.toxsoft.skf.bridge.s5.lib.ISkGatewayHardConstants.*;
 import static org.toxsoft.skf.bridge.s5.lib.impl.SkGatewayGwids.*;
 import static org.toxsoft.skf.bridge.s5.supports.IS5Resources.*;
 import static org.toxsoft.uskat.s5.common.IS5CommonResources.*;
@@ -76,13 +77,6 @@ class S5Gateway
     implements IS5Gateway, IS5ServerJob, //
     IS5HistDataInterceptor, IS5EventInterceptor, //
     ISkCommandExecutor, ISkDataQualityChangeListener, ISkConnectionListener {
-
-  /**
-   * Тикет качества данных: список идентификаторов (объекты класса {@link ISkNetNode}) пройденных сетевых узлов.
-   * <p>
-   * Тип тикета: {@link EAtomicType#VALOBJ} {@link IStringList}.
-   */
-  private static final String TICKET_ROUTE = "transmittedServers"; //$NON-NLS-1$
 
   /**
    * Служба шлюзов
