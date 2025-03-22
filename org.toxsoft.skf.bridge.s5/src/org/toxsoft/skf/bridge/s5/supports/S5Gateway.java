@@ -3,6 +3,7 @@ package org.toxsoft.skf.bridge.s5.supports;
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.gw.gwid.EGwidKind.*;
 import static org.toxsoft.skf.bridge.s5.lib.ISkGatewayHardConstants.*;
+import static org.toxsoft.skf.bridge.s5.lib.impl.S5BackendGatewayConfig.*;
 import static org.toxsoft.skf.bridge.s5.lib.impl.SkGatewayGwids.*;
 import static org.toxsoft.skf.bridge.s5.supports.IS5Resources.*;
 import static org.toxsoft.uskat.s5.common.IS5CommonResources.*;
@@ -18,6 +19,7 @@ import org.toxsoft.core.tslib.av.temporal.*;
 import org.toxsoft.core.tslib.bricks.ctx.*;
 import org.toxsoft.core.tslib.bricks.ctx.impl.*;
 import org.toxsoft.core.tslib.bricks.events.change.*;
+import org.toxsoft.core.tslib.bricks.strid.coll.*;
 import org.toxsoft.core.tslib.bricks.strid.impl.*;
 import org.toxsoft.core.tslib.bricks.threadexec.*;
 import org.toxsoft.core.tslib.bricks.time.*;
@@ -283,7 +285,8 @@ class S5Gateway
   S5Gateway( S5BackendGatewaySingleton aOwner, ISkGatewayInfo aConfiguration ) {
     super( aConfiguration.id(), aConfiguration.nmName(), aConfiguration.description() );
     owner = aOwner;
-    transmittingServers = owner.gatewayConfigs().ids();
+    IStridablesList<ISkGatewayInfo> infos = GATEWAY_INFOS.getValue( owner.configuration() ).asValobj();
+    transmittingServers = infos.ids();
     configuration = aConfiguration;
     logger.info( MSG_GW_STARTED, id() );
 
