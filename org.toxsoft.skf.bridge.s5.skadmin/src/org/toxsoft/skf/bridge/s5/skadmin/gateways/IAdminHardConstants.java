@@ -19,7 +19,7 @@ interface IAdminHardConstants {
   /**
    * Префикс идентификаторов команд и их алиасов плагина
    */
-  String CMD_PATH_PREFIX = AdminPluginGateways.GATEWAY_CMD_PATH;
+  String CMD_PATH_PREFIX = AdminPluginGateways.CMD_PATH;
 
   /**
    * Аргумент : требование на все вопросы отвечать "yes"

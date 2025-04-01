@@ -1,7 +1,7 @@
 package org.toxsoft.skf.bridge.s5.skadmin;
 
 import org.toxsoft.skf.bridge.s5.skadmin.gateways.*;
-import org.toxsoft.uskat.skadmin.core.plugins.AbstractPluginCmdLibrary;
+import org.toxsoft.uskat.skadmin.core.plugins.*;
 
 /**
  * Плагин s5admin: команды управления конфигурациями s5-шлюзов
@@ -14,7 +14,7 @@ public class AdminPluginGateways
   /**
    * ИД-путь команд которые находятся в плагине
    */
-  public static final String GATEWAY_CMD_PATH = "sk.s5.gateways."; //$NON-NLS-1$
+  public static final String CMD_PATH = "sk.ext.gateways."; //$NON-NLS-1$
 
   // ------------------------------------------------------------------------------------
   // Реализация абстрактных методов AbstractPluginCmdLibrary
