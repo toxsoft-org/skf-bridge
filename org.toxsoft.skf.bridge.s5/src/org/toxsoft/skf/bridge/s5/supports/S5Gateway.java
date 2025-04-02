@@ -782,8 +782,6 @@ class S5Gateway
         readyForSynchronize = true;
         // Выставление признака необходимости синхронизации
         needSynchronize = true;
-        // Получение набора идентификаторов данных реального времени локального сервера имеющих качество
-        localDataQualitiesIds = localDataQualityService.getConnectedResources();
         // Попытка синхронизации наборов данных, слушателей подключенных соединений
         synchronize();
       } );
@@ -911,6 +909,8 @@ class S5Gateway
     remoteCmdService.unregisterExecutor( this );
 
     ISkCoreApi coreApi = localConnection.coreApi();
+    // Получение набора идентификаторов данных реального времени локального сервера имеющих качество
+    localDataQualitiesIds = localDataQualityService.getConnectedResources();
     // Идентификаторы передаваемых текущих данных
     IGwidList currdataGwids =
         getConfigGwids( coreApi, configuration.exportCurrData(), localDataQualitiesIds, GW_RTDATA );
