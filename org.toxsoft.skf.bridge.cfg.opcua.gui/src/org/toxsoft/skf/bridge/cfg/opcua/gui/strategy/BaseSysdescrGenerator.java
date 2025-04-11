@@ -3,6 +3,8 @@ package org.toxsoft.skf.bridge.cfg.opcua.gui.strategy;
 import static org.toxsoft.core.tsgui.m5.IM5Constants.*;
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
+import static org.toxsoft.core.tslib.gw.IGwHardConstants.*;
+import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.skide.IGreenWorldRefbooks.*;
 import static org.toxsoft.uskat.core.gui.km5.sded.IKM5SdedConstants.*;
@@ -19,6 +21,7 @@ import org.toxsoft.core.tsgui.dialogs.datarec.*;
 import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tsgui.m5.gui.*;
 import org.toxsoft.core.tsgui.m5.gui.mpc.impl.*;
+import org.toxsoft.core.tsgui.m5.gui.panels.*;
 import org.toxsoft.core.tsgui.m5.model.*;
 import org.toxsoft.core.tsgui.m5.model.impl.*;
 import org.toxsoft.core.tslib.av.*;
@@ -26,6 +29,7 @@ import org.toxsoft.core.tslib.av.impl.*;
 import org.toxsoft.core.tslib.av.metainfo.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.*;
+import org.toxsoft.core.tslib.bricks.events.change.*;
 import org.toxsoft.core.tslib.bricks.geometry.impl.*;
 import org.toxsoft.core.tslib.bricks.strid.coll.*;
 import org.toxsoft.core.tslib.bricks.strid.coll.impl.*;
@@ -45,6 +49,7 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 import org.toxsoft.skf.refbooks.lib.*;
 import org.toxsoft.skf.rri.lib.*;
 import org.toxsoft.skf.rri.lib.impl.*;
+import org.toxsoft.uskat.core.*;
 import org.toxsoft.uskat.core.api.objserv.*;
 import org.toxsoft.uskat.core.api.sysdescr.*;
 import org.toxsoft.uskat.core.api.sysdescr.dto.*;
@@ -177,6 +182,54 @@ public abstract class BaseSysdescrGenerator {
       TSID_DESCRIPTION, STR_D_EV_PARAM_ON, //
       TSID_IS_NULL_ALLOWED, AV_FALSE, //
       TSID_DEFAULT_VALUE, AV_FALSE );
+
+  /**
+   * Items provider for ISkObject created on OPC UA node.
+   *
+   * @author dima
+   */
+  static class OpcUANode2SkObjectItemsProvider
+      implements IM5ItemsProvider<IDtoObject> {
+
+    private IListEdit<IDtoObject> items         = new ElemArrayList<>();
+    private final ISkCoreApi      coreApi;
+    IListEdit<UaNode2Skid>        node2SkidList = new ElemArrayList<>();
+
+    // Создаем IDpuObject и инициализируем его значениями из узла
+    private IDtoObject makeObjDto( String aClassId, UaTreeNode aObjNode ) {
+      String id = aObjNode.getBrowseName();
+      Skid skid = new Skid( aClassId, id );
+      DtoObject dtoObj = DtoObject.createDtoObject( skid, coreApi );
+      dtoObj.attrs().setValue( FID_NAME, AvUtils.avStr( aObjNode.getDisplayName() ) );
+      dtoObj.attrs().setValue( FID_DESCRIPTION, AvUtils.avStr( aObjNode.getDescription() ) );
+      // add master-object support
+      String[] splitted = id.split( "_" ); //$NON-NLS-1$
+      dtoObj.attrs().setStr( AID_MASTER_OBJ_RESOLVER, splitted.length > 1 ? splitted[1] : splitted[0] );
+      return dtoObj;
+    }
+
+    OpcUANode2SkObjectItemsProvider( IList<UaTreeNode> aSelectedNodes, ISkCoreApi aSkCoreApi,
+        ISkClassInfo aSelectedClassInfo ) {
+      coreApi = aSkCoreApi;
+      for( UaTreeNode objNode : aSelectedNodes ) {
+        IDtoObject dtoObj = makeObjDto( aSelectedClassInfo.id(), objNode );
+        items.add( dtoObj );
+        Skid skid = new Skid( aSelectedClassInfo.id(), dtoObj.id() );
+        node2SkidList.add( new UaNode2Skid( objNode.getNodeId(), objNode.getDisplayName(), skid ) );
+      }
+    }
+
+    @Override
+    public IGenericChangeEventer genericChangeEventer() {
+      return NoneGenericChangeEventer.INSTANCE;
+    }
+
+    @Override
+    public IList<IDtoObject> listItems() {
+      return items;
+    }
+
+  }
 
   /**
    * Constructor.
@@ -1001,6 +1054,109 @@ public abstract class BaseSysdescrGenerator {
     }
     // событие не из битовой маски, возвращаем null
     return null;
+  }
+
+  /**
+   * Create objects from selected node as root of subtree
+   *
+   * @param aSelectedNode - root node
+   */
+  public void createObjsFromNodes( UaTreeNode aSelectedNode ) {
+    // создать объекты по списку UaNode
+    IList<UaTreeNode> selNodes = OpcUaNodesSelector.selectUaNodes4Objects( context,
+        aSelectedNode.getUaNode().getNodeId(), client, opcUaServerConnCfg );
+    if( selNodes != null ) {
+      // получаем М5 модель IDtoObject
+      IM5Model<IDtoObject> modelSk =
+          conn.scope().get( IM5Domain.class ).getModel( DtoObjectM5Model.MODEL_ID, IDtoObject.class );
+
+      // выбор класса
+      ISkClassInfo baseClassInfo = conn.coreApi().sysdescr().findClassInfo( GW_ROOT_CLASS_ID );
+      ISkClassInfo selectedClassInfo = PanelClassInfoSelector.selectChildClass( baseClassInfo, tsContext() );
+      if( selectedClassInfo != null ) {
+
+        // подсунем свой item provider
+        // IM5ItemsProvider<ISkObject> ip = lmSk.itemsProvider();
+        OpcUANode2SkObjectItemsProvider itemProvider =
+            new OpcUANode2SkObjectItemsProvider( selNodes, conn.coreApi(), selectedClassInfo );
+
+        IListEdit<IDtoObject> llObjs = new ElemArrayList<>();
+        for( IDtoObject dtoObj : itemProvider.listItems() ) {
+          llObjs.add( dtoObj );
+        }
+
+        IM5LifecycleManager<IDtoObject> localLM = localLifeCycleManager4DtoObject( modelSk, llObjs, itemProvider );
+
+        // ITsGuiContext ctxSk = new TsGuiContext( tsContext() );
+
+        IM5CollectionPanel<IDtoObject> skObjsPanel =
+            modelSk.panelCreator().createCollEditPanel( context, localLM.itemsProvider(), localLM );
+        // show dialog
+        TsDialogInfo di = new TsDialogInfo( context, getShell(), DLG_C_NEW_OBJS, DLG_T_NEW_OBJS, 0 );
+        di.setMinSizeShellRelative( 10, 50 );
+        if( M5GuiUtils.showCollPanel( di, skObjsPanel ) != null ) {
+          // сохраним привязки node -> Skid
+          OpcUaUtils.updateNodes2SkidsInStore( context, itemProvider.node2SkidList, opcUaServerConnCfg );
+          String userMsg = createSelObjs( localLM );
+          // делаем автоматическую привязку NodeId -> Gwid
+          generateNode2GwidLinks( context, selectedClassInfo, localLM.itemsProvider().listItems(),
+              rriSection == null ? IStridablesList.EMPTY : rriSection.listParamInfoes( selectedClassInfo.id() ) );
+          // подтверждаем успешное создание объектов
+          TsDialogUtils.info( getShell(), STR_SUCCESS_OBJS_UPDATED, userMsg );
+        }
+      }
+    }
+  }
+
+  private String createSelObjs( IM5LifecycleManager<IDtoObject> aLocalLM ) {
+    StringBuilder sb = new StringBuilder();
+    // создаем выбранные объекты
+    for( IDtoObject obj : aLocalLM.itemsProvider().listItems() ) {
+      conn.coreApi().objService().defineObject( obj );
+      sb.append( "\n" + obj.skid() + " - " + obj.nmName() ); //$NON-NLS-1$ //$NON-NLS-2$
+    }
+    return sb.toString();
+  }
+
+  /**
+   * @param aModel M5 модель {@link IDtoObject}
+   * @param aListObjs список объектов для верификации пользователем перед реальным созданием в БД сервера
+   * @param aItemProvider локальный поставщик списка сущностей
+   * @return lm заточенный под редактирование списка сущностей без реального обновления на сервере
+   */
+  private IM5LifecycleManager<IDtoObject> localLifeCycleManager4DtoObject( IM5Model<IDtoObject> aModel,
+      IListEdit<IDtoObject> aListObjs, OpcUANode2SkObjectItemsProvider aItemProvider ) {
+    IM5LifecycleManager<IDtoObject> retVal = new M5LifecycleManager<>( aModel, false, true, true, true, null ) {
+
+      private IDtoObject makeDtoObject( IM5Bunch<IDtoObject> aValues ) {
+        // Создаем IDpuObject и инициализируем его значениями из пучка
+        String classId = aValues.getAsAv( DtoObjectM5Model.FID_CLASSID ).asString();
+        String id = aValues.getAsAv( DtoObjectM5Model.FID_STRID ).asString();
+        Skid skid = new Skid( classId, id );
+        DtoObject dtoObject = DtoObject.createDtoObject( skid, conn.coreApi() );
+        dtoObject.attrs().setValue( DtoObjectM5Model.FID_NAME, aValues.getAsAv( DtoObjectM5Model.FID_NAME ) );
+        dtoObject.attrs().setValue( DtoObjectM5Model.FID_DESCRIPTION,
+            aValues.getAsAv( DtoObjectM5Model.FID_DESCRIPTION ) );
+        return dtoObject;
+      }
+
+      @Override
+      protected IDtoObject doEdit( IM5Bunch<IDtoObject> aValues ) {
+        IDtoObject edited = makeDtoObject( aValues );
+        int index = aListObjs.indexOf( aValues.originalEntity() );
+        // обновим кеш провайдера FIXME
+        // UaTreeNode treeNode = aItemProvider.id2Node.remove( aValues.originalEntity().id() );
+        aListObjs.set( index, edited );
+        // aItemProvider.id2Node.put( edited.id(), treeNode );
+        return edited;
+      }
+
+      @Override
+      protected IList<IDtoObject> doListEntities() {
+        return aListObjs;
+      }
+    };
+    return retVal;
   }
 
   abstract protected UaTreeNode getClassNode( UaTreeNode aNode );
