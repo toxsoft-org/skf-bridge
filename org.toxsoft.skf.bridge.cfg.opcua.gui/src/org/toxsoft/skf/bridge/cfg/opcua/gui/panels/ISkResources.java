@@ -37,12 +37,16 @@ public interface ISkResources {
   String STR_ENTER_NAME                  = Messages.STR_ENTER_NAME;
   String STR_N_OPC_UA_MARKER             = Messages.STR_N_OPC_UA_MARKER;
   String STR_D_OPC_UA_MARKER             = Messages.STR_D_OPC_UA_MARKER;
+  String STR_N_MASTER_OBJ_RESOLVER       = "master-object resolver";
+  String STR_D_MASTER_OBJ_RESOLVER       = "attribute for support master-obj technology";
   String STR_SUCCESS_OBJS_UPDATED        = Messages.STR_SUCCESS_OBJS_UPDATED;
   String SELECT_FILE_4_IMPORT_CMD        = Messages.SELECT_FILE_4_IMPORT_CMD;
   String SELECT_FILE_4_IMPORT_BIT_RTDATA = Messages.SELECT_FILE_4_IMPORT_BIT_RTDATA;
   String STR_BITMASK_FILE_LOADED         = Messages.STR_BITMASK_FILE_LOADED;
   String ERR_MSG_CACHE_OUTDATED          = Messages.ERR_MSG_CACHE_OUTDATED;
   String MSG_CMDS_DESCR_LOADED           = Messages.MSG_CMDS_DESCR_LOADED;
+  String STR_N_CMD_ARG_VALUE             = "значение";
+  String STR_D_CMD_ARG_VALUE             = "значение аргумента команды";
 
   /**
    * {@link PanelClassInfoSelector}

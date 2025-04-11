@@ -148,7 +148,7 @@ public class OpcUaNodesSelector
                 recreateTree( AccessLevel.READ_WRITE );
               }
               if( aActionId == FILTER_READ_ONLY_POLIGON_ACT_ID ) {
-                UaNodesTreeMaker treeMaker = new UaNodesTreeMaker();
+                UaNodesTreeMaker treeMaker = new UaNodesTreeMaker( environ().topNode );
                 treeMaker.hideRonPoligon = toolBar.getAction( ACTDEF_FILTER_READ_ONLY_POLIGON.id() ).isChecked();
                 tree().setTreeMaker( treeMaker );
                 tree().refresh();
@@ -160,7 +160,7 @@ public class OpcUaNodesSelector
           }
 
           private void recreateTree( ImmutableSet<AccessLevel> aAccessLevel ) {
-            UaNodesTreeMaker treeMaker = new UaNodesTreeMaker();
+            UaNodesTreeMaker treeMaker = new UaNodesTreeMaker( environ().topNode );
             treeMaker.accessLevel = aAccessLevel;
             tree().setTreeMaker( treeMaker );
             tree().refresh();
@@ -169,7 +169,7 @@ public class OpcUaNodesSelector
 
         };
 
-    UaNodesTreeMaker treeMaker = new UaNodesTreeMaker();
+    UaNodesTreeMaker treeMaker = new UaNodesTreeMaker( environ().topNode );
     treeMaker.hideVariableNodes = environ().hideVariableNodes;
     treeMaker.accessLevel = environ().accessLevel;
 
@@ -198,18 +198,42 @@ public class OpcUaNodesSelector
     private boolean                   hideVariableNodes;
     private ImmutableSet<AccessLevel> accessLevel = AccessLevel.NONE;
     protected boolean                 hideRonPoligon;
+    final private NodeId              topNodeId;
+
+    public UaNodesTreeMaker( NodeId aTopNode ) {
+      topNodeId = aTopNode;
+    }
 
     @Override
     public IList<ITsNode> makeRoots( ITsNode aRootNode, IList<UaTreeNode> aItems ) {
-
       IListEdit<ITsNode> result = new ElemArrayList<>();
       IListEdit<UaTreeNode> roots = new ElemArrayList<>();
 
+      // check list is empty
+      if( aItems.isEmpty() ) {
+        return result;
+      }
+      // if top is Root just add one node
+      if( topNodeId.equals( Identifiers.RootFolder ) ) {
+        UaTreeNode root = aItems.first();
+        roots.add( root );
+        DefaultTsNode<UaTreeNode> rootNode = new DefaultTsNode<>( kind, aRootNode, root );
+
+        formTree( rootNode );
+        result.add( rootNode );
+        return result;
+      }
+
       for( UaTreeNode uaTreeNode : aItems ) {
         UaTreeNode parent = uaTreeNode;
-        while( parent.getParent() != null ) {
+        // version with connection
+        while( !parent.getParent().getUaNode().getNodeId().equals( topNodeId ) ) {
           parent = parent.getParent();
         }
+        // old version without connection
+        // while( parent.getParent() != null ) {
+        // parent = parent.getParent();
+        // }
 
         if( roots.hasElem( parent ) ) {
           continue;

@@ -54,7 +54,7 @@ public class PanelClassInfoSelector
   protected void doSetDataRecord( ISkClassInfo aData ) {
     IListEdit<ISkClassInfo> cls = new ElemArrayList<>();
     for( ISkClassInfo ci : aData.listSubclasses( true, false ) ) {
-      if( ci.attrs().list().hasKey( IOpcUaServerConnCfgConstants.OPC_AU_CLASS_MARKER ) ) {
+      if( ci.attrs().list().hasKey( IOpcUaServerConnCfgConstants.AID_OPC_UA_CLASS_MARKER ) ) {
         cls.add( ci );
       }
     }

@@ -191,6 +191,11 @@ public class OpcUaUtils {
   public static final String SECTID_OPC_UA_NODES_2_EVT_GWIDS_TEMPLATE = "opc.ua.nodes2evt.gwids"; //$NON-NLS-1$
 
   /**
+   * template for id secton for store links UaNode->BknCmdGwid
+   */
+  public static final String SECTID_OPC_UA_NODES_2_BKN_CMD_GWIDS_TEMPLATE = "opc.ua.nodes2bkncmd.gwids"; //$NON-NLS-1$
+
+  /**
    * template for id secton for store links CmdGwid->UaNodes
    */
   private static final String SECTID_CMD_GWIDS_2_OPC_UA_NODES_TEMPLATE = "cmd.gwid2opc.ua.nodes"; //$NON-NLS-1$

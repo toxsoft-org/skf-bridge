@@ -44,7 +44,7 @@ public class OpcUaNodeM5LifecycleManager
   }
 
   private NodeId                    topNodeId = Identifiers.RootFolder;
-  private UaTreeNode                topNode   = null;
+  private UaTreeNode                topNode;
   private final ITsGuiContext       context;
   private final IOpcUaServerConnCfg selConfig;
 
@@ -136,9 +136,7 @@ public class OpcUaNodeM5LifecycleManager
       // ReferenceDescription[] descrs = browseResult.getReferences();
       // List<ReferenceDescription> references = descrs != null ? Arrays.asList( descrs ) : Collections.emptyList();
       // new version see link: https://github.com/eclipse/milo/issues/227
-      List<ReferenceDescription> references = new CopyOnWriteArrayList<>();
-      references.addAll( toList( browseResult.getReferences() ) );
-
+      List<ReferenceDescription> references = new CopyOnWriteArrayList<>( toList( browseResult.getReferences() ) );
       ByteString continuationPoint = browseResult.getContinuationPoint();
 
       while( continuationPoint != null && continuationPoint.isNotNull() ) {
@@ -206,7 +204,7 @@ public class OpcUaNodeM5LifecycleManager
         retVal.add( node );
       }
     }
-    topNode.clearParent();
+    // topNode.clearParent();
     return retVal;
   }
 

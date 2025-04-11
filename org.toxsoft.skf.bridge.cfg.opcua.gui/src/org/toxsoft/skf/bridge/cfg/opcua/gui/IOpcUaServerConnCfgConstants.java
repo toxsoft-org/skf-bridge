@@ -20,7 +20,8 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 @SuppressWarnings( { "javadoc" } )
 public interface IOpcUaServerConnCfgConstants {
 
-  String OPC_AU_CLASS_MARKER = "atrGeneratedFromOPC_UA"; //$NON-NLS-1$
+  String AID_OPC_UA_CLASS_MARKER = "atrGeneratedFromOPC_UA"; //$NON-NLS-1$
+  String AID_MASTER_OBJ_RESOLVER = "atrMasterObjResolver";   //$NON-NLS-1$
 
   //
   // ------------------------------------------------------------------------------------

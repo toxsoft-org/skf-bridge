@@ -128,7 +128,6 @@ public class UaTreeNode {
    * @param aUaNode UaNode - content (real ua node).
    */
   public UaTreeNode( UaTreeNode aParent, UaNode aUaNode ) {
-    super();
     TsNullArgumentRtException.checkNulls( aUaNode );
     parent = aParent;
     uaNode = aUaNode;
@@ -158,7 +157,6 @@ public class UaTreeNode {
    */
   public UaTreeNode( String aParentNodeId, String aNodeId, String aBrowseName, String aDisplayName, String aDescription,
       NodeClass aNodeClass, EAtomicType aType, EnumSet<AccessLevel> aAccessLevel ) {
-    super();
     parentNodeId = aParentNodeId;
     nodeId = aNodeId;
     browseName = aBrowseName;
@@ -283,8 +281,8 @@ public class UaTreeNode {
   /**
    * make node looks like root
    */
-  public void clearParent() {
-    parent = null;
-  }
+  // public void clearParent() {
+  // parent = null;
+  // }
 
 }
