@@ -15,6 +15,10 @@ public enum EOPCUATreeType {
    */
   SIEMENS,
   /**
+   * Дерево построенное из среды Siemens для Байконура
+   */
+  SIEMENS_BAIKONUR,
+  /**
    * Дерево построенное из остальных инструментариев
    */
   OTHER

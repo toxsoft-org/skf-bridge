@@ -139,7 +139,6 @@ public class OpcUaTreeBrowserPanel
   /**
    * id параметра события: новое значение.
    */
-
   static String EVPID_NEW_VAL = "newVal"; //$NON-NLS-1$
 
   /**
@@ -846,12 +845,13 @@ public class OpcUaTreeBrowserPanel
         retVal = aNode;
         break;
       }
-      case OTHER:
-        throw new TsUnsupportedFeatureRtException( "Unsupported tree type: %s", aTreeType ); //$NON-NLS-1$
       case SIEMENS:
         // Для Siemens узел класса это родительский узел
         retVal = aNode.getParent();
         break;
+      case SIEMENS_BAIKONUR:
+      case OTHER:
+        throw new TsUnsupportedFeatureRtException( "Unsupported tree type: %s", aTreeType ); //$NON-NLS-1$
       default:
         throw new TsUnsupportedFeatureRtException( "Unsupported tree type: %s", aTreeType ); //$NON-NLS-1$
     }
@@ -1191,7 +1191,7 @@ public class OpcUaTreeBrowserPanel
       IListEdit<UaNode2Gwid> aNode2ClassGwidList ) {
     // id команды
     String cmdId = aVariableNode.getBrowseName().getName();
-    // if( isIgnore4Event( aDtoClass.id(), evtId ) ) {
+    // if( isIgnore4Event( aDtoClass.id(), cmdId ) ) {
     // return;
     // }
     // соблюдаем соглашения о наименовании
@@ -1363,6 +1363,7 @@ public class OpcUaTreeBrowserPanel
           case POLIGONE -> findVarNodeByClassGwid( aContext, Gwid.createCmd( aClassInfo.id(), cmdInfo.id() ),
               parentNode.getChildren() );
           case SIEMENS -> findVarNodeByPropName( cmdInfo, parentNode, aTreeType );
+          case SIEMENS_BAIKONUR -> findVarNodeByPropName( cmdInfo, parentNode, aTreeType );
           default -> throw new TsUnsupportedFeatureRtException();
         };
 
@@ -1400,6 +1401,7 @@ public class OpcUaTreeBrowserPanel
                 parentNode.getChildren() );
             // version for Siemens tree
             case SIEMENS -> findVarNodeByPropName( rtdInfo, parentNode, aTreeType );
+            case SIEMENS_BAIKONUR -> findVarNodeByPropName( rtdInfo, parentNode, aTreeType );
             default -> throw new TsUnsupportedFeatureRtException();
           };
         }
@@ -1436,6 +1438,7 @@ public class OpcUaTreeBrowserPanel
                 parentNode.getChildren() );
             // version for Siemens tree
             case SIEMENS -> findVarNodeByPropName( attrInfo, parentNode, aTreeType );
+            case SIEMENS_BAIKONUR -> findVarNodeByPropName( attrInfo, parentNode, aTreeType );
             default -> throw new TsUnsupportedFeatureRtException();
           };
         }
@@ -1462,6 +1465,7 @@ public class OpcUaTreeBrowserPanel
             case POLIGONE -> findVarNodeByClassGwid( aContext, Gwid.createEvent( aClassInfo.id(), evtInfo.id() ),
                 parentNode.getChildren() );
             case SIEMENS -> findVarNodeByPropName( evtInfo, parentNode, aTreeType );
+            case SIEMENS_BAIKONUR -> findVarNodeByPropName( evtInfo, parentNode, aTreeType );
             default -> throw new TsUnsupportedFeatureRtException();
           };
 
@@ -1516,6 +1520,7 @@ public class OpcUaTreeBrowserPanel
         retVal.addAll( aObjectNode.getChildren() );
         break;
       case OTHER:
+      case SIEMENS_BAIKONUR:
       default:
         throw new TsUnsupportedFeatureRtException();
     }
