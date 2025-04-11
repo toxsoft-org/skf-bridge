@@ -225,6 +225,9 @@ public class OpcUaTreeBrowserPanel
       DtoObject dtoObj = DtoObject.createDtoObject( skid, coreApi );
       dtoObj.attrs().setValue( FID_NAME, AvUtils.avStr( aObjNode.getDisplayName() ) );
       dtoObj.attrs().setValue( FID_DESCRIPTION, AvUtils.avStr( aObjNode.getDescription() ) );
+      // add master-object support
+      String[] splitted = id.split( "_" ); //$NON-NLS-1$
+      dtoObj.attrs().setStr( AID_MASTER_OBJ_RESOLVER, splitted.length > 1 ? splitted[1] : splitted[0] );
       return dtoObj;
     }
 
@@ -1860,9 +1863,6 @@ public class OpcUaTreeBrowserPanel
         dtoObject.attrs().setValue( DtoObjectM5Model.FID_NAME, aValues.getAsAv( DtoObjectM5Model.FID_NAME ) );
         dtoObject.attrs().setValue( DtoObjectM5Model.FID_DESCRIPTION,
             aValues.getAsAv( DtoObjectM5Model.FID_DESCRIPTION ) );
-        // add master-object support
-        String name = dtoObject.attrs().getValue( DtoObjectM5Model.FID_NAME ).asString();
-        dtoObject.attrs().setStr( AID_MASTER_OBJ_RESOLVER, name );
         return dtoObject;
       }
 
