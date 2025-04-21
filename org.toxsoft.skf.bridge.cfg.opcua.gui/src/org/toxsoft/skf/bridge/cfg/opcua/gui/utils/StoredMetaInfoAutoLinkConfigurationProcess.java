@@ -86,11 +86,49 @@ public class StoredMetaInfoAutoLinkConfigurationProcess
       CfgUnitRealizationTypeRegister typeReg2 = aContext.get( CfgUnitRealizationTypeRegister.class );
       // m5().tsContext().get( CfgUnitRealizationTypeRegister.class );
 
+      // simple cmds (as events) try
+      // Max for bkn
+      String cmdSectId = getTreeSectionNameByConfig( SECTID_OPC_UA_NODES_2_BKN_CMD_GWIDS_TEMPLATE, conConf ); //$NON-NLS-1$
+      IList<UaNode2EventGwid> autoCmdEvents = loadNodes2Gwids( aContext, cmdSectId, UaNode2EventGwid.KEEPER );
+
+      System.out.println( "Auto simple cmd elements size = " + autoCmdEvents.size() ); //$NON-NLS-1$
+      for( UaNode2EventGwid cmd2Nodes : autoCmdEvents ) {
+        String strid = String.format( CFG_CMD_UNIT_ID_FORMAT, Long.valueOf( System.currentTimeMillis() ),
+            cmd2Nodes.gwid().strid() );
+        ECfgUnitType type = ECfgUnitType.COMMAND;
+
+        IList<Gwid> gwids = new ElemArrayList<>( cmd2Nodes.gwid() );
+        String cmdArgParam = null;
+        IListEdit<NodeId> nodes = new ElemArrayList<>();
+        nodes.add( cmd2Nodes.getNodeId() );
+
+        String name = STR_LINK_PREFIX + cmd2Nodes.gwid().canonicalString();
+
+        OpcToS5DataCfgUnit unit = new OpcToS5DataCfgUnit( strid, name, gwids, convertNodeListToAtomicList( nodes ) );
+
+        ICfgUnitRealizationType realType =
+            typeReg2.getTypeOfRealizationById( type, CFG_UNIT_REALIZATION_TYPE_VALUE_COMMAND );
+
+        unit.setTypeOfCfgUnit( type );
+        unit.setRelizationTypeId( realType.id() );
+
+        OptionSet realization = new OptionSet();
+        OpcUaUtils.OP_CMD_JAVA_CLASS.setValue( realization, avStr( COMMANDS_JAVA_CLASS_VALUE_COMMAND_EXEC ) );
+
+        if( cmd2Nodes.paramIds() != null && cmd2Nodes.paramIds().size() == 1 ) {
+          OpcUaUtils.OP_CMD_VALUE_PARAM_ID.setValue( realization, avStr( cmd2Nodes.paramIds().first() ) );
+        }
+
+        unit.setRealizationOpts( realization );
+
+        result.add( unit );
+      }
+      
       // Commands
       // dima
 
       IList<CmdGwid2UaNodes> autoElements = OpcUaUtils.loadCmdGwid2Nodes( aContext, conConf );
-      System.out.println( "Auto elements size = " + autoElements.size() ); //$NON-NLS-1$
+      System.out.println( "Auto cmd elements size = " + autoElements.size() ); //$NON-NLS-1$
       for( CmdGwid2UaNodes cmd2Nodes : autoElements ) {
 
         IList<Gwid> gwids = new ElemArrayList<>( cmd2Nodes.gwid() );

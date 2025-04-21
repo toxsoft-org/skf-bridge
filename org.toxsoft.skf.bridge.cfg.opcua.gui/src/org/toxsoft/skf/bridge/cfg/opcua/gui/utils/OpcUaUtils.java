@@ -114,9 +114,9 @@ public class OpcUaUtils {
 
   public static final String CFG_UNIT_REALIZATION_TYPE_VALUE_COMMAND_BY_ONE_TAG = "val.command.one.tag"; //$NON-NLS-1$
 
-  private static final String CFG_UNIT_REALIZATION_TYPE_VALUE_COMMAND = "value.command"; //$NON-NLS-1$
+  public static final String CFG_UNIT_REALIZATION_TYPE_VALUE_COMMAND = "value.command"; //$NON-NLS-1$
 
-  private static final String COMMANDS_JAVA_CLASS_VALUE_COMMAND_EXEC =
+  public static final String COMMANDS_JAVA_CLASS_VALUE_COMMAND_EXEC =
       "ru.toxsoft.l2.dlm.opc_bridge.submodules.commands.ValueCommandExec"; //$NON-NLS-1$
 
   private static final String DATA_JAVA_CLASS_ONE_TO_ONE_DATA_TRANSMITTER_FACTORY =
@@ -189,7 +189,7 @@ public class OpcUaUtils {
    * template for id secton for store links UaNode->EvtGwid
    */
   public static final String SECTID_OPC_UA_NODES_2_EVT_GWIDS_TEMPLATE = "opc.ua.nodes2evt.gwids"; //$NON-NLS-1$
-
+    
   /**
    * template for id secton for store links UaNode->BknCmdGwid
    */
@@ -1652,7 +1652,11 @@ public class OpcUaUtils {
     // открываем справочник команд
     String refbookName = RBID_CMD_OPCUA;
     ISkRefbookService skRefServ = (ISkRefbookService)aConn.coreApi().getService( ISkRefbookService.SERVICE_ID );
-    IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( refbookName ).listItems();
+    ISkRefbook refBook = skRefServ.findRefbook( refbookName );
+	if (refBook == null) {
+		return retVal;
+	}
+    IList<ISkRefbookItem> rbItems = refBook.listItems();
     for( ISkRefbookItem myRbItem : rbItems ) {
       String strid = myRbItem.strid();
       // выделяем id класса
