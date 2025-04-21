@@ -399,7 +399,8 @@ public class NodesForCfgM5Model
 
   @Override
   protected IM5LifecycleManager<IAtomicValue> doCreateLifecycleManager( Object aMaster ) {
-    return new NodesForCfgM5LifecycleManager( this, ITsGuiContext.class.cast( aMaster ) );
+    return new NodesForCfgM5LifecycleManager( this, tsContext() );
+    // return new NodesForCfgM5LifecycleManager( this, ITsGuiContext.class.cast( aMaster ) ); //-old
   }
 
   static class NodesForCfgM5LifecycleManager

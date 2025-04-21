@@ -236,8 +236,15 @@ public class GwidsForCfgM5Model
   @Override
   protected IM5LifecycleManager<Gwid> doCreateLifecycleManager( Object aMaster ) {
     ISkConnectionSupplier cs = tsContext().get( ISkConnectionSupplier.class );
+<<<<<<< Upstream, based on main
     ISkConnection conn = cs.defConn();
     return new GwidsForCfgM5LifecycleManager( this, conn );
+=======
+    // TODO which connection to use?
+    ISkConnection conn = cs.defConn();
+    return new GwidsForCfgM5LifecycleManager( this, conn );
+    // return new GwidsForCfgM5LifecycleManager( this, ISkConnection.class.cast( aMaster ) ); // -old
+>>>>>>> 7b5d161 Fix edit cfg unit errors
   }
 
   private ECfgUnitType unitType = ECfgUnitType.DATA;
