@@ -189,7 +189,7 @@ public class OpcUaUtils {
    * template for id secton for store links UaNode->EvtGwid
    */
   public static final String SECTID_OPC_UA_NODES_2_EVT_GWIDS_TEMPLATE = "opc.ua.nodes2evt.gwids"; //$NON-NLS-1$
-    
+
   /**
    * template for id secton for store links UaNode->BknCmdGwid
    */
@@ -1065,7 +1065,22 @@ public class OpcUaUtils {
 
     ICfgUnitRealizationType cmdRealValueCommandExec =
         new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_VALUE_COMMAND, STR_SET_NODE_VALUE, ECfgUnitType.COMMAND,
-            paramDefenitions, defaultParams );
+            paramDefenitions, defaultParams ) {
+
+          @Override
+          public CfgOpcUaNode createInitCfg( ITsGuiContext aaContext, String aNodeId, int aNodeIndex, int aNodeCount ) {
+            OpcUaServerConnCfg conConf =
+                (OpcUaServerConnCfg)aaContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
+
+            EAtomicType type = EAtomicType.NONE;
+            if( conConf != null ) {
+              type = OpcUaUtils.getValueTypeOfNode( aaContext, conConf, aNodeId );
+            }
+            // dima 22.04.25 помечаем что тег на запись
+            return new CfgOpcUaNode( aNodeId, false, true, true, type );
+          }
+
+        };
 
     realizationTypeRegister.registerType( cmdRealValueCommandExec );
 
@@ -1653,9 +1668,9 @@ public class OpcUaUtils {
     String refbookName = RBID_CMD_OPCUA;
     ISkRefbookService skRefServ = (ISkRefbookService)aConn.coreApi().getService( ISkRefbookService.SERVICE_ID );
     ISkRefbook refBook = skRefServ.findRefbook( refbookName );
-	if (refBook == null) {
-		return retVal;
-	}
+    if( refBook == null ) {
+      return retVal;
+    }
     IList<ISkRefbookItem> rbItems = refBook.listItems();
     for( ISkRefbookItem myRbItem : rbItems ) {
       String strid = myRbItem.strid();
