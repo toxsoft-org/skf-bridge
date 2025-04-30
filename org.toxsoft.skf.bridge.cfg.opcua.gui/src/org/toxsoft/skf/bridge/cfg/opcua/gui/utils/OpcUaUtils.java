@@ -1725,6 +1725,29 @@ public class OpcUaUtils {
   }
 
   /**
+   * Считывает из справочника масочные rtData
+   *
+   * @param aConn - соединение с сервером
+   * @param aCandidateCmd - кандидат на команду
+   * @return {@link Boolean} true
+   */
+  public static boolean isCtrlSystenCommand( ISkConnection aConn, String aCandidateCmd ) {
+    boolean retVal = false;
+    // открываем справочник команд CtrlSystem
+    String refbookName = "CtrlSystemCommands";
+    ISkRefbookService skRefServ = (ISkRefbookService)aConn.coreApi().getService( ISkRefbookService.SERVICE_ID );
+    IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( refbookName ).listItems();
+    for( ISkRefbookItem rbItem : rbItems ) {
+      String cmdId = rbItem.attrs().getValue( "identificator" ).asString();
+
+      if( aCandidateCmd.compareTo( cmdId ) == 0 ) {
+        retVal = true;
+      }
+    }
+    return retVal;
+  }
+
+  /**
    * Считывает из справочника масочные events
    *
    * @param aConn - соединение с сервером

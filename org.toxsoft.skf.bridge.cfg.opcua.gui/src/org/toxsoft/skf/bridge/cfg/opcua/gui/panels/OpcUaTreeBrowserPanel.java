@@ -326,7 +326,7 @@ public class OpcUaTreeBrowserPanel
           if( aActionId == CREATE_CINFO_FROM_SIEMENS_OPC_UA_ACT_ID ) {
             // first of all ensure all needed files are loaded
             // ensureCmdDescription();
-            // ensureBitMaskDescription();
+            ensureBitMaskDescription();
             // if( ensureRriSection( aContext ) ) {
             createClassFromNodes( aContext, EOPCUATreeType.SIEMENS );
             // }
@@ -341,10 +341,10 @@ public class OpcUaTreeBrowserPanel
           }
           if( aActionId == CREATE_OBJS_FROM_SIEMENS_OPC_UA_ACT_ID ) {
             // first of all ensure file bitMask loaded
-            // ensureBitMaskDescription();
-            // if( ensureRriSection( aContext ) ) {
-            createObjsFromNodes( aContext, EOPCUATreeType.SIEMENS );
-            // }
+            ensureBitMaskDescription();
+            if( ensureRriSection( aContext ) ) {
+              createObjsFromNodes( aContext, EOPCUATreeType.SIEMENS );
+            }
           }
 
           if( aActionId == SHOW_OPC_UA_NODE_2_GWID_ACT_ID ) {
@@ -435,6 +435,7 @@ public class OpcUaTreeBrowserPanel
     }
   }
 
+  // FIXME сделать опциональным, для Байконура не нужен функционал НСИ
   private boolean ensureRriSection( ITsGuiContext aContext ) {
     boolean retVal = false;
     if( rriSection == null ) {
@@ -595,6 +596,14 @@ public class OpcUaTreeBrowserPanel
     if( selNodes != null ) {
       // создаем описание класса из списка выбранных узлов
       // отредактируем список узлов чтобы в нем была вся необходимая информация для описания класса
+
+      // Заплатка для Сименса-Байконур заменяем первый элемент выбранных узлов
+      if( aTreeType.compareTo( EOPCUATreeType.SIEMENS ) == 0 ) {
+        IListEdit<UaTreeNode> tmpNodes = new ElemArrayList<>( selectedNode );
+        tmpNodes.addAll( selNodes.fetch( 1, selNodes.size() - 1 ) );
+        selNodes = tmpNodes;
+      }
+
       IList<UaTreeNode> nodes4DtoClass = nodes4DtoClass( selectedNode, selNodes, aTreeType );
       // TODO здесь очищаем список от rri нодов и формируем отдельный для rtd
       IListEdit<UaNode2Gwid> node2ClassGwidList = new ElemArrayList<>();
@@ -847,7 +856,9 @@ public class OpcUaTreeBrowserPanel
       }
       case SIEMENS:
         // Для Siemens узел класса это родительский узел
-        retVal = aNode.getParent();
+        // retVal = aNode.getParent();
+        // а для Байконура как и для Полигона
+        retVal = aNode;
         break;
       case SIEMENS_BAIKONUR:
       case OTHER:
@@ -866,7 +877,8 @@ public class OpcUaTreeBrowserPanel
     // узел типа Object, его данные используются для создания описания класса
     UaTreeNode classNode = objNode( aNodes );
 
-    String id = classNode.getBrowseName();
+    String id = extractClassId( classNode.getBrowseName() );
+
     String name = classNode.getDisplayName();
     String description = classNode.getDescription().trim().length() > 0 ? classNode.getDescription() : name;
 
@@ -943,6 +955,17 @@ public class OpcUaTreeBrowserPanel
     }
 
     return new Pair<>( cinf, rriCinf );
+  }
+
+  private static String extractClassId( String aBrowseName ) {
+    String retVal = aBrowseName;
+    if( aBrowseName.startsWith( "template_" ) ) { //$NON-NLS-1$
+      String[] id_parts = aBrowseName.split( "_" ); //$NON-NLS-1$
+      if( id_parts.length > 1 ) {
+        retVal = id_parts[1];
+      }
+    }
+    return retVal;
   }
 
   private static UaTreeNode objNode( IList<UaTreeNode> aNodes ) {
@@ -1130,10 +1153,14 @@ public class OpcUaTreeBrowserPanel
    * @param aVariableNode описание узла типа переменная
    * @param aNode2ClassGwidList список привязок Node -> Class Gwid
    */
-  private static void readEventInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode,
+  private void readEventInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode,
       IListEdit<UaNode2Gwid> aNode2ClassGwidList ) {
     // id события
     String evtId = aVariableNode.getBrowseName().getName();
+    // заплатка для Байконура
+    if( aDtoClass.id().endsWith( "_OS" ) && OpcUaUtils.isCtrlSystenCommand( conn, evtId ) ) { //$NON-NLS-1$
+      return;
+    }
     // if( isIgnore4Event( aDtoClass.id(), evtId ) ) {
     // return;
     // }
@@ -1187,10 +1214,14 @@ public class OpcUaTreeBrowserPanel
    * @param aVariableNode описание узла типа переменная
    * @param aNode2ClassGwidList список привязок Node -> Class Gwid
    */
-  private static void readCmdInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode,
+  private void readCmdInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode,
       IListEdit<UaNode2Gwid> aNode2ClassGwidList ) {
     // id команды
     String cmdId = aVariableNode.getBrowseName().getName();
+    // заплатка для Байконура
+    if( aDtoClass.id().endsWith( "_OS" ) && !OpcUaUtils.isCtrlSystenCommand( conn, cmdId ) ) { //$NON-NLS-1$
+      return;
+    }
     // if( isIgnore4Event( aDtoClass.id(), cmdId ) ) {
     // return;
     // }
@@ -1507,9 +1538,14 @@ public class OpcUaTreeBrowserPanel
       case SIEMENS: {
         // у Siemens узлы переменных находятся ниже подузла Static
         for( UaTreeNode parentNode : aObjectNode.getChildren() ) {
-          for( UaTreeNode childNode : parentNode.getChildren() ) {
-            if( childNode.getNodeClass().equals( NodeClass.Variable ) ) {
-              retVal.add( childNode );
+          if( parentNode.getNodeClass().equals( NodeClass.Variable ) ) {
+            retVal.add( parentNode );
+          }
+          else {
+            for( UaTreeNode childNode : parentNode.getChildren() ) {
+              if( childNode.getNodeClass().equals( NodeClass.Variable ) ) {
+                retVal.add( childNode );
+              }
             }
           }
         }
