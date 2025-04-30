@@ -1778,8 +1778,11 @@ public class OpcUaTreeBrowserPanel
     IList<UaTreeNode> varNodes = getVariableNodes( aObjectNode, aTreeType );
     for( UaTreeNode varNode : varNodes ) {
       if( varNode.getNodeClass().equals( NodeClass.Variable ) ) {
-        String name4Search = varNode.getBrowseName();
-        if( aPropInfo.id().indexOf( name4Search ) >= 0 ) {
+        // create full id
+        String name4Search = aPropInfo.id().substring( 0, 3 ) + varNode.getBrowseName();
+        if( aPropInfo.id().compareTo( name4Search ) == 0 ) {
+          // previous INVALID version
+          // if( aPropInfo.id().indexOf( name4Search ) >= 0 ) {
           retVal = varNode;
           break;
         }
