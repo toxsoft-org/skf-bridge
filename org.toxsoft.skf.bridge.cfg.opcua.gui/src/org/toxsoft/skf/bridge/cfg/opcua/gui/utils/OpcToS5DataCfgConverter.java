@@ -317,6 +317,8 @@ public class OpcToS5DataCfgConverter {
   private static IMapEdit<Gwid, String> tagsIdsByGwidContetnt = new ElemMap<>();
 
   private static INodeIdConvertor idConvertor;
+  // dima 16.05.25 FIXME - должен передаваться снаружи от пользователя
+  private static String TKA_TEMPLATE = "TKA3";
 
   private OpcToS5DataCfgConverter() {
 
@@ -411,19 +413,44 @@ public class OpcToS5DataCfgConverter {
    */
   private static IAvTree createDatas( IList<OpcToS5DataCfgUnit> aCfgUnits ) {
     AvTree pinsMassivTree = AvTree.createArrayAvTree();
-
+    int suited = 1;
     for( int i = 0; i < aCfgUnits.size(); i++ ) {
       OpcToS5DataCfgUnit unit = aCfgUnits.get( i );
       // dima 29.12.24 ignore empty unit
       if( unit.getDataGwids().isEmpty() ) {
         continue;
       }
+      // dima 16.05.25 filter only my TKA
+      if( !isSuited( unit.getDataGwids() ) ) {
+        continue;
+      }
+
       if( unit.getTypeOfCfgUnit() == ECfgUnitType.DATA ) {
         pinsMassivTree.addElement( createDataPin( unit ) );
       }
     }
 
     return pinsMassivTree;
+  }
+
+  private static boolean isSuited( IList<Gwid> aDataGwids ) {
+    for( Gwid gwid : aDataGwids ) {
+      if( gwid.skid().classId().indexOf( "InterfaceConverterBox" ) >= 0
+          && gwid.propId().indexOf( TKA_TEMPLATE ) >= 0 ) {
+        return true;
+      }
+      if( gwid.skid().strid().indexOf( TKA_TEMPLATE ) >= 0 ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean isSuited( CfgOpcUaNode aTagData ) {
+    if( aTagData.getNodeId().indexOf( TKA_TEMPLATE ) < 0 ) {
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -730,6 +757,9 @@ public class OpcToS5DataCfgConverter {
       OpcToS5DataCfgUnit unit = aCfgUnits.get( i );
 
       if( unit.getTypeOfCfgUnit() == ECfgUnitType.COMMAND ) {
+        if( !isSuited( unit.getDataGwids() ) ) {
+          continue;
+        }
         commandsMassivTree.addElement( createCommand( unit ) );
       }
     }
@@ -940,7 +970,9 @@ public class OpcToS5DataCfgConverter {
       if( unit.getTypeOfCfgUnit() == ECfgUnitType.COMMAND ) {
         IList<Gwid> gwids = unit.getDataGwids();
         for( Gwid gwid : gwids ) {
-
+          if( !isSuited( new SingleItemList( gwid ) ) ) {
+            continue;
+          }
           // класс
           String classId = gwid.classId();
           String objName = gwid.strid();
@@ -1030,6 +1062,9 @@ public class OpcToS5DataCfgConverter {
       OpcToS5DataCfgUnit unit = aCfgUnits.get( i );
 
       if( unit.getTypeOfCfgUnit() == ECfgUnitType.EVENT ) {
+        if( !isSuited( unit.getDataGwids() ) ) {
+          continue;
+        }
         eventsMassivTree.addElement( createEvent( unit ) );
       }
     }
@@ -1155,6 +1190,10 @@ public class OpcToS5DataCfgConverter {
 
     for( CfgOpcUaNode tagData : cfgNodes ) {
       if( !aGroupFilter.isValid( tagData ) ) {
+        continue;
+      }
+
+      if( !isSuited( tagData ) ) {
         continue;
       }
 

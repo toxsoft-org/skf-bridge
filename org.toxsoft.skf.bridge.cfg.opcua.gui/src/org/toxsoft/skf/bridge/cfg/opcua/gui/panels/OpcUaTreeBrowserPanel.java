@@ -760,6 +760,7 @@ public class OpcUaTreeBrowserPanel
       for( UaNode2Gwid uaNode2Gwid : aNode2ClassGwidList ) {
         if( gwid.equals( uaNode2Gwid.gwid() ) ) {
           retVal.add( uaNode2Gwid );
+          break;
         }
       }
     }
@@ -768,6 +769,7 @@ public class OpcUaTreeBrowserPanel
       for( UaNode2Gwid uaNode2Gwid : aNode2ClassGwidList ) {
         if( gwid.equals( uaNode2Gwid.gwid() ) ) {
           retVal.add( uaNode2Gwid );
+          break;
         }
       }
     }
@@ -776,6 +778,7 @@ public class OpcUaTreeBrowserPanel
       for( UaNode2Gwid uaNode2Gwid : aNode2ClassGwidList ) {
         if( gwid.equals( uaNode2Gwid.gwid() ) ) {
           retVal.add( uaNode2Gwid );
+          break;
         }
       }
     }
