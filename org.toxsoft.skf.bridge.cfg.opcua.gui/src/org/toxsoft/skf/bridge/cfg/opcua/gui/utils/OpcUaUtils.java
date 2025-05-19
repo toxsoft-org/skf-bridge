@@ -240,21 +240,40 @@ public class OpcUaUtils {
     if( selected == null ) {
       return;
     }
-    Shell shell = aContext.find( Shell.class );
-    try {
-      IAvTree avTree = OpcToS5DataCfgConverter.convertToDevCfgTree( aContext, aDoc );
-
-      String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
-      AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
-
-      String DLM_CONFIG_STR = "DeviceConfig = "; //$NON-NLS-1$
-      PinsConfigFileFormatter.format( TMP_DEST_FILE, selected, DLM_CONFIG_STR, true );
-
-      TsDialogUtils.info( shell, MSG_CONFIG_FILE_DEVCFG_CREATED, selected );
+    if( selected.endsWith( DEVCFG_FILE_EXTENTION ) ) {
+      selected = selected.substring( 0, selected.indexOf( DEVCFG_FILE_EXTENTION ) );
     }
-    catch( Exception e ) {
-      LoggerUtils.errorLogger().error( e );
-      TsDialogUtils.error( shell, e );
+
+    Shell shell = aContext.find( Shell.class );
+    IList<String> filterStrs = new ElemArrayList<>( "TKA1", "TKA2", "TKA3" );
+
+    for( String fStr : filterStrs ) {
+      try {
+        IAvTree avTree = OpcToS5DataCfgConverter.convertToDevCfgTree( aContext, aDoc,
+            new IOpcUaNodeFilter.DeaultByStrOpcUaNodeFilter( fStr ) );
+
+        ((AvTree)avTree.nodes().getByKey( OpcToS5DataCfgConverter.BRIDGES_ARRAY_NAME ).arrayElement( 0 )).fieldsEdit()
+            .setStr( "health_tag", "ns=3;s=\"noLink_" + fStr + "\"" );
+
+        String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
+        AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
+
+        String DLM_CONFIG_STR = "DeviceConfig = "; //$NON-NLS-1$
+
+        String selectedFileName = selected + "_" + fStr + DEVCFG_FILE_EXTENTION;
+        File dstFile = new File( selectedFileName );
+        if( !dstFile.exists() ) {
+          dstFile.createNewFile();
+        }
+
+        PinsConfigFileFormatter.format( TMP_DEST_FILE, selectedFileName, DLM_CONFIG_STR, true );
+
+        TsDialogUtils.info( shell, MSG_CONFIG_FILE_DEVCFG_CREATED, selectedFileName );
+      }
+      catch( Exception e ) {
+        LoggerUtils.errorLogger().error( e );
+        TsDialogUtils.error( shell, e );
+      }
     }
   }
 
@@ -289,33 +308,43 @@ public class OpcUaUtils {
     if( selected == null ) {
       return;
     }
-    Shell shell = aContext.find( Shell.class );
-    try {
-      ISkConnectionSupplier cs = aContext.get( ISkConnectionSupplier.class );
-      TsInternalErrorRtException.checkNull( cs );
-      ISkConnection conn = cs.defConn();
-      TsInternalErrorRtException.checkNull( conn );
-      IAvTree avTree = OpcToS5DataCfgConverter.convertToDlmCfgTree( aDoc.dataUnits(), conn, aNodeEntity -> {
-        OpcNodeInfo nodeid = aNodeEntity.asValobj();
-        return new Pair<>( OpcToS5DataCfgConverter.OPC_TAG_DEVICE, nodeid.getNodeId().toParseableString() );
-      } );
-      String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
-      AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
-
-      String DLM_CONFIG_STR = "DlmConfig = "; //$NON-NLS-1$
-
-      File dstFile = new File( selected );
-      if( !dstFile.exists() ) {
-        dstFile.createNewFile();
-      }
-
-      PinsConfigFileFormatter.format( TMP_DEST_FILE, selected, DLM_CONFIG_STR, true );
-
-      TsDialogUtils.info( shell, MSG_CONFIG_FILE_DLMCFG_CREATED, selected );
+    if( selected.endsWith( DLMCFG_FILE_EXTENTION ) ) {
+      selected = selected.substring( 0, selected.indexOf( DLMCFG_FILE_EXTENTION ) );
     }
-    catch( Exception e ) {
-      LoggerUtils.errorLogger().error( e );
-      TsDialogUtils.error( shell, e );
+
+    Shell shell = aContext.find( Shell.class );
+
+    IList<String> filterStrs = new ElemArrayList<>( "TKA1", "TKA2", "TKA3" );
+
+    for( String fStr : filterStrs ) {
+      try {
+        ISkConnectionSupplier cs = aContext.get( ISkConnectionSupplier.class );
+        TsInternalErrorRtException.checkNull( cs );
+        ISkConnection conn = cs.defConn();
+        TsInternalErrorRtException.checkNull( conn );
+        IAvTree avTree = OpcToS5DataCfgConverter.convertToDlmCfgTree( aDoc.dataUnits(), conn, aNodeEntity -> {
+          OpcNodeInfo nodeid = aNodeEntity.asValobj();
+          return new Pair<>( OpcToS5DataCfgConverter.OPC_TAG_DEVICE, nodeid.getNodeId().toParseableString() );
+        }, new IGwidFilter.DeaultByStrGwidFilter( fStr ) );
+        String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
+        AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
+
+        String DLM_CONFIG_STR = "DlmConfig = "; //$NON-NLS-1$
+
+        String selectedFileName = selected + "_" + fStr + DLMCFG_FILE_EXTENTION;
+        File dstFile = new File( selectedFileName );
+        if( !dstFile.exists() ) {
+          dstFile.createNewFile();
+        }
+
+        PinsConfigFileFormatter.format( TMP_DEST_FILE, selectedFileName, DLM_CONFIG_STR, true );
+
+        TsDialogUtils.info( shell, MSG_CONFIG_FILE_DLMCFG_CREATED, selectedFileName );
+      }
+      catch( Exception e ) {
+        LoggerUtils.errorLogger().error( e );
+        TsDialogUtils.error( shell, e );
+      }
     }
   }
 

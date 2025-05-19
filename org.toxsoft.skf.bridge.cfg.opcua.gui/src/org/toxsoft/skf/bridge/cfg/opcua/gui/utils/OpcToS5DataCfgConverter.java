@@ -88,7 +88,7 @@ public class OpcToS5DataCfgConverter {
   private static final String SYNCH_PERIOD_PARAM_NAME = "period";
 
   private static final String GROUPS_ARRAY_NAME  = "groups";
-  private static final String BRIDGES_ARRAY_NAME = "bridges";
+  public static final String  BRIDGES_ARRAY_NAME = "bridges";
 
   private static final String OPC_TAG_DEVICE_UA = "opc2s5.bridge.collection.id";
 
@@ -318,10 +318,14 @@ public class OpcToS5DataCfgConverter {
 
   private static INodeIdConvertor idConvertor;
   // dima 16.05.25 FIXME - должен передаваться снаружи от пользователя
-  private static String TKA_TEMPLATE = "TKA3";
+  //private static String TKA_TEMPLATE = "TKA3";
+
+  private static IGwidFilter gwidFilter = IGwidFilter.EMPTY_FILTER;
+
+  private static IOpcUaNodeFilter ocUaNodeFilter = IOpcUaNodeFilter.EMPTY_FILTER;
 
   private OpcToS5DataCfgConverter() {
-
+    
   }
 
   /**
@@ -332,6 +336,18 @@ public class OpcToS5DataCfgConverter {
    */
   public static IAvTree convertToDlmCfgTree( IList<OpcToS5DataCfgUnit> aCfgUnits, ISkConnection aConn,
       INodeIdConvertor aConvertor ) {
+    return convertToDlmCfgTree( aCfgUnits, aConn, aConvertor, IGwidFilter.EMPTY_FILTER );
+  }
+
+  /**
+   * Из описания {@link OpcToS5DataCfgDoc} создает дерево {@link IAvTree} конфигурации DLM
+   *
+   * @param aCfgUnits IList - набор единиц конфигурации
+   * @return дерево для конфигурирования модуля DLM
+   */
+  public static IAvTree convertToDlmCfgTree( IList<OpcToS5DataCfgUnit> aCfgUnits, ISkConnection aConn,
+      INodeIdConvertor aConvertor, IGwidFilter aGwidFilter ) {
+    gwidFilter = aGwidFilter;
     complexTagsContetnt.clear();
     complexTagsIdsBySkidsContetnt.clear();
     tagsIdsByGwidContetnt.clear();
@@ -435,22 +451,26 @@ public class OpcToS5DataCfgConverter {
 
   private static boolean isSuited( IList<Gwid> aDataGwids ) {
     for( Gwid gwid : aDataGwids ) {
-      if( gwid.skid().classId().indexOf( "InterfaceConverterBox" ) >= 0
-          && gwid.propId().indexOf( TKA_TEMPLATE ) >= 0 ) {
+      if( gwidFilter.isSuited( gwid ) ) {
         return true;
       }
-      if( gwid.skid().strid().indexOf( TKA_TEMPLATE ) >= 0 ) {
-        return true;
-      }
+      // if( gwid.skid().classId().indexOf( "InterfaceConverterBox" ) >= 0
+      // && gwid.propId().indexOf( TKA_TEMPLATE ) >= 0 ) {
+      // return true;
+      // }
+      // if( gwid.skid().strid().indexOf( TKA_TEMPLATE ) >= 0 ) {
+      // return true;
+      // }
     }
     return false;
   }
 
   private static boolean isSuited( CfgOpcUaNode aTagData ) {
-    if( aTagData.getNodeId().indexOf( TKA_TEMPLATE ) < 0 ) {
-      return false;
-    }
-    return true;
+    return ocUaNodeFilter.isSuited( aTagData );
+    // if( aTagData.getNodeId().indexOf( TKA_TEMPLATE ) < 0 ) {
+    // return false;
+    // }
+    // return true;
   }
 
   /**
@@ -1111,6 +1131,12 @@ public class OpcToS5DataCfgConverter {
   }
 
   public static IAvTree convertToDevCfgTree( ITsGuiContext aContext, OpcToS5DataCfgDoc aDoc ) {
+    return convertToDevCfgTree( aContext, aDoc, IOpcUaNodeFilter.EMPTY_FILTER );
+  }
+
+  public static IAvTree convertToDevCfgTree( ITsGuiContext aContext, OpcToS5DataCfgDoc aDoc,
+      IOpcUaNodeFilter aOpcUaNodeFilter ) {
+    ocUaNodeFilter = aOpcUaNodeFilter;
     String endPointURL = HOST_PARAM_VAL_TEMPLATE;
     String user = USER_PARAM_VAL_TEMPLATE;
     String pass = PASSWORD_PARAM_VAL_TEMPLATE;
