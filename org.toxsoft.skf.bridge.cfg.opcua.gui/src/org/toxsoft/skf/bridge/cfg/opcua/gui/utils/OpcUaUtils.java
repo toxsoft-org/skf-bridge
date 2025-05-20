@@ -1808,6 +1808,31 @@ public class OpcUaUtils {
 
       if( aCandidateCmd.compareTo( cmdId ) == 0 ) {
         retVal = true;
+        break;
+      }
+    }
+    return retVal;
+  }
+
+  /**
+   * FIXME проектно-зависмый код вынести отсюда <br>
+   * Считывает из справочника описание команды CtrlSystem (проект Байконур)
+   *
+   * @param aConn - соединение с сервером
+   * @param aCandidateCmd - кандидат на команду
+   * @return {@link ISkRefbookItem} описание команды
+   */
+  public static ISkRefbookItem getCtrlSystenCommand( ISkConnection aConn, String aCandidateCmd ) {
+    ISkRefbookItem retVal = null;
+    // открываем справочник команд CtrlSystem
+    String refbookName = "CtrlSystemCommands";
+    ISkRefbookService skRefServ = (ISkRefbookService)aConn.coreApi().getService( ISkRefbookService.SERVICE_ID );
+    IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( refbookName ).listItems();
+    for( ISkRefbookItem rbItem : rbItems ) {
+      String cmdId = rbItem.attrs().getValue( "identificator" ).asString();
+      if( aCandidateCmd.compareTo( cmdId ) == 0 ) {
+        retVal = rbItem;
+        break;
       }
     }
     return retVal;

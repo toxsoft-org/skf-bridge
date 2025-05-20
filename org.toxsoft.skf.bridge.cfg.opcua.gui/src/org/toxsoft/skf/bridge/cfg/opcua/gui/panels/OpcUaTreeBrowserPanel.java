@@ -1160,7 +1160,7 @@ public class OpcUaTreeBrowserPanel
       IListEdit<UaNode2Gwid> aNode2ClassGwidList ) {
     // id события
     String evtId = aVariableNode.getBrowseName().getName();
-    // заплатка для Байконура
+    // FIXME dima 20.05.25 заплатка для Байконура
     if( aDtoClass.id().endsWith( "_OS" ) && OpcUaUtils.isCtrlSystenCommand( conn, evtId ) ) { //$NON-NLS-1$
       return;
     }
@@ -1221,7 +1221,8 @@ public class OpcUaTreeBrowserPanel
       IListEdit<UaNode2Gwid> aNode2ClassGwidList ) {
     // id команды
     String cmdId = aVariableNode.getBrowseName().getName();
-    // заплатка для Байконура
+    // заплатка для Байконура, класс "Система управления", берем команды из отдельного справочника чтобы не акуеть
+    // выбирая их вручную
     if( aDtoClass.id().endsWith( "_OS" ) && !OpcUaUtils.isCtrlSystenCommand( conn, cmdId ) ) { //$NON-NLS-1$
       return;
     }
@@ -1239,6 +1240,12 @@ public class OpcUaTreeBrowserPanel
     // описание
     if( descr == null ) {
       descr = name;
+    }
+    if( OpcUaUtils.isCtrlSystenCommand( conn, cmdId ) ) {
+      ISkRefbookItem cmdRbItem = OpcUaUtils.getCtrlSystenCommand( conn, cmdId );
+      name = cmdRbItem.nmName();
+      // описание
+      descr = cmdRbItem.description();
     }
 
     // тип данного
