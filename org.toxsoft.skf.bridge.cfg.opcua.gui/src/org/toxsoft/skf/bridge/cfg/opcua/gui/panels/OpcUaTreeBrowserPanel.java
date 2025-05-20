@@ -1521,15 +1521,16 @@ public class OpcUaTreeBrowserPanel
         }
       }
     }
-    // заливаем в хранилище
-    OpcUaUtils.updateNodes2GwidsInStore( aContext, node2RtdGwidList,
+    // заливаем в хранилище. Метод который обновляет только подмножество объектов текущего класса, а
+    // остальное сохраняет
+    OpcUaUtils.updateNodes2ObjGwidsInStore( aClassInfo.id(), aContext, node2RtdGwidList,
         OpcUaUtils.SECTID_OPC_UA_NODES_2_RTD_GWIDS_TEMPLATE, UaNode2Gwid.KEEPER, opcUaServerConnCfg );
-    OpcUaUtils.updateNodes2GwidsInStore( aContext, node2RriGwidList,
+    OpcUaUtils.updateNodes2ObjGwidsInStore( aClassInfo.id(), aContext, node2RriGwidList,
         OpcUaUtils.SECTID_OPC_UA_NODES_2_RRI_GWIDS_TEMPLATE, UaNode2Gwid.KEEPER, opcUaServerConnCfg );
-    OpcUaUtils.updateNodes2GwidsInStore( aContext, node2EvtGwidList,
+    OpcUaUtils.updateNodes2ObjGwidsInStore( aClassInfo.id(), aContext, node2EvtGwidList,
         OpcUaUtils.SECTID_OPC_UA_NODES_2_EVT_GWIDS_TEMPLATE, UaNode2EventGwid.KEEPER, opcUaServerConnCfg );
     // for Baikonur
-    OpcUaUtils.updateNodes2GwidsInStore( aContext, node2BknCmdGwidList,
+    OpcUaUtils.updateNodes2ObjGwidsInStore( aClassInfo.id(), aContext, node2BknCmdGwidList,
         OpcUaUtils.SECTID_OPC_UA_NODES_2_BKN_CMD_GWIDS_TEMPLATE, UaNode2EventGwid.KEEPER, opcUaServerConnCfg );
     // OpcUaUtils.updateCmdGwid2NodesInStore( aContext, cmdGwid2UaNodesList, opcUaServerConnCfg );
     // OpcUaUtils.updateRriAttrGwid2NodesInStore( aContext, rriAttrCmdGwid2UaNodesList, opcUaServerConnCfg );

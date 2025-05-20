@@ -659,19 +659,55 @@ public class OpcUaUtils {
     TsInternalErrorRtException.checkNull( workroom );
     String sectId = getTreeSectionNameByConfig( aSectIdTempate, aOpcUaServerConnCfg );
     IList<T> oldList = loadNodes2Gwids( aContext, sectId, aKeeper );
-    IListEdit<T> newList = new ElemArrayList<>();
+    IListEdit<T> newList = new ElemArrayList<>( false );
     // для ускорения переложим в карту
     IStringMapEdit<IContainNodeId> tmpCach = new StringMap<>();
     for( T node : aNodes2Gwids ) {
       String key = node.getNodeId().toParseableString();
       tmpCach.put( key, node );
     }
+    // перекладываем все что в старом совпадает с новым
     for( T oldItem : oldList ) {
       String key = oldItem.getNodeId().toParseableString();
       if( !tmpCach.hasKey( key ) ) {
         newList.add( oldItem );
       }
     }
+    newList.addAll( aNodes2Gwids );
+    IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
+    storage.writeColl( sectId, newList, aKeeper );
+  }
+
+  /**
+   * Update list of links UaNode->RtdGwid {@link UaNode2Gwid} to store in inner storage Алгорит обновления: <br>
+   * <ul>
+   * <li><b>переносим все данные НЕ касающиеся обновляемого класса</li>
+   * <li><b>добавляем новые данные обновляемого класса</li>
+   * </ul>
+   *
+   * @param <T> - шаблон для описания привязки {@link UaNode2Gwid}
+   * @param aClassId класс объекты которого обновляются в метаинформации
+   * @param aContext app context
+   * @param aNodes2Gwids list of links UaNode->Gwid
+   * @param aSectIdTempate section id template to store data
+   * @param aKeeper хранитель шаблона
+   * @param aOpcUaServerConnCfg параметры подключения к OPC UA
+   */
+  public static <T extends UaNode2Gwid> void updateNodes2ObjGwidsInStore( String aClassId, ITsGuiContext aContext,
+      IList<T> aNodes2Gwids, String aSectIdTempate, IEntityKeeper<T> aKeeper,
+      IOpcUaServerConnCfg aOpcUaServerConnCfg ) {
+    ITsWorkroom workroom = aContext.eclipseContext().get( ITsWorkroom.class );
+    TsInternalErrorRtException.checkNull( workroom );
+    String sectId = getTreeSectionNameByConfig( aSectIdTempate, aOpcUaServerConnCfg );
+    IList<T> oldList = loadNodes2Gwids( aContext, sectId, aKeeper );
+    IListEdit<T> newList = new ElemArrayList<>( false );
+    // в метаинфу переносим все старые данные по другим классам
+    for( T oldItem : oldList ) {
+      if( oldItem.gwid().classId().compareTo( aClassId ) != 0 ) {
+        newList.add( oldItem );
+      }
+    }
+    // и новые данное по обновляемому классу
     newList.addAll( aNodes2Gwids );
     IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
     storage.writeColl( sectId, newList, aKeeper );
@@ -844,7 +880,7 @@ public class OpcUaUtils {
     TsInternalErrorRtException.checkNull( workroom );
     IList<CmdGwid2UaNodes> oldList = loadCmdGwid2Nodes( aContext, aOpcUaServerConnCfg );
     // добавляем в список на запись только те элементы которых нет в новом списке
-    IListEdit<CmdGwid2UaNodes> newList = new ElemArrayList<>();
+    IListEdit<CmdGwid2UaNodes> newList = new ElemArrayList<>( false );
     for( CmdGwid2UaNodes oldItem : oldList ) {
       if( !containsGwidIn( aCmdGwid2UaNodes, oldItem ) ) {
         newList.add( oldItem );
@@ -869,7 +905,7 @@ public class OpcUaUtils {
     TsInternalErrorRtException.checkNull( workroom );
     IList<CmdGwid2UaNodes> oldList = loadRriAttrGwid2Nodes( aContext, aOpcUaServerConnCfg );
     // добавляем в список на запись только те элементы которых нет в новом списке
-    IListEdit<CmdGwid2UaNodes> newList = new ElemArrayList<>();
+    IListEdit<CmdGwid2UaNodes> newList = new ElemArrayList<>( false );
     for( CmdGwid2UaNodes oldItem : oldList ) {
       if( !containsGwidIn( aRriAttrGwid2UaNodes, oldItem ) ) {
         newList.add( oldItem );
@@ -1051,7 +1087,7 @@ public class OpcUaUtils {
     // ----------------------------------------------------
     // Определение первой реализации команд
 
-    IListEdit<IDataDef> paramDefenitions = new ElemArrayList<>();
+    IListEdit<IDataDef> paramDefenitions = new ElemArrayList<>( false );
 
     paramDefenitions.add( OP_CMD_JAVA_CLASS );
     paramDefenitions.add( OP_CMD_VALUE_PARAM_ID );
@@ -1083,7 +1119,7 @@ public class OpcUaUtils {
     // ----------------------------------------------------
     // Определение второй реализации команд
 
-    paramDefenitions = new ElemArrayList<>();
+    paramDefenitions = new ElemArrayList<>( false );
 
     paramDefenitions.add( OP_CMD_JAVA_CLASS );
     paramDefenitions.add( OP_CMD_VALUE_PARAM_ID );
@@ -1116,7 +1152,7 @@ public class OpcUaUtils {
     // ----------------------------------------------------
     // Определение первой реализации данных (простое - один к одному)
 
-    paramDefenitions = new ElemArrayList<>();
+    paramDefenitions = new ElemArrayList<>( false );
 
     paramDefenitions.add( OP_DATA_JAVA_CLASS );
     paramDefenitions.add( OP_SYNCH_PERIOD );
@@ -1142,7 +1178,7 @@ public class OpcUaUtils {
     // ----------------------------------------------------
     // Определение второй реализации данных (битовое данное из интового тега)
 
-    paramDefenitions = new ElemArrayList<>();
+    paramDefenitions = new ElemArrayList<>( false );
 
     paramDefenitions.add( OP_DATA_JAVA_CLASS );
     paramDefenitions.add( OP_BIT_INDEX );
@@ -1167,7 +1203,7 @@ public class OpcUaUtils {
     // ----------------------------------------------------
     // Определение первой реализации НСИ атрибута (простое - один к одному)
 
-    paramDefenitions = new ElemArrayList<>();
+    paramDefenitions = new ElemArrayList<>( false );
 
     paramDefenitions.add( OP_DATA_JAVA_CLASS );
 
@@ -1182,7 +1218,7 @@ public class OpcUaUtils {
     // ----------------------------------------------------
     // Определение второй реализации данных (битовое данное из интового тега)
 
-    paramDefenitions = new ElemArrayList<>();
+    paramDefenitions = new ElemArrayList<>( false );
 
     paramDefenitions.add( OP_DATA_JAVA_CLASS );
     paramDefenitions.add( OP_BIT_INDEX );
@@ -1203,7 +1239,7 @@ public class OpcUaUtils {
     // ----------------------------------------------------
     // Определение второй реализации события
 
-    paramDefenitions = new ElemArrayList<>();
+    paramDefenitions = new ElemArrayList<>( false );
 
     paramDefenitions.add( OP_EVENT_SENDER_JAVA_CLASS );
     paramDefenitions.add( OP_CONDITION_JAVA_CLASS );
@@ -1225,7 +1261,7 @@ public class OpcUaUtils {
     // ----------------------------------------------------
     // Определение третьей реализации события
 
-    paramDefenitions = new ElemArrayList<>();
+    paramDefenitions = new ElemArrayList<>( false );
 
     paramDefenitions.add( OP_EVENT_SENDER_JAVA_CLASS );
     paramDefenitions.add( OP_CONDITION_JAVA_CLASS );
@@ -1250,7 +1286,7 @@ public class OpcUaUtils {
     // ----------------------------------------------------
     // Определение четвертой реализации события
 
-    paramDefenitions = new ElemArrayList<>();
+    paramDefenitions = new ElemArrayList<>( false );
 
     paramDefenitions.add( OP_EVENT_SENDER_JAVA_CLASS );
     paramDefenitions.add( OP_CONDITION_JAVA_CLASS );
@@ -1672,7 +1708,7 @@ public class OpcUaUtils {
           ) ); //
       // считали, ищем список этого класса
       if( !dtoCmdInfoesMap.hasKey( classId ) ) {
-        IListEdit<IDtoCmdInfo> classCmds = new ElemArrayList<>();
+        IListEdit<IDtoCmdInfo> classCmds = new ElemArrayList<>( false );
         dtoCmdInfoesMap.put( classId, classCmds );
       }
       IListEdit<IDtoCmdInfo> classCmds = (IListEdit<IDtoCmdInfo>)dtoCmdInfoesMap.getByKey( classId );
@@ -1741,7 +1777,7 @@ public class OpcUaUtils {
       StringMap<IList<BitIdx2DtoRtData>> rtDataMap = retVal.getByKey( classId );
       String bitArrayRtDataId = rbItem.attrs().getValue( RBATRID_BITMASK___IDW ).asString();
       if( !rtDataMap.hasKey( bitArrayRtDataId ) ) {
-        rtDataMap.put( bitArrayRtDataId, new ElemArrayList<>() );
+        rtDataMap.put( bitArrayRtDataId, new ElemArrayList<>( false ) );
       }
 
       BitIdx2DtoRtData dataInfo = readBitIdx2DtoRtData( bitArrayRtDataId, rbItem );
@@ -1800,7 +1836,7 @@ public class OpcUaUtils {
       StringMap<IList<BitIdx2DtoEvent>> rtDataMap = retVal.getByKey( classId );
       String bitArrayRtDataId = rbItem.attrs().getValue( RBATRID_BITMASK___IDW ).asString();
       if( !rtDataMap.hasKey( bitArrayRtDataId ) ) {
-        rtDataMap.put( bitArrayRtDataId, new ElemArrayList<>() );
+        rtDataMap.put( bitArrayRtDataId, new ElemArrayList<>( false ) );
       }
 
       BitIdx2DtoEvent eventInfo = readBitIdx2DtoEvent( bitArrayRtDataId, rbItem );
@@ -1835,7 +1871,7 @@ public class OpcUaUtils {
       StringMap<IList<BitIdx2RriDtoAttr>> rriAttrMap = retVal.getByKey( classId );
       String bitArrayRtDataId = rbItem.attrs().getValue( RBATRID_BITMASK___IDW ).asString();
       if( !rriAttrMap.hasKey( bitArrayRtDataId ) ) {
-        rriAttrMap.put( bitArrayRtDataId, new ElemArrayList<>() );
+        rriAttrMap.put( bitArrayRtDataId, new ElemArrayList<>( false ) );
       }
 
       BitIdx2RriDtoAttr attrInfo = readBitIdx2RriDtoAttr( bitArrayRtDataId, rbItem );
