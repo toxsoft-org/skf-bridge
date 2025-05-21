@@ -22,7 +22,7 @@ import org.toxsoft.uskat.core.api.sysdescr.*;
 import org.toxsoft.uskat.core.api.sysdescr.dto.*;
 
 /**
- * Class for startegy to generate system description from Siemens-Baikonгr OPC UA tree.
+ * Class for startegy to generate system description from Siemens-Baikonur OPC UA tree.
  * <p/>
  *
  * @author dima
@@ -63,25 +63,44 @@ public class BaikonurSiemensSysdescrGenerator
   }
 
   @Override
+  protected IList<UaTreeNode> getVariableNodes( UaTreeNode aObjectNode ) {
+    IListEdit<UaTreeNode> retVal = new ElemArrayList<>();
+    // у Siemens узлы переменных находятся ниже подузла Static
+    for( UaTreeNode parentNode : aObjectNode.getChildren() ) {
+      if( parentNode.getNodeClass().equals( NodeClass.Variable ) ) {
+        retVal.add( parentNode );
+      }
+      else {
+        for( UaTreeNode childNode : parentNode.getChildren() ) {
+          if( childNode.getNodeClass().equals( NodeClass.Variable ) ) {
+            retVal.add( childNode );
+          }
+        }
+      }
+    }
+    return retVal;
+  }
+
+  @Override
   protected void generateNode2GwidLinks( ITsGuiContext aContext, ISkClassInfo aClassInfo, IList<IDtoObject> aObjList,
       IStridablesList<IDtoRriParamInfo> aRriParamInfoes ) {
     IListEdit<UaNode2Gwid> node2RtdGwidList = new ElemArrayList<>();
+    // НСИ нет в проекте Байконура
     IListEdit<UaNode2EventGwid> node2EvtGwidList = new ElemArrayList<>();
-    IListEdit<UaNode2EventGwid> node2CmdGwidList = new ElemArrayList<>();
+    IListEdit<UaNode2EventGwid> node2BknCmdGwidList = new ElemArrayList<>();
     // в этом месте у нас 100% уже загружено дерево узлов OPC UA
     IList<UaTreeNode> treeNodes = ((OpcUaNodeM5LifecycleManager)componentModown.lifecycleManager()).getCached();
     // идем по списку объектов
     for( IDtoObject obj : aObjList ) {
       // находим родительский UaNode
-      // UaTreeNode parentNode = aItemProvider.nodeById( obj.id() );
       Skid parentSkid = new Skid( aClassInfo.id(), obj.id() );
-      // OpcUaUtils.getTreeSectionNameByConfig( OpcUaUtils.SECTID_OPC_UA_NODES_2_SKIDS_TEMPLATE, opcUaServerConnCfg );
 
       NodeId parentNodeId = OpcUaUtils.nodeBySkid( aContext, parentSkid, opcUaServerConnCfg );
       // тут отрабатываем ситуацию когда утеряна метаинформация
       if( parentNodeId == null ) {
+        @SuppressWarnings( "nls" )
         ETsDialogCode retCode = TsDialogUtils.askYesNoCancel( getShell(),
-            "Can't find nodeId for Skid: %s .\n Check section %s in file data-storage.ktor .\n Do you want to continue?", //$NON-NLS-1$
+            "Can't find nodeId for Skid: %s .\n Check section %s in file data-storage.ktor .\n Do you want to continue?",
             parentSkid.toString(), OpcUaUtils
                 .getTreeSectionNameByConfig( OpcUaUtils.SECTID_OPC_UA_NODES_2_SKIDS_TEMPLATE, opcUaServerConnCfg ) );
         if( retCode == ETsDialogCode.CANCEL || retCode == ETsDialogCode.CLOSE || retCode == ETsDialogCode.NO ) {
@@ -89,17 +108,12 @@ public class BaikonurSiemensSysdescrGenerator
         }
         continue;
       }
-      // old version
-      // TsIllegalStateRtException.checkNull( parentNodeId,
-      // "Can't find nodeId for Skid: %s .\n Check section %s in file data-storage.ktor", parentSkid.toString(),
-      // OpcUaUtils.getTreeSectionNameByConfig( OpcUaUtils.SECTID_OPC_UA_NODES_2_SKIDS_TEMPLATE,
-      // opcUaServerConnCfg ) );
       UaTreeNode parentNode = findParentNode( treeNodes, parentNodeId );
       // привязываем команды
+      // переделано под Байконур идем по списку его cmds
       for( IDtoCmdInfo cmdInfo : aClassInfo.cmds().list() ) {
         // находим свой UaNode
-        UaTreeNode uaNode = findVarNodeByClassGwid( aContext, Gwid.createCmd( aClassInfo.id(), cmdInfo.id() ),
-            parentNode.getChildren() );
+        UaTreeNode uaNode = findVarNodeByPropName( cmdInfo, parentNode );
 
         Gwid gwid = Gwid.createCmd( obj.classId(), obj.id(), cmdInfo.id() );
         if( uaNode != null ) {
@@ -111,7 +125,7 @@ public class BaikonurSiemensSysdescrGenerator
             argIds.add( argId );
           }
           UaNode2EventGwid node2BknCmdGwid = new UaNode2EventGwid( uaNode.getNodeId(), nodeDescr, gwid, argIds );
-          node2CmdGwidList.add( node2BknCmdGwid );
+          node2BknCmdGwidList.add( node2BknCmdGwid );
         }
         else {
           LoggerUtils.errorLogger().error( "Can't match Baikonur cmd: ? -> %s", gwid.canonicalString() ); //$NON-NLS-1$
@@ -124,8 +138,7 @@ public class BaikonurSiemensSysdescrGenerator
         // сначала ищем в данных битовой маски
         UaTreeNode uaNode = tryBitMaskRtData( aClassInfo, parentNode, rtdInfo );
         if( uaNode == null ) {
-          uaNode = findVarNodeByClassGwid( aContext, Gwid.createRtdata( aClassInfo.id(), rtdInfo.id() ),
-              parentNode.getChildren() );
+          uaNode = findVarNodeByPropName( rtdInfo, parentNode );
         }
         Gwid gwid = Gwid.createRtdata( obj.classId(), obj.id(), rtdInfo.id() );
         if( uaNode != null ) {
@@ -145,8 +158,7 @@ public class BaikonurSiemensSysdescrGenerator
         // сначала ищем в событиях битовой маске
         UaTreeNode uaNode = tryBitMaskEvent( aClassInfo, parentNode, evtInfo );
         if( uaNode == null ) {
-          uaNode = findVarNodeByClassGwid( aContext, Gwid.createEvent( aClassInfo.id(), evtInfo.id() ),
-              parentNode.getChildren() );
+          uaNode = findVarNodeByPropName( evtInfo, parentNode );
         }
         Gwid gwid = Gwid.createEvent( obj.classId(), obj.id(), evtInfo.id() );
         if( uaNode != null ) {
@@ -165,28 +177,14 @@ public class BaikonurSiemensSysdescrGenerator
         }
       }
     }
-    // заливаем в хранилище
-    OpcUaUtils.updateNodes2GwidsInStore( aContext, node2RtdGwidList,
+    // заливаем в хранилище. Метод который обновляет только подмножество объектов текущего класса, а
+    // остальное сохраняет
+    OpcUaUtils.updateNodes2ObjGwidsInStore( aClassInfo.id(), aContext, node2RtdGwidList,
         OpcUaUtils.SECTID_OPC_UA_NODES_2_RTD_GWIDS_TEMPLATE, UaNode2Gwid.KEEPER, opcUaServerConnCfg );
-    OpcUaUtils.updateNodes2GwidsInStore( aContext, node2EvtGwidList,
+    OpcUaUtils.updateNodes2ObjGwidsInStore( aClassInfo.id(), aContext, node2EvtGwidList,
         OpcUaUtils.SECTID_OPC_UA_NODES_2_EVT_GWIDS_TEMPLATE, UaNode2EventGwid.KEEPER, opcUaServerConnCfg );
-    // for Baikonur
-    OpcUaUtils.updateNodes2GwidsInStore( aContext, node2CmdGwidList,
+    OpcUaUtils.updateNodes2ObjGwidsInStore( aClassInfo.id(), aContext, node2BknCmdGwidList,
         OpcUaUtils.SECTID_OPC_UA_NODES_2_BKN_CMD_GWIDS_TEMPLATE, UaNode2EventGwid.KEEPER, opcUaServerConnCfg );
-  }
-
-  @Override
-  protected IList<UaTreeNode> getVariableNodes( UaTreeNode aObjectNode ) {
-    IListEdit<UaTreeNode> retVal = new ElemArrayList<>();
-    // у Siemens для Байконура узлы переменных находятся ниже подузлов Inputs/Outputs
-    for( UaTreeNode parentNode : aObjectNode.getChildren() ) {
-      for( UaTreeNode childNode : parentNode.getChildren() ) {
-        if( childNode.getNodeClass().equals( NodeClass.Variable ) ) {
-          retVal.add( childNode );
-        }
-      }
-    }
-    return retVal;
   }
 
 }

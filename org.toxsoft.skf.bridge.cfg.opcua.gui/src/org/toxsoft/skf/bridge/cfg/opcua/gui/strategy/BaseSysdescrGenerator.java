@@ -1159,6 +1159,29 @@ public abstract class BaseSysdescrGenerator {
     return retVal;
   }
 
+  /**
+   * По описанию параметра ищем подходящий UaNode
+   *
+   * @param aPropInfo описание свойства класса
+   * @param aObjectNode узел дерева объекта
+   * @return подходящий узел или null
+   */
+  protected UaTreeNode findVarNodeByPropName( IDtoClassPropInfoBase aPropInfo, UaTreeNode aObjectNode ) {
+    UaTreeNode retVal = null;
+    IList<UaTreeNode> varNodes = getVariableNodes( aObjectNode );
+    for( UaTreeNode varNode : varNodes ) {
+      if( varNode.getNodeClass().equals( NodeClass.Variable ) ) {
+        // create full id
+        String name4Search = aPropInfo.id().substring( 0, 3 ) + varNode.getBrowseName();
+        if( aPropInfo.id().compareTo( name4Search ) == 0 ) {
+          retVal = varNode;
+          break;
+        }
+      }
+    }
+    return retVal;
+  }
+
   abstract protected UaTreeNode getClassNode( UaTreeNode aNode );
 
   abstract protected boolean isIgnore4RtData( String aClassId, String aDataId );

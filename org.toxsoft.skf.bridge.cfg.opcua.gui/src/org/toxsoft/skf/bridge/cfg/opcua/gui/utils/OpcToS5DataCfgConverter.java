@@ -97,8 +97,11 @@ public class OpcToS5DataCfgConverter {
 
   private static final String ID_PARAM_NAME = "id";
 
-  private static final String JAVA_CLASS_PARAM_NAME         = "javaClassName";
-  private static final String JAVA_CLASS_PARAM_VAL_TEMPLATE = "org.toxsoft.l2.thd.opc.ua.milo.OpcUaMiloDriverProducer";
+  private static final String JAVA_CLASS_PARAM_NAME = "javaClassName";
+  // dima 21.05.25 FIXME patch for Baikonur
+  // private static final String JAVA_CLASS_PARAM_VAL_TEMPLATE =
+  // "org.toxsoft.l2.thd.opc.ua.milo.OpcUaMiloDriverProducer";
+  private static final String JAVA_CLASS_PARAM_VAL_TEMPLATE = "ru.toxsoft.bkn.l2.thd.opc.BknOpcUaMiloDriverProducer";
 
   private static final String HOST_PARAM_NAME         = "host";
   private static final String HOST_PARAM_VAL_TEMPLATE = "opc.tcp://192.168.0.???:4840";
@@ -318,14 +321,14 @@ public class OpcToS5DataCfgConverter {
 
   private static INodeIdConvertor idConvertor;
   // dima 16.05.25 FIXME - должен передаваться снаружи от пользователя
-  //private static String TKA_TEMPLATE = "TKA3";
+  // private static String TKA_TEMPLATE = "TKA3";
 
   private static IGwidFilter gwidFilter = IGwidFilter.EMPTY_FILTER;
 
   private static IOpcUaNodeFilter ocUaNodeFilter = IOpcUaNodeFilter.EMPTY_FILTER;
 
   private OpcToS5DataCfgConverter() {
-    
+
   }
 
   /**

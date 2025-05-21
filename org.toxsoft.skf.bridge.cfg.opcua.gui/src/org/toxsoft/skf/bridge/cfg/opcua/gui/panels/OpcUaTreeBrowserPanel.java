@@ -1546,6 +1546,7 @@ public class OpcUaTreeBrowserPanel
   private static IList<UaTreeNode> getVariableNodes( UaTreeNode aObjectNode, EOPCUATreeType aTreeType ) {
     IListEdit<UaTreeNode> retVal = new ElemArrayList<>();
     switch( aTreeType ) {
+      case SIEMENS_BAIKONUR:
       case SIEMENS: {
         // у Siemens узлы переменных находятся ниже подузла Static
         for( UaTreeNode parentNode : aObjectNode.getChildren() ) {
@@ -1567,7 +1568,6 @@ public class OpcUaTreeBrowserPanel
         retVal.addAll( aObjectNode.getChildren() );
         break;
       case OTHER:
-      case SIEMENS_BAIKONUR:
       default:
         throw new TsUnsupportedFeatureRtException();
     }
