@@ -448,7 +448,7 @@ public class OpcUaUtils {
   static IdentityProvider getIdentityProvider( IOpcUaServerConnCfg aCfg ) {
     if( aCfg.login().length() > 0 ) {
       // return new UsernameProvider("admin","123"); //poligon
-      return new UsernameProvider( aCfg.login(), aCfg.passward() );
+      return new UsernameProvider( aCfg.login(), aCfg.password() );
     }
 
     return new AnonymousProvider();// Siemens

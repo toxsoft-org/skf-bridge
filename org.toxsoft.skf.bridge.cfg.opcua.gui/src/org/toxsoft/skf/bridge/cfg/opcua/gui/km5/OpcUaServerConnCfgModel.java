@@ -1,15 +1,22 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
 
 import static org.toxsoft.core.tsgui.m5.IM5Constants.*;
+import static org.toxsoft.core.tslib.av.EAtomicType.*;
+import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
+import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
+import static org.toxsoft.skf.bridge.cfg.opcua.gui.km5.ISkResources.*;
 
 import org.toxsoft.core.tsgui.m5.model.impl.*;
 import org.toxsoft.core.tsgui.m5.std.fields.*;
+import org.toxsoft.core.tslib.av.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.panels.*;
 
 /**
  * M5 model realization for {@link IOpcUaServerConnCfg} entities.
  *
  * @author max
+ * @author dima
  */
 public class OpcUaServerConnCfgModel
     extends M5Model<IOpcUaServerConnCfg> {
@@ -45,9 +52,28 @@ public class OpcUaServerConnCfgModel
   public final M5AttributeFieldDef<IOpcUaServerConnCfg> LOGIN = new M5StdFieldDefParamAttr<>( OPDEF_LOGIN );
 
   /**
-   * Атрибут {@link IOpcUaServerConnCfg#passward()}.
+   * Атрибут {@link IOpcUaServerConnCfg#password()}.
    */
   public final M5AttributeFieldDef<IOpcUaServerConnCfg> PASSWORD = new M5StdFieldDefParamAttr<>( OPDEF_PASSWORD );
+
+  /**
+   * id field of tree type
+   */
+  public static final String FID_TREE_TYPE = "treeType"; //$NON-NLS-1$
+
+  /**
+   * Attribute {@link IOpcUaServerConnCfg#treeType() } type of OPC UA tree
+   */
+  public M5AttributeFieldDef<IOpcUaServerConnCfg> TREE_TYPE = new M5AttributeFieldDef<>( FID_TREE_TYPE, VALOBJ, //
+      TSID_NAME, STR_N_PARAM_TREE_TYPE, //
+      TSID_DESCRIPTION, STR_D_PARAM_TREE_TYPE, //
+      TSID_KEEPER_ID, EOPCUATreeType.KEEPER_ID, //
+      TSID_DEFAULT_VALUE, avValobj( EOPCUATreeType.POLIGONE ) ) {
+
+    protected IAtomicValue doGetFieldValue( IOpcUaServerConnCfg aEntity ) {
+      return avValobj( aEntity.treeType() );
+    }
+  };
 
   /**
    * Конструктор.
@@ -55,20 +81,7 @@ public class OpcUaServerConnCfgModel
   public OpcUaServerConnCfgModel() {
     super( MODEL_ID, IOpcUaServerConnCfg.class );
     ID.setFlags( M5FF_HIDDEN | M5FF_INVARIANT );
-    addFieldDefs( ID, NAME, HOST, LOGIN, PASSWORD, DESCRIPTION );
-    // setLifecycleManagerCreator( new M5AbstractLifecycleManagerCreator<IOpcServerConnCfg, IOpcServerConnCfgManager>()
-    // {
-    //
-    // @Override
-    // protected IM5LifecycleManager<IOpcServerConnCfg> doCreateDefault() {
-    // return null;
-    // }
-    //
-    // @Override
-    // protected IM5LifecycleManager<IOpcServerConnCfg> doCreate( IOpcServerConnCfgManager aMaster ) {
-    // return new OpcServerConnCfgM5LifecycleManager( model(), aMaster );
-    // }
-    // } );
+    addFieldDefs( ID, NAME, TREE_TYPE, HOST, LOGIN, PASSWORD, DESCRIPTION );
   }
 
 }

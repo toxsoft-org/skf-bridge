@@ -103,4 +103,17 @@ public interface ISkResources {
   String STR_D_UP_SELECTED_ITEM             = "Поднять на одну позицию в списке";
   String STR_N_DOWN_SELECTED_ITEM           = "опустить";
   String STR_D_DOWN_SELECTED_ITEM           = "Опустить на одну позицию в списке";
+
+  /**
+   * {@link EOPCUATreeType}
+   */
+  String STR_N_POLIGONE         = "Poligon";
+  String STR_D_POLIGONE         = "Poligon of Promautomatica St.Peterburg";
+  String STR_N_SIEMENS          = "Siemens";
+  String STR_D_SIEMENS          = "Siemens of Germany";
+  String STR_N_SIEMENS_BAIKONUR = "Version Siemens for Baikonur";
+  String STR_D_SIEMENS_BAIKONUR = "Siemens of Germany,version for Baikonur";
+  String STR_N_OTHER            = "Unknown OPC UA tree";
+  String STR_D_OTHER            = "Unknown OPC UA tree";
+
 }

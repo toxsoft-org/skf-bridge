@@ -58,6 +58,7 @@ import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.strategy.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 import org.toxsoft.skf.refbooks.lib.*;
 import org.toxsoft.skf.rri.lib.*;
@@ -205,6 +206,8 @@ public class OpcUaTreeBrowserPanel
   private String                               ODS_EXT          = "*.ods";                //$NON-NLS-1$
   private String                               DEFAULT_PATH_STR = TsLibUtils.EMPTY_STRING;
 
+  private BaseSysdescrGenerator generator = null;
+
   /**
    * Items provider for ISkObject created on OPC UA node.
    *
@@ -266,8 +269,8 @@ public class OpcUaTreeBrowserPanel
     this.setLayout( new BorderLayout() );
     ISkConnectionSupplier connSup = aContext.get( ISkConnectionSupplier.class );
     conn = connSup.defConn();
+    // FIXME
     // rriService = (ISkRegRefInfoService)conn.coreApi().services().getByKey( ISkRegRefInfoService.SERVICE_ID );
-
     IM5Domain m5 = conn.scope().get( IM5Domain.class );
     IM5Model<UaTreeNode> model = m5.getModel( OpcUaNodeModel.MODEL_ID, UaTreeNode.class );
 
@@ -281,6 +284,12 @@ public class OpcUaTreeBrowserPanel
           aOpcUaServerConnCfg.host(), ex.getMessage() );
       return;
     }
+    generator = switch( aOpcUaServerConnCfg.treeType() ) {
+      case POLIGONE -> new PoligoneSysdescrGenerator( aContext, client, aOpcUaServerConnCfg );
+      case SIEMENS -> new BaikonurSiemensSysdescrGenerator( aContext, client, aOpcUaServerConnCfg );
+      case SIEMENS_BAIKONUR -> new BaikonurSiemensSysdescrGenerator( aContext, client, aOpcUaServerConnCfg );
+      case OTHER -> throw new TsNotAllEnumsUsedRtException();
+    };
 
     IM5LifecycleManager<UaTreeNode> lm =
         new OpcUaNodeM5LifecycleManager( model, client, aContext, aOpcUaServerConnCfg );
@@ -308,6 +317,9 @@ public class OpcUaTreeBrowserPanel
         aActs.add( ITsStdActionDefs.ACDEF_SEPARATOR );
         aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_CREATE_CLASS_SIEMENS_OPC_UA_ITEM );
         aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_CREATE_OBJS_SIEMENS_OPC_UA_ITEM );
+        aActs.add( ITsStdActionDefs.ACDEF_SEPARATOR );
+        aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_CREATE_CLASS_OPC_UA_ITEM );
+        aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_CREATE_OBJS_OPC_UA_ITEM );
         aActs.add( ITsStdActionDefs.ACDEF_SEPARATOR );
         aActs.add( IOpcUaServerConnCfgConstants.ACTDEF_SHOW_OPC_UA_NODE_2_GWID );
 
@@ -344,6 +356,22 @@ public class OpcUaTreeBrowserPanel
             ensureBitMaskDescription();
             if( ensureRriSection( aContext ) ) {
               createObjsFromNodes( aContext, EOPCUATreeType.SIEMENS );
+            }
+          }
+
+          if( aActionId == CREATE_CINFO_FROM_OPC_UA_ACT_ID ) {
+            // first of all ensure all needed files are loaded
+            // ensureCmdDescription();
+            ensureBitMaskDescription();
+            // if( ensureRriSection( aContext ) ) {
+            generator.createClassFromNodes( selectedNode );
+            // }
+          }
+          if( aActionId == CREATE_OBJS_FROM_OPC_UA_ACT_ID ) {
+            // first of all ensure file bitMask loaded
+            ensureBitMaskDescription();
+            if( ensureRriSection( aContext ) ) {
+              generator.createObjsFromNodes( selectedNode );
             }
           }
 
@@ -857,13 +885,13 @@ public class OpcUaTreeBrowserPanel
         retVal = aNode;
         break;
       }
+      case SIEMENS_BAIKONUR:
       case SIEMENS:
         // Для Siemens узел класса это родительский узел
         // retVal = aNode.getParent();
         // а для Байконура как и для Полигона
         retVal = aNode;
         break;
-      case SIEMENS_BAIKONUR:
       case OTHER:
         throw new TsUnsupportedFeatureRtException( "Unsupported tree type: %s", aTreeType ); //$NON-NLS-1$
       default:

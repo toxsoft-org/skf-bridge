@@ -117,4 +117,11 @@ public interface ISkResources {
   String MSG_LOADED_BIT_MASKS_DESCR = Messages.MSG_LOADED_BIT_MASKS_DESCR;
 
   String STR_LINK_PREFIX = Messages.STR_LINK_PREFIX;
+
+  /**
+   * {@link OpcUaServerConnCfgModel}
+   */
+  String STR_N_PARAM_TREE_TYPE = "тип дерева";
+  String STR_D_PARAM_TREE_TYPE = "Тип OPC UA tree";
+
 }

@@ -238,12 +238,11 @@ public abstract class BaseSysdescrGenerator {
    * @param aClient - OPC UA server
    * @param aOpcUaServerConnCfg - OPC UA server connection settings
    */
-  BaseSysdescrGenerator( ITsGuiContext aContext, OpcUaClient aClient, IOpcUaServerConnCfg aOpcUaServerConnCfg,
-      EOPCUATreeType aTreeType ) {
+  BaseSysdescrGenerator( ITsGuiContext aContext, OpcUaClient aClient, IOpcUaServerConnCfg aOpcUaServerConnCfg ) {
     context = aContext;
     client = aClient;
     opcUaServerConnCfg = aOpcUaServerConnCfg;
-    treeType = aTreeType;
+    treeType = opcUaServerConnCfg.treeType();
     ISkConnectionSupplier connSup = aContext.get( ISkConnectionSupplier.class );
     conn = connSup.defConn();
   }
@@ -257,6 +256,7 @@ public abstract class BaseSysdescrGenerator {
    *
    * @param aSelectedNode - root node of subtree
    */
+  @SuppressWarnings( "nls" )
   public void createClassFromNodes( UaTreeNode aSelectedNode ) {
     // создать класс из информации об UaNode
     IList<UaTreeNode> selNodes = OpcUaNodesSelector.selectUaNodes4Class( context, aSelectedNode.getUaNode().getNodeId(),
@@ -717,9 +717,9 @@ public abstract class BaseSysdescrGenerator {
       IListEdit<UaNode2Gwid> aNode2ClassGwidList ) {
     // id события
     String evtId = aVariableNode.getBrowseName().getName();
-    // if( isIgnore4Event( aDtoClass.id(), evtId ) ) {
-    // return;
-    // }
+    if( isIgnore4Event( aDtoClass.id(), evtId ) ) {
+      return;
+    }
     // соблюдаем соглашения о наименовании
     if( !evtId.startsWith( EVT_PREFIX ) ) {
       evtId = EVT_PREFIX + evtId;

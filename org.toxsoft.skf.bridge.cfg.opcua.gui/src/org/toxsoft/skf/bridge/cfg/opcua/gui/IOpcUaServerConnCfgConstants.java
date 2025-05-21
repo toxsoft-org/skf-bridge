@@ -32,8 +32,10 @@ public interface IOpcUaServerConnCfgConstants {
   String ICONID_VARIABLE_NODE        = "s5-datatype";          //$NON-NLS-1$
   String ICONID_OBJECT_NODE          = "s5-obj";               //$NON-NLS-1$
   String ICONID_S_NEW_CLASS          = "S-class-new";          //$NON-NLS-1$
-  String ICONID_P_NEW_CLASS          = "P-class-new";          //$NON-NLS-1$
+  String ICONID_NEW_CLASS            = "s5-class-new";         //$NON-NLS-1$
   String ICONID_S_NEW_OBJECTS        = "S-object-new";         //$NON-NLS-1$
+  String ICONID_P_NEW_CLASS          = "P-class-new";          //$NON-NLS-1$
+  String ICONID_NEW_OBJECTS          = "s5-objs-class";        //$NON-NLS-1$
   String ICONID_P_NEW_OBJECTS        = "P-object-new";         //$NON-NLS-1$
   String ICONID_IMPORT               = "import";               //$NON-NLS-1$
   String ICONID_IMPORT_BLACK         = "import-rtData";        //$NON-NLS-1$
@@ -110,6 +112,11 @@ public interface IOpcUaServerConnCfgConstants {
   String CREATE_CINFO_FROM_SIEMENS_OPC_UA_ACT_ID = "create_cinfo_from_siemens_opc_ua_act_id"; //$NON-NLS-1$
 
   /**
+   * id действия "создать описание класса из OPC UA"
+   */
+  String CREATE_CINFO_FROM_OPC_UA_ACT_ID = "create_cinfo_from_opc_ua_act_id"; //$NON-NLS-1$
+
+  /**
    * id действия "создать объекты из узлов OPC UA Poligone"
    */
   String CREATE_OBJS_FROM_POLIGONE_OPC_UA_ACT_ID = "create_objs_from_poligone_opc_ua_act_id"; //$NON-NLS-1$
@@ -118,6 +125,11 @@ public interface IOpcUaServerConnCfgConstants {
    * id действия "создать объекты из узлов OPC UA Siemens"
    */
   String CREATE_OBJS_FROM_SIEMENS_OPC_UA_ACT_ID = "create_objs_from_siemens_opc_ua_act_id"; //$NON-NLS-1$
+
+  /**
+   * id действия "создать объекты из узлов OPC UA"
+   */
+  String CREATE_OBJS_FROM_OPC_UA_ACT_ID = "create_objs_from_opc_ua_act_id"; //$NON-NLS-1$
 
   /**
    * id действия "отобразить UaNode -> Gwid"
@@ -165,6 +177,12 @@ public interface IOpcUaServerConnCfgConstants {
 
   TsActionDef ACTDEF_CREATE_OBJS_SIEMENS_OPC_UA_ITEM = TsActionDef.ofPush2( CREATE_OBJS_FROM_SIEMENS_OPC_UA_ACT_ID,
       STR_N_CREATE_OBJS_FROM_SIEMENS_OPC_UA, STR_D_CREATE_OBJS_FROM_SIEMENS_OPC_UA, ICONID_S_NEW_OBJECTS );
+
+  TsActionDef ACTDEF_CREATE_CLASS_OPC_UA_ITEM = TsActionDef.ofPush2( CREATE_CINFO_FROM_OPC_UA_ACT_ID,
+      STR_N_CREATE_CINFO_FROM_OPC_UA, STR_D_CREATE_CINFO_FROM_OPC_UA, ICONID_NEW_CLASS );
+
+  TsActionDef ACTDEF_CREATE_OBJS_OPC_UA_ITEM = TsActionDef.ofPush2( CREATE_OBJS_FROM_OPC_UA_ACT_ID,
+      STR_N_CREATE_OBJS_FROM_OPC_UA, STR_D_CREATE_OBJS_FROM_OPC_UA, ICONID_NEW_OBJECTS );
 
   TsActionDef ACTDEF_SHOW_OPC_UA_NODE_2_GWID = TsActionDef.ofPush2( SHOW_OPC_UA_NODE_2_GWID_ACT_ID,
       STR_N_SHOW_OPC_UA_NODE_2_GWID, STR_D_SHOW_OPC_UA_NODE_2_GWID, ITsStdIconIds.ICONID_EDIT_FIND_REPLACE );

@@ -24,6 +24,10 @@ interface ISkResources {
   String STR_D_CREATE_CINFO_FROM_SIEMENS_OPC_UA  = Messages.getString( "STR_D_CREATE_CINFO_FROM_SIEMENS_OPC_UA" );  //$NON-NLS-1$
   String STR_N_CREATE_OBJS_FROM_SIEMENS_OPC_UA   = Messages.getString( "STR_N_CREATE_OBJS_FROM_SIEMENS_OPC_UA" );   //$NON-NLS-1$
   String STR_D_CREATE_OBJS_FROM_SIEMENS_OPC_UA   = Messages.getString( "STR_D_CREATE_OBJS_FROM_SIEMENS_OPC_UA" );   //$NON-NLS-1$
+  String STR_N_CREATE_CINFO_FROM_OPC_UA          = "Создать описание класса из OPC UA дерева";
+  String STR_D_CREATE_CINFO_FROM_OPC_UA          = "Создать описание класса из OPC UA дерева";
+  String STR_N_CREATE_OBJS_FROM_OPC_UA           = "Создать объекты из OPC UA дерева";
+  String STR_D_CREATE_OBJS_FROM_OPC_UA           = "Создать объекты из OPC UA дерева";
   String STR_N_SHOW_OPC_UA_NODE_2_GWID           = Messages.getString( "STR_N_SHOW_OPC_UA_NODE_2_GWID" );           //$NON-NLS-1$
   String STR_D_SHOW_OPC_UA_NODE_2_GWID           = Messages.getString( "STR_D_SHOW_OPC_UA_NODE_2_GWID" );           //$NON-NLS-1$
   String STR_N_LOAD_CMD_DESCR                    = Messages.getString( "STR_N_LOAD_CMD_DESCR" );                    //$NON-NLS-1$

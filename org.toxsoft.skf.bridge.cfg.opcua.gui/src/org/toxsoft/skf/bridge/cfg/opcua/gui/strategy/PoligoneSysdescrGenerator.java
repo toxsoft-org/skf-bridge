@@ -16,7 +16,6 @@ import org.toxsoft.core.tslib.gw.skid.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
-import org.toxsoft.skf.bridge.cfg.opcua.gui.panels.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 import org.toxsoft.skf.rri.lib.*;
 import org.toxsoft.uskat.core.api.objserv.*;
@@ -41,7 +40,7 @@ public class PoligoneSysdescrGenerator
    */
   public PoligoneSysdescrGenerator( ITsGuiContext aContext, OpcUaClient aClient,
       IOpcUaServerConnCfg aOpcUaServerConnCfg ) {
-    super( aContext, aClient, aOpcUaServerConnCfg, EOPCUATreeType.POLIGONE );
+    super( aContext, aClient, aOpcUaServerConnCfg );
   }
 
   @Override

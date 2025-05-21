@@ -1148,7 +1148,7 @@ public class OpcToS5DataCfgConverter {
     if( conConf != null ) {
       endPointURL = conConf.host();
       user = conConf.login();
-      pass = conConf.passward();
+      pass = conConf.password();
     }
     else {
       endPointURL = aDoc.getEndPointURL();
