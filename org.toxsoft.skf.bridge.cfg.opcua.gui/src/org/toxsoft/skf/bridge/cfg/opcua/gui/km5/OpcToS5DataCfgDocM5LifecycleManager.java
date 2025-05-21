@@ -4,6 +4,8 @@ import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tsgui.m5.model.impl.*;
 import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.coll.*;
+import org.toxsoft.core.tslib.coll.primtypes.*;
+import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 
 /**
@@ -32,6 +34,8 @@ public class OpcToS5DataCfgDocM5LifecycleManager
     String strid = "opctos5.bridge.cfg.doc.id" + System.currentTimeMillis(); //$NON-NLS-1$
     OpcToS5DataCfgDoc newDoc = new OpcToS5DataCfgDoc( strid, nameVal.asString(), descrVal.asString() );
 
+    // newDoc.setGroupIds( new StringArrayList( "first", "second" ) );
+
     editCfgDoc( aValues, newDoc );
 
     master().saveCfgDoc( newDoc );
@@ -51,6 +55,12 @@ public class OpcToS5DataCfgDocM5LifecycleManager
     aEditDoc.setEndPointURL( endPointURL.asString().trim() );
     aEditDoc.setUserOPC_UA( userOPC_UA.asString().trim() );
     aEditDoc.setPasswordOPC_UA( passwordOPC_UA.asString().trim() );
+
+    IList<String> groups = aValues.get( OpcToS5DataCfgDocM5Model.GROUPS );
+    aEditDoc.setGroupIds( new StringArrayList( groups ) );
+
+    IList<IStringList> props = aValues.get( OpcToS5DataCfgDocM5Model.PROPERTIES );
+    aEditDoc.setProperties( props );
   }
 
   @Override

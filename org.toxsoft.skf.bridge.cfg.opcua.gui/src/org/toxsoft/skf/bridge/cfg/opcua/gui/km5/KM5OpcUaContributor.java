@@ -32,7 +32,9 @@ public class KM5OpcUaContributor
       OpcToS5DataCfgDocM5Model.MODEL_ID, //
       NodesForCfgM5Model.MODEL_ID, //
       CfgUnitRealizationTypeM5Model.MODEL_ID, //
-      CfgOpcUaNodeM5Model.MODEL_ID );
+      CfgOpcUaNodeM5Model.MODEL_ID, //
+      StringPropertiesM5Model.MODEL_ID, //
+      SimpleStringM5Model.MODEL_ID );
 
   private final IStringListEdit myModels = new StringArrayList();
 
@@ -92,6 +94,14 @@ public class KM5OpcUaContributor
     CfgOpcUaNodeM5Model cfgOpcUaNodeM5Model = new CfgOpcUaNodeM5Model();
     myModels.add( cfgOpcUaNodeM5Model.id() );
     m5().addModel( cfgOpcUaNodeM5Model );
+
+    StringPropertiesM5Model stringPropertiesM5Model = new StringPropertiesM5Model();
+    myModels.add( stringPropertiesM5Model.id() );
+    m5().addModel( stringPropertiesM5Model );
+
+    SimpleStringM5Model simpleStringM5Model = new SimpleStringM5Model();
+    myModels.add( simpleStringM5Model.id() );
+    m5().addModel( simpleStringM5Model );
 
     return CONRTIBUTED_MODEL_IDS;
   }

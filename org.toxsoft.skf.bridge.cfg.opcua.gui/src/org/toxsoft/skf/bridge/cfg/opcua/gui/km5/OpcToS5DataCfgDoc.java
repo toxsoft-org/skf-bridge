@@ -91,6 +91,37 @@ public class OpcToS5DataCfgDoc
             aSw.writeEol();
           }
 
+          IStringList groupIds = aEntity.getGroupIds();
+          IList<IStringList> properties = aEntity.getProperties();
+
+          // Groups
+          if( groupIds.size() > 0 || properties.size() > 0 ) {
+
+            // groups count
+            aSw.writeInt( groupIds.size() );
+            aSw.writeSeparatorChar();
+            aSw.writeEol();
+
+            for( int i = 0; i < groupIds.size(); i++ ) {
+              // one group
+              aSw.writeQuotedString( groupIds.get( i ) );
+              aSw.writeSeparatorChar();
+              aSw.writeEol();
+            }
+
+            // props count
+            aSw.writeInt( properties.size() );
+            aSw.writeSeparatorChar();
+            aSw.writeEol();
+
+            for( int i = 0; i < properties.size(); i++ ) {
+              // one prop
+              StringListKeeper.KEEPER.write( aSw, properties.get( i ) );
+              aSw.writeSeparatorChar();
+              aSw.writeEol();
+            }
+          }
+
           aSw.writeQuotedString( CHECK_DOC );
           aSw.decNewLine();
         }
@@ -143,7 +174,56 @@ public class OpcToS5DataCfgDoc
 
           System.out.println( "Loaded nodes count = " + nodes.size() );
 
-          if( !aSr.readQuotedString().equals( CHECK_DOC ) ) {
+          IStringListEdit groupFilters = new StringArrayList();
+          IListEdit<IStringList> properties = new ElemArrayList<>();
+
+          // для совместимости с предыдущей версией
+          try {
+            String line = aSr.readUntilDelimiter();
+            if( line.equals( "\"" + CHECK_DOC + "\"" ) ) {
+              System.out.println( "For debug:  empty groups and properties" );
+            }
+            else {
+              try {
+                // группы
+                int groupsCount = Integer.parseInt( line.trim() );// aSr.readInt();
+                aSr.ensureSeparatorChar();
+
+                for( int i = 0; i < groupsCount; i++ ) {
+                  // one group filter
+                  String groupFilter = aSr.readQuotedString();
+                  aSr.ensureSeparatorChar();
+                  groupFilters.add( groupFilter );
+                }
+
+                System.out.println( "For debug:  groups count = " + groupsCount );
+
+                // свойства
+                int propsCount = aSr.readInt();
+                aSr.ensureSeparatorChar();
+
+                for( int i = 0; i < propsCount; i++ ) {
+                  // one prop
+                  IStringList prop = StringListKeeper.KEEPER.read( aSr );
+                  aSr.ensureSeparatorChar();
+                  properties.add( prop );
+                }
+
+                System.out.println( "For debug: props count = " + propsCount );
+
+                aSr.ensureString( "\"" + CHECK_DOC + "\"" );
+              }
+              catch( Exception ee ) {
+                // для совместимости с предыдущей версией
+
+                System.out.println( "Error Doc Read" );
+              }
+            }
+            // aSr.ensureString( "\"" + CHECK_DOC + "\"" );
+            // aSr.readQuotedString();
+
+          }
+          catch( Exception e ) {
             System.out.println( "Error Doc Read" );
           }
 
@@ -155,6 +235,8 @@ public class OpcToS5DataCfgDoc
           result.setEndPointURL( url );
           result.setUserOPC_UA( userOPC_UA );
           result.setPasswordOPC_UA( passwordOPC_UA );
+          result.setGroupIds( groupFilters );
+          result.setProperties( properties );
           return result;
         }
       };
@@ -193,6 +275,16 @@ public class OpcToS5DataCfgDoc
    * List of nodes cfgs.
    */
   private IStringMapEdit<CfgOpcUaNode> nodesCfgs = new StringMap<>();
+
+  /**
+   * Идентификаторы групп, разделяющих выходные файлы на группы
+   */
+  private IStringList groupIds = new StringArrayList();
+
+  /**
+   * Доп свойства
+   */
+  private IListEdit<IStringList> properties = new ElemArrayList<>();
 
   /**
    * Constructor by id, name and description/
@@ -241,6 +333,22 @@ public class OpcToS5DataCfgDoc
 
   public void removeDataUnit( OpcToS5DataCfgUnit aDataUnit ) {
     dataCfgUnits.remove( aDataUnit );
+  }
+
+  public IList<IStringList> getProperties() {
+    return properties;
+  }
+
+  public void setProperties( IList<IStringList> aProperties ) {
+    properties = new ElemArrayList<>( aProperties );
+  }
+
+  public IStringList getGroupIds() {
+    return groupIds;
+  }
+
+  public void setGroupIds( IStringList aGroupIds ) {
+    groupIds = aGroupIds;
   }
 
   /**

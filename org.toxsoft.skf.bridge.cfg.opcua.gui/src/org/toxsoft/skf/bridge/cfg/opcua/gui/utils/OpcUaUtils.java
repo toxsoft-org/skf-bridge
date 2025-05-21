@@ -245,22 +245,33 @@ public class OpcUaUtils {
     }
 
     Shell shell = aContext.find( Shell.class );
-    IList<String> filterStrs = new ElemArrayList<>( "TKA1", "TKA2", "TKA3" );
+    IList<String> filterStrs = aDoc.getGroupIds();
+    // new ElemArrayList<>( "TKA1", "TKA2", "TKA3" );
+
+    IList<IStringList> properties = aDoc.getProperties();
+
+    if( filterStrs.size() == 0 ) {
+      filterStrs = new ElemArrayList<>( "" );
+    }
 
     for( String fStr : filterStrs ) {
       try {
-        IAvTree avTree = OpcToS5DataCfgConverter.convertToDevCfgTree( aContext, aDoc,
-            new IOpcUaNodeFilter.DeaultByStrOpcUaNodeFilter( fStr ) );
+        IOpcUaNodeFilter filter =
+            fStr.length() > 0 ? new IOpcUaNodeFilter.DeaultByStrOpcUaNodeFilter( fStr ) : IOpcUaNodeFilter.EMPTY_FILTER;
+        IAvTree avTree = OpcToS5DataCfgConverter.convertToDevCfgTree( aContext, aDoc, filter );
 
-        ((AvTree)avTree.nodes().getByKey( OpcToS5DataCfgConverter.BRIDGES_ARRAY_NAME ).arrayElement( 0 )).fieldsEdit()
-            .setStr( "health_tag", "ns=3;s=\"noLink_" + fStr + "\"" );
+        // TODO - сделать по уму (написать скриптовый язык или использовать существующий)
+        if( properties.size() > 0 ) {
+          insertProperties( avTree, properties, fStr );
+        }
+        // .setStr( "health_tag", "ns=3;s=\"noLink_" + fStr + "\"" );
 
         String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
         AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
 
         String DLM_CONFIG_STR = "DeviceConfig = "; //$NON-NLS-1$
 
-        String selectedFileName = selected + "_" + fStr + DEVCFG_FILE_EXTENTION;
+        String selectedFileName = selected + (fStr.length() > 0 ? ("_" + fStr) : "") + DEVCFG_FILE_EXTENTION;
         File dstFile = new File( selectedFileName );
         if( !dstFile.exists() ) {
           dstFile.createNewFile();
@@ -275,6 +286,33 @@ public class OpcUaUtils {
         TsDialogUtils.error( shell, e );
       }
     }
+  }
+
+  private static void insertProperties( IAvTree avTree, IList<IStringList> aProperties, String aGroupId ) {
+    for( IStringList aProp : aProperties ) {
+      Iterator<String> iterator = aProp.iterator();
+      String name = iterator.next();
+      String value = iterator.next();
+      String path = iterator.next();
+
+      AvTree dest = getPropertyDestination( avTree, path, aGroupId );
+      if( dest != null ) {
+        if( value.contains( "{$group}" ) ) {
+          value = value.replace( "{$group}", "%s" );
+          dest.fieldsEdit().setStr( name, String.format( value, aGroupId ) );
+        }
+        else {
+          dest.fieldsEdit().setStr( name, value );
+        }
+      }
+    }
+  }
+
+  private static AvTree getPropertyDestination( IAvTree avTree, String aPath, String aGroupId ) {
+    if( aPath.contains( "dev" ) ) {
+      return (AvTree)avTree.nodes().getByKey( OpcToS5DataCfgConverter.BRIDGES_ARRAY_NAME ).arrayElement( 0 );
+    }
+    return null;
   }
 
   @SuppressWarnings( "nls" )
@@ -314,7 +352,12 @@ public class OpcUaUtils {
 
     Shell shell = aContext.find( Shell.class );
 
-    IList<String> filterStrs = new ElemArrayList<>( "TKA1", "TKA2", "TKA3" );
+    IList<String> filterStrs = aDoc.getGroupIds();
+    // new ElemArrayList<>( "TKA1", "TKA2", "TKA3" );
+
+    if( filterStrs.size() == 0 ) {
+      filterStrs = new ElemArrayList<>( "" );
+    }
 
     for( String fStr : filterStrs ) {
       try {
@@ -322,16 +365,18 @@ public class OpcUaUtils {
         TsInternalErrorRtException.checkNull( cs );
         ISkConnection conn = cs.defConn();
         TsInternalErrorRtException.checkNull( conn );
+        IGwidFilter filter =
+            fStr.length() > 0 ? new IGwidFilter.DeaultByStrGwidFilter( fStr ) : IGwidFilter.EMPTY_FILTER;
         IAvTree avTree = OpcToS5DataCfgConverter.convertToDlmCfgTree( aDoc.dataUnits(), conn, aNodeEntity -> {
           OpcNodeInfo nodeid = aNodeEntity.asValobj();
           return new Pair<>( OpcToS5DataCfgConverter.OPC_TAG_DEVICE, nodeid.getNodeId().toParseableString() );
-        }, new IGwidFilter.DeaultByStrGwidFilter( fStr ) );
+        }, filter );
         String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
         AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
 
         String DLM_CONFIG_STR = "DlmConfig = "; //$NON-NLS-1$
 
-        String selectedFileName = selected + "_" + fStr + DLMCFG_FILE_EXTENTION;
+        String selectedFileName = selected + (fStr.length() > 0 ? ("_" + fStr) : "") + DLMCFG_FILE_EXTENTION;
         File dstFile = new File( selectedFileName );
         if( !dstFile.exists() ) {
           dstFile.createNewFile();

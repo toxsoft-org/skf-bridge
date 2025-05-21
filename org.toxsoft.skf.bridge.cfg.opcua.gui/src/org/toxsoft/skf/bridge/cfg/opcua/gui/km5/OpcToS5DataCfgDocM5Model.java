@@ -5,10 +5,14 @@ import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.km5.ISkResources.*;
 
+import org.toxsoft.core.tsgui.m5.model.*;
 import org.toxsoft.core.tsgui.m5.model.impl.*;
 import org.toxsoft.core.tsgui.m5.std.fields.*;
 import org.toxsoft.core.tsgui.rcp.valed.*;
+import org.toxsoft.core.tsgui.valed.api.*;
 import org.toxsoft.core.tslib.av.*;
+import org.toxsoft.core.tslib.coll.*;
+import org.toxsoft.core.tslib.coll.primtypes.*;
 
 /**
  * M5 model realization for {@link OpcToS5DataCfgDoc} entities.
@@ -69,7 +73,7 @@ public class OpcToS5DataCfgDocM5Model
   public static final M5AttributeFieldDef<OpcToS5DataCfgDoc> PATH_TO_L2 =
       new M5AttributeFieldDef<>( FID_PATH_TO_L2, IValedFileConstants.DT_DIRECTORY_FILE, //
           TSID_NAME, STR_N_PATH_TO_L2, //
-          TSID_DESCRIPTION, STR_D_PATH_TO_L2 // 
+          TSID_DESCRIPTION, STR_D_PATH_TO_L2 //
       // OPID_EDITOR_FACTORY_NAME, ValedFile.FACTORY_NAME // suitable valed
       // OPID_EDITOR_FACTORY_NAME, ValedAvStringFile.FACTORY_NAME // suitable valed
       // OPID_EDITOR_FACTORY_NAME, ValedAvValobjFile.FACTORY_NAME // suitable valed
@@ -159,12 +163,68 @@ public class OpcToS5DataCfgDocM5Model
 
       };
 
+  public static final IM5MultiModownFieldDef<OpcToS5DataCfgDoc, String> GROUPS =
+      new M5MultiModownFieldDef<>( "GROUPS_ID", SimpleStringM5Model.MODEL_ID ) {
+
+        @Override
+        protected void doInit() {
+          setNameAndDescription( "Groups", "Groups" ); //$NON-NLS-1$ //$NON-NLS-2$
+          setFlags( M5FF_COLUMN | M5FF_DETAIL );
+          // задаем нормальный размер!
+          params().setInt( IValedControlConstants.OPDEF_VERTICAL_SPAN, 5 );
+        }
+
+        protected IStringList doGetFieldValue( OpcToS5DataCfgDoc aEntity ) {
+          return aEntity.getGroupIds();
+        }
+
+        protected String doGetFieldValueName( OpcToS5DataCfgDoc aEntity ) {
+          IList<String> groups = aEntity.getGroupIds();
+          StringBuilder result = new StringBuilder();
+
+          for( String group : groups ) {
+            result.append( group );
+            result.append( ", " );
+          }
+
+          return result.toString();
+        }
+      };
+
+  public static final IM5MultiModownFieldDef<OpcToS5DataCfgDoc, IStringList> PROPERTIES =
+      new M5MultiModownFieldDef<>( "PROPERTIES_ID", StringPropertiesM5Model.MODEL_ID ) {
+
+        @Override
+        protected void doInit() {
+          setNameAndDescription( "Properties", "Properties" ); //$NON-NLS-1$ //$NON-NLS-2$
+          setFlags( M5FF_COLUMN | M5FF_DETAIL );
+          // задаем нормальный размер!
+          params().setInt( IValedControlConstants.OPDEF_VERTICAL_SPAN, 5 );
+        }
+
+        protected IList<IStringList> doGetFieldValue( OpcToS5DataCfgDoc aEntity ) {
+          return aEntity.getProperties();
+        }
+
+        protected String doGetFieldValueName( OpcToS5DataCfgDoc aEntity ) {
+          IList<IStringList> props = aEntity.getProperties();
+          StringBuilder result = new StringBuilder();
+
+          for( IStringList prop : props ) {
+            result.append( prop.first() );
+            result.append( ", " );
+          }
+
+          return result.toString();
+        }
+      };
+
   /**
    * Constructor.
    */
   public OpcToS5DataCfgDocM5Model() {
     super( MODEL_ID, OpcToS5DataCfgDoc.class );
-    addFieldDefs( NAME, PATH_TO_L2, CFG_FILE_NAME, END_POINT_URL, USER_OPC_UA, PASSWORD_OPC_UA, DESCRIPTION );
-
+    addFieldDefs( NAME, PATH_TO_L2, CFG_FILE_NAME, END_POINT_URL, USER_OPC_UA, PASSWORD_OPC_UA, DESCRIPTION, GROUPS,
+        PROPERTIES );
   }
 }
