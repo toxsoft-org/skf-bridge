@@ -309,10 +309,46 @@ public class OpcUaUtils {
   }
 
   private static AvTree getPropertyDestination( IAvTree avTree, String aPath, String aGroupId ) {
-    if( aPath.contains( "dev" ) ) {
-      return (AvTree)avTree.nodes().getByKey( OpcToS5DataCfgConverter.BRIDGES_ARRAY_NAME ).arrayElement( 0 );
+    if( aPath.trim().equals( "dev" ) ) {
+      return (AvTree)avTree;
     }
-    return null;
+    String path;
+    if( aPath.startsWith( "dev#" ) ) {
+      path = aPath.substring( 4 );
+    }
+    else {
+      return null;
+    }
+
+    StringTokenizer st = new StringTokenizer( path, "#" );
+
+    AvTree result = (AvTree)avTree;
+    while( st.hasMoreTokens() ) {
+      String token = st.nextToken();
+
+      // массив
+      if( token.startsWith( "[" ) && token.endsWith( "]" ) ) {
+        String arrayIndexStr = token.substring( 1, token.length() - 1 );
+        if( arrayIndexStr.equals( "*" ) ) {
+          // any
+          // здесь нужно ветвить и лепить массив
+        }
+        else
+          if( arrayIndexStr.equals( "+" ) ) {
+            // first
+            result = (AvTree)result.arrayElement( 0 );
+          }
+          else {
+            // index
+            result = (AvTree)result.arrayElement( Integer.parseInt( arrayIndexStr ) );
+          }
+      }
+      else {
+        result = (AvTree)result.nodes().getByKey( token );
+      }
+    }
+
+    return result;
   }
 
   @SuppressWarnings( "nls" )
