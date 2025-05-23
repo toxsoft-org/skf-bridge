@@ -284,12 +284,6 @@ public class OpcUaTreeBrowserPanel
           aOpcUaServerConnCfg.host(), ex.getMessage() );
       return;
     }
-    generator = switch( aOpcUaServerConnCfg.treeType() ) {
-      case POLIGONE -> new PoligoneSysdescrGenerator( aContext, client, aOpcUaServerConnCfg );
-      case SIEMENS -> new BaikonurSiemensSysdescrGenerator( aContext, client, aOpcUaServerConnCfg );
-      case SIEMENS_BAIKONUR -> new BaikonurSiemensSysdescrGenerator( aContext, client, aOpcUaServerConnCfg );
-      case OTHER -> throw new TsNotAllEnumsUsedRtException();
-    };
 
     IM5LifecycleManager<UaTreeNode> lm =
         new OpcUaNodeM5LifecycleManager( model, client, aContext, aOpcUaServerConnCfg );
@@ -360,19 +354,12 @@ public class OpcUaTreeBrowserPanel
           }
 
           if( aActionId == CREATE_CINFO_FROM_OPC_UA_ACT_ID ) {
-            // first of all ensure all needed files are loaded
-            // ensureCmdDescription();
-            ensureBitMaskDescription();
-            // if( ensureRriSection( aContext ) ) {
+            generator.ensureBeforeClassCreation();
             generator.createClassFromNodes( selectedNode );
-            // }
           }
           if( aActionId == CREATE_OBJS_FROM_OPC_UA_ACT_ID ) {
-            // first of all ensure file bitMask loaded
-            ensureBitMaskDescription();
-            if( ensureRriSection( aContext ) ) {
-              generator.createObjsFromNodes( selectedNode );
-            }
+            generator.ensureBeforeObjsCreation();
+            generator.createObjsFromNodes( selectedNode );
           }
 
           if( aActionId == SHOW_OPC_UA_NODE_2_GWID_ACT_ID ) {
@@ -446,6 +433,13 @@ public class OpcUaTreeBrowserPanel
       }
 
     } );
+    generator = switch( aOpcUaServerConnCfg.treeType() ) {
+      case POLIGONE -> new PoligoneSysdescrGenerator( aContext, client, aOpcUaServerConnCfg, componentModown );
+      case SIEMENS -> new BaikonurSiemensSysdescrGenerator( aContext, client, aOpcUaServerConnCfg, componentModown );
+      case SIEMENS_BAIKONUR -> new BaikonurSiemensSysdescrGenerator( aContext, client, aOpcUaServerConnCfg,
+          componentModown );
+      case OTHER -> throw new TsNotAllEnumsUsedRtException();
+    };
 
   }
 

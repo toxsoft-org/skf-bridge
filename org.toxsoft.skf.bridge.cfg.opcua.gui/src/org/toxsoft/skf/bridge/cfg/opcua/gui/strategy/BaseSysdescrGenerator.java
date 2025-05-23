@@ -77,7 +77,7 @@ public abstract class BaseSysdescrGenerator {
   protected static final String nodeCmdArgFlt       = "CmdArgFlt";   //$NON-NLS-1$
   protected static final String nodeCmdFeedback     = "CmdFeedback"; //$NON-NLS-1$
 
-  private final ITsGuiContext         context;
+  protected final ITsGuiContext       context;
   private final OpcUaClient           client;
   protected final IOpcUaServerConnCfg opcUaServerConnCfg;
   private final EOPCUATreeType        treeType;
@@ -86,7 +86,7 @@ public abstract class BaseSysdescrGenerator {
   /**
    * Собсно сама панель
    */
-  protected MultiPaneComponentModown<UaTreeNode> componentModown;
+  protected final MultiPaneComponentModown<UaTreeNode> componentModown;
 
   private StringMap<IList<IDtoCmdInfo>> clsId2CmdInfoes = null;
 
@@ -98,7 +98,7 @@ public abstract class BaseSysdescrGenerator {
    * карта id класса - > его BitIdx2DtoRriAttr
    */
   private StringMap<StringMap<IList<BitIdx2RriDtoAttr>>> clsId2RriAttrInfoes = null;
-  private ISkRriSection                                  rriSection          = null;
+  protected ISkRriSection                                rriSection          = null;
 
   /**
    * карта id класса - > его BitIdx2DtoEvent
@@ -238,9 +238,11 @@ public abstract class BaseSysdescrGenerator {
    * @param aClient - OPC UA server
    * @param aOpcUaServerConnCfg - OPC UA server connection settings
    */
-  BaseSysdescrGenerator( ITsGuiContext aContext, OpcUaClient aClient, IOpcUaServerConnCfg aOpcUaServerConnCfg ) {
+  BaseSysdescrGenerator( ITsGuiContext aContext, OpcUaClient aClient, IOpcUaServerConnCfg aOpcUaServerConnCfg,
+      MultiPaneComponentModown<UaTreeNode> aComponentModown ) {
     context = aContext;
     client = aClient;
+    componentModown = aComponentModown;
     opcUaServerConnCfg = aOpcUaServerConnCfg;
     treeType = opcUaServerConnCfg.treeType();
     ISkConnectionSupplier connSup = aContext.get( ISkConnectionSupplier.class );
@@ -289,7 +291,7 @@ public abstract class BaseSysdescrGenerator {
           return;
         }
         // тут пользователь нажал Ok,но проверяем есть ли смысл возится с НСИ тенью этого класса
-        if( rriSection != null && !rriDtoClassInfo.attrInfos().isEmpty() ) {
+        if( useRRI() && !rriDtoClassInfo.attrInfos().isEmpty() ) {
           // создаем временный IM5LifecycleManager задача которого ничего не делать, а просто отобразить содержимое
           // описания класса
           IM5LifecycleManager<IDtoClassInfo> localLM = localLifeCycleManager4DtoClassInfo( modelDto );
@@ -336,22 +338,23 @@ public abstract class BaseSysdescrGenerator {
             M5GuiUtils.askCreate( tsContext(), modelDto, bunchOfFieldVals, cdi, modelDto.getLifecycleManager( conn ) );
         if( dtoClassInfo != null ) {
           // FIXME copy|paste code, see up need refactoring
-
-          // создаем временный IM5LifecycleManager задача которого ничего не делать, а просто отобразить содержимое
-          // описания класса
-          IM5LifecycleManager<IDtoClassInfo> localLM = localLifeCycleManager4DtoClassInfo( modelDto );
-          // фильтруем содержимое НСИ так чтобы атрибуты НСИ не совпадали с rtData базового класса
-          rriDtoClassInfo = filterRriClassInfo( dtoClassInfo, rriDtoClassInfo );
-          // создаем НСИ атрибуты и связи
-          cdi = new TsDialogInfo( tsContext(), null, "Параметры НСИ класса",
-              "Отредактируйте НСИ атрибуты и связи класса", 0 );
-          // установим нормальный размер диалога
-          cdi.setMinSize( new TsPoint( -30, -80 ) );
-          rriDtoClassInfo = M5GuiUtils.askEdit( tsContext(), modelDto, rriDtoClassInfo, cdi, localLM );
-          if( rriDtoClassInfo != null ) {
-            defineRriParams( context, rriDtoClassInfo );
+          // тут кусок кода который имеет смысл если стратегия работает с НСИ
+          if( useRRI() ) {
+            // создаем временный IM5LifecycleManager задача которого ничего не делать, а просто отобразить содержимое
+            // описания класса
+            IM5LifecycleManager<IDtoClassInfo> localLM = localLifeCycleManager4DtoClassInfo( modelDto );
+            // фильтруем содержимое НСИ так чтобы атрибуты НСИ не совпадали с rtData базового класса
+            rriDtoClassInfo = filterRriClassInfo( dtoClassInfo, rriDtoClassInfo );
+            // создаем НСИ атрибуты и связи
+            cdi = new TsDialogInfo( tsContext(), null, "Параметры НСИ класса",
+                "Отредактируйте НСИ атрибуты и связи класса", 0 );
+            // установим нормальный размер диалога
+            cdi.setMinSize( new TsPoint( -30, -80 ) );
+            rriDtoClassInfo = M5GuiUtils.askEdit( tsContext(), modelDto, rriDtoClassInfo, cdi, localLM );
+            if( rriDtoClassInfo != null ) {
+              defineRriParams( context, rriDtoClassInfo );
+            }
           }
-
           // чистим список привязок ClassGwid -> NodeId
           node2ClassGwidList = filterNode2ClassGwidList( dtoClassInfo, rriDtoClassInfo, node2ClassGwidList );
           // заливаем в хранилище
@@ -451,7 +454,8 @@ public abstract class BaseSysdescrGenerator {
     // узел типа Object, его данные используются для создания описания класса
     UaTreeNode classNode = objNode( aNodes );
 
-    String id = classNode.getBrowseName();
+    String id = extractClassId( classNode.getBrowseName() );
+
     String name = classNode.getDisplayName();
     String description = classNode.getDescription().trim().length() > 0 ? classNode.getDescription() : name;
 
@@ -468,7 +472,7 @@ public abstract class BaseSysdescrGenerator {
           readDataInfo( cinf, varNode, aNode2ClassGwidList );
           readCmdInfo( cinf, varNode, aNode2ClassGwidList );
           readEventInfo( cinf, varNode, aNode2ClassGwidList );
-          // НСИ атрибут
+          // FIXME НСИ атрибут
           // readRriAttrInfo( rriCinf, varNode, aNode2ClassGwidList );
           // dima 05.03.24 не генерим автоматически события из узлов. Только из справочника см. код ниже
           // readEventInfo( cinf, varNode, aNode2ClassGwidList );
@@ -1182,6 +1186,58 @@ public abstract class BaseSysdescrGenerator {
     return retVal;
   }
 
+  /**
+   * Извлекает id класса из имени узла. Обычно это просто имя, но в проекте Байконур более сложная обработка.
+   *
+   * @param aBrowseName - имя узла
+   * @return id класса
+   */
+  protected String extractClassId( String aBrowseName ) {
+    return aBrowseName;
+  }
+
+  /**
+   * Проверяет и если надо подкачивает нужные данные из справочников битовых масок
+   */
+  protected void ensureBitMaskDescription() {
+    if( clsId2RtDataInfoes == null || clsId2EventInfoes == null || clsId2RriAttrInfoes == null ) {
+      clsId2RtDataInfoes = OpcUaUtils.readRtDataInfoes( conn );
+      clsId2RriAttrInfoes = OpcUaUtils.readRriAttrInfoes( conn );
+      clsId2EventInfoes = OpcUaUtils.readEventInfoes( conn );
+    }
+  }
+
+  /**
+   * Проверяет и если надо подкачивает нужные данные из справочника команд
+   */
+  protected void ensureCmdDescription() {
+    if( clsId2CmdInfoes == null ) {
+      clsId2CmdInfoes = OpcUaUtils.readClass2CmdInfoes( conn );
+    }
+  }
+
+  protected boolean ensureRriSection( ITsGuiContext aContext ) {
+    boolean retVal = false;
+    if( rriSection == null ) {
+      // если секция одна, то выбирать не нужно
+      ISkRegRefInfoService rriService =
+          (ISkRegRefInfoService)conn.coreApi().services().getByKey( ISkRegRefInfoService.SERVICE_ID );
+      if( rriService.listSections().size() == 1 ) {
+        rriSection = rriService.listSections().first();
+      }
+      else {
+        rriSection = PanelRriSectionSelector.selectRriSection( null, aContext );
+      }
+    }
+    if( rriSection == null ) {
+      TsDialogUtils.error( getShell(), "Не выбрана секция НСИ" );
+    }
+    else {
+      retVal = true;
+    }
+    return retVal;
+  }
+
   abstract protected UaTreeNode getClassNode( UaTreeNode aNode );
 
   abstract protected boolean isIgnore4RtData( String aClassId, String aDataId );
@@ -1194,5 +1250,20 @@ public abstract class BaseSysdescrGenerator {
       IList<IDtoObject> aObjList, IStridablesList<IDtoRriParamInfo> aRriParamInfoes );
 
   abstract protected IList<UaTreeNode> getVariableNodes( UaTreeNode aObjectNode );
+
+  /**
+   * Выполнение всех предварительных проверок и подкачек перед созданием класса
+   */
+  public abstract void ensureBeforeClassCreation();
+
+  /**
+   * Выполнение всех предварительных проверок и подкачек перед созданием объектов
+   */
+  public abstract void ensureBeforeObjsCreation();
+
+  /**
+   * true - cтратегия использует НСИ, иначе false
+   */
+  protected abstract boolean useRRI();
 
 }

@@ -5,6 +5,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tsgui.dialogs.*;
+import org.toxsoft.core.tsgui.m5.gui.mpc.impl.*;
 import org.toxsoft.core.tslib.bricks.strid.coll.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
@@ -35,10 +36,11 @@ public class BaikonurSiemensSysdescrGenerator
    * @param aContext app context
    * @param aClient - OPC UA server
    * @param aOpcUaServerConnCfg - OPC UA server connection settings
+   * @param aComponentModown - M5 tree to view OPC UA tree
    */
   public BaikonurSiemensSysdescrGenerator( ITsGuiContext aContext, OpcUaClient aClient,
-      IOpcUaServerConnCfg aOpcUaServerConnCfg ) {
-    super( aContext, aClient, aOpcUaServerConnCfg );
+      IOpcUaServerConnCfg aOpcUaServerConnCfg, MultiPaneComponentModown<UaTreeNode> aComponentModown ) {
+    super( aContext, aClient, aOpcUaServerConnCfg, aComponentModown );
   }
 
   @Override
@@ -184,6 +186,38 @@ public class BaikonurSiemensSysdescrGenerator
         OpcUaUtils.SECTID_OPC_UA_NODES_2_EVT_GWIDS_TEMPLATE, UaNode2EventGwid.KEEPER, opcUaServerConnCfg );
     OpcUaUtils.updateNodes2ObjGwidsInStore( aClassInfo.id(), aContext, node2BknCmdGwidList,
         OpcUaUtils.SECTID_OPC_UA_NODES_2_BKN_CMD_GWIDS_TEMPLATE, UaNode2EventGwid.KEEPER, opcUaServerConnCfg );
+  }
+
+  @SuppressWarnings( "nls" )
+  @Override
+  protected String extractClassId( String aBrowseName ) {
+    String retVal = aBrowseName;
+    if( aBrowseName.startsWith( "template_" ) ) {
+      String[] id_parts = aBrowseName.split( "_" );
+      if( id_parts.length > 1 ) {
+        retVal = id_parts[1];
+      }
+    }
+    return retVal;
+  }
+
+  @Override
+  public void ensureBeforeClassCreation() {
+    ensureBitMaskDescription();
+    // НСИ на Байконуре не используется
+    // ensureRriSection( context );
+  }
+
+  @Override
+  public void ensureBeforeObjsCreation() {
+    ensureBitMaskDescription();
+    // НСИ на Байконуре не используется
+    // ensureRriSection( context );
+  }
+
+  @Override
+  protected boolean useRRI() {
+    return false;
   }
 
 }

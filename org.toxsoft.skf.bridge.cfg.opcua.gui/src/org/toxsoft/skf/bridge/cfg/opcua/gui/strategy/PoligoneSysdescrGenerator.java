@@ -5,6 +5,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tsgui.dialogs.*;
+import org.toxsoft.core.tsgui.m5.gui.mpc.impl.*;
 import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.bricks.strid.coll.*;
 import org.toxsoft.core.tslib.coll.*;
@@ -37,10 +38,11 @@ public class PoligoneSysdescrGenerator
    * @param aContext app context
    * @param aClient - OPC UA server
    * @param aOpcUaServerConnCfg - OPC UA server connection settings
+   * @param aComponentModown - M5 tree to view OPC UA tree
    */
   public PoligoneSysdescrGenerator( ITsGuiContext aContext, OpcUaClient aClient,
-      IOpcUaServerConnCfg aOpcUaServerConnCfg ) {
-    super( aContext, aClient, aOpcUaServerConnCfg );
+      IOpcUaServerConnCfg aOpcUaServerConnCfg, MultiPaneComponentModown<UaTreeNode> aComponentModown ) {
+    super( aContext, aClient, aOpcUaServerConnCfg, aComponentModown );
   }
 
   @Override
@@ -278,6 +280,24 @@ public class PoligoneSysdescrGenerator
       case BOOLEAN, STRING, TIMESTAMP, VALOBJ -> throw new TsNotAllEnumsUsedRtException( argType.name() );
     };
     return retVal;
+  }
+
+  @Override
+  public void ensureBeforeClassCreation() {
+    ensureCmdDescription();
+    ensureBitMaskDescription();
+    ensureRriSection( context );
+  }
+
+  @Override
+  public void ensureBeforeObjsCreation() {
+    ensureBitMaskDescription();
+    ensureRriSection( context );
+  }
+
+  @Override
+  protected boolean useRRI() {
+    return true;
   }
 
 }
