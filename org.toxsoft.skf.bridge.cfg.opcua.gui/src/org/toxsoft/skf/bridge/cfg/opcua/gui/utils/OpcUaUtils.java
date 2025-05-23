@@ -215,8 +215,6 @@ public class OpcUaUtils {
   private static final Map<String, Map<String, NodeId>> sect2classGwid2NodeIdMap = new HashMap<>();
   private static final Map<String, Map<Skid, NodeId>>   sect2skid2NodeIdMap      = new HashMap<>();
   private static final StringMap<IList<UaTreeNode>>     section2NodesList        = new StringMap<>();
-  // private static final Map<String, Map<String, CmdGwid2UaNodes>> sect2cmdGwid2NodeIdsMap =
-  // new HashMap<>();
 
   static private final String RTD_PREFIX = "rtd"; //$NON-NLS-1$
   private static final String EVT_PREFIX = "evt"; //$NON-NLS-1$
@@ -1740,8 +1738,6 @@ public class OpcUaUtils {
     if( sect2skid2NodeIdMap.containsKey( sectId ) ) {
       sect2skid2NodeIdMap.remove( sectId );
     }
-    // cmdGwid2NodeIdsMap.clear();
-
   }
 
   /**

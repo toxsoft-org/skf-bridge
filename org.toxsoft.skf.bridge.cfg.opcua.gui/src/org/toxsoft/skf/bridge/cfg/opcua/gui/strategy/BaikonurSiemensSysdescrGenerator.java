@@ -66,18 +66,27 @@ public class BaikonurSiemensSysdescrGenerator
   @Override
   protected IList<UaTreeNode> getVariableNodes( UaTreeNode aObjectNode ) {
     IListEdit<UaTreeNode> retVal = new ElemArrayList<>();
-    // у Siemens узлы переменных находятся ниже подузла Static
-    for( UaTreeNode parentNode : aObjectNode.getChildren() ) {
-      if( parentNode.getNodeClass().equals( NodeClass.Variable ) ) {
-        retVal.add( parentNode );
+    // old version
+    // // у Siemens узлы переменных находятся ниже подузла Static
+    // for( UaTreeNode parentNode : aObjectNode.getChildren() ) {
+    // if( parentNode.getNodeClass().equals( NodeClass.Variable ) ) {
+    // retVal.add( parentNode );
+    // }
+    // else {
+    // for( UaTreeNode childNode : parentNode.getChildren() ) {
+    // if( childNode.getNodeClass().equals( NodeClass.Variable ) ) {
+    // retVal.add( childNode );
+    // }
+    // }
+    // }
+    // }
+
+    // new version, classic use recursion to all subnodes
+    for( UaTreeNode child : aObjectNode.getChildren() ) {
+      if( child.getNodeClass().equals( NodeClass.Variable ) ) {
+        retVal.add( child );
       }
-      else {
-        for( UaTreeNode childNode : parentNode.getChildren() ) {
-          if( childNode.getNodeClass().equals( NodeClass.Variable ) ) {
-            retVal.add( childNode );
-          }
-        }
-      }
+      retVal.addAll( getVariableNodes( child ) );
     }
     return retVal;
   }
@@ -86,7 +95,6 @@ public class BaikonurSiemensSysdescrGenerator
   protected void generateNode2GwidLinks( ITsGuiContext aContext, ISkClassInfo aClassInfo, IList<IDtoObject> aObjList,
       IStridablesList<IDtoRriParamInfo> aRriParamInfoes ) {
     IListEdit<UaNode2Gwid> node2RtdGwidList = new ElemArrayList<>();
-    // НСИ нет в проекте Байконура
     IListEdit<UaNode2EventGwid> node2EvtGwidList = new ElemArrayList<>();
     IListEdit<UaNode2EventGwid> node2BknCmdGwidList = new ElemArrayList<>();
     // в этом месте у нас 100% уже загружено дерево узлов OPC UA
@@ -110,8 +118,7 @@ public class BaikonurSiemensSysdescrGenerator
         continue;
       }
       UaTreeNode parentNode = findParentNode( treeNodes, parentNodeId );
-      // привязываем команды
-      // переделано под Байконур идем по списку его cmds
+      // идем по списку его cmds
       for( IDtoCmdInfo cmdInfo : aClassInfo.cmds().list() ) {
         // находим свой UaNode
         UaTreeNode uaNode = findVarNodeByPropName( cmdInfo, parentNode );
