@@ -293,17 +293,19 @@ public class BaseOpcCommonDlmCfgGenerator
 
     // индексы команды OPC получаем через справочник
     ISkRefbookService skRefServ = (ISkRefbookService)aConnection.coreApi().getService( ISkRefbookService.SERVICE_ID );
-    IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( RBID_RRI_OPCUA ).listItems();
-    String rriAttrId = gwids.first().propId();
-    String rriClassId = gwids.first().classId();
+    if( skRefServ.findRefbook( RBID_RRI_OPCUA ) != null ) {
+      IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( RBID_RRI_OPCUA ).listItems();
+      String rriAttrId = gwids.first().propId();
+      String rriClassId = gwids.first().classId();
 
-    // ищем все элементы справочника у которых есть такой rriAttrId
-    IList<ISkRefbookItem> myRbItems = getMyRbItems( rbItems, rriClassId, rriAttrId );
-    TsIllegalStateRtException.checkTrue( myRbItems.isEmpty(),
-        "Can't find command index'es for attrId: %s in refbook %s", rriAttrId, RBID_RRI_OPCUA );
-    TsIllegalStateRtException.checkTrue( myRbItems.size() > 2, "Find more than 2 commands for attrId: %s in refbook %s",
-        rriAttrId, RBID_RRI_OPCUA );
-    fillCmdIndex( rriAttrOpSet, myRbItems );
+      // ищем все элементы справочника у которых есть такой rriAttrId
+      IList<ISkRefbookItem> myRbItems = getMyRbItems( rbItems, rriClassId, rriAttrId );
+      TsIllegalStateRtException.checkTrue( myRbItems.isEmpty(),
+          "Can't find command index'es for attrId: %s in refbook %s", rriAttrId, RBID_RRI_OPCUA );
+      TsIllegalStateRtException.checkTrue( myRbItems.size() > 2,
+          "Find more than 2 commands for attrId: %s in refbook %s", rriAttrId, RBID_RRI_OPCUA );
+      fillCmdIndex( rriAttrOpSet, myRbItems );
+    }
     try {
       IAvTree retVal =
           AvTree.createSingleAvTree( String.format( RRI_ATTR_DEF_FORMAT, pinId ), rriAttrOpSet, IStringMap.EMPTY );

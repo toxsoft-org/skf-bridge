@@ -34,6 +34,7 @@ import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.log4j.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
+import org.toxsoft.core.tsgui.bricks.ctx.impl.*;
 import org.toxsoft.core.tsgui.dialogs.*;
 import org.toxsoft.core.tsgui.dialogs.datarec.*;
 import org.toxsoft.core.tsgui.m5.*;
@@ -376,6 +377,84 @@ public class OpcUaUtils {
    * @param aContext ITsGuiContext - context.
    */
   public static void generateDlmCfgFileFromCurrState( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext ) {
+    String selected = formCfgFileFullName( aDoc, aContext, getDlmCfgRelativeSysPath(), DLMCFG_FILE_EXTENTION );
+    if( selected == null ) {
+      return;
+    }
+    if( selected.endsWith( DLMCFG_FILE_EXTENTION ) ) {
+      selected = selected.substring( 0, selected.indexOf( DLMCFG_FILE_EXTENTION ) );
+    }
+
+    Shell shell = aContext.find( Shell.class );
+
+    IList<String> filterStrs = aDoc.getGroupIds();
+    // new ElemArrayList<>( "TKA1", "TKA2", "TKA3" );
+
+    if( filterStrs.size() == 0 ) {
+      filterStrs = new ElemArrayList<>( "" );
+    }
+
+    for( String fStr : filterStrs ) {
+      try {
+        ITsGuiContext convCtx = new TsGuiContext( aContext );
+        convCtx.params().setStr( "group", fStr );
+
+        IOpcCommonDlmCfgGenerator generator = new BaseOpcCommonDlmCfgGenerator( convCtx );
+        generator.setUnits( aDoc.dataUnits() );
+
+        generator.setGwidFilter(
+            fStr.length() > 0 ? new IGwidFilter.DeaultByStrGwidFilter( fStr ) : IGwidFilter.EMPTY_FILTER );
+
+        IComplexTagDetector complexTagDetector =
+            Optional.ofNullable( convCtx.eclipseContext().get( IComplexTagDetector.class ) )
+                .orElse( ( aaUnit, aaContext ) -> false );
+        generator.setComplexTagDetector( complexTagDetector );
+
+        IDevCfgParamValueSource paramValueSource =
+            Optional.ofNullable( convCtx.eclipseContext().get( IDevCfgParamValueSource.class ) )
+                .orElse( ( aaParamName, aaContext ) -> aaContext.params().findByKey( aaParamName ) );
+        generator.setParamValueSource( paramValueSource );
+
+        generator.setAdditionalProperties( aDoc.getProperties() );
+
+        INodeIdConvertor nodeIdConvertor =
+            Optional.ofNullable( convCtx.eclipseContext().get( INodeIdConvertor.class ) ).orElse( aNodeEntity -> {
+              OpcNodeInfo nodeid = aNodeEntity.asValobj();
+              return new Pair<>( OpcToS5DataCfgConverter.OPC_TAG_DEVICE, nodeid.getNodeId().toParseableString() );
+            } );
+
+        generator.setNodeIdConvertor( nodeIdConvertor );
+
+        IAvTree avTree = generator.generate();
+        String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
+        AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
+
+        String DLM_CONFIG_STR = "DlmConfig = "; //$NON-NLS-1$
+
+        String selectedFileName = selected + (fStr.length() > 0 ? ("_" + fStr) : "") + DLMCFG_FILE_EXTENTION;
+        File dstFile = new File( selectedFileName );
+        if( !dstFile.exists() ) {
+          dstFile.createNewFile();
+        }
+
+        PinsConfigFileFormatter.format( TMP_DEST_FILE, selectedFileName, DLM_CONFIG_STR, true );
+
+        TsDialogUtils.info( shell, MSG_CONFIG_FILE_DLMCFG_CREATED, selectedFileName );
+      }
+      catch( Exception e ) {
+        LoggerUtils.errorLogger().error( e );
+        TsDialogUtils.error( shell, e );
+      }
+    }
+  }
+
+  /**
+   * Generates dlmcfg file from configuration Doc.
+   *
+   * @param aDoc OpcToS5DataCfgDoc - configuration Doc.
+   * @param aContext ITsGuiContext - context.
+   */
+  public static void generateDlmCfgFileFromCurrStateOld( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext ) {
     String selected = formCfgFileFullName( aDoc, aContext, getDlmCfgRelativeSysPath(), DLMCFG_FILE_EXTENTION );
     if( selected == null ) {
       return;
