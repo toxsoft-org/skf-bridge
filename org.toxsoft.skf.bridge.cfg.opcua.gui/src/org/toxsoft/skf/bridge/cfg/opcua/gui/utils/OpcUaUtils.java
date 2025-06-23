@@ -376,7 +376,7 @@ public class OpcUaUtils {
    * @param aDoc OpcToS5DataCfgDoc - configuration Doc.
    * @param aContext ITsGuiContext - context.
    */
-  public static void generateDlmCfgFileFromCurrState( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext ) {
+  public static void generateDlmCfgFileFromCurrStateNew( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext ) {
     String selected = formCfgFileFullName( aDoc, aContext, getDlmCfgRelativeSysPath(), DLMCFG_FILE_EXTENTION );
     if( selected == null ) {
       return;
@@ -454,7 +454,7 @@ public class OpcUaUtils {
    * @param aDoc OpcToS5DataCfgDoc - configuration Doc.
    * @param aContext ITsGuiContext - context.
    */
-  public static void generateDlmCfgFileFromCurrStateOld( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext ) {
+  public static void generateDlmCfgFileFromCurrState( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext ) {
     String selected = formCfgFileFullName( aDoc, aContext, getDlmCfgRelativeSysPath(), DLMCFG_FILE_EXTENTION );
     if( selected == null ) {
       return;
