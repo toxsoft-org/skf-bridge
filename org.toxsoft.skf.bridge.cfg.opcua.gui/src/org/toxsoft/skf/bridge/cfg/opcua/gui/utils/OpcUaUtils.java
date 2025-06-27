@@ -474,7 +474,13 @@ public class OpcUaUtils {
    */
   public static Class<?> getNodeDataTypeClass( UaVariableNode aEntity ) {
     // new verion of max
-    Class<?> retVal = TypeUtil.getBackingClass( aEntity.getDataType() );
+    Class<?> retVal = null;
+    try {
+      retVal = TypeUtil.getBackingClass( aEntity.getDataType() );
+    }
+    catch( Exception ex ) {
+      LoggerUtils.errorLogger().error( ex );
+    }
     // dima 29.02.24 на Siemens верхний метод срабатывает не всегда, а нижний работает
     if( retVal == null ) {
       // old version of dima
