@@ -88,7 +88,7 @@ public class StoredMetaInfoAutoLinkConfigurationProcess
 
       // simple cmds (as events) try
       // Max for bkn
-      String cmdSectId = getTreeSectionNameByConfig( SECTID_OPC_UA_NODES_2_BKN_CMD_GWIDS_TEMPLATE, conConf ); //$NON-NLS-1$
+      String cmdSectId = getTreeSectionNameByConfig( SECTID_OPC_UA_NODES_2_BKN_CMD_GWIDS_TEMPLATE, conConf );
       IList<UaNode2EventGwid> autoCmdEvents = loadNodes2Gwids( aContext, cmdSectId, UaNode2EventGwid.KEEPER );
 
       System.out.println( "Auto simple cmd elements size = " + autoCmdEvents.size() ); //$NON-NLS-1$
@@ -123,7 +123,7 @@ public class StoredMetaInfoAutoLinkConfigurationProcess
 
         result.add( unit );
       }
-      
+
       // Commands
       // dima
 
@@ -231,8 +231,15 @@ public class StoredMetaInfoAutoLinkConfigurationProcess
         ISkClassInfo classInfo = sysDescr.getClassInfo( gwid.classId() );
         ISkClassProps<IDtoRtdataInfo> dataInfoes = classInfo.rtdata();
         IDtoRtdataInfo dataInfo = dataInfoes.list().getByKey( gwid.propId() );
+        // changed by dima 04.07.25
+        long syncPeriod = dataInfo.syncDataDeltaT();
+        // fool proof
+        if( dataInfo.isSync() && syncPeriod == 0 ) {
+          syncPeriod = 1000;
+        }
+        OpcUaUtils.OP_SYNCH_PERIOD.setValue( realization, avInt( syncPeriod ) );
+        // OpcUaUtils.OP_SYNCH_PERIOD.setValue( realization, avInt( dataInfo.isSync() ? 1000 : 0 ) );
 
-        OpcUaUtils.OP_SYNCH_PERIOD.setValue( realization, avInt( dataInfo.isSync() ? 1000 : 0 ) );
         OpcUaUtils.OP_IS_CURR.setValue( realization, avBool( dataInfo.isCurr() ) );
         OpcUaUtils.OP_IS_HIST.setValue( realization, avBool( dataInfo.isHist() ) );
 
