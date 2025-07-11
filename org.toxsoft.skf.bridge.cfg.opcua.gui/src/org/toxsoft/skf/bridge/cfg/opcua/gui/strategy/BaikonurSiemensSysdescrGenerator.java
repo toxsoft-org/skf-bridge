@@ -137,6 +137,10 @@ public class BaikonurSiemensSysdescrGenerator
         }
         else {
           LoggerUtils.errorLogger().error( "Can't match Baikonur cmd: ? -> %s", gwid.canonicalString() ); //$NON-NLS-1$
+          if( TsDialogUtils.askYesNoCancel( getShell(), "Can't match Baikonur cmd: ? -> %s\n Do you want to continue?", //$NON-NLS-1$
+              gwid.canonicalString() ) != ETsDialogCode.YES ) {
+            return;
+          }
         }
       }
 
@@ -158,6 +162,10 @@ public class BaikonurSiemensSysdescrGenerator
         }
         else {
           LoggerUtils.errorLogger().error( "Can't match rtData: ? -> %s", gwid.canonicalString() ); //$NON-NLS-1$
+          if( TsDialogUtils.askYesNoCancel( getShell(), "Can't match rtData: ? -> %s\n Do you want to continue?", //$NON-NLS-1$
+              gwid.canonicalString() ) != ETsDialogCode.YES ) {
+            return;
+          }
         }
       }
       // идем по списку его events
@@ -182,6 +190,11 @@ public class BaikonurSiemensSysdescrGenerator
         }
         else {
           LoggerUtils.errorLogger().error( "Can't match event: ? -> %s", gwid.canonicalString() ); //$NON-NLS-1$
+          if( TsDialogUtils.askYesNoCancel( getShell(), "Can't match event: ? -> %s\n Do you want to continue?", //$NON-NLS-1$
+              gwid.canonicalString() ) != ETsDialogCode.YES ) {
+            return;
+          }
+
         }
       }
     }
