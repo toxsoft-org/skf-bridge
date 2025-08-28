@@ -81,7 +81,7 @@ public abstract class BaseSysdescrGenerator {
   private final OpcUaClient           client;
   protected final IOpcUaServerConnCfg opcUaServerConnCfg;
   private final EOPCUATreeType        treeType;
-  private final ISkConnection         conn;
+  protected final ISkConnection       conn;
 
   /**
    * Собсно сама панель
@@ -1212,7 +1212,7 @@ public abstract class BaseSysdescrGenerator {
    */
   protected void ensureCmdDescription() {
     if( clsId2CmdInfoes == null ) {
-      clsId2CmdInfoes = OpcUaUtils.readClass2CmdInfoes( conn );
+      clsId2CmdInfoes = OpcUaUtils.readClass2CmdInfoes( context, conn );
     }
   }
 

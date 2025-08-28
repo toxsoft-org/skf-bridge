@@ -501,9 +501,9 @@ public class RefbookGenerator {
         "Ошибка статуса измерения / неисправность датчика", "rtdStateWord", 1, TsLibUtils.EMPTY_STRING,
         TsLibUtils.EMPTY_STRING );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___ANALOGINPUT_ENABLED, "Разрешение сигнализации",
-        "Разрешение сигнализации индикации генерации", "rtdStateWord", 2, "заблокировано", "разрешено" );
+        "Разрешение сигнализации индикации генерации", "rtdCtrlWord", 2, "заблокировано", "разрешено" );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___ANALOGINPUT_IMITATION, "Имитация", "Включен режим имитации",
-        "rtdStateWord", 3, "Отключена", "Включена" );
+        "rtdCtrlWord", 3, "Отключена", "Включена" );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___ANALOGINPUT_ALARMMINGENERATION, "Генерация НА 4",
         "Генерация нижний аварийный уровень", "rtdStateWord", 8, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___ANALOGINPUT_ALARMMININDICATION, "Индикация НА 4",
@@ -526,37 +526,34 @@ public class RefbookGenerator {
         "Индикация верхний аварийный уровень", "rtdStateWord", 15, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___ANALOGINPUT_SETPOINT4GENERATION, "Задание Генерация НА 4",
         "Задание режима Генерация нижний аварийный уровень", "rtdCtrlWord", 8, TsLibUtils.EMPTY_STRING,
-        TsLibUtils.EMPTY_STRING );
+        TsLibUtils.EMPTY_STRING, true );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___ANALOGINPUT_SETPOINT4INDICATION, "Задание Индикация НА 4",
         "Задание режима Индикация нижний аварийный уровень", "rtdCtrlWord", 9, TsLibUtils.EMPTY_STRING,
-        TsLibUtils.EMPTY_STRING );
+        TsLibUtils.EMPTY_STRING, true );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___ANALOGINPUT_SETPOINT3GENERATION, "Задание Генерация НП 3",
         "Задание режима Генерация нижний предупредительный уровень", "rtdCtrlWord", 10, TsLibUtils.EMPTY_STRING,
-        TsLibUtils.EMPTY_STRING );
+        TsLibUtils.EMPTY_STRING, true );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___ANALOGINPUT_SETPOINT3INDICATION, "Задание Индикация НП 3",
         "Задание режима Индикация нижний предупредительный уровень", "rtdCtrlWord", 11, TsLibUtils.EMPTY_STRING,
-        TsLibUtils.EMPTY_STRING );
+        TsLibUtils.EMPTY_STRING, true );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___ANALOGINPUT_SETPOINT2GENERATION, "Задание Генерация ВП 2",
         "Задание режима Генерация верхний предупредительный уровень", "rtdCtrlWord", 12, TsLibUtils.EMPTY_STRING,
-        TsLibUtils.EMPTY_STRING );
+        TsLibUtils.EMPTY_STRING, true );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___ANALOGINPUT_SETPOINT2INDICATION, "Задание Индикация ВП 2",
         "Задание режима Индикация верхний предупредительный уровень", "rtdCtrlWord", 13, TsLibUtils.EMPTY_STRING,
-        TsLibUtils.EMPTY_STRING );
+        TsLibUtils.EMPTY_STRING, true );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___ANALOGINPUT_SETPOINT1GENERATION, "Задание Генерация ВА 1",
         "Задание режима Генерация верхний аварийный уровень", "rtdCtrlWord", 14, TsLibUtils.EMPTY_STRING,
-        TsLibUtils.EMPTY_STRING );
+        TsLibUtils.EMPTY_STRING, true );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___ANALOGINPUT_SETPOINT1INDICATION, "Задание Индикация ВА 1",
         "Задание режима Индикация верхний аварийный уровень", "rtdCtrlWord", 15, TsLibUtils.EMPTY_STRING,
-        TsLibUtils.EMPTY_STRING );
+        TsLibUtils.EMPTY_STRING, true );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_STARTING, "Запуск в Автомате",
-        "Выполняется алгоритм автоматического запуска агрегата", "rtdStateWord", 0, TsLibUtils.EMPTY_STRING,
-        TsLibUtils.EMPTY_STRING );
+        "Выполняется алгоритм автоматического запуска агрегата", "rtdStateWord", 0, "Закончился", "Начался" );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_STOPING, "Останов в Автомате",
-        "Выполняется алгоритм автоматического останова агрегата", "rtdStateWord", 1, TsLibUtils.EMPTY_STRING,
-        TsLibUtils.EMPTY_STRING );
+        "Выполняется алгоритм автоматического останова агрегата", "rtdStateWord", 1, "Закончился", "Начался" );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_EMERGENCYSTOP, "Останов в Аварийный",
-        "Выполняется алгоритм аварийного останова агрегата", "rtdStateWord", 2, TsLibUtils.EMPTY_STRING,
-        TsLibUtils.EMPTY_STRING );
+        "Выполняется алгоритм аварийного останова агрегата", "rtdStateWord", 2, "Закончился", "Начался" );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_READYAUTO, "Готовность Авто",
         "Готовность к автостарту агрегата", "rtdStateWord", 3, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_READYMAN, "Готовность Руч", "Готовность к пуску ГЭД",
@@ -615,7 +612,7 @@ public class RefbookGenerator {
         "rtdPwrWord", 7, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_G4_OK, "БП G4 норма", "Блок питания G4 в норме",
         "rtdPwrWord", 8, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
-    addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_G4_OK, "L73 норма",
+    addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_L73_OK, "L73 норма",
         "L73 питание гидрораспределителя в норме", "rtdPwrWord", 10, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_ENGINEBLOCK, "Есть блокировка", "Есть блокировка привода",
         "rtdWB_AUTO", 0, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
@@ -635,7 +632,7 @@ public class RefbookGenerator {
         "rtdWB_AUTO", 7, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_LOC, "Режим управления Местный",
         "Режим управления Местный", "rtdWB_AUTO", 8, TsLibUtils.EMPTY_STRING, "-" );
-    addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_LOC, "Авария ячейки ВВ",
+    addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_VVALARM, "Авария ячейки ВВ",
         "Авария ячейки ВВ — сигнал из ячейки", "rtdWB_AUTO", 10, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_VVBLOCK, "Нет готовности ячейки ВВ",
         "Нет готовности ячейки ВВ — сигнал из ячейки", "rtdWB_AUTO", 11, TsLibUtils.EMPTY_STRING,
@@ -678,15 +675,15 @@ public class RefbookGenerator {
         "Напряжение управления в норме / отсутствует", "rtdStateWord", 1, TsLibUtils.EMPTY_STRING,
         TsLibUtils.EMPTY_STRING );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___IRREVERSIBLEENGINE_ENABLED, "Разрешение", "Разрешение работы",
-        "rtdStateWord", 2, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
+        "rtdStateWord", 2, "заблокировано", "разрешено" );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___IRREVERSIBLEENGINE_IMITATION, "Имитация", "Включен режим имитации",
-        "rtdStateWord", 3, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
+        "rtdStateWord", 3, "Отключена", "Включена" );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___IRREVERSIBLEENGINE_READY, "Готовность", "Готовность привода",
         "rtdStateWord", 4, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___IRREVERSIBLEENGINE_ON, "Включен", "Электропривод включен логически",
         "rtdStateWord", 5, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___IRREVERSIBLEENGINE_AUXON, "Контактор", "Контактор включен",
-        "rtdStateWord", 6, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
+        "rtdStateWord", 6, "отключено", "включено" );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___IRREVERSIBLEENGINE_STOPAUTOBLOCK, "СТОП блокировка",
         "СТОП блокировка контроллером", "rtdStateWord", 13, TsLibUtils.EMPTY_STRING, "-" );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___IRREVERSIBLEENGINE_PWRFAILURE, "Питания нет",
@@ -747,7 +744,7 @@ public class RefbookGenerator {
         "Нет напряжения управления", "rtdErrorWord", 1, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___REVERSIBLEENGINE_ONFAILURE, "Не открылось",
         "Не открылось за время открытия", "rtdErrorWord", 2, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
-    addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___REVERSIBLEENGINE_RTDOFFFAILURE, "Не закрылось",
+    addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___REVERSIBLEENGINE_OFFFAILURE, "Не закрылось",
         "Не закрылось за время закрытия", "rtdErrorWord", 3, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___REVERSIBLEENGINE_EXTALARM, "Внешняя авария",
         "Внешняя авария. Силовое питание ШС", "rtdErrorWord", 4, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
@@ -787,11 +784,11 @@ public class RefbookGenerator {
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___VENTILATION_READY, "Готовность привода", "Готовность",
         "rtdStateWord", 4, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___VENTILATION_WORK1, "Работа в режиме 1", "Работа в режиме 1",
-        "rtdStateWord", 1, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
+        "rtdStateWord", 1, TsLibUtils.EMPTY_STRING, "-" );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___VENTILATION_WORK2, "Работа в режиме 2", "Работа в режиме 2",
-        "rtdStateWord", 2, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
+        "rtdStateWord", 2, TsLibUtils.EMPTY_STRING, "-" );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___VENTILATION_WORK3, "Работа в режиме 3", "Работа в режиме 3",
-        "rtdStateWord", 3, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
+        "rtdStateWord", 3, TsLibUtils.EMPTY_STRING, "-" );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___VENTILATION_VENTWORK, "Вентиляция запускается",
         "Вентиляция в процессе автоматического алгоритма запуска", "rtdStateWord", 5, "Окончание", "Начало" );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___VENTILATION_RD1, "Воздух ГЭД РД1",
@@ -835,11 +832,21 @@ public class RefbookGenerator {
 
   private void addBitMaskRbItem( ISkRefbook aRefbook, String aItemId, String aName, String aDescr, String aWordId,
       int aBitNumber, String aFallStr, String aFrontStr ) {
+    addBitMaskRbItem( aRefbook, aItemId, aName, aDescr, aWordId, aBitNumber, aFallStr, aFrontStr, false );
+  }
+
+  private void addBitMaskRbItem( ISkRefbook aRefbook, String aItemId, String aName, String aDescr, String aWordId,
+      int aBitNumber, String aFallStr, String aFrontStr, boolean isRriParam ) {
     RefookItemBuider b = new RefookItemBuider( aItemId, aName, aDescr, aRefbook );
     b.setValue( RBATRID_BITMASK___BITN, AvUtils.avInt( aBitNumber ) );
     // get rriId from item id
     String[] parts = aItemId.split( "\\." ); //$NON-NLS-1$
-    b.setValue( RBATRID_BITMASK___IDENTIFICATOR, AvUtils.avStr( "rtd" + parts[1] ) );
+    if( isRriParam ) {
+      b.setValue( RBATRID_BITMASK___IDENTIFICATOR, AvUtils.avStr( "rri" + parts[1] ) );
+    }
+    else {
+      b.setValue( RBATRID_BITMASK___IDENTIFICATOR, AvUtils.avStr( "rtd" + parts[1] ) );
+    }
     b.setValue( RBATRID_BITMASK___IDW, AvUtils.avStr( aWordId ) );
     b.setValue( RBATRID_BITMASK___OFF, AvUtils.avStr( aFallStr ) );
     b.setValue( RBATRID_BITMASK___ON, AvUtils.avStr( aFrontStr ) );

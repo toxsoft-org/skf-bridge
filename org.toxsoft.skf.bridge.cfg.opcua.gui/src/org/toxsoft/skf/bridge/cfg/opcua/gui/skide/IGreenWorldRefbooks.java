@@ -302,7 +302,7 @@ public interface IGreenWorldRefbooks {
   String ITEMID_BITMASK___REVERSIBLEENGINE_PWRFAILURE        = "ReversibleEngine.PwrFailure";        // Питания нет
   String ITEMID_BITMASK___REVERSIBLEENGINE_CTRLFAILURE       = "ReversibleEngine.CtrlFailure";       // Контроля нет
   String ITEMID_BITMASK___REVERSIBLEENGINE_ONFAILURE         = "ReversibleEngine.OnFailure";         // Не открылось
-  String ITEMID_BITMASK___REVERSIBLEENGINE_RTDOFFFAILURE     = "ReversibleEngine.rtdOffFailure";     // Не закрылось
+  String ITEMID_BITMASK___REVERSIBLEENGINE_OFFFAILURE        = "ReversibleEngine.OffFailure";        // Не закрылось
   String ITEMID_BITMASK___REVERSIBLEENGINE_EXTALARM          = "ReversibleEngine.ExtAlarm";          // Внешняя авария
   String ITEMID_BITMASK___REVERSIBLEENGINE_OPENONFAILURE     = "ReversibleEngine.OpenOnFailure";     // Не вкл. на
                                                                                                      // открытие

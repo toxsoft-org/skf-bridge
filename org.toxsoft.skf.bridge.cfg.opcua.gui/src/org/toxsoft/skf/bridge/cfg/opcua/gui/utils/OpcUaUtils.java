@@ -1822,14 +1822,20 @@ public class OpcUaUtils {
   /**
    * Читает из справочника метаинформацию о командах
    *
+   * @param aContext контекст приложения
    * @param aConn соединение с сервером
    * @return структура описывающая все команды всех классов OPC UA
    */
-  public static StringMap<IList<IDtoCmdInfo>> readClass2CmdInfoes( ISkConnection aConn ) {
+  public static StringMap<IList<IDtoCmdInfo>> readClass2CmdInfoes( ITsGuiContext aContext, ISkConnection aConn ) {
     StringMap<IList<IDtoCmdInfo>> dtoCmdInfoesMap = new StringMap<>();
     // открываем справочник команд
     String refbookName = RBID_CMD_OPCUA;
     ISkRefbookService skRefServ = (ISkRefbookService)aConn.coreApi().getService( ISkRefbookService.SERVICE_ID );
+    // FIXME warninig: "There is no refbook :%s", RBID_CMD_OPCUA
+    if( skRefServ.findRefbook( refbookName ) == null ) {
+      TsDialogUtils.error( aContext.get( Shell.class ), "There is no refbook :%s", refbookName );
+      return null;
+    }
     IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( refbookName ).listItems();
     for( ISkRefbookItem myRbItem : rbItems ) {
       String strid = myRbItem.strid();

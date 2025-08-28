@@ -445,7 +445,7 @@ public class OpcUaTreeBrowserPanel
 
   protected void ensureCmdDescription() {
     if( clsId2CmdInfoes == null ) {
-      clsId2CmdInfoes = OpcUaUtils.readClass2CmdInfoes( conn );
+      clsId2CmdInfoes = OpcUaUtils.readClass2CmdInfoes( tsContext(), conn );
     }
   }
 

@@ -284,6 +284,16 @@ public class PoligoneSysdescrGenerator
 
   @Override
   public void ensureBeforeClassCreation() {
+    // create all essential refbooks: RRI_OPCUA, Cmd_OPCUA, BitMask
+    RefbookGenerator rbGenerator = new RefbookGenerator( conn );
+    // Cmd_OPCUA
+    rbGenerator.createPoligonCommandsRefbook();
+    // RRI_OPCUA
+    rbGenerator.createPoligonRriRefbook();
+    // BitMask
+    rbGenerator.createPoligonBitMaskRefbook();
+
+    // TODO need refactoring
     ensureCmdDescription();
     ensureBitMaskDescription();
     ensureRriSection( context );

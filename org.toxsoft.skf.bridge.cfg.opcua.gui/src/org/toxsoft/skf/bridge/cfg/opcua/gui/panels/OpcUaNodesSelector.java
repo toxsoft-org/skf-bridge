@@ -189,7 +189,7 @@ public class OpcUaNodesSelector
   private static class UaNodesTreeMaker
       implements ITsTreeMaker<UaTreeNode> {
 
-    private static final String IGNORE_REFIX     = "null";   //$NON-NLS-1$
+    private static final String IGNORE_PREFIX    = "null";   //$NON-NLS-1$
     private static final String STATIC_NODE_NAME = "Static"; //$NON-NLS-1$
 
     private final ITsNodeKind<UaTreeNode> kind =
@@ -235,6 +235,10 @@ public class OpcUaNodesSelector
         // parent = parent.getParent();
         // }
 
+        // filter empty nodes (type Variable)
+        if( !isThroughtVariableFilter( parent ) ) {
+          continue;
+        }
         if( roots.hasElem( parent ) ) {
           continue;
         }
@@ -265,21 +269,22 @@ public class OpcUaNodesSelector
         if( hideVariableNodes && child.getNodeClass().equals( NodeClass.Object ) ) {
           String name = child.getBrowseName();
           // отрезаем листья Static & null
-          if( name.compareTo( STATIC_NODE_NAME ) == 0 || name.startsWith( IGNORE_REFIX ) ) {
+          if( name.compareTo( STATIC_NODE_NAME ) == 0 || name.startsWith( IGNORE_PREFIX ) ) {
             continue;
           }
         }
 
-        if( !hideVariableNodes && child.getNodeClass().equals( NodeClass.Variable ) ) {
+        if( !hideVariableNodes && isThroughtVariableFilter( child ) ) {
+          // if( !hideVariableNodes && child.getNodeClass().equals( NodeClass.Variable ) ) {
           // отсекаем узлы у которых имя начинается с символа '/'
-          String name = child.getBrowseName();
-          if( name.startsWith( IGNORE_REFIX ) ) {
-            continue;
-          }
-          String descr = child.getDescription();
-          if( descr.startsWith( "\\" ) || descr.startsWith( "/" ) ) { //$NON-NLS-1$ //$NON-NLS-2$
-            continue;
-          }
+          // String name = child.getBrowseName();
+          // if( name.startsWith( IGNORE_PREFIX ) ) {
+          // continue;
+          // }
+          // String descr = child.getDescription();
+          // if( descr.startsWith( "\\" ) || descr.startsWith( "/" ) ) { //$NON-NLS-1$ //$NON-NLS-2$
+          // continue;
+          // }
           // фильтруем узлы по уровню доступа
           if( !accessLevel.equals( AccessLevel.NONE ) && !accessLevel.containsAll( child.accessLevel() ) ) {
             continue;
@@ -296,6 +301,21 @@ public class OpcUaNodesSelector
         aParentNode.addNode( childNode );
         formTree( childNode );
       }
+    }
+
+    private static boolean isThroughtVariableFilter( UaTreeNode aCandidate ) {
+      if( aCandidate.getNodeClass().equals( NodeClass.Variable ) ) {
+        // отсекаем узлы у которых имя начинается с символа '/'
+        String browseName = aCandidate.getBrowseName();
+        if( browseName.startsWith( IGNORE_PREFIX ) ) {
+          return false;
+        }
+        String descr = aCandidate.getDescription();
+        if( descr.startsWith( "\\" ) || descr.startsWith( "/" ) ) { //$NON-NLS-1$ //$NON-NLS-2$
+          return false;
+        }
+      }
+      return true;
     }
 
     @Override
