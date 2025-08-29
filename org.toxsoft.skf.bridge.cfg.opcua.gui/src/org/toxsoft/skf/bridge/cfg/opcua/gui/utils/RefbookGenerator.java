@@ -66,7 +66,7 @@ public class RefbookGenerator {
   /**
    * Attribute {@link ISkRefbook#attrs() #RBATRID_RRI_OPCUA___INDEX}.
    */
-  IDtoAttrInfo ATRINF_RRI_INDEX = DtoAttrInfo.create2( RBATRID_RRI_OPCUA___INDEX, DDEF_INTEGER, //
+  static IDtoAttrInfo ATRINF_RRI_INDEX = DtoAttrInfo.create2( RBATRID_RRI_OPCUA___INDEX, DDEF_INTEGER, //
       TSID_NAME, "Индекс", TSID_DESCRIPTION, "Индекс команды НСИ", //
       TSID_DEFAULT_VALUE, AvUtils.AV_0 //
   );
@@ -74,7 +74,7 @@ public class RefbookGenerator {
   /**
    * Attribute {@link ISkRefbook#attrs() #RBATRID_RRI_OPCUA___RRIID}.
    */
-  IDtoAttrInfo ATRINF_RRI_ID = DtoAttrInfo.create2( RBATRID_RRI_OPCUA___RRIID, DDEF_STRING, //
+  static IDtoAttrInfo ATRINF_RRI_ID = DtoAttrInfo.create2( RBATRID_RRI_OPCUA___RRIID, DDEF_STRING, //
       TSID_NAME, "Id НСИ", TSID_DESCRIPTION, "Id команды НСИ", //
       TSID_DEFAULT_VALUE, AvUtils.AV_0 //
   );
@@ -82,7 +82,7 @@ public class RefbookGenerator {
   /**
    * Attribute {@link ISkRefbook#attrs() #RBATRID_RRI_OPCUA___ON}.
    */
-  IDtoAttrInfo ATRINF_RRI_ON = DtoAttrInfo.create2( RBATRID_RRI_OPCUA___ON, DDEF_BOOLEAN, //
+  static IDtoAttrInfo ATRINF_RRI_ON = DtoAttrInfo.create2( RBATRID_RRI_OPCUA___ON, DDEF_BOOLEAN, //
       TSID_NAME, "0->1", TSID_DESCRIPTION, "срабатывание при 0->1", //
       TSID_DEFAULT_VALUE, AvUtils.AV_FALSE //
   );
@@ -90,7 +90,7 @@ public class RefbookGenerator {
   /**
    * Attribute {@link ISkRefbook#attrs() #RBATRID_RRI_OPCUA___OFF}.
    */
-  IDtoAttrInfo ATRINF_RRI_OFF = DtoAttrInfo.create2( RBATRID_RRI_OPCUA___OFF, DDEF_BOOLEAN, //
+  static IDtoAttrInfo ATRINF_RRI_OFF = DtoAttrInfo.create2( RBATRID_RRI_OPCUA___OFF, DDEF_BOOLEAN, //
       TSID_NAME, "1->0", TSID_DESCRIPTION, "срабатывание при 1->0", //
       TSID_DEFAULT_VALUE, AvUtils.AV_FALSE //
   );
@@ -99,7 +99,7 @@ public class RefbookGenerator {
    * Refbook: RRI_OPCUA - Команды НСИ.
    * <p>
    */
-  IDtoRefbookInfo REFBOOK_RRI_OPCUA = DtoRefbookInfo.create( RBID_RRI_OPCUA, ///
+  public static IDtoRefbookInfo REFBOOK_RRI_OPCUA = DtoRefbookInfo.create( RBID_RRI_OPCUA, ///
       OptionSetUtils.createOpSet( ///
           TSID_NAME, "Команды НСИ", //$NON-NLS-1$
           TSID_DESCRIPTION, "Команды НСИ" //$NON-NLS-1$
@@ -124,7 +124,7 @@ public class RefbookGenerator {
   /**
    * Attribute {@link ISkRefbook#attrs() #ATRID_INDEX}.
    */
-  IDtoAttrInfo ATRINF_INDEX = DtoAttrInfo.create2( RBATRID_CMD_OPCUA___INDEX, DDEF_INTEGER, //
+  static IDtoAttrInfo ATRINF_INDEX = DtoAttrInfo.create2( RBATRID_CMD_OPCUA___INDEX, DDEF_INTEGER, //
       TSID_NAME, "Индекс", TSID_DESCRIPTION, "Индекс команды управления", //
       TSID_DEFAULT_VALUE, AvUtils.AV_0 //
   );
@@ -132,7 +132,7 @@ public class RefbookGenerator {
   /**
    * Attribute {@link ISkRefbook#attrs() #ATRID_CMD_ID }.
    */
-  IDtoAttrInfo ATRINF_CMD_ID = DtoAttrInfo.create2( RBATRID_CMD_OPCUA___CMDID, DDEF_STRING, //
+  static IDtoAttrInfo ATRINF_CMD_ID = DtoAttrInfo.create2( RBATRID_CMD_OPCUA___CMDID, DDEF_STRING, //
       TSID_NAME, "Идентификатор команды", //
       TSID_DESCRIPTION, "Идентификатор команды Uskat", //
       TSID_DEFAULT_VALUE, AvUtils.AV_STR_EMPTY //
@@ -142,7 +142,7 @@ public class RefbookGenerator {
    * Refbook: commands for OPC.
    * <p>
    */
-  IDtoRefbookInfo REFBOOK_CMDS_OPCUA = DtoRefbookInfo.create( RBID_CMD_OPCUA, ///
+  public static IDtoRefbookInfo REFBOOK_CMDS_OPCUA = DtoRefbookInfo.create( RBID_CMD_OPCUA, ///
       OptionSetUtils.createOpSet( ///
           TSID_NAME, "Команды управления", //$NON-NLS-1$
           TSID_DESCRIPTION, "Команды управления" //$NON-NLS-1$
@@ -164,7 +164,7 @@ public class RefbookGenerator {
   /**
    * Attribute {@link ISkRefbook#attrs() #RBATRID_BITMASK___BITN}.
    */
-  IDtoAttrInfo ATRINF_BITMASK_BITN = DtoAttrInfo.create2( RBATRID_BITMASK___BITN, DDEF_INTEGER, //
+  static IDtoAttrInfo ATRINF_BITMASK_BITN = DtoAttrInfo.create2( RBATRID_BITMASK___BITN, DDEF_INTEGER, //
       TSID_NAME, "Номер бита", TSID_DESCRIPTION, "Номер бита в слове/регистре", //
       TSID_DEFAULT_VALUE, AvUtils.AV_0 //
   );
@@ -172,7 +172,7 @@ public class RefbookGenerator {
   /**
    * Attribute {@link ISkRefbook#attrs() #RBATRID_BITMASK___IDENTIFICATOR}.
    */
-  IDtoAttrInfo ATRINF_BITMASK_IDENTIFICATOR = DtoAttrInfo.create2( RBATRID_BITMASK___IDENTIFICATOR, DDEF_STRING, //
+  static IDtoAttrInfo ATRINF_BITMASK_IDENTIFICATOR = DtoAttrInfo.create2( RBATRID_BITMASK___IDENTIFICATOR, DDEF_STRING, //
       TSID_NAME, "Идентификатор", TSID_DESCRIPTION, "Идентификатор данного", //
       TSID_DEFAULT_VALUE, AvUtils.AV_STR_EMPTY //
   );
@@ -180,7 +180,7 @@ public class RefbookGenerator {
   /**
    * Attribute {@link ISkRefbook#attrs() #RBATRID_BITMASK___IDW}.
    */
-  IDtoAttrInfo ATRINF_BITMASK_IDW = DtoAttrInfo.create2( RBATRID_BITMASK___IDW, DDEF_STRING, //
+  static IDtoAttrInfo ATRINF_BITMASK_IDW = DtoAttrInfo.create2( RBATRID_BITMASK___IDW, DDEF_STRING, //
       TSID_NAME, "Слово", TSID_DESCRIPTION, "Идентификатор слова/регистра", //
       TSID_DEFAULT_VALUE, AvUtils.AV_STR_EMPTY //
   );
@@ -188,7 +188,7 @@ public class RefbookGenerator {
   /**
    * Attribute {@link ISkRefbook#attrs() #RBATRID_BITMASK___ON}.
    */
-  IDtoAttrInfo ATRINF_BITMASK_ON = DtoAttrInfo.create2( RBATRID_BITMASK___ON, DDEF_STRING, //
+  static IDtoAttrInfo ATRINF_BITMASK_ON = DtoAttrInfo.create2( RBATRID_BITMASK___ON, DDEF_STRING, //
       TSID_NAME, "0->1", TSID_DESCRIPTION, "срабатывание при 0->1", //
       TSID_DEFAULT_VALUE, AvUtils.AV_STR_EMPTY //
   );
@@ -196,7 +196,7 @@ public class RefbookGenerator {
   /**
    * Attribute {@link ISkRefbook#attrs() #RBATRID_RRI_OPCUA___OFF}.
    */
-  IDtoAttrInfo ATRINF_BITMASK_OFF = DtoAttrInfo.create2( RBATRID_BITMASK___OFF, DDEF_STRING, //
+  static IDtoAttrInfo ATRINF_BITMASK_OFF = DtoAttrInfo.create2( RBATRID_BITMASK___OFF, DDEF_STRING, //
       TSID_NAME, "1->0", TSID_DESCRIPTION, "срабатывание при 1->0", //
       TSID_DEFAULT_VALUE, AvUtils.AV_STR_EMPTY //
   );
@@ -205,7 +205,7 @@ public class RefbookGenerator {
    * Refbook: BitMask - Битовые маски.
    * <p>
    */
-  IDtoRefbookInfo REFBOOK_BITMASK_OPCUA = DtoRefbookInfo.create( RBID_BITMASK, ///
+  public static IDtoRefbookInfo REFBOOK_BITMASK_OPCUA = DtoRefbookInfo.create( RBID_BITMASK, ///
       OptionSetUtils.createOpSet( ///
           TSID_NAME, " Битовые маски", //$NON-NLS-1$
           TSID_DESCRIPTION, " Битовые маски" //$NON-NLS-1$

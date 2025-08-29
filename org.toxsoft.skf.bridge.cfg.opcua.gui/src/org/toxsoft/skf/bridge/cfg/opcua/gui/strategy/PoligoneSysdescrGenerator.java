@@ -7,6 +7,10 @@ import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tsgui.dialogs.*;
 import org.toxsoft.core.tsgui.m5.gui.mpc.impl.*;
 import org.toxsoft.core.tslib.av.*;
+import org.toxsoft.core.tslib.av.impl.*;
+import org.toxsoft.core.tslib.av.metainfo.*;
+import org.toxsoft.core.tslib.av.opset.*;
+import org.toxsoft.core.tslib.av.opset.impl.*;
 import org.toxsoft.core.tslib.bricks.strid.coll.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
@@ -18,6 +22,7 @@ import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
+import org.toxsoft.skf.refbooks.lib.*;
 import org.toxsoft.skf.rri.lib.*;
 import org.toxsoft.uskat.core.api.objserv.*;
 import org.toxsoft.uskat.core.api.sysdescr.*;
@@ -32,6 +37,10 @@ import org.toxsoft.uskat.core.api.sysdescr.dto.*;
 public class PoligoneSysdescrGenerator
     extends BaseSysdescrGenerator {
 
+  public static String DFLT_RRI_SECTION_ID    = "rri.section.id";          //$NON-NLS-1$
+  public static String DFLT_RRI_SECTION_NAME  = "секция НСИ";              //$NON-NLS-1$
+  public static String DFLT_RRI_SECTION_DESCR = "Единственная секция НСИ"; //$NON-NLS-1$
+
   /**
    * Constructor.
    *
@@ -43,6 +52,32 @@ public class PoligoneSysdescrGenerator
   public PoligoneSysdescrGenerator( ITsGuiContext aContext, OpcUaClient aClient,
       IOpcUaServerConnCfg aOpcUaServerConnCfg, MultiPaneComponentModown<UaTreeNode> aComponentModown ) {
     super( aContext, aClient, aOpcUaServerConnCfg, aComponentModown );
+    // при создании стратегии проверяем и создаем все что нужно для ее (стратегии) работы
+    // проверка справочников
+    ISkRefbookService rbServ = conn.coreApi().getService( ISkRefbookService.SERVICE_ID );
+    // create all essential refbooks: RRI_OPCUA, Cmd_OPCUA, BitMask
+    RefbookGenerator rbGenerator = new RefbookGenerator( conn );
+    if( rbServ.findRefbook( RefbookGenerator.REFBOOK_CMDS_OPCUA.id() ) == null ) {
+      // Cmd_OPCUA
+      rbGenerator.createPoligonCommandsRefbook();
+    }
+    if( rbServ.findRefbook( RefbookGenerator.REFBOOK_RRI_OPCUA.id() ) == null ) {
+      // RRI_OPCUA
+      rbGenerator.createPoligonRriRefbook();
+    }
+    if( rbServ.findRefbook( RefbookGenerator.REFBOOK_BITMASK_OPCUA.id() ) == null ) {
+      // BitMask
+      rbGenerator.createPoligonBitMaskRefbook();
+    }
+    // проверка раздела НСИ
+    ISkRegRefInfoService rriService =
+        (ISkRegRefInfoService)conn.coreApi().services().getByKey( ISkRegRefInfoService.SERVICE_ID );
+    if( rriService.listSections().isEmpty() ) {
+      IOptionSetEdit optSet = new OptionSet();
+      IAvMetaConstants.DDEF_NAME.setValue( optSet, AvUtils.avStr( DFLT_RRI_SECTION_NAME ) );
+      rriService.createSection( DFLT_RRI_SECTION_ID, DFLT_RRI_SECTION_NAME, DFLT_RRI_SECTION_DESCR, optSet );
+    }
+
   }
 
   @Override
@@ -284,15 +319,6 @@ public class PoligoneSysdescrGenerator
 
   @Override
   public void ensureBeforeClassCreation() {
-    // create all essential refbooks: RRI_OPCUA, Cmd_OPCUA, BitMask
-    RefbookGenerator rbGenerator = new RefbookGenerator( conn );
-    // Cmd_OPCUA
-    rbGenerator.createPoligonCommandsRefbook();
-    // RRI_OPCUA
-    rbGenerator.createPoligonRriRefbook();
-    // BitMask
-    rbGenerator.createPoligonBitMaskRefbook();
-
     // TODO need refactoring
     ensureCmdDescription();
     ensureBitMaskDescription();

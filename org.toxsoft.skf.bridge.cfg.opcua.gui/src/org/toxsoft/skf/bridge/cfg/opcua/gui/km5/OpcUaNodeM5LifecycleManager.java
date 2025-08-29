@@ -23,6 +23,7 @@ import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.core.txtproj.lib.storage.*;
 import org.toxsoft.core.txtproj.lib.workroom.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.panels.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 
 /**
@@ -201,11 +202,29 @@ public class OpcUaNodeM5LifecycleManager
     IListEdit<UaTreeNode> retVal = new ElemArrayList<>();
     for( UaTreeNode node : aWholeNodes ) {
       if( isSubNode( node ) ) {
+        // фильтруем "пустые" узлы
+        if( !isThroughtVariableFilter( node ) ) {
+          continue;
+        }
         retVal.add( node );
       }
     }
     // topNode.clearParent();
     return retVal;
+  }
+
+  private static boolean isThroughtVariableFilter( UaTreeNode aCandidate ) {
+    if( aCandidate.getNodeClass().equals( NodeClass.Variable ) ) {
+      String browseName = aCandidate.getBrowseName();
+      if( browseName.startsWith( OpcUaNodesSelector.IGNORE_PREFIX ) ) {
+        return false;
+      }
+      String descr = aCandidate.getDescription();
+      if( descr.startsWith( "\\" ) || descr.startsWith( "/" ) ) { //$NON-NLS-1$ //$NON-NLS-2$
+        return false;
+      }
+    }
+    return true;
   }
 
   private boolean isSubNode( UaTreeNode aNode ) {

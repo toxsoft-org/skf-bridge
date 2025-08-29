@@ -823,7 +823,9 @@ public abstract class BaseSysdescrGenerator {
 
       private IDtoClassInfo makeDtoClassInfo( IM5Bunch<IDtoClassInfo> aValues ) {
         String id = aValues.getAsAv( FID_CLASS_ID ).asString();
-        String parentId = aValues.getAsAv( FID_PARENT_ID ).asString();
+        // old version
+        // String parentId = aValues.getAsAv( FID_PARENT_ID ).asString();
+        String parentId = aValues.get( FID_PARENT_ID );
         IOptionSetEdit params = new OptionSet();
         if( aValues.originalEntity() != null ) {
           params.setAll( aValues.originalEntity().params() );
@@ -1216,8 +1218,7 @@ public abstract class BaseSysdescrGenerator {
     }
   }
 
-  protected boolean ensureRriSection( ITsGuiContext aContext ) {
-    boolean retVal = false;
+  protected void ensureRriSection( ITsGuiContext aContext ) {
     if( rriSection == null ) {
       // если секция одна, то выбирать не нужно
       ISkRegRefInfoService rriService =
@@ -1229,13 +1230,6 @@ public abstract class BaseSysdescrGenerator {
         rriSection = PanelRriSectionSelector.selectRriSection( null, aContext );
       }
     }
-    if( rriSection == null ) {
-      TsDialogUtils.error( getShell(), "Не выбрана секция НСИ" );
-    }
-    else {
-      retVal = true;
-    }
-    return retVal;
   }
 
   abstract protected UaTreeNode getClassNode( UaTreeNode aNode );

@@ -44,7 +44,7 @@ public interface IOpcUaServerConnCfg
    * @return EOPCUATreeType { @link EOPCUATreeType} type of OPC UA tree
    */
   default EOPCUATreeType treeType() {
-    return params().getValobj( OpcUaServerConnCfgModel.FID_TREE_TYPE );
+    return params().getValobj( OpcUaServerConnCfgModel.FID_TREE_TYPE, EOPCUATreeType.SIEMENS_BAIKONUR );
   }
 
 }

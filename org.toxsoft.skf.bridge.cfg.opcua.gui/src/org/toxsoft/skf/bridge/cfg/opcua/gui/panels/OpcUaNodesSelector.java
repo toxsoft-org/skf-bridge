@@ -48,6 +48,11 @@ import com.google.common.collect.*;
 public class OpcUaNodesSelector
     extends AbstractTsDialogPanel<IList<UaTreeNode>, OpcUaNodesSelectorContext> {
 
+  /**
+   * to filter unused nodes
+   */
+  public static final String IGNORE_PREFIX = "null"; //$NON-NLS-1$
+
   static class OpcUaNodesSelectorContext {
 
     private final NodeId                    topNode;
@@ -189,7 +194,6 @@ public class OpcUaNodesSelector
   private static class UaNodesTreeMaker
       implements ITsTreeMaker<UaTreeNode> {
 
-    private static final String IGNORE_PREFIX    = "null";   //$NON-NLS-1$
     private static final String STATIC_NODE_NAME = "Static"; //$NON-NLS-1$
 
     private final ITsNodeKind<UaTreeNode> kind =
@@ -236,9 +240,9 @@ public class OpcUaNodesSelector
         // }
 
         // filter empty nodes (type Variable)
-        if( !isThroughtVariableFilter( parent ) ) {
-          continue;
-        }
+        // if( !isThroughtVariableFilter( parent ) ) {
+        // continue;
+        // }
         if( roots.hasElem( parent ) ) {
           continue;
         }
