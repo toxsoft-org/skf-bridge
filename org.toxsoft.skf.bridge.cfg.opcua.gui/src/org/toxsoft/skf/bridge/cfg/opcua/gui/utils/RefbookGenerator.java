@@ -376,37 +376,37 @@ public class RefbookGenerator {
     // fill refbook
     addRriRbItem( rbRRIs, ITEMID_RRI_OPCUA___ANALOGINPUT_IMITATIONVALUE, "Значение имитации",
         "Задать значение имитации", 6, false, false );
-    addRriRbItem( rbRRIs, ITEMID_RRI_OPCUA___ANALOGINPUT_SETPOINT1GENON, "Генерация ВА1 Вкл.",
+    addRriRbItem( rbRRIs, ITEMID_BITMASK___ANALOGINPUT_SETPOINT1GENERATION, "Генерация ВА1 Вкл.",
         "Включить режим Генерации по Верхней Аварии", 7, false, true );
-    addRriRbItem( rbRRIs, ITEMID_RRI_OPCUA___ANALOGINPUT_SETPOINT1GENOFF, "Генерация ВА1 Откл.",
+    addRriRbItem( rbRRIs, ITEMID_BITMASK___ANALOGINPUT_SETPOINT1GENERATION, "Генерация ВА1 Откл.",
         "Отключить режим Генерации по Верхней Аварии", 8, true, false );
-    addRriRbItem( rbRRIs, ITEMID_RRI_OPCUA___ANALOGINPUT_SETPOINT1INDON, "Индикация ВА1 Вкл.",
+    addRriRbItem( rbRRIs, ITEMID_BITMASK___ANALOGINPUT_SETPOINT1INDICATION, "Индикация ВА1 Вкл.",
         "Включить режим Индикации по Верхней Аварии", 9, false, true );
-    addRriRbItem( rbRRIs, ITEMID_RRI_OPCUA___ANALOGINPUT_SETPOINT1INDOFF, "Индикация ВА1 Откл.",
+    addRriRbItem( rbRRIs, ITEMID_BITMASK___ANALOGINPUT_SETPOINT1INDICATION, "Индикация ВА1 Откл.",
         "Отключить режим Индикации по Верхней Аварии", 10, true, false );
-    addRriRbItem( rbRRIs, ITEMID_RRI_OPCUA___ANALOGINPUT_SETPOINT2GENON, "Генерация ВП2 Вкл.",
+    addRriRbItem( rbRRIs, ITEMID_BITMASK___ANALOGINPUT_SETPOINT2GENERATION, "Генерация ВП2 Вкл.",
         "Включить режим Генерации по Верхнему Предупреждению", 11, false, true );
-    addRriRbItem( rbRRIs, ITEMID_RRI_OPCUA___ANALOGINPUT_SETPOINT2GENOFF, "Генерация ВП2 Откл.",
+    addRriRbItem( rbRRIs, ITEMID_BITMASK___ANALOGINPUT_SETPOINT2GENERATION, "Генерация ВП2 Откл.",
         "Отключить режим Генерации по Верхнему Предупреждению", 12, true, false );
-    addRriRbItem( rbRRIs, ITEMID_RRI_OPCUA___ANALOGINPUT_SETPOINT2INDON, "Индикация ВП2 Вкл.",
+    addRriRbItem( rbRRIs, ITEMID_BITMASK___ANALOGINPUT_SETPOINT2INDICATION, "Индикация ВП2 Вкл.",
         "Включить режим Индикации по Верхнему Предупреждению", 13, false, true );
-    addRriRbItem( rbRRIs, ITEMID_RRI_OPCUA___ANALOGINPUT_SETPOINT2INDOFF, "Индикация ВП2 Откл.",
+    addRriRbItem( rbRRIs, ITEMID_BITMASK___ANALOGINPUT_SETPOINT2INDICATION, "Индикация ВП2 Откл.",
         "Отключить режим Индикации по Верхнему Предупреждению", 14, true, false );
-    addRriRbItem( rbRRIs, ITEMID_RRI_OPCUA___ANALOGINPUT_SETPOINT3GENON, "Генерация НП3 Вкл.",
+    addRriRbItem( rbRRIs, ITEMID_BITMASK___ANALOGINPUT_SETPOINT3GENERATION, "Генерация НП3 Вкл.",
         "Включить режим Генерации по Нижнему Предупреждению", 15, false, true );
-    addRriRbItem( rbRRIs, ITEMID_RRI_OPCUA___ANALOGINPUT_SETPOINT3GENOFF, "Генерация НП3 Откл.",
+    addRriRbItem( rbRRIs, ITEMID_BITMASK___ANALOGINPUT_SETPOINT3GENERATION, "Генерация НП3 Откл.",
         "Отключить режим Генерации по Нижнему Предупреждению", 16, true, false );
-    addRriRbItem( rbRRIs, ITEMID_RRI_OPCUA___ANALOGINPUT_SETPOINT4GENON, "Генерация НА4 Вкл.",
-        "Включить режим Генерации по Нижней Аварии", 19, false, true );
-    addRriRbItem( rbRRIs, ITEMID_RRI_OPCUA___ANALOGINPUT_SETPOINT4GENOFF, "Генерация НА4 Откл.",
-        "Отключить режим Генерации по Нижней Аварии", 20, true, false );
-    addRriRbItem( rbRRIs, ITEMID_RRI_OPCUA___ANALOGINPUT_SETPOINT3INDON, "Индикация НП3 Вкл.",
+    addRriRbItem( rbRRIs, ITEMID_BITMASK___ANALOGINPUT_SETPOINT3INDICATION, "Индикация НП3 Вкл.",
         "Включить режим Индикации по Нижнему Предупреждению", 17, false, true );
-    addRriRbItem( rbRRIs, ITEMID_RRI_OPCUA___ANALOGINPUT_SETPOINT3INDOFF, "Индикация НП3 Откл.",
+    addRriRbItem( rbRRIs, ITEMID_BITMASK___ANALOGINPUT_SETPOINT3INDICATION, "Индикация НП3 Откл.",
         "Отключить режим Индикации по Нижнему Предупреждению", 18, true, false );
-    addRriRbItem( rbRRIs, ITEMID_RRI_OPCUA___ANALOGINPUT_SETPOINT4INDON, "Индикация НА4 Вкл.",
+    addRriRbItem( rbRRIs, ITEMID_BITMASK___ANALOGINPUT_SETPOINT4GENERATION, "Генерация НА4 Вкл.",
+        "Включить режим Генерации по Нижней Аварии", 19, false, true );
+    addRriRbItem( rbRRIs, ITEMID_BITMASK___ANALOGINPUT_SETPOINT4GENERATION, "Генерация НА4 Откл.",
+        "Отключить режим Генерации по Нижней Аварии", 20, true, false );
+    addRriRbItem( rbRRIs, ITEMID_BITMASK___ANALOGINPUT_SETPOINT4INDICATION, "Индикация НА4 Вкл.",
         "Включить режим Индикации по Нижней Аварии", 21, false, true );
-    addRriRbItem( rbRRIs, ITEMID_RRI_OPCUA___ANALOGINPUT_SETPOINT4INDOFF, "Индикация НА4 Откл.",
+    addRriRbItem( rbRRIs, ITEMID_BITMASK___ANALOGINPUT_SETPOINT4INDICATION, "Индикация НА4 Откл.",
         "Отключить режим Индикации по Нижней Аварии", 22, true, false );
     addRriRbItem( rbRRIs, ITEMID_RRI_OPCUA___ANALOGINPUT_SETPOINT1, "Уставка ВА1", "Задать Верхнюю Аварию", 23, false,
         false );
@@ -478,7 +478,14 @@ public class RefbookGenerator {
 
   private void addRriRbItem( ISkRefbook aRefbook, String aItemId, String aName, String aDescr, int aRriIndex,
       boolean aFall, boolean aFront ) {
-    RefookItemBuider b = new RefookItemBuider( aItemId, aName, aDescr, aRefbook );
+    String rbItemId = aItemId;
+    if( aFall ) {
+      rbItemId = rbItemId + "Off";
+    }
+    if( aFront ) {
+      rbItemId = rbItemId + "On";
+    }
+    RefookItemBuider b = new RefookItemBuider( rbItemId, aName, aDescr, aRefbook );
     b.setValue( RBATRID_RRI_OPCUA___INDEX, AvUtils.avInt( aRriIndex ) );
     // get rriId from item id
     String[] parts = aItemId.split( "\\." ); //$NON-NLS-1$

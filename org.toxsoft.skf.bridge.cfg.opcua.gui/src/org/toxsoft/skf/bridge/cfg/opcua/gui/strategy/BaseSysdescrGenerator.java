@@ -110,7 +110,7 @@ public abstract class BaseSysdescrGenerator {
    * <p>
    * Аргумент имеет тип {@link EAtomicType#FLOATING}.
    */
-  private static String CMDARGID_VALUE = "value"; //$NON-NLS-1$
+  protected static String CMDARGID_VALUE = "value"; //$NON-NLS-1$
 
   /**
    * id параметра события: старое значение.
@@ -472,8 +472,8 @@ public abstract class BaseSysdescrGenerator {
           readDataInfo( cinf, varNode, aNode2ClassGwidList );
           readCmdInfo( cinf, varNode, aNode2ClassGwidList );
           readEventInfo( cinf, varNode, aNode2ClassGwidList );
-          // FIXME НСИ атрибут
-          // readRriAttrInfo( rriCinf, varNode, aNode2ClassGwidList );
+          // НСИ атрибут
+          readRriAttrInfo( rriCinf, varNode, aNode2ClassGwidList );
           // dima 05.03.24 не генерим автоматически события из узлов. Только из справочника см. код ниже
           // readEventInfo( cinf, varNode, aNode2ClassGwidList );
         }
@@ -640,56 +640,6 @@ public abstract class BaseSysdescrGenerator {
   }
 
   /**
-   * Читает описание команды и добавляет его в описание класса {@link IDtoClassInfo}
-   *
-   * @param aDtoClass текущее описание класса
-   * @param aVariableNode описание узла типа переменная
-   * @param aNode2ClassGwidList список привязок Node -> Class Gwid
-   */
-  private void readCmdInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode,
-      IListEdit<UaNode2Gwid> aNode2ClassGwidList ) {
-    // id команды
-    String cmdId = aVariableNode.getBrowseName().getName();
-    if( isIgnore4Command( aDtoClass.id(), cmdId ) ) {
-      return;
-    }
-    // соблюдаем соглашения о наименовании
-    if( !cmdId.startsWith( CMD_PREFIX ) ) {
-      cmdId = CMD_PREFIX + cmdId;
-    }
-    // название
-    String name = aVariableNode.getDisplayName().getText();
-    // описание
-    String descr = aVariableNode.getDescription() == null ? name : aVariableNode.getDescription().getText();
-    // описание
-    if( descr == null ) {
-      descr = name;
-    }
-
-    // тип данного
-    Class<?> clazz = OpcUaUtils.getNodeDataTypeClass( aVariableNode );
-    EAtomicType type = OpcUaUtils.getAtomicType( clazz );
-
-    IDtoCmdInfo cmdInfo = DtoCmdInfo.create1( cmdId, //
-        new StridablesList<>( //
-            DataDef.create( CMDARGID_VALUE, type, TSID_NAME, STR_N_CMD_ARG_VALUE, //
-                TSID_DESCRIPTION, STR_D_CMD_ARG_VALUE, //
-                TSID_IS_NULL_ALLOWED, AV_FALSE ) //
-        ), //
-        OptionSetUtils.createOpSet( //
-            IAvMetaConstants.TSID_NAME, name, //
-            IAvMetaConstants.TSID_DESCRIPTION, descr //
-        ) ); //
-
-    aDtoClass.cmdInfos().add( cmdInfo );
-    // TODO boilerplate code сохраним привязку для использования в автоматическом связывании
-    NodeId nodeId = aVariableNode.getNodeId();
-    Gwid classGwid = Gwid.createCmd( aDtoClass.id(), cmdId );
-    UaNode2Gwid uaNode2Gwid = new UaNode2Gwid( nodeId.toParseableString(), descr, classGwid );
-    aNode2ClassGwidList.add( uaNode2Gwid );
-  }
-
-  /**
    * Проверяет наличие в справочнике RBID_RRI_OPCUA элемента с составным strid
    *
    * @param aClassId - префикс составного strid
@@ -710,64 +660,7 @@ public abstract class BaseSysdescrGenerator {
     return false;
   }
 
-  /**
-   * Читает описание события и добавляет его в описание класса {@link IDtoClassInfo}
-   *
-   * @param aDtoClass текущее описание класса
-   * @param aVariableNode описание узла типа переменная
-   * @param aNode2ClassGwidList список привязок Node -> Class Gwid
-   */
-  private void readEventInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode,
-      IListEdit<UaNode2Gwid> aNode2ClassGwidList ) {
-    // id события
-    String evtId = aVariableNode.getBrowseName().getName();
-    if( isIgnore4Event( aDtoClass.id(), evtId ) ) {
-      return;
-    }
-    // соблюдаем соглашения о наименовании
-    if( !evtId.startsWith( EVT_PREFIX ) ) {
-      evtId = EVT_PREFIX + evtId;
-    }
-    // название
-    String name = aVariableNode.getDisplayName().getText();
-    // описание
-    String descr = aVariableNode.getDescription() == null ? name : aVariableNode.getDescription().getText();
-    // описание
-    if( descr == null ) {
-      descr = name;
-    }
-
-    // тип данного
-    Class<?> clazz = OpcUaUtils.getNodeDataTypeClass( aVariableNode );
-    EAtomicType type = OpcUaUtils.getAtomicType( clazz );
-
-    StridablesList<IDataDef> evParams;
-    evParams = switch( type ) {
-      case INTEGER -> new StridablesList<>( EVPDD_OLD_VAL_INT, EVPDD_NEW_VAL_INT );
-      case BOOLEAN -> new StridablesList<>( EVPDD_ON );
-      case FLOATING -> new StridablesList<>( EVPDD_OLD_VAL_FLOAT, EVPDD_NEW_VAL_FLOAT );
-      case NONE -> throw invalidParamTypeExcpt( type );
-      case STRING -> throw invalidParamTypeExcpt( type );
-      case TIMESTAMP -> throw invalidParamTypeExcpt( type );
-      case VALOBJ -> throw invalidParamTypeExcpt( type );
-    };
-
-    IDtoEventInfo evtInfo = DtoEventInfo.create1( evtId, true, //
-        evParams, //
-        OptionSetUtils.createOpSet( //
-            IAvMetaConstants.TSID_NAME, name, //
-            IAvMetaConstants.TSID_DESCRIPTION, descr //
-        ) ); //
-
-    aDtoClass.eventInfos().add( evtInfo );
-    // TODO boilerplate code сохраним привязку для использования в автоматическом связывании
-    NodeId nodeId = aVariableNode.getNodeId();
-    Gwid classGwid = Gwid.createEvent( aDtoClass.id(), evtId );
-    UaNode2Gwid uaNode2Gwid = new UaNode2Gwid( nodeId.toParseableString(), descr, classGwid );
-    aNode2ClassGwidList.add( uaNode2Gwid );
-  }
-
-  private static TsIllegalArgumentRtException invalidParamTypeExcpt( EAtomicType type ) {
+  protected static TsIllegalArgumentRtException invalidParamTypeExcpt( EAtomicType type ) {
     return new TsIllegalArgumentRtException( "Can't create event parameters with type %s", //$NON-NLS-1$
         type.id() );
   }
@@ -1260,4 +1153,33 @@ public abstract class BaseSysdescrGenerator {
    */
   protected abstract boolean useRRI();
 
+  /**
+   * Читает описание команды и добавляет его в описание класса {@link IDtoClassInfo}
+   *
+   * @param aDtoClass текущее описание класса
+   * @param aVariableNode описание узла типа переменная
+   * @param aNode2ClassGwidList список привязок Node -> Class Gwid
+   */
+  abstract protected void readCmdInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode,
+      IListEdit<UaNode2Gwid> aNode2ClassGwidList );
+
+  /**
+   * Читает описание события и добавляет его в описание класса {@link IDtoClassInfo}
+   *
+   * @param aDtoClass текущее описание класса
+   * @param aVariableNode описание узла типа переменная
+   * @param aNode2ClassGwidList список привязок Node -> Class Gwid
+   */
+  abstract protected void readEventInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode,
+      IListEdit<UaNode2Gwid> aNode2ClassGwidList );
+
+  /**
+   * Читает описание НСИ атрибута и добавляет его в описание класса {@link IDtoClassInfo}
+   *
+   * @param aDtoClass текущее описание класса
+   * @param aVariableNode описание узла типа переменная
+   * @param aNode2ClassGwidList список для хранения привязки node -> Class Gwid
+   */
+  abstract void readRriAttrInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode,
+      IListEdit<UaNode2Gwid> aNode2ClassGwidList );
 }

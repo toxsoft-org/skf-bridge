@@ -1,6 +1,12 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.strategy;
 
+import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
+import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
+import static org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.*;
+import static org.toxsoft.skf.bridge.cfg.opcua.gui.skide.IGreenWorldRefbooks.*;
+
 import org.eclipse.milo.opcua.sdk.client.*;
+import org.eclipse.milo.opcua.sdk.client.nodes.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
@@ -12,6 +18,7 @@ import org.toxsoft.core.tslib.av.metainfo.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.*;
 import org.toxsoft.core.tslib.bricks.strid.coll.*;
+import org.toxsoft.core.tslib.bricks.strid.coll.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.coll.primtypes.*;
@@ -27,6 +34,7 @@ import org.toxsoft.skf.rri.lib.*;
 import org.toxsoft.uskat.core.api.objserv.*;
 import org.toxsoft.uskat.core.api.sysdescr.*;
 import org.toxsoft.uskat.core.api.sysdescr.dto.*;
+import org.toxsoft.uskat.core.impl.dto.*;
 
 /**
  * Class for startegy to generate system description from Poligone OPC UA tree.
@@ -74,7 +82,7 @@ public class PoligoneSysdescrGenerator
         (ISkRegRefInfoService)conn.coreApi().services().getByKey( ISkRegRefInfoService.SERVICE_ID );
     if( rriService.listSections().isEmpty() ) {
       IOptionSetEdit optSet = new OptionSet();
-      IAvMetaConstants.DDEF_NAME.setValue( optSet, AvUtils.avStr( DFLT_RRI_SECTION_NAME ) );
+      IAvMetaConstants.DDEF_IDNAME.setValue( optSet, AvUtils.avStr( DFLT_RRI_SECTION_NAME ) );
       rriService.createSection( DFLT_RRI_SECTION_ID, DFLT_RRI_SECTION_NAME, DFLT_RRI_SECTION_DESCR, optSet );
     }
 
@@ -334,6 +342,105 @@ public class PoligoneSysdescrGenerator
   @Override
   protected boolean useRRI() {
     return true;
+  }
+
+  /**
+   * Читает описание команды и добавляет его в описание класса {@link IDtoClassInfo}
+   *
+   * @param aDtoClass текущее описание класса
+   * @param aVariableNode описание узла типа переменная
+   * @param aNode2ClassGwidList список привязок Node -> Class Gwid
+   */
+  @Override
+  protected void readCmdInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode,
+      IListEdit<UaNode2Gwid> aNode2ClassGwidList ) {
+    // nop
+    // В этой стратегии команды генератся из только справочника команд
+  }
+
+  /**
+   * Читает описание события и добавляет его в описание класса {@link IDtoClassInfo}
+   *
+   * @param aDtoClass текущее описание класса
+   * @param aVariableNode описание узла типа переменная
+   * @param aNode2ClassGwidList список привязок Node -> Class Gwid
+   */
+  @Override
+  protected void readEventInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode,
+      IListEdit<UaNode2Gwid> aNode2ClassGwidList ) {
+    // nop
+    // В этой стратегии события генератся только из справочника событий
+  }
+
+  /**
+   * Читает описание НСИ атрибута и добавляет его в описание класса {@link IDtoClassInfo}
+   *
+   * @param aDtoClass текущее описание класса
+   * @param aVariableNode описание узла типа переменная
+   * @param aNode2ClassGwidList список для хранения привязки node -> Class Gwid
+   */
+  @Override
+  protected void readRriAttrInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode,
+      IListEdit<UaNode2Gwid> aNode2ClassGwidList ) {
+    // id атрибута
+    String attrId = aVariableNode.getBrowseName().getName();
+    // if( isIgnore4RriAttr( aDtoClass.id(), attrId ) ) {
+    // return;
+    // }
+    // соблюдаем соглашения о наименовании
+    if( !attrId.startsWith( RRI_PREFIX ) ) {
+      attrId = RRI_PREFIX + attrId;
+    }
+    // работаем ТОЛЬКО с теми атрибутами которые есть в справочнике команд НСИ
+    if( !inRriRefbook( aDtoClass.id(), attrId ) ) {
+      return;
+    }
+    // название
+    String name = aVariableNode.getDisplayName().getText();
+    // описание
+    String descr = aVariableNode.getDescription() == null ? name : aVariableNode.getDescription().getText();
+    // описание
+    if( (descr == null) || descr.isBlank() ) {
+      descr = name;
+    }
+
+    // тип данных атрибута
+    Class<?> clazz = OpcUaUtils.getNodeDataTypeClass( aVariableNode );
+    EAtomicType type = OpcUaUtils.getAtomicType( clazz );
+    DataType ddType = DataType.create( type );
+
+    IDtoAttrInfo atrInfo = DtoAttrInfo.create2( attrId, ddType, //
+        TSID_NAME, name, //
+        TSID_DESCRIPTION, descr );
+
+    aDtoClass.attrInfos().add( atrInfo );
+
+    // TODO boilerplate code сохраним привязку для использования в автоматическом связывании
+    NodeId nodeId = aVariableNode.getNodeId();
+    Gwid classGwid = Gwid.createAttr( aDtoClass.id(), attrId );
+    UaNode2Gwid uaNode2Gwid = new UaNode2Gwid( nodeId.toParseableString(), descr, classGwid );
+    aNode2ClassGwidList.add( uaNode2Gwid );
+  }
+
+  /**
+   * Проверяет наличие в справочнике RBID_RRI_OPCUA элемента с заданным RRI param id
+   *
+   * @param aClassId - префикс составного strid
+   * @param aRriParamId - RRI param id
+   * @return true если элемент с таким strid есть в справочнике
+   */
+  protected boolean inRriRefbook( String aClassId, String aRriParamId ) {
+    // читаем справочник НСИ и фильтруем то что предназначено для этого
+    ISkRefbookService skRefServ = (ISkRefbookService)conn.coreApi().getService( ISkRefbookService.SERVICE_ID );
+    IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( RBID_RRI_OPCUA ).listItems();
+    // создаем id элемента справочника
+    for( ISkRefbookItem rbItem : rbItems ) {
+      String paramId = rbItem.attrs().getValue( RBATRID_RRI_OPCUA___RRIID ).asString();
+      if( rbItem.strid().startsWith( aClassId ) && paramId.compareTo( aRriParamId ) == 0 ) {
+        return true;
+      }
+    }
+    return false;
   }
 
 }

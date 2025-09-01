@@ -1,12 +1,22 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.strategy;
 
+import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
+import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
+import static org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.*;
+
 import org.eclipse.milo.opcua.sdk.client.*;
+import org.eclipse.milo.opcua.sdk.client.nodes.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tsgui.dialogs.*;
 import org.toxsoft.core.tsgui.m5.gui.mpc.impl.*;
+import org.toxsoft.core.tslib.av.*;
+import org.toxsoft.core.tslib.av.impl.*;
+import org.toxsoft.core.tslib.av.metainfo.*;
+import org.toxsoft.core.tslib.av.opset.impl.*;
 import org.toxsoft.core.tslib.bricks.strid.coll.*;
+import org.toxsoft.core.tslib.bricks.strid.coll.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.coll.primtypes.*;
@@ -20,6 +30,7 @@ import org.toxsoft.skf.rri.lib.*;
 import org.toxsoft.uskat.core.api.objserv.*;
 import org.toxsoft.uskat.core.api.sysdescr.*;
 import org.toxsoft.uskat.core.api.sysdescr.dto.*;
+import org.toxsoft.uskat.core.impl.dto.*;
 
 /**
  * Class for startegy to generate system description from Siemens-Baikonur OPC UA tree.
@@ -238,6 +249,121 @@ public class BaikonurSiemensSysdescrGenerator
   @Override
   protected boolean useRRI() {
     return false;
+  }
+
+  /**
+   * Читает описание команды и добавляет его в описание класса {@link IDtoClassInfo}
+   *
+   * @param aDtoClass текущее описание класса
+   * @param aVariableNode описание узла типа переменная
+   * @param aNode2ClassGwidList список привязок Node -> Class Gwid
+   */
+  @Override
+  protected void readCmdInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode,
+      IListEdit<UaNode2Gwid> aNode2ClassGwidList ) {
+    // id команды
+    String cmdId = aVariableNode.getBrowseName().getName();
+    if( isIgnore4Command( aDtoClass.id(), cmdId ) ) {
+      return;
+    }
+    // соблюдаем соглашения о наименовании
+    if( !cmdId.startsWith( CMD_PREFIX ) ) {
+      cmdId = CMD_PREFIX + cmdId;
+    }
+    // название
+    String name = aVariableNode.getDisplayName().getText();
+    // описание
+    String descr = aVariableNode.getDescription() == null ? name : aVariableNode.getDescription().getText();
+    // описание
+    if( descr == null ) {
+      descr = name;
+    }
+
+    // тип данного
+    Class<?> clazz = OpcUaUtils.getNodeDataTypeClass( aVariableNode );
+    EAtomicType type = OpcUaUtils.getAtomicType( clazz );
+
+    IDtoCmdInfo cmdInfo = DtoCmdInfo.create1( cmdId, //
+        new StridablesList<>( //
+            DataDef.create( CMDARGID_VALUE, type, TSID_NAME, STR_N_CMD_ARG_VALUE, //
+                TSID_DESCRIPTION, STR_D_CMD_ARG_VALUE, //
+                TSID_IS_NULL_ALLOWED, AV_FALSE ) //
+        ), //
+        OptionSetUtils.createOpSet( //
+            IAvMetaConstants.TSID_NAME, name, //
+            IAvMetaConstants.TSID_DESCRIPTION, descr //
+        ) ); //
+
+    aDtoClass.cmdInfos().add( cmdInfo );
+    // TODO boilerplate code сохраним привязку для использования в автоматическом связывании
+    NodeId nodeId = aVariableNode.getNodeId();
+    Gwid classGwid = Gwid.createCmd( aDtoClass.id(), cmdId );
+    UaNode2Gwid uaNode2Gwid = new UaNode2Gwid( nodeId.toParseableString(), descr, classGwid );
+    aNode2ClassGwidList.add( uaNode2Gwid );
+  }
+
+  /**
+   * Читает описание события и добавляет его в описание класса {@link IDtoClassInfo}
+   *
+   * @param aDtoClass текущее описание класса
+   * @param aVariableNode описание узла типа переменная
+   * @param aNode2ClassGwidList список привязок Node -> Class Gwid
+   */
+  @Override
+  protected void readEventInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode,
+      IListEdit<UaNode2Gwid> aNode2ClassGwidList ) {
+    // id события
+    String evtId = aVariableNode.getBrowseName().getName();
+    if( isIgnore4Event( aDtoClass.id(), evtId ) ) {
+      return;
+    }
+    // соблюдаем соглашения о наименовании
+    if( !evtId.startsWith( EVT_PREFIX ) ) {
+      evtId = EVT_PREFIX + evtId;
+    }
+    // название
+    String name = aVariableNode.getDisplayName().getText();
+    // описание
+    String descr = aVariableNode.getDescription() == null ? name : aVariableNode.getDescription().getText();
+    // описание
+    if( descr == null ) {
+      descr = name;
+    }
+
+    // тип данного
+    Class<?> clazz = OpcUaUtils.getNodeDataTypeClass( aVariableNode );
+    EAtomicType type = OpcUaUtils.getAtomicType( clazz );
+
+    StridablesList<IDataDef> evParams;
+    evParams = switch( type ) {
+      case INTEGER -> new StridablesList<>( EVPDD_OLD_VAL_INT, EVPDD_NEW_VAL_INT );
+      case BOOLEAN -> new StridablesList<>( EVPDD_ON );
+      case FLOATING -> new StridablesList<>( EVPDD_OLD_VAL_FLOAT, EVPDD_NEW_VAL_FLOAT );
+      case NONE -> throw invalidParamTypeExcpt( type );
+      case STRING -> throw invalidParamTypeExcpt( type );
+      case TIMESTAMP -> throw invalidParamTypeExcpt( type );
+      case VALOBJ -> throw invalidParamTypeExcpt( type );
+    };
+
+    IDtoEventInfo evtInfo = DtoEventInfo.create1( evtId, true, //
+        evParams, //
+        OptionSetUtils.createOpSet( //
+            IAvMetaConstants.TSID_NAME, name, //
+            IAvMetaConstants.TSID_DESCRIPTION, descr //
+        ) ); //
+
+    aDtoClass.eventInfos().add( evtInfo );
+    // TODO boilerplate code сохраним привязку для использования в автоматическом связывании
+    NodeId nodeId = aVariableNode.getNodeId();
+    Gwid classGwid = Gwid.createEvent( aDtoClass.id(), evtId );
+    UaNode2Gwid uaNode2Gwid = new UaNode2Gwid( nodeId.toParseableString(), descr, classGwid );
+    aNode2ClassGwidList.add( uaNode2Gwid );
+  }
+
+  @Override
+  void readRriAttrInfo( DtoClassInfo aDtoClass, UaVariableNode aVariableNode,
+      IListEdit<UaNode2Gwid> aNode2ClassGwidList ) {
+    // nop
   }
 
 }
