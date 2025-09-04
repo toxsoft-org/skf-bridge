@@ -207,7 +207,7 @@ public class RefbookGenerator {
    */
   public static IDtoRefbookInfo REFBOOK_BITMASK_OPCUA = DtoRefbookInfo.create( RBID_BITMASK, ///
       OptionSetUtils.createOpSet( ///
-          TSID_NAME, " Битовые маски", //$NON-NLS-1$
+          TSID_NAME, "Битовые маски", //$NON-NLS-1$
           TSID_DESCRIPTION, " Битовые маски" //$NON-NLS-1$
       ), ///
       new StridablesList<>( ///
@@ -571,34 +571,37 @@ public class RefbookGenerator {
         "ВВ включен в Местном режиме", "rtdStateWord", 6, TsLibUtils.EMPTY_STRING, "-" );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_RRI, "Флаг НСИ",
         "Флаг НСИ 0-надо залить с сервера 1-уже залито", "rtdStateWord", 15, "требуется заливка", "залито с сервера" );
-    addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_GRVPUSTARTING, "ГР/ВПУ включается",
-        "ГР/ВПУ включается в автомате", "rtdStateWordGrVpu", 0, "окончание автовключения группы",
-        "начало автовключения группы" );
-    addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_GRVPUSTOPING, "ГР/ВПУ отключается",
-        "ГР/ВПУ отключается в автомате", "rtdStateWordGrVpu", 1, "окончание автоостанова группы",
-        "начало автоостанова группы" );
-    addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_GRVPUSTARTCOMPLETE, "ГР/ВПУ включены", "ГР/ВПУ включены",
-        "rtdStateWordGrVpu", 2, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
-    addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_GRVPUSTOPCOMPLETE, "ГР/ВПУ отключены", "ГР/ВПУ отключены",
-        "rtdStateWordGrVpu", 3, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
-    addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_GRSTARTING, "Пуск ГР\\авто",
-        "Пуск гидрораспределителя в группе ГР/ВПУ", "rtdStateWordGrVpu", 4, TsLibUtils.EMPTY_STRING,
-        TsLibUtils.EMPTY_STRING );
-    addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_GRSTOPING, "Стоп ГР",
-        "Отключение гидрораспределителя в группе ГР/ВПУ", "rtdStateWordGrVpu", 5, TsLibUtils.EMPTY_STRING,
-        TsLibUtils.EMPTY_STRING );
-    addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_VPUSTARTING, "Пуск ВПУ\\авто",
-        "Пуск двигателя ВПУ в группе ГР/ВПУ", "rtdStateWordGrVpu", 6, TsLibUtils.EMPTY_STRING,
-        TsLibUtils.EMPTY_STRING );
-    addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_VPUSTOPING, "Стоп ВПУ",
-        "Отключение двигателя ВПУ в группе ГР/ВПУ", "rtdStateWordGrVpu", 7, TsLibUtils.EMPTY_STRING,
-        TsLibUtils.EMPTY_STRING );
-    addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_GEARERROR, "Ошибка зацепления",
-        "Ошибка определения положения муфты зацепления", "rtdStateWordGrVpu", 8, TsLibUtils.EMPTY_STRING,
-        TsLibUtils.EMPTY_STRING );
-    addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_OILFAILURE, "Масла нет",
-        "Отсутствует валидное давление масла при включенном ПМН", "rtdStateWordGrVpu", 9, TsLibUtils.EMPTY_STRING,
-        TsLibUtils.EMPTY_STRING );
+    // not in use in project kz
+    // addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_GRVPUSTARTING, "ГР/ВПУ включается",
+    // "ГР/ВПУ включается в автомате", "rtdStateWordGrVpu", 0, "окончание автовключения группы",
+    // "начало автовключения группы" );
+    // addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_GRVPUSTOPING, "ГР/ВПУ отключается",
+    // "ГР/ВПУ отключается в автомате", "rtdStateWordGrVpu", 1, "окончание автоостанова группы",
+    // "начало автоостанова группы" );
+    // addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_GRVPUSTARTCOMPLETE, "ГР/ВПУ включены", "ГР/ВПУ
+    // включены",
+    // "rtdStateWordGrVpu", 2, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
+    // addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_GRVPUSTOPCOMPLETE, "ГР/ВПУ отключены", "ГР/ВПУ
+    // отключены",
+    // "rtdStateWordGrVpu", 3, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
+    // addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_GRSTARTING, "Пуск ГР\\авто",
+    // "Пуск гидрораспределителя в группе ГР/ВПУ", "rtdStateWordGrVpu", 4, TsLibUtils.EMPTY_STRING,
+    // TsLibUtils.EMPTY_STRING );
+    // addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_GRSTOPING, "Стоп ГР",
+    // "Отключение гидрораспределителя в группе ГР/ВПУ", "rtdStateWordGrVpu", 5, TsLibUtils.EMPTY_STRING,
+    // TsLibUtils.EMPTY_STRING );
+    // addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_VPUSTARTING, "Пуск ВПУ\\авто",
+    // "Пуск двигателя ВПУ в группе ГР/ВПУ", "rtdStateWordGrVpu", 6, TsLibUtils.EMPTY_STRING,
+    // TsLibUtils.EMPTY_STRING );
+    // addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_VPUSTOPING, "Стоп ВПУ",
+    // "Отключение двигателя ВПУ в группе ГР/ВПУ", "rtdStateWordGrVpu", 7, TsLibUtils.EMPTY_STRING,
+    // TsLibUtils.EMPTY_STRING );
+    // addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_GEARERROR, "Ошибка зацепления",
+    // "Ошибка определения положения муфты зацепления", "rtdStateWordGrVpu", 8, TsLibUtils.EMPTY_STRING,
+    // TsLibUtils.EMPTY_STRING );
+    // addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_OILFAILURE, "Масла нет",
+    // "Отсутствует валидное давление масла при включенном ПМН", "rtdStateWordGrVpu", 9, TsLibUtils.EMPTY_STRING,
+    // TsLibUtils.EMPTY_STRING );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_PWR_OK, "Питание ШС норма", "Питание ШС норма",
         "rtdPwrWord", 0, TsLibUtils.EMPTY_STRING, "включено" );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_FEEDER1ON, "Фидер 1 включен", "Фидер 1 включен",

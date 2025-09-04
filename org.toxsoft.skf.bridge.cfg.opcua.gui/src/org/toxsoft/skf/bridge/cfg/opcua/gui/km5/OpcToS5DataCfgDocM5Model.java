@@ -12,7 +12,9 @@ import org.toxsoft.core.tsgui.rcp.valed.*;
 import org.toxsoft.core.tsgui.valed.api.*;
 import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.coll.*;
+import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.coll.primtypes.*;
+import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 
 /**
  * M5 model realization for {@link OpcToS5DataCfgDoc} entities.
@@ -198,6 +200,14 @@ public class OpcToS5DataCfgDocM5Model
         protected void doInit() {
           setNameAndDescription( "Properties", "Properties" ); //$NON-NLS-1$ //$NON-NLS-2$
           setFlags( M5FF_COLUMN | M5FF_DETAIL );
+          // пропришем сразу стандартный продюсер
+          IStringListEdit dfltProducer = new StringArrayList();
+          dfltProducer.add( "javaClassName" );
+          dfltProducer.add( "org.toxsoft.l2.thd.opc.ua.milo.OpcUaMiloDriverProducer" );
+          dfltProducer.add( "dev" );
+          IListEdit<IStringList> dfltProps = new ElemArrayList<IStringList>();
+          dfltProps.add( dfltProducer );
+          setDefaultValue( dfltProps );
           // задаем нормальный размер!
           params().setInt( IValedControlConstants.OPDEF_VERTICAL_SPAN, 5 );
         }

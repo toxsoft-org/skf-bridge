@@ -824,9 +824,8 @@ public abstract class BaseSysdescrGenerator {
             // получаем список узлов в котором описаны переменные класса
             IList<UaTreeNode> variableNodes = getVariableNodes( aParentNode );
             UaTreeNode retVal = findNodeByBrowseName( bitArrayNode, variableNodes );
-            TsIllegalStateRtException.checkNull( retVal,
-                "Subtree %s, can't find node %s for class: %s, bit mask rtData: %s", bitArrayNode, //$NON-NLS-1$
-                aParentNode.getBrowseName(), aClassInfo.id(), aRtDataInfo.id() );
+            TsIllegalStateRtException.checkNull( retVal, "Subtree %s, can't find node %s to link bit mask rtData: %s", //$NON-NLS-1$
+                aParentNode.getBrowseName(), bitArrayNode, aRtDataInfo.id() );
             return retVal;
           }
         }
