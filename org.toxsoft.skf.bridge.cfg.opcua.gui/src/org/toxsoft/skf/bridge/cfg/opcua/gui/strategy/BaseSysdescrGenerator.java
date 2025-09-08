@@ -78,7 +78,7 @@ public abstract class BaseSysdescrGenerator {
   protected static final String nodeCmdFeedback     = "CmdFeedback"; //$NON-NLS-1$
 
   protected final ITsGuiContext       context;
-  private final OpcUaClient           client;
+  protected final OpcUaClient         client;
   protected final IOpcUaServerConnCfg opcUaServerConnCfg;
   private final EOPCUATreeType        treeType;
   protected final ISkConnection       conn;
@@ -646,18 +646,18 @@ public abstract class BaseSysdescrGenerator {
    * @param aDataId - суффикс составного strid
    * @return true если элемент с таким strid есть в справочнике
    */
-  protected boolean existInRriRefbook( String aClassId, String aDataId ) {
+  protected ISkRefbookItem existInRriRefbook( String aClassId, String aDataId ) {
     // читаем справочник НСИ и фильтруем то что предназначено для этого
     ISkRefbookService skRefServ = (ISkRefbookService)conn.coreApi().getService( ISkRefbookService.SERVICE_ID );
-    IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( RBID_RRI_OPCUA ).listItems();
+    IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( RBID_BITMASK ).listItems();
     // создаем id элемента справочника
-    String rbItemStrid = new StringBuffer( aClassId ).append( "." ).append( aDataId ).toString(); //$NON-NLS-1$
+    String rbItemStrid = new StringBuffer( aClassId ).append( "." ).append( aDataId.substring( 3 ) ).toString(); //$NON-NLS-1$
     for( ISkRefbookItem rbItem : rbItems ) {
       if( rbItem.strid().equals( rbItemStrid ) ) {
-        return true;
+        return rbItem;
       }
     }
-    return false;
+    return null;
   }
 
   protected static TsIllegalArgumentRtException invalidParamTypeExcpt( EAtomicType type ) {

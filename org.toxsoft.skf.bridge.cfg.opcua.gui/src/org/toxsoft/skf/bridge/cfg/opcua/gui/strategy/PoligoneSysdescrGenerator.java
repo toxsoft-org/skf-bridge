@@ -7,7 +7,9 @@ import static org.toxsoft.skf.bridge.cfg.opcua.gui.skide.IGreenWorldRefbooks.*;
 
 import org.eclipse.milo.opcua.sdk.client.*;
 import org.eclipse.milo.opcua.sdk.client.nodes.*;
+import org.eclipse.milo.opcua.stack.core.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
+import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.*;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tsgui.dialogs.*;
@@ -110,7 +112,7 @@ public class PoligoneSysdescrGenerator
       return true;
     }
     // последним пунктом проверки на содержание в справочнике НСИ
-    return existInRriRefbook( aClassId, aDataId );
+    return (existInRriRefbook( aClassId, aDataId ) != null);
   }
 
   @Override
@@ -130,7 +132,7 @@ public class PoligoneSysdescrGenerator
     }
 
     // последним пунктом проверки на содержание в справочнике НСИ
-    return existInRriRefbook( aClassId, aEvId );
+    return (existInRriRefbook( aClassId, aEvId ) != null);
   }
 
   @Override
@@ -138,7 +140,7 @@ public class PoligoneSysdescrGenerator
     // игнорируем узлы которые не могут быть командными
     // TODO
     // последним пунктом проверки на содержание в справочнике НСИ
-    return existInRriRefbook( aClassId, aCmdId );
+    return (existInRriRefbook( aClassId, aCmdId ) != null);
   }
 
   @Override
@@ -228,6 +230,8 @@ public class PoligoneSysdescrGenerator
               gwid.canonicalString() );
           String nodeDescr = parentNode.getBrowseName() + "::" + uaNode.getBrowseName(); //$NON-NLS-1$
           UaNode2Gwid node2Gwid = new UaNode2Gwid( uaNode.getNodeId(), nodeDescr, gwid );
+          // here we are have gwid & nodeId, we should set value and set it in Uskat server
+          updateRrriValueUskatServer( uaNode, gwid );
           node2RriGwidList.add( node2Gwid );
         }
         else {
@@ -270,6 +274,61 @@ public class PoligoneSysdescrGenerator
         OpcUaUtils.SECTID_OPC_UA_NODES_2_EVT_GWIDS_TEMPLATE, UaNode2EventGwid.KEEPER, opcUaServerConnCfg );
     OpcUaUtils.updateCmdGwid2NodesInStore( aContext, cmdGwid2UaNodesList, opcUaServerConnCfg );
     OpcUaUtils.updateRriAttrGwid2NodesInStore( aContext, rriAttrCmdGwid2UaNodesList, opcUaServerConnCfg );
+  }
+
+  private void updateRrriValueUskatServer( UaTreeNode aUaNode, Gwid aGwid ) {
+    try {
+      UaVariableNode dNode = client.getAddressSpace().getVariableNode( aUaNode.getUaNode().getNodeId() );
+      DataValue dValue = dNode.readValue();
+      Variant value = dValue.getValue();
+      IAtomicValue av = convertFromOpc( value );
+      // check if Gwid in bitMask refbook, than get bit value from state word
+      ISkRefbookItem rbBitMaskItem = existInRriRefbook( aGwid.classId(), aGwid.propId() );
+      if( rbBitMaskItem != null ) {
+        // get value bit number and extract value
+        int bitNumber = rbBitMaskItem.attrs().getInt( RBATRID_BITMASK___BITN );
+        int stateWord = av.asInt();
+        int bitMask = 0x1 << bitNumber;
+        boolean bitValue = false;
+        if( (stateWord & bitMask) != 0 ) {
+          bitValue = true;
+        }
+        av = AvUtils.avBool( bitValue );
+      }
+      ISkRegRefInfoService rriServ = conn.coreApi().getService( ISkRegRefInfoService.SERVICE_ID );
+      // TODO get actual section
+      ISkRriSection section = rriServ.listSections().first();
+      section.setAttrParamValue( aGwid.skid(), aGwid.propId(), av, "auto init on creation" );
+    }
+    catch( UaException ex ) {
+      LoggerUtils.errorLogger().error( ex );
+    }
+  }
+
+  static IAtomicValue convertFromOpc( Variant aValue ) {
+    if( aValue.isNull() ) {
+      return IAtomicValue.NULL;
+    }
+    if( aValue.getValue() instanceof UShort ) {
+      UShort ushortVal = (UShort)aValue.getValue();
+
+      return AvUtils.avInt( ushortVal.intValue() );
+    }
+
+    if( aValue.getValue() instanceof UByte ) {
+      UByte ubytetVal = (UByte)aValue.getValue();
+
+      return AvUtils.avInt( ubytetVal.intValue() );
+    }
+
+    IAtomicValue defaultConvertVal = AvUtils.avFromObj( aValue.getValue() );
+
+    if( defaultConvertVal == null ) {
+      LoggerUtils.errorLogger().error( "Cant convert from opc '%s' to IAtomicValue",
+          aValue.getValue().getClass().getName() );
+    }
+
+    return defaultConvertVal;
   }
 
   /**

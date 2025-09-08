@@ -200,7 +200,7 @@ public class OpcToS5DataCfgDocM5Model
         protected void doInit() {
           setNameAndDescription( "Properties", "Properties" ); //$NON-NLS-1$ //$NON-NLS-2$
           setFlags( M5FF_COLUMN | M5FF_DETAIL );
-          // пропришем сразу стандартный продюсер
+          // пропишем сразу стандартный продюсер
           IStringListEdit dfltProducer = new StringArrayList();
           dfltProducer.add( "javaClassName" );
           dfltProducer.add( "org.toxsoft.l2.thd.opc.ua.milo.OpcUaMiloDriverProducer" );
