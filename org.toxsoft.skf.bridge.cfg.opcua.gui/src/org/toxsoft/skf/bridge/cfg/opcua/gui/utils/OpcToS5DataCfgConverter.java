@@ -3,7 +3,6 @@ package org.toxsoft.skf.bridge.cfg.opcua.gui.utils;
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.skide.IGreenWorldRefbooks.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.utils.OpcUaUtils.*;
-
 import java.util.*;
 
 //import org.eclipse.milo.opcua.stack.core.types.builtin.*;
@@ -129,9 +128,14 @@ public class OpcToS5DataCfgConverter {
   private static final String RRI_STATUS_DEVICE_ID = "status.rri.tag.dev.id";
 
   /**
-   * node id чтения статуса НСИ.
+   * node id слова состояния для чтения статуса НСИ.
    */
-  private static final String RRI_STATUS_READ_NODE_ID = "status.rri.read.tag.id";
+  private static final String RRI_STATUS_WS_READ_NODE_ID = "status.rri.ws.read.tag.id";
+
+  /**
+   * индекс в слове состояния для чтения статуса НСИ.
+   */
+  private static final String RRI_STATUS_WS_INDEX = "status.rri.ws.index";
 
   /**
    * аргумент aAddress в IComplexTag::setValue( int aAddress, IAtomicValue aValue ) для установки статуса НСИ.
@@ -163,6 +167,11 @@ public class OpcToS5DataCfgConverter {
    * Strid of refbook item of set RRI comand
    */
   private static final String itemStridSetRRI = "CtrlSystem.SetRRI";
+
+  /**
+   * Strid of refbook item of status RRI
+   */
+  private static final String itemStridStatusRRI = "CtrlSystem.StatusRRI";
 
   /**
    * Strid of refbook item of reset RRI comand
@@ -515,6 +524,12 @@ public class OpcToS5DataCfgConverter {
     int cmdIndexSetRRI = itemSetRRI != null ? itemSetRRI.attrs().getValue( RBATRID_CMD_OPCUA___INDEX ).asInt() : -1;
     int cmdIndexResetRRI = itemSetRRI != null ? itemResetRRI.attrs().getValue( RBATRID_CMD_OPCUA___INDEX ).asInt() : -1;
 
+    // читаем индекс бита откуда "выцеживаем" статус НСИ
+    refbookName = RBID_BITMASK;
+    rbItems = skRefServ.findRefbook( refbookName ).listItems();
+    ISkRefbookItem itemStatusRRI = rbItems.findByKey( itemStridStatusRRI );
+    int indexStatusRRI = itemStatusRRI != null ? itemStatusRRI.attrs().getValue( RBATRID_BITMASK___BITN ).asInt() : -1;
+
     IOptionSetEdit opSet = new OptionSet();
 
     // заполним описание настройки для модуля вцелом
@@ -526,7 +541,8 @@ public class OpcToS5DataCfgConverter {
     String strNodeIdStatusRRI = nodeIdStatusRRI != null ? nodeIdStatusRRI : defaultNodeIdStatusRRI;
 
     // node статуса НСИ Gwid CtrlSystem[CtrlSystem]rtd(rtdStatusRRI)
-    opSet.setStr( RRI_STATUS_READ_NODE_ID, strNodeIdStatusRRI );
+    opSet.setStr( RRI_STATUS_WS_READ_NODE_ID, strNodeIdStatusRRI );
+    opSet.setInt( RRI_STATUS_WS_INDEX, indexStatusRRI );
 
     // справочника Cmd_OPCUA, strid CtrlSystem.SetRRI
     opSet.setInt( RRI_STATUS_CMD_SET_ID, cmdIndexSetRRI );

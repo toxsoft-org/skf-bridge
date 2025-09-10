@@ -499,7 +499,7 @@ public class RefbookGenerator {
 
   public void createPoligonBitMaskRefbook() {
     ISkRefbookService rbServ = conn.coreApi().getService( ISkRefbookService.SERVICE_ID );
-    // create refbook of RRI
+    // create refbook of BITMASK
     ISkRefbook rbBitMasks = rbServ.defineRefbook( REFBOOK_BITMASK_OPCUA );
     // fill refbook
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___ANALOGINPUT_CALIBRATIONWARNING, "Значение за диапазоном 5%",
@@ -569,8 +569,8 @@ public class RefbookGenerator {
         "rtdStateWord", 5, TsLibUtils.EMPTY_STRING, TsLibUtils.EMPTY_STRING );
     addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_MAINSWITCHONLOC, "ВВ включен в Местном",
         "ВВ включен в Местном режиме", "rtdStateWord", 6, TsLibUtils.EMPTY_STRING, "-" );
-    addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_RRI, "Флаг НСИ",
-        "Флаг НСИ 0-надо залить с сервера 1-уже залито", "rtdStateWord", 15, "требуется заливка", "залито с сервера" );
+    addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_STATUSRRI, "Флаг статуса НСИ",
+        "Флаг НСИ 0-надо залить с сервера 1-уже залито", "rtdStateWord", 12, "требуется заливка", "залито с сервера" );
     // not in use in project kz
     // addBitMaskRbItem( rbBitMasks, ITEMID_BITMASK___CTRLSYSTEM_GRVPUSTARTING, "ГР/ВПУ включается",
     // "ГР/ВПУ включается в автомате", "rtdStateWordGrVpu", 0, "окончание автовключения группы",

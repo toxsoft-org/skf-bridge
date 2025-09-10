@@ -646,18 +646,18 @@ public abstract class BaseSysdescrGenerator {
    * @param aDataId - суффикс составного strid
    * @return true если элемент с таким strid есть в справочнике
    */
-  protected ISkRefbookItem existInRriRefbook( String aClassId, String aDataId ) {
+  protected boolean existInRriRefbook( String aClassId, String aDataId ) {
     // читаем справочник НСИ и фильтруем то что предназначено для этого
     ISkRefbookService skRefServ = (ISkRefbookService)conn.coreApi().getService( ISkRefbookService.SERVICE_ID );
-    IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( RBID_BITMASK ).listItems();
+    IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( RBID_RRI_OPCUA ).listItems();
     // создаем id элемента справочника
-    String rbItemStrid = new StringBuffer( aClassId ).append( "." ).append( aDataId.substring( 3 ) ).toString(); //$NON-NLS-1$
+    String rbItemStrid = new StringBuffer( aClassId ).append( "." ).append( aDataId ).toString(); //$NON-NLS-1$
     for( ISkRefbookItem rbItem : rbItems ) {
       if( rbItem.strid().equals( rbItemStrid ) ) {
-        return rbItem;
+        return true;
       }
     }
-    return null;
+    return false;
   }
 
   protected static TsIllegalArgumentRtException invalidParamTypeExcpt( EAtomicType type ) {

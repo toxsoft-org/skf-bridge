@@ -196,7 +196,7 @@ public interface IGreenWorldRefbooks {
   String ITEMID_BITMASK___CTRLSYSTEM_FS3                     = "CtrlSystem.FS3";                     // Проток воды ГЭД
   String ITEMID_BITMASK___CTRLSYSTEM_MAINSWITCHONLOC         = "CtrlSystem.MainSwitchOnLoc";         // ВВ включен в
                                                                                                      // Местном
-  String ITEMID_BITMASK___CTRLSYSTEM_RRI                     = "CtrlSystem.RRI";                     // Флаг НСИ
+  String ITEMID_BITMASK___CTRLSYSTEM_STATUSRRI               = "CtrlSystem.StatusRRI";               // Флаг НСИ
   String ITEMID_BITMASK___CTRLSYSTEM_GRVPUSTARTING           = "CtrlSystem.GRVPUstarting";           // ГР/ВПУ
                                                                                                      // включается
   String ITEMID_BITMASK___CTRLSYSTEM_GRVPUSTOPING            = "CtrlSystem.GRVPUstoping";            // ГР/ВПУ
