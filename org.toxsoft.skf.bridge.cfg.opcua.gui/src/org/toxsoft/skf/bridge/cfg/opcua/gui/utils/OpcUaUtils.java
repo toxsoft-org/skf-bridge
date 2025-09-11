@@ -1935,9 +1935,8 @@ public class OpcUaUtils {
     ISkRefbookService skRefServ = (ISkRefbookService)aConn.coreApi().getService( ISkRefbookService.SERVICE_ID );
     IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( refbookName ).listItems();
     for( ISkRefbookItem rbItem : rbItems ) {
-      String strid = rbItem.strid();
       // выделяем id класса
-      String classId = extractClassId( strid );
+      String classId = extractClassId( rbItem.strid() );
       if( !retVal.hasKey( classId ) ) {
         StringMap<IList<BitIdx2DtoRtData>> rtDataMap = new StringMap<>();
         retVal.put( classId, rtDataMap );
@@ -2019,9 +2018,8 @@ public class OpcUaUtils {
     ISkRefbookService skRefServ = (ISkRefbookService)aConn.coreApi().getService( ISkRefbookService.SERVICE_ID );
     IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( refbookName ).listItems();
     for( ISkRefbookItem rbItem : rbItems ) {
-      String strid = rbItem.strid();
       // выделяем id класса
-      String classId = extractClassId( strid );
+      String classId = extractClassId( rbItem.strid() );
       if( !retVal.hasKey( classId ) ) {
         StringMap<IList<BitIdx2DtoEvent>> rtDataMap = new StringMap<>();
         retVal.put( classId, rtDataMap );
@@ -2054,9 +2052,8 @@ public class OpcUaUtils {
     ISkRefbookService skRefServ = (ISkRefbookService)aConn.coreApi().getService( ISkRefbookService.SERVICE_ID );
     IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( refbookName ).listItems();
     for( ISkRefbookItem rbItem : rbItems ) {
-      String strid = rbItem.strid();
       // выделяем id класса
-      String classId = extractClassId( strid );
+      String classId = extractClassId( rbItem.strid() );
       if( !retVal.hasKey( classId ) ) {
         StringMap<IList<BitIdx2RriDtoAttr>> rriAttrMap = new StringMap<>();
         retVal.put( classId, rriAttrMap );
@@ -2263,6 +2260,52 @@ public class OpcUaUtils {
 
       aDoc.setNodesCfgs( nodesCfgsList );
     }
+  }
+
+  /**
+   * Get item from BitMask refbook
+   *
+   * @param aConn - connection
+   * @param aClassId - classId
+   * @param aDataId - dataId
+   * @return item {@link ISkRefbookItem} or null
+   */
+  public static ISkRefbookItem getFromRriRefbook( ISkConnection aConn, String aClassId, String aDataId ) {
+    // читаем справочник НСИ и фильтруем то что предназначено для этого
+    ISkRefbookService skRefServ = (ISkRefbookService)aConn.coreApi().getService( ISkRefbookService.SERVICE_ID );
+    IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( RBID_BITMASK ).listItems();
+    for( ISkRefbookItem rbItem : rbItems ) {
+      // extract classId
+      String classId = rbItem.strid().split( "\\." )[0]; //$NON-NLS-1$
+      String dataId = rbItem.attrs().getValue( RBATRID_BITMASK___IDENTIFICATOR ).asString();
+      if( dataId.equals( aDataId ) && classId.equals( aClassId ) ) {
+        return rbItem;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Get item from Command refbook
+   *
+   * @param aConn - connection
+   * @param aClassId - classId
+   * @param aDataId - dataId
+   * @return item {@link ISkRefbookItem} or null
+   */
+  public static ISkRefbookItem getFromCmdRefbook( ISkConnection aConn, String aClassId, String aDataId ) {
+    // читаем справочник НСИ и фильтруем то что предназначено для этого
+    ISkRefbookService skRefServ = (ISkRefbookService)aConn.coreApi().getService( ISkRefbookService.SERVICE_ID );
+    IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( RBID_CMD_OPCUA ).listItems();
+    for( ISkRefbookItem rbItem : rbItems ) {
+      // extract classId
+      String classId = rbItem.strid().split( "\\." )[0]; //$NON-NLS-1$
+      String dataId = rbItem.attrs().getValue( RBATRID_CMD_OPCUA___CMDID ).asString();
+      if( dataId.equals( aDataId ) && classId.equals( aClassId ) ) {
+        return rbItem;
+      }
+    }
+    return null;
   }
 
 }

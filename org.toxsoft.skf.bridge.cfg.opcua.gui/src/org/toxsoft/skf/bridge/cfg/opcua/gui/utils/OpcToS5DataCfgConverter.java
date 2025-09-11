@@ -164,19 +164,31 @@ public class OpcToS5DataCfgConverter {
       Gwid.createRtdata( ctrSystemSkid.classId(), ctrSystemSkid.strid(), "rtdStatusRRI" );
 
   /**
+   * Gwid of Gwid of cmd set RRI status
+   */
+  private static final Gwid gwidSetRRI =
+      Gwid.createRtdata( ctrSystemSkid.classId(), ctrSystemSkid.strid(), "cmdSetRRI" );
+
+  /**
+   * Gwid of cmd reset RRI status
+   */
+  private static final Gwid gwidResetRRI =
+      Gwid.createRtdata( ctrSystemSkid.classId(), ctrSystemSkid.strid(), "cmdResetRRI" );
+
+  /**
    * Strid of refbook item of set RRI comand
    */
-  private static final String itemStridSetRRI = "CtrlSystem.SetRRI";
+  // private static final String itemStridSetRRI = "CtrlSystem.SetRRI";
 
   /**
    * Strid of refbook item of status RRI
    */
-  private static final String itemStridStatusRRI = "CtrlSystem.StatusRRI";
+  // private static final String itemStridStatusRRI = "CtrlSystem.StatusRRI";
 
   /**
    * Strid of refbook item of reset RRI comand
    */
-  private static final String itemStridResetRRI = "CtrlSystem.ResetRRI";
+  // private static final String itemStridResetRRI = "CtrlSystem.ResetRRI";
 
   /**
    * Default complex tag for system
@@ -514,20 +526,27 @@ public class OpcToS5DataCfgConverter {
 
     rriDefNodes.put( "rriNodes", rriDefsTree );
 
-    String refbookName = RBID_CMD_OPCUA;
-    ISkRefbookService skRefServ = (ISkRefbookService)aConnection.coreApi().getService( ISkRefbookService.SERVICE_ID );
-    IStridablesList<ISkRefbookItem> rbItems = skRefServ.findRefbook( refbookName ).listItems();
-
-    ISkRefbookItem itemSetRRI = rbItems.findByKey( itemStridSetRRI );
-    ISkRefbookItem itemResetRRI = rbItems.findByKey( itemStridResetRRI );
+    // dima 11.09.25 избавляемся от прошитых rbItemStrid. Фиксированы только Gwid'ы
+    // String refbookName = RBID_CMD_OPCUA;
+    // ISkRefbookService skRefServ = (ISkRefbookService)aConnection.coreApi().getService( ISkRefbookService.SERVICE_ID
+    // );
+    // IStridablesList<ISkRefbookItem> rbItems = skRefServ.findRefbook( refbookName ).listItems();
+    // ISkRefbookItem itemSetRRI = rbItems.findByKey( itemStridSetRRI );
+    // ISkRefbookItem itemResetRRI = rbItems.findByKey( itemStridResetRRI );
+    ISkRefbookItem itemSetRRI = OpcUaUtils.getFromCmdRefbook( aConnection, gwidSetRRI.classId(), gwidSetRRI.propId() );
+    ISkRefbookItem itemResetRRI =
+        OpcUaUtils.getFromCmdRefbook( aConnection, gwidResetRRI.classId(), gwidResetRRI.propId() );
 
     int cmdIndexSetRRI = itemSetRRI != null ? itemSetRRI.attrs().getValue( RBATRID_CMD_OPCUA___INDEX ).asInt() : -1;
     int cmdIndexResetRRI = itemSetRRI != null ? itemResetRRI.attrs().getValue( RBATRID_CMD_OPCUA___INDEX ).asInt() : -1;
 
     // читаем индекс бита откуда "выцеживаем" статус НСИ
-    refbookName = RBID_BITMASK;
-    rbItems = skRefServ.findRefbook( refbookName ).listItems();
-    ISkRefbookItem itemStatusRRI = rbItems.findByKey( itemStridStatusRRI );
+    // refbookName = RBID_BITMASK;
+    // rbItems = skRefServ.findRefbook( refbookName ).listItems();
+    // ISkRefbookItem itemStatusRRI = rbItems.findByKey( itemStridStatusRRI );
+    ISkRefbookItem itemStatusRRI =
+        OpcUaUtils.getFromRriRefbook( aConnection, gwidStatusRRI.classId(), gwidStatusRRI.propId() );
+
     int indexStatusRRI = itemStatusRRI != null ? itemStatusRRI.attrs().getValue( RBATRID_BITMASK___BITN ).asInt() : -1;
 
     IOptionSetEdit opSet = new OptionSet();

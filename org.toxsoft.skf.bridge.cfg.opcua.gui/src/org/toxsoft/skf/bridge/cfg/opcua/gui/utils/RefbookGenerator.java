@@ -1,8 +1,14 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.utils;
 
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
+import static org.toxsoft.core.tslib.utils.TsLibUtils.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.skide.IGreenWorldRefbooks.*;
 
+import java.io.*;
+
+import org.eclipse.swt.widgets.*;
+import org.jopendocument.dom.spreadsheet.*;
+import org.toxsoft.core.tsgui.dialogs.*;
 import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.impl.*;
 import org.toxsoft.core.tslib.av.opset.*;
@@ -11,8 +17,10 @@ import org.toxsoft.core.tslib.bricks.strid.coll.impl.*;
 import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.gw.skid.*;
 import org.toxsoft.core.tslib.utils.*;
+import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.refbooks.lib.*;
 import org.toxsoft.skf.refbooks.lib.impl.*;
+import org.toxsoft.uskat.core.*;
 import org.toxsoft.uskat.core.api.objserv.*;
 import org.toxsoft.uskat.core.api.sysdescr.dto.*;
 import org.toxsoft.uskat.core.connection.*;
@@ -62,6 +70,7 @@ public class RefbookGenerator {
    * server connection
    */
   private final ISkConnection conn;
+  private final Shell         shell;
 
   /**
    * Attribute {@link ISkRefbook#attrs() #RBATRID_RRI_OPCUA___INDEX}.
@@ -232,9 +241,11 @@ public class RefbookGenerator {
    * Constructor.
    *
    * @param aConn - server
+   * @param aShell - curren shell
    */
-  public RefbookGenerator( ISkConnection aConn ) {
+  public RefbookGenerator( ISkConnection aConn, Shell aShell ) {
     conn = aConn;
+    shell = aShell;
   }
 
   /**
@@ -851,18 +862,122 @@ public class RefbookGenerator {
     b.setValue( RBATRID_BITMASK___BITN, AvUtils.avInt( aBitNumber ) );
     // get rriId from item id
     String[] parts = aItemId.split( "\\." ); //$NON-NLS-1$
-    if( isRriParam ) {
-      b.setValue( RBATRID_BITMASK___IDENTIFICATOR, AvUtils.avStr( "rri" + parts[1] ) );
+    String prefix = isRriParam ? "rri" : "rtd";
+
+    // check if already has prefix
+    String idPrefix = parts[1].substring( 0, 3 );
+    if( idPrefix.compareTo( prefix ) == 0 ) {
+      prefix = EMPTY_STRING;
     }
-    else {
-      b.setValue( RBATRID_BITMASK___IDENTIFICATOR, AvUtils.avStr( "rtd" + parts[1] ) );
-    }
+    b.setValue( RBATRID_BITMASK___IDENTIFICATOR, AvUtils.avStr( prefix + parts[1] ) );
     b.setValue( RBATRID_BITMASK___IDW, AvUtils.avStr( aWordId ) );
     b.setValue( RBATRID_BITMASK___OFF, AvUtils.avStr( aFallStr ) );
     b.setValue( RBATRID_BITMASK___ON, AvUtils.avStr( aFrontStr ) );
     IDtoFullObject rbItem = b.buildItem();
     aRefbook.defineItem( rbItem );
 
+  }
+
+  public void importPoligonBitMaskRefbook( File aRefbookFile ) {
+    ISkRefbookService rbServ = conn.coreApi().getService( ISkRefbookService.SERVICE_ID );
+    // ask user to rewrite existing refbook
+    ISkRefbook rbBitMasks = rbServ.findRefbook( REFBOOK_BITMASK_OPCUA.id() );
+
+    if( rbBitMasks != null && TsDialogUtils.askYesNoCancel( shell, "Справочник %s существует. Хотите перезалить его?",
+        rbBitMasks.attrs().getValue( ISkHardConstants.AID_NAME ).asString() ) != ETsDialogCode.YES ) {
+      return;
+    }
+    // удаляем существующий
+    rbServ.removeRefbook( REFBOOK_BITMASK_OPCUA.id() );
+
+    // create refbook of BITMASK
+    rbBitMasks = rbServ.defineRefbook( REFBOOK_BITMASK_OPCUA );
+    try {
+      SpreadSheet book = SpreadSheet.createFromFile( aRefbookFile );
+      // scan all pages except first
+      for( int sheetNo = 1; sheetNo < book.getSheetCount(); sheetNo++ ) {
+        Sheet classSheet = book.getSheet( sheetNo );
+        // get name of class
+        String className = classSheet.getName();
+        fillClassRbItems( rbBitMasks, classSheet, className );
+      }
+    }
+    catch( IOException ex ) {
+      LoggerUtils.errorLogger().error( ex );
+    }
+  }
+
+  private void fillClassRbItems( ISkRefbook rbBitMasks, Sheet classSheet, String className ) {
+    int emptyRows = 0;
+    for( int rowNum = 2; rowNum < classSheet.getRowCount(); rowNum++ ) {
+      if( emptyRows >= 3 ) {
+        return;
+      }
+      // read row fields
+      String idw = getIdW( classSheet, rowNum );
+      if( idw.isBlank() ) {
+        emptyRows++;
+        continue;
+      }
+      else {
+        emptyRows = 0;
+      }
+      String bitNum = getBitN( classSheet, rowNum );
+      String identificator = getIdentficator( classSheet, rowNum );
+      if( identificator.isBlank() ) {
+        continue;
+      }
+      String name = getName( classSheet, rowNum );
+      String descr = getDescription( classSheet, rowNum );
+      String on = getOn( classSheet, rowNum );
+      String off = getOff( classSheet, rowNum );
+      // create itemId
+      String itemId = className + "." + identificator + "." + idw;
+      // fill refbook
+      addBitMaskRbItem( rbBitMasks, itemId, name, descr, idw, Integer.parseInt( bitNum ), off, on,
+          identificator.startsWith( "rri" ) );
+    }
+  }
+
+  private static int COLUMN_BITMASK_IDW           = 0;
+  private static int COLUMN_BITMASK_BITN          = 1;
+  private static int COLUMN_BITMASK_IDENTIFICATOR = 2;
+  private static int COLUMN_BITMASK_NAME          = 3;
+  private static int COLUMN_BITMASK_DESCR         = 4;
+  private static int COLUMN_BITMASK_ON            = 5;
+  private static int COLUMN_BITMASK_OFF           = 6;
+
+  private static String getStringValue( Sheet aSheet, int aColNo, int aRowNo ) {
+    MutableCell<SpreadSheet> cell = aSheet.getCellAt( aColNo, aRowNo );
+    return cell.getTextValue();
+  }
+
+  private static String getIdW( Sheet aSheet, int aRowNo ) {
+    return getStringValue( aSheet, COLUMN_BITMASK_IDW, aRowNo );
+  }
+
+  private static String getBitN( Sheet aSheet, int aRowNo ) {
+    return getStringValue( aSheet, COLUMN_BITMASK_BITN, aRowNo );
+  }
+
+  private static String getIdentficator( Sheet aSheet, int aRowNo ) {
+    return getStringValue( aSheet, COLUMN_BITMASK_IDENTIFICATOR, aRowNo );
+  }
+
+  private static String getName( Sheet aSheet, int aRowNo ) {
+    return getStringValue( aSheet, COLUMN_BITMASK_NAME, aRowNo );
+  }
+
+  private static String getDescription( Sheet aSheet, int aRowNo ) {
+    return getStringValue( aSheet, COLUMN_BITMASK_DESCR, aRowNo );
+  }
+
+  private static String getOn( Sheet aSheet, int aRowNo ) {
+    return getStringValue( aSheet, COLUMN_BITMASK_ON, aRowNo );
+  }
+
+  private static String getOff( Sheet aSheet, int aRowNo ) {
+    return getStringValue( aSheet, COLUMN_BITMASK_OFF, aRowNo );
   }
 
 }

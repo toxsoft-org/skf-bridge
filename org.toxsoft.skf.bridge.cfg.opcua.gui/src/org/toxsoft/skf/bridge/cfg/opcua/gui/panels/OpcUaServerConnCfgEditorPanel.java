@@ -5,13 +5,13 @@ import static org.toxsoft.skf.bridge.cfg.opcua.gui.IBridgeCfgOpcUaResources.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
-import java.io.File;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
+import org.jopendocument.dom.spreadsheet.*;
 import org.toxsoft.core.tsgui.bricks.actions.*;
 import org.toxsoft.core.tsgui.bricks.ctx.ITsGuiContext;
 import org.toxsoft.core.tsgui.bricks.ctx.impl.TsGuiContext;
@@ -39,7 +39,7 @@ import org.toxsoft.core.txtproj.lib.storage.IKeepablesStorage;
 import org.toxsoft.core.txtproj.lib.workroom.ITsWorkroom;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.Activator;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
-import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.OpcUaUtils;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 import org.toxsoft.skf.bridge.cfg.opcua.service.IOpcUaServerConnCfgService;
 import org.toxsoft.skf.bridge.cfg.opcua.service.impl.OpcUaServerConnCfgService;
 import org.toxsoft.uskat.core.connection.ISkConnection;
@@ -77,6 +77,14 @@ public class OpcUaServerConnCfgEditorPanel
 
   TsActionDef ACDEF_REMOVE_CACHE = TsActionDef.ofPush2( REMOVE_CACHED_NODES_OPC_UA_ACT_ID,
       STR_N_REMOVE_CACHED_NODES_OPC_UA, STR_D_REMOVE_CACHED_NODES_OPC_UA, ICONID_CLEAR_CASH );
+
+  /**
+   * id действия "import BitMask refbook"
+   */
+  final static String IMPORT_BITMASK_REFBOOK_ACT_ID = "import_BitMask_refbook_act_id"; //$NON-NLS-1$
+
+  TsActionDef ACDEF_IMPORT_BITMASK_REFBOOK = TsActionDef.ofPush2( IMPORT_BITMASK_REFBOOK_ACT_ID,
+      STR_N_IMPORT_BITMASK_REFBOOK, STR_D_IMPORT_BITMASK_REFBOOK, ICONID_IMPORT_BLACK );
 
   /**
    * Конструктор панели.
@@ -123,6 +131,8 @@ public class OpcUaServerConnCfgEditorPanel
             aActs.add( ITsStdActionDefs.ACDEF_SEPARATOR );
             aActs.add( ACDEF_BROWSE_CONN );
             aActs.add( ACDEF_REMOVE_CACHE );
+            aActs.add( ITsStdActionDefs.ACDEF_SEPARATOR );
+            aActs.add( ACDEF_IMPORT_BITMASK_REFBOOK );
 
             ITsToolbar toolbar =
 
@@ -155,6 +165,18 @@ public class OpcUaServerConnCfgEditorPanel
                   IKeepablesStorage storage = workroom.getStorage( Activator.PLUGIN_ID ).ktorStorage();
 
                   storage.removeSection( OpcUaUtils.getCachedTreeSectionName( selConfig ) );
+                }
+                break;
+              case IMPORT_BITMASK_REFBOOK_ACT_ID:
+                FileDialog dlg = new FileDialog( getShell() );
+                dlg.setFilterExtensions( new String[] { "*.ods", "*.*" } ); //$NON-NLS-1$ //$NON-NLS-2$
+                String filePath = dlg.open();
+                if( filePath != null ) {
+                  File refbookFile = new File( filePath );
+                  RefbookGenerator rbImporter = new RefbookGenerator( connSup.defConn(), getShell() );
+                  rbImporter.importPoligonBitMaskRefbook( refbookFile );
+                  // notify user
+                  TsDialogUtils.info( getShell(), "Справочник битовых масок импортирован" );
                 }
                 break;
               default:

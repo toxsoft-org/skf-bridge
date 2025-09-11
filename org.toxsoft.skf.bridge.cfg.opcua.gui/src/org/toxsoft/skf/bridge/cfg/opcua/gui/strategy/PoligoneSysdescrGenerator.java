@@ -66,7 +66,7 @@ public class PoligoneSysdescrGenerator
     // проверка справочников
     ISkRefbookService rbServ = conn.coreApi().getService( ISkRefbookService.SERVICE_ID );
     // create all essential refbooks: RRI_OPCUA, Cmd_OPCUA, BitMask
-    RefbookGenerator rbGenerator = new RefbookGenerator( conn );
+    RefbookGenerator rbGenerator = new RefbookGenerator( conn, getShell() );
     if( rbServ.findRefbook( RefbookGenerator.REFBOOK_CMDS_OPCUA.id() ) == null ) {
       // Cmd_OPCUA
       rbGenerator.createPoligonCommandsRefbook();
@@ -283,7 +283,7 @@ public class PoligoneSysdescrGenerator
       Variant value = dValue.getValue();
       IAtomicValue av = convertFromOpc( value );
       // check if Gwid in bitMask refbook, than get bit value from state word
-      ISkRefbookItem rbBitMaskItem = getFromRriRefbook( aGwid.classId(), aGwid.propId() );
+      ISkRefbookItem rbBitMaskItem = OpcUaUtils.getFromRriRefbook( conn, aGwid.classId(), aGwid.propId() );
       if( rbBitMaskItem != null ) {
         // get value bit number and extract value
         int bitNumber = rbBitMaskItem.attrs().getInt( RBATRID_BITMASK___BITN );
@@ -303,27 +303,6 @@ public class PoligoneSysdescrGenerator
     catch( UaException ex ) {
       LoggerUtils.errorLogger().error( ex );
     }
-  }
-
-  /**
-   * Проверяет наличие в справочнике RBID_RRI_OPCUA элемента с составным strid
-   *
-   * @param aClassId - префикс составного strid
-   * @param aDataId - суффикс составного strid
-   * @return true если элемент с таким strid есть в справочнике
-   */
-  protected ISkRefbookItem getFromRriRefbook( String aClassId, String aDataId ) {
-    // читаем справочник НСИ и фильтруем то что предназначено для этого
-    ISkRefbookService skRefServ = (ISkRefbookService)conn.coreApi().getService( ISkRefbookService.SERVICE_ID );
-    IList<ISkRefbookItem> rbItems = skRefServ.findRefbook( RBID_BITMASK ).listItems();
-    // создаем id элемента справочника
-    String rbItemStrid = new StringBuffer( aClassId ).append( "." ).append( aDataId.substring( 3 ) ).toString(); //$NON-NLS-1$
-    for( ISkRefbookItem rbItem : rbItems ) {
-      if( rbItem.strid().equals( rbItemStrid ) ) {
-        return rbItem;
-      }
-    }
-    return null;
   }
 
   static IAtomicValue convertFromOpc( Variant aValue ) {
