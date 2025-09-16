@@ -11,6 +11,7 @@ import static org.toxsoft.skf.bridge.cfg.modbus.gui.km5.ISkResources.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.km5.ISkResources.*;
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
+import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.tsgui.bricks.actions.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tsgui.m5.*;
@@ -33,6 +34,7 @@ import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.panels.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.type.*;
+import org.toxsoft.skf.bridge.cfg.modbus.gui.utils.*;
 import org.toxsoft.skf.refbooks.lib.*;
 import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.gui.conn.*;
@@ -307,7 +309,7 @@ public class ModbusNodesForCfgM5Model
     super( MODEL_ID, IAtomicValue.class );
 
     addFieldDefs( MODBUS_DEVICE, REGISTER );
-    if( checkTranslatorRefbook( aaContext ) ) {
+    if( ensureTranslatorRefbook( aaContext ) ) {
       addFieldDefs( REG_TRANSLATOR );
     }
 
@@ -343,17 +345,18 @@ public class ModbusNodesForCfgM5Model
 
   }
 
-  private static boolean checkTranslatorRefbook( ITsGuiContext aContext ) {
+  private static boolean ensureTranslatorRefbook( ITsGuiContext aContext ) {
     ISkConnectionSupplier connSupplier = aContext.get( ISkConnectionSupplier.class );
     ISkConnection conn = connSupplier.defConn();
 
     ISkRefbookService skRefServ = (ISkRefbookService)conn.coreApi().getService( ISkRefbookService.SERVICE_ID );
     ISkRefbook intervalsRefbook = skRefServ.findRefbook( REG_TRANSLATOR_REFBOOK );
-
-    // Проверка наличия справочника
-    return intervalsRefbook != null;
-    // TDOD
-    // Проверка правильности структуры справочника - атрибутов
+    // create all essential refbooks
+    ModbusRefbookGenerator rbGenerator = new ModbusRefbookGenerator( conn, aContext.get( Shell.class ) );
+    if( intervalsRefbook == null ) {
+      rbGenerator.createTranslatorsRb();
+    }
+    return true;
   }
 
   @Override
