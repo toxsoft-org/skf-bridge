@@ -38,7 +38,7 @@ public class SkidePluginBridgeCfgModbus
 
   @Override
   protected void doCreateUnits( ITsGuiContext aContext, IStridablesListEdit<ISkideUnit> aUnitsList ) {
-    aUnitsList.add( new SkideUnitBridgeCfgModbusS5Mapping( aContext, this ) );
+    aUnitsList.add( new SkideUnitBridgeCfgModbusSkMapping( aContext, this ) );
     // aUnitsList.add( new SkideUnitBridgeCfgOpcUaToS5( aContext, this ) );
   }
 

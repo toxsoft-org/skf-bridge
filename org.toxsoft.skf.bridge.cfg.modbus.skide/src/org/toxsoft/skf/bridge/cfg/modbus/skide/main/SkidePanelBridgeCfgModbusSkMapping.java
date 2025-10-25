@@ -15,7 +15,7 @@ import org.toxsoft.uskat.core.gui.conn.*;
  *
  * @author max
  */
-public class SkideUnitPanelBridgeCfgModbusS5Mapping
+public class SkidePanelBridgeCfgModbusSkMapping
     extends AbstractSkideUnitPanel {
 
   /**
@@ -24,7 +24,7 @@ public class SkideUnitPanelBridgeCfgModbusS5Mapping
    * @param aContext ITsGuiContext - context.
    * @param aUnit ISkideUnit - unit.
    */
-  public SkideUnitPanelBridgeCfgModbusS5Mapping( ITsGuiContext aContext, ISkideUnit aUnit ) {
+  public SkidePanelBridgeCfgModbusSkMapping( ITsGuiContext aContext, ISkideUnit aUnit ) {
     super( aContext, aUnit );
   }
 

@@ -17,7 +17,7 @@ import org.toxsoft.skide.core.api.impl.*;
  *
  * @author max
  */
-public class SkideUnitBridgeCfgModbusS5Mapping
+public class SkideUnitBridgeCfgModbusSkMapping
     extends AbstractSkideUnit {
 
   /**
@@ -25,19 +25,19 @@ public class SkideUnitBridgeCfgModbusS5Mapping
    */
   public static final String UNIT_ID = SKIDE_FULL_ID + ".unit.bridge.cfg.modbus.s5.mapping"; //$NON-NLS-1$
 
-  SkideUnitBridgeCfgModbusS5Mapping( ITsGuiContext aContext, AbstractSkidePlugin aCreator ) {
+  SkideUnitBridgeCfgModbusSkMapping( ITsGuiContext aContext, AbstractSkidePlugin aCreator ) {
     super( UNIT_ID, OptionSetUtils.createOpSet( //
         TSID_NAME, STR_UNIT_BRIDGE_CFG_MODBUS, //
         TSID_DESCRIPTION, STR_UNIT_BRIDGE_CFG_MODBUS_D, //
         OPDEF_SKIDE_UNIT_CATEGORY, UCATEGID_EXTERNAL_SYSTEMS, //
-        TSID_ICON_ID, ICONID_APP_MODBUS_EDITOR //
+        TSID_ICON_ID, ICONID_APP_MODBUS_INOUT //
     ), aContext, aCreator );
     unitActions().add( ACDEF_ABOUT );
   }
 
   @Override
   protected AbstractSkideUnitPanel doCreateUnitPanel( ITsGuiContext aContext ) {
-    return new SkideUnitPanelBridgeCfgModbusS5Mapping( aContext, this );
+    return new SkidePanelBridgeCfgModbusSkMapping( aContext, this );
   }
 
 }
