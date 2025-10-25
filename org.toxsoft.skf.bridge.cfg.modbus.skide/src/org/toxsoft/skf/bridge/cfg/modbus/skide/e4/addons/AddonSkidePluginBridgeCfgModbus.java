@@ -20,13 +20,16 @@ public class AddonSkidePluginBridgeCfgModbus
    */
   public AddonSkidePluginBridgeCfgModbus() {
     super( Activator.PLUGIN_ID );
-    // dima 18.12.24 FIXME тупо заплатка для того чтобы использовать в SkIDE enum'ы предметной области проекта VALCOM
-    // ValcomUtils.initialize();
   }
 
   // ------------------------------------------------------------------------------------
   // MwsAbstractAddon
   //
+
+  @Override
+  protected void doRegisterQuants( IQuantRegistrator aQuantRegistrator ) {
+    aQuantRegistrator.registerQuant( new org.toxsoft.skf.bridge.cfg.modbus.gui.QuantBridgeCfgModbus() );
+  }
 
   @Override
   protected void initApp( IEclipseContext aAppContext ) {
@@ -37,12 +40,6 @@ public class AddonSkidePluginBridgeCfgModbus
   @Override
   protected void initWin( IEclipseContext aWinContext ) {
     ISkidePluginBridgeCfgModbusConstants.init( aWinContext );
-    //
-  }
-
-  @Override
-  protected void doRegisterQuants( IQuantRegistrator aQuantRegistrator ) {
-    aQuantRegistrator.registerQuant( new org.toxsoft.skf.bridge.cfg.modbus.gui.QuantBridgeCfgModbus() );
   }
 
 }

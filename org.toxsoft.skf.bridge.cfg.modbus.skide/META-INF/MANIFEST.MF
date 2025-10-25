@@ -28,4 +28,5 @@ Automatic-Module-Name: org.toxsoft.skf.bridge.cfg.modbus.skide
 Bundle-ActivationPolicy: lazy
 Export-Package: org.toxsoft.skf.bridge.cfg.modbus.skide,
  org.toxsoft.skf.bridge.cfg.modbus.skide.e4.addons,
+ org.toxsoft.skf.bridge.cfg.modbus.skide.l10n,
  org.toxsoft.skf.bridge.cfg.modbus.skide.main

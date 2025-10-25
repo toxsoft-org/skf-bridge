@@ -2,6 +2,7 @@ package org.toxsoft.skf.bridge.cfg.modbus.skide.main;
 
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
 import static org.toxsoft.skf.bridge.cfg.modbus.skide.ISkidePluginBridgeCfgModbusConstants.*;
+import static org.toxsoft.skf.bridge.cfg.modbus.skide.l10n.ISkfBridgeCfgModbusSkideSharedResources.*;
 import static org.toxsoft.skide.core.ISkideCoreConstants.*;
 
 import org.toxsoft.core.tsgui.bricks.ctx.*;
@@ -29,8 +30,8 @@ public class SkidePluginBridgeCfgModbus
 
   SkidePluginBridgeCfgModbus() {
     super( SKIDE_PLUGIN_ID, OptionSetUtils.createOpSet( //
-        TSID_NAME, "STR_SKIDE_PLUGIN_BRIDGE_CFG_OPC_UA", //
-        TSID_DESCRIPTION, "STR_SKIDE_PLUGIN_BRIDGE_CFG_OPC_UA_D", //
+        TSID_NAME, STR_PLUGIN_BRIDGE_CFG_MODBUS, //
+        TSID_DESCRIPTION, STR_PLUGIN_BRIDGE_CFG_MODBUS_D, //
         TSID_ICON_ID, ICONID_APP_MODBUS_EDITOR //
     ) );
   }

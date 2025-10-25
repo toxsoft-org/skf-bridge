@@ -3,7 +3,7 @@ package org.toxsoft.skf.bridge.cfg.modbus.skide.main;
 import static org.toxsoft.core.tsgui.bricks.actions.ITsStdActionDefs.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
 import static org.toxsoft.skf.bridge.cfg.modbus.skide.ISkidePluginBridgeCfgModbusConstants.*;
-import static org.toxsoft.skf.bridge.cfg.modbus.skide.main.ISkResources.*;
+import static org.toxsoft.skf.bridge.cfg.modbus.skide.l10n.ISkfBridgeCfgModbusSkideSharedResources.*;
 import static org.toxsoft.skide.core.ISkideCoreConstants.*;
 import static org.toxsoft.skide.core.api.ucateg.ISkideUnitCategoryConstants.*;
 
@@ -27,8 +27,8 @@ public class SkideUnitBridgeCfgModbusS5Mapping
 
   SkideUnitBridgeCfgModbusS5Mapping( ITsGuiContext aContext, AbstractSkidePlugin aCreator ) {
     super( UNIT_ID, OptionSetUtils.createOpSet( //
-        TSID_NAME, STR_N_MODBUS_S5_CONFIG_EDITOR, //
-        TSID_DESCRIPTION, STR_D_MODBUS_S5_CONFIG_EDITOR, //
+        TSID_NAME, STR_UNIT_BRIDGE_CFG_MODBUS, //
+        TSID_DESCRIPTION, STR_UNIT_BRIDGE_CFG_MODBUS_D, //
         OPDEF_SKIDE_UNIT_CATEGORY, UCATEGID_EXTERNAL_SYSTEMS, //
         TSID_ICON_ID, ICONID_APP_MODBUS_EDITOR //
     ), aContext, aCreator );
