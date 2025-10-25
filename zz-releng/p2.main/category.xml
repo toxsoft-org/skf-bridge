@@ -9,6 +9,8 @@
    <bundle id="org.toxsoft.skf.bridge.gui"/>
    <bundle id="org.toxsoft.skf.bridge.cfg.opcua.gui"/>
    <bundle id="org.toxsoft.skf.bridge.cfg.opcua.skide"/>
+   <bundle id="org.toxsoft.skf.bridge.cfg.modbus.gui"/>
+   <bundle id="org.toxsoft.skf.bridge.cfg.modbus.skide"/>
    <bundle id="org.toxsoft.skf.bridge.s5"/>
    <bundle id="org.toxsoft.skf.bridge.s5.skadmin"/>
 
@@ -17,6 +19,8 @@
    <bundle id="org.toxsoft.skf.bridge.gui.source"/>
    <bundle id="org.toxsoft.skf.bridge.cfg.opcua.gui.source"/>
    <bundle id="org.toxsoft.skf.bridge.cfg.opcua.skide.source"/>
+   <bundle id="org.toxsoft.skf.bridge.cfg.modbus.gui.source"/>
+   <bundle id="org.toxsoft.skf.bridge.cfg.modbus.skide.source"/>
    <bundle id="org.toxsoft.skf.bridge.s5.source"/>
    <bundle id="org.toxsoft.skf.bridge.s5.skadmin.source"/>
 
