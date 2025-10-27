@@ -21,7 +21,7 @@ import org.toxsoft.core.tslib.coll.*;
 public interface ModbusDeviceOptionsUtils {
 
   IDataDef OP_TCP_IP_ADDRESS = create( "ip.address", STRING, //$NON-NLS-1$
-      TSID_NAME, STR_MDEV_TCP_IP_ADDRESS_D, //
+      TSID_NAME, STR_MDEV_TCP_IP_ADDRESS, //
       TSID_DESCRIPTION, STR_MDEV_TCP_IP_ADDRESS_D, //
       TSID_DEFAULT_VALUE, avStr( "127.0.0.1" ) //
   ); //

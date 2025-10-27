@@ -75,15 +75,11 @@ public class ModbusDeviceM5Model
   public M5AttributeFieldDef<ModbusDevice> IS_TCP_INDEX =
       new M5AttributeFieldDef<>( FID_IS_TCP_INDEX, EAtomicType.BOOLEAN, //
           TSID_NAME, STR_MDEV_IS_TCP, //
-          TSID_DESCRIPTION, STR_MDEV_IS_TCP_D //
+          TSID_DESCRIPTION, STR_MDEV_IS_TCP_D, //
+          TSID_FORMAT_STRING, "%Б[TCP|RTU]", //$NON-NLS-1$
+          M5_OPDEF_FLAGS, avInt( M5FF_COLUMN ), //
+          TSID_DEFAULT_VALUE, AV_TRUE //
       ) {
-
-        @Override
-        protected void doInit() {
-          setFlags( M5FF_COLUMN );
-
-          setDefaultValue( avBool( true ) );
-        }
 
         protected IAtomicValue doGetFieldValue( ModbusDevice aEntity ) {
           return avBool( aEntity.isTcp() );
