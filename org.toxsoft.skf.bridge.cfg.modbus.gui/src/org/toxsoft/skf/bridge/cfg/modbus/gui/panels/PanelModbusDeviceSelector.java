@@ -1,7 +1,7 @@
 package org.toxsoft.skf.bridge.cfg.modbus.gui.panels;
 
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
-import static org.toxsoft.skf.bridge.cfg.modbus.gui.panels.ISkResources.*;
+import static org.toxsoft.skf.bridge.cfg.modbus.gui.l10n.ISkBridgeCfgModbusGuiSharedResources.*;
 
 import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
@@ -95,7 +95,7 @@ public class PanelModbusDeviceSelector
    * @return TCPAddress - выбранный Modbus Device или <b>null</b> в случае отказа от выбора
    */
   public static ModbusDevice selectModbusDevice( ITsGuiContext aTsContext, ModbusDevice aInitDev ) {
-    ITsDialogInfo cdi = new TsDialogInfo( aTsContext, STR_MSG_SELECT_TCP_ADDR, STR_DESCR_SELECT_TCP_ADDR );
+    ITsDialogInfo cdi = new TsDialogInfo( aTsContext, STR_SELECT_MODBUS_DEVICE, STR_SELECT_MODBUS_DEVICE_D );
 
     IDialogPanelCreator<ModbusDevice, ITsGuiContext> creator = PanelModbusDeviceSelector::new;
     TsDialog<ModbusDevice, ITsGuiContext> d = new TsDialog<>( cdi, aInitDev, aTsContext, creator );

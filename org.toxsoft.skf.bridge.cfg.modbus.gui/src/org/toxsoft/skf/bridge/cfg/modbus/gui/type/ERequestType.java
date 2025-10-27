@@ -1,98 +1,67 @@
 package org.toxsoft.skf.bridge.cfg.modbus.gui.type;
 
-import static org.toxsoft.skf.bridge.cfg.modbus.gui.type.ISkResources.*;
+import static org.toxsoft.skf.bridge.cfg.modbus.gui.l10n.ISkBridgeCfgModbusGuiSharedResources.*;
 
 import org.toxsoft.core.tslib.bricks.keeper.*;
-import org.toxsoft.core.tslib.bricks.keeper.AbstractEntityKeeper.*;
+import org.toxsoft.core.tslib.bricks.keeper.std.*;
 import org.toxsoft.core.tslib.bricks.strid.*;
-import org.toxsoft.core.tslib.bricks.strio.*;
+import org.toxsoft.core.tslib.bricks.strid.coll.*;
+import org.toxsoft.core.tslib.bricks.strid.coll.impl.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 
 /**
- * Типы запросов к modbus
+ * The MODBUS request ype for data I/O.
  *
- * @author max
+ * @author AUTHOR_NAME
  */
 public enum ERequestType
     implements IStridable {
 
   /**
-   * Чтение дискретного выхода
+   * Read discrete output.
    */
-  DO( "do", STR_N_REQ_TYPE_DO ), // //$NON-NLS-1$
+  DO( "do", STR_ERT_DO, STR_ERT_DO_D ), // //$NON-NLS-1$
 
   /**
-   * Чтение аналогового выхода
+   * Read analog output.
    */
-  AO( "ao", STR_N_REQ_TYPE_AO ), // //$NON-NLS-1$
+  AO( "ao", STR_ERT_AO, STR_ERT_AO_D ), // //$NON-NLS-1$
 
   /**
-   * Чтение дискретного входа
+   * Read discrete input.
    */
-  DI( "di", STR_N_REQ_TYPE_DI ), // //$NON-NLS-1$
+  DI( "di", STR_ERT_DI_D, STR_ERT_DI_D ), // //$NON-NLS-1$
 
   /**
-   * Чтение аналогового входа
+   * Read analog input.
    */
-  AI( "ai", STR_N_REQ_TYPE_AI ); // //$NON-NLS-1$
+  AI( "ai", STR_ERT_AI_D, STR_ERT_AI_D ); // //$NON-NLS-1$
 
   /**
-   * The keeper ID.
+   * The registered keeper ID.
    */
   public static final String KEEPER_ID = "ERequestType"; //$NON-NLS-1$
 
   /**
-   * Keeper singleton.
+   * The keeper singleton.
    */
-  public static final IEntityKeeper<ERequestType> KEEPER =
-      new AbstractEntityKeeper<>( ERequestType.class, EEncloseMode.ENCLOSES_BASE_CLASS, ERequestType.DI ) {
+  public static final IEntityKeeper<ERequestType> KEEPER = new StridableEnumKeeper<>( ERequestType.class );
 
-        @Override
-        protected void doWrite( IStrioWriter aSw, ERequestType aEntity ) {
-          aSw.writeAsIs( aEntity.name() );
-        }
+  private static IStridablesListEdit<ERequestType> list = null;
 
-        @Override
-        protected ERequestType doRead( IStrioReader aSr ) {
-          String id = aSr.readIdPath();
-          return ERequestType.valueOf( id );
-        }
+  private final String id;
+  private final String name;
+  private final String description;
 
-      };
-
-  /**
-   * Returns the constant by the ID.
-   *
-   * @param aId String - the ID
-   * @return {@link ERequestType} - found constant
-   * @throws TsNullArgumentRtException any argument = <code>null</code>
-   * @throws TsItemNotFoundRtException no constant found by specified ID
-   */
-  public static ERequestType getById( String aId ) {
-    for( ERequestType type : values() ) {
-      if( type.id().equals( aId ) ) {
-        return type;
-      }
-    }
-    throw new TsItemNotFoundRtException( "Couldnot find ERequestType with id: %s", aId ); //$NON-NLS-1$
-  }
-
-  /**
-   * Determines if the item presents discret type.
-   *
-   * @return true - item presents discret type, false - overwise.
-   */
-  public boolean isDiscret() {
-    return this == DO || this == DI;
-  }
-
-  private String id;
-  private String name;
-
-  ERequestType( String aId, String aName ) {
+  ERequestType( String aId, String aName, String aDescription ) {
     id = aId;
     name = aName;
+    description = aDescription;
   }
+
+  // --------------------------------------------------------------------------
+  // IStridable
+  //
 
   @Override
   public String id() {
@@ -106,6 +75,77 @@ public enum ERequestType
 
   @Override
   public String description() {
-    return name;
+    return description;
   }
+
+  // ------------------------------------------------------------------------------------
+  // API
+  //
+
+  /**
+   * Determines if the item presents discrete type.
+   *
+   * @return boolean - <code>true</code> - item presents discrete I/O, <code>false</code> - analog I/O
+   */
+  public boolean isDiscret() {
+    return this == DO || this == DI;
+  }
+
+  // ----------------------------------------------------------------------------------
+  // Stridable enum common API
+  //
+
+  /**
+   * Returns all constants in single list.
+   *
+   * @return {@link IStridablesList}&lt; {@link ERequestType} &gt; - list of constants in order of declaraion
+   */
+  public static IStridablesList<ERequestType> asList() {
+    if( list == null ) {
+      list = new StridablesList<>( values() );
+    }
+    return list;
+  }
+
+  /**
+   * Returns the constant by the ID.
+   *
+   * @param aId String - the ID
+   * @return {@link ERequestType} - found constant
+   * @throws TsNullArgumentRtException any argument = <code>null</code>
+   * @throws TsItemNotFoundRtException no constant found by specified ID
+   */
+  public static ERequestType getById( String aId ) {
+    return asList().getByKey( aId );
+  }
+
+  /**
+   * Finds the constant by the name.
+   *
+   * @param aName String - the name
+   * @return {@link ERequestType} - found constant or <code>null</code>
+   * @throws TsNullArgumentRtException any argument = <code>null</code>
+   */
+  public static ERequestType findByName( String aName ) {
+    TsNullArgumentRtException.checkNull( aName );
+    for( ERequestType item : values() ) {
+      if( item.name.equals( aName ) ) {
+        return item;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the constant by the name.
+   *
+   * @param aName String - the name
+   * @return {@link ERequestType} - found constant
+   * @throws TsNullArgumentRtException any argument = <code>null</code>
+   * @throws TsItemNotFoundRtException no constant found by specified name
+   */
+  public static ERequestType getByName( String aName ) {
+    return TsItemNotFoundRtException.checkNull( findByName( aName ) );
+  }
+
 }

@@ -2,14 +2,9 @@ package org.toxsoft.skf.bridge.cfg.modbus.gui.utils;
 
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
-import static org.toxsoft.core.tslib.utils.TsLibUtils.*;
-import static org.toxsoft.skf.bridge.cfg.opcua.gui.skide.IGreenWorldRefbooks.*;
-import static org.toxsoft.skf.bridge.cfg.modbus.gui.km5.ISkResources.*;
-
-import java.io.*;
+import static org.toxsoft.skf.bridge.cfg.modbus.gui.l10n.ISkBridgeCfgModbusGuiSharedResources.*;
 
 import org.eclipse.swt.widgets.*;
-import org.toxsoft.core.tsgui.dialogs.*;
 import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.impl.*;
 import org.toxsoft.core.tslib.av.opset.*;
@@ -17,12 +12,9 @@ import org.toxsoft.core.tslib.av.opset.impl.*;
 import org.toxsoft.core.tslib.bricks.strid.coll.impl.*;
 import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.gw.skid.*;
-import org.toxsoft.core.tslib.utils.*;
-import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.type.*;
 import org.toxsoft.skf.refbooks.lib.*;
 import org.toxsoft.skf.refbooks.lib.impl.*;
-import org.toxsoft.uskat.core.*;
 import org.toxsoft.uskat.core.api.objserv.*;
 import org.toxsoft.uskat.core.api.sysdescr.dto.*;
 import org.toxsoft.uskat.core.connection.*;
@@ -90,8 +82,8 @@ public class ModbusRefbookGenerator {
    * Attribute {@link ISkRefbook#attrs() #RBATRID_REG_TRANSLATOR___WORDSCOUNT}.
    */
   static IDtoAttrInfo ATRINF_WORDS_COUNT = DtoAttrInfo.create2( RBATRID_REG_TRANSLATOR___WORDSCOUNT, DDEF_INTEGER, //
-      TSID_NAME, STR_N_MODBUS_WORDS_COUNT, //
-      TSID_DESCRIPTION, STR_D_MODBUS_WORDS_COUNT, //
+      TSID_NAME, STR_MBNODE_WORDS_COUNT, //
+      TSID_DESCRIPTION, STR_MBNODE_WORDS_COUNT_D, //
       TSID_DEFAULT_VALUE, avInt( 1 ) //
   );
 
@@ -99,16 +91,16 @@ public class ModbusRefbookGenerator {
    * Attribute {@link ISkRefbook#attrs() #RBATRID_REG_TRANSLATOR___PARAMS}.
    */
   static IDtoAttrInfo ATRINF_TRANSLATOR_PARAMS = DtoAttrInfo.create2( RBATRID_REG_TRANSLATOR___PARAMS, DDEF_STRING, //
-      TSID_NAME, STR_N_MODBUS_PARAMETERS_STR, //
-      TSID_DESCRIPTION, STR_D_MODBUS_PARAMETERS_STR //
+      TSID_NAME, STR_MBNODE_PARAM_STR, //
+      TSID_DESCRIPTION, STR_MBNODE_PARAM_STR_D //
   );
 
   /**
    * Attribute {@link ISkRefbook#attrs() #RBATRID_REG_TRANSLATOR___REQUESTTYPE}.
    */
   static IDtoAttrInfo ATRINF_REQUESTTYPE = DtoAttrInfo.create2( RBATRID_REG_TRANSLATOR___REQUESTTYPE, DDEF_VALOBJ, //
-      TSID_NAME, STR_N_MODBUS_REQUEST_TYPE, //
-      TSID_DESCRIPTION, STR_D_MODBUS_REQUEST_TYPE, //
+      TSID_NAME, STR_MBNODE_REQUEST_TYPE, //
+      TSID_DESCRIPTION, STR_MBNODE_REQUEST_TYPE_D, //
       TSID_KEEPER_ID, ERequestType.KEEPER_ID //
   );
 
@@ -116,8 +108,8 @@ public class ModbusRefbookGenerator {
    * Attribute {@link ISkRefbook#attrs() #RBATRID_REG_TRANSLATOR___VALUETYPE}.
    */
   static IDtoAttrInfo ATRINF_VALUETYPE = DtoAttrInfo.create2( RBATRID_REG_TRANSLATOR___VALUETYPE, DDEF_VALOBJ, //
-      TSID_NAME, STR_N_MODBUS_VALUE_TYPE, //
-      TSID_DESCRIPTION, STR_D_MODBUS_VALUE_TYPE, //
+      TSID_NAME, STR_MBNODE_VALUE_TYPE, //
+      TSID_DESCRIPTION, STR_MBNODE_VALUE_TYPE_D, //
       TSID_KEEPER_ID, EAtomicType.KEEPER_ID //
   );
 

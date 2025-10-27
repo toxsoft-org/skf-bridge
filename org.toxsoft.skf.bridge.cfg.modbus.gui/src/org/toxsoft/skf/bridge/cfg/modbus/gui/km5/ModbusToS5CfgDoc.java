@@ -1,6 +1,6 @@
 package org.toxsoft.skf.bridge.cfg.modbus.gui.km5;
 
-import static org.toxsoft.skf.bridge.cfg.modbus.gui.km5.ISkResources.*;
+import static org.toxsoft.skf.bridge.cfg.modbus.gui.l10n.ISkBridgeCfgModbusGuiSharedResources.*;
 
 import java.io.*;
 
@@ -21,10 +21,12 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 
 /**
- * A hole configuration of modbus <-> s5 bridge, contains several devisions (data, commands, events) each contains units
- * of configuration A unit - is a simple peace of configuration (for example one node to one gwid data transmitter). A
- * {@link ModbusToS5CfgDoc} corresponds to cfg files (.dlmcfg and .devcfg) and is source for auto generating of this
- * files.
+ * Single MODBU-USkat bridge configuration.
+ * <p>
+ * A whole configuration of modbus <-> s5 bridge, contains several devisions (data, commands, events) each contains
+ * units of configuration A unit - is a simple piece of configuration (for example one node to one gwid data
+ * transmitter). A {@link ModbusToS5CfgDoc} corresponds to cfg files (.dlmcfg and .devcfg) and is source for auto
+ * generating of this files.
  *
  * @author max
  */
@@ -33,7 +35,7 @@ public class ModbusToS5CfgDoc
 
   private static final String CHECK_DOC = "CheckDoc"; //$NON-NLS-1$
 
-  private static String MAP_KEY_FORMAT_STR = "%s:%d %s_%d"; //$NON-NLS-1$
+  // private static String MAP_KEY_FORMAT_STR = "%s:%d %s_%d"; //$NON-NLS-1$
 
   /**
    * The keeper singleton.
@@ -108,7 +110,7 @@ public class ModbusToS5CfgDoc
           }
 
           if( !aSr.readQuotedString().equals( CHECK_DOC ) ) {
-            LoggerUtils.errorLogger().error( STR_ERR_DOC_READ );
+            LoggerUtils.errorLogger().error( LOG_ERR_READING_CONFIG );
           }
 
           ModbusToS5CfgDoc result = new ModbusToS5CfgDoc( id, name, descr );

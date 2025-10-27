@@ -4,7 +4,7 @@ import static org.toxsoft.core.tsgui.m5.IM5Constants.*;
 import static org.toxsoft.core.tsgui.valed.api.IValedControlConstants.*;
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
-import static org.toxsoft.skf.bridge.cfg.modbus.gui.km5.ISkResources.*;
+import static org.toxsoft.skf.bridge.cfg.modbus.gui.l10n.ISkBridgeCfgModbusGuiSharedResources.*;
 
 import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tsgui.m5.*;
@@ -48,8 +48,8 @@ public class ModbusDeviceM5Model
    * Attribute {@link ModbusDevice#nmName() } string name
    */
   public M5AttributeFieldDef<ModbusDevice> NAME = new M5AttributeFieldDef<>( FID_NAME, EAtomicType.STRING, //
-      TSID_NAME, STR_N_CONNECTION_NAME, //
-      TSID_DESCRIPTION, STR_D_CONNECTION_NAME, //
+      TSID_NAME, STR_MDEV_NAME, //
+      TSID_DESCRIPTION, STR_MDEV_NAME_D, //
       OPID_EDITOR_FACTORY_NAME, ValedAvStringText.FACTORY_NAME //
   ) {
 
@@ -74,8 +74,8 @@ public class ModbusDeviceM5Model
    */
   public M5AttributeFieldDef<ModbusDevice> IS_TCP_INDEX =
       new M5AttributeFieldDef<>( FID_IS_TCP_INDEX, EAtomicType.BOOLEAN, //
-          TSID_NAME, STR_N_IS_TCP_INDEX, //
-          TSID_DESCRIPTION, STR_D_IS_TCP_INDEX //
+          TSID_NAME, STR_MDEV_IS_TCP, //
+          TSID_DESCRIPTION, STR_MDEV_IS_TCP_D //
       ) {
 
         @Override
@@ -104,9 +104,10 @@ public class ModbusDeviceM5Model
 
         @Override
         protected void doInit() {
-          setNameAndDescription( STR_N_DEVICE_CONN_OPTS, STR_D_DEVICE_CONN_OPTS );
+          setNameAndDescription( STR_MDEV_PARAMS, STR_MDEV_PARAMS_D );
           setFlags( M5FF_COLUMN );
           setValedEditor( ValedOptionSet.FACTORY_NAME );
+          params().setBool( IValedControlConstants.OPDEF_NO_FIELD_LABEL, true );
           // default
           setDefaultValue( ModbusDeviceOptionsUtils.getParamDefaultValuess( true ) );
           params().setBool( IValedControlConstants.OPDEF_IS_WIDTH_FIXED, false );
@@ -122,9 +123,9 @@ public class ModbusDeviceM5Model
           StringBuilder result = new StringBuilder();
           String add = TsLibUtils.EMPTY_STRING;
           for( IDataDef dDef : paramDefenitions ) {
-            result.append( add ).append( dDef.nmName() ).append( ": " )
+            result.append( add ).append( dDef.nmName() ).append( ": " ) //$NON-NLS-1$
                 .append( dDef.getValue( paramValues ).toString() );
-            add = ", ";
+            add = ", "; //$NON-NLS-1$
           }
           return result.toString();
         }

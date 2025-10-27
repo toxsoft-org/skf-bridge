@@ -1,4 +1,4 @@
-package org.toxsoft.skf.bridge.cfg.modbus.gui.km5;
+package org.toxsoft.skf.bridge.cfg.modbus.gui.temp;
 
 import static org.toxsoft.core.tsgui.m5.IM5Constants.*;
 import static org.toxsoft.core.tsgui.valed.api.IValedControlConstants.*;
@@ -16,6 +16,7 @@ import org.toxsoft.core.tsgui.m5.std.fields.*;
 import org.toxsoft.core.tsgui.valed.controls.av.*;
 import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.impl.*;
+import org.toxsoft.skf.bridge.cfg.modbus.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.type.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.utils.*;
 
@@ -38,7 +39,7 @@ public class TCPAddressM5Model
   public static final M5AttributeFieldDef<TCPAddress> ID = new M5StdFieldDefId<>();
 
   /**
-   * /** Attribute {@link TCPAddress#nmName() } string name
+   * Attribute {@link TCPAddress#nmName()} string name
    */
   public M5AttributeFieldDef<TCPAddress> NAME = new M5AttributeFieldDef<>( FID_NAME, EAtomicType.STRING, //
       TSID_NAME, STR_N_CONNECTION_NAME, //

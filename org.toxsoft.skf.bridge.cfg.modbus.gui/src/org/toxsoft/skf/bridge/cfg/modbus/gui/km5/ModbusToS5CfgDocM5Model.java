@@ -3,7 +3,7 @@ package org.toxsoft.skf.bridge.cfg.modbus.gui.km5;
 import static org.toxsoft.core.tsgui.m5.IM5Constants.*;
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
-import static org.toxsoft.skf.bridge.cfg.modbus.gui.km5.ISkResources.*;
+import static org.toxsoft.skf.bridge.cfg.modbus.gui.l10n.ISkBridgeCfgModbusGuiSharedResources.*;
 
 import org.toxsoft.core.tsgui.m5.model.impl.*;
 import org.toxsoft.core.tsgui.m5.std.fields.*;
@@ -53,8 +53,10 @@ public class ModbusToS5CfgDocM5Model
    * Attribute {@link ModbusToS5CfgDoc#getL2Path() } path to l2 dir
    */
   public static final M5AttributeFieldDef<ModbusToS5CfgDoc> PATH_TO_L2 =
-      new M5AttributeFieldDef<>( FID_PATH_TO_L2, IValedFileConstants.DT_DIRECTORY_FILE, TSID_NAME, STR_N_PATH_TO_L2, //
-          TSID_DESCRIPTION, STR_D_PATH_TO_L2 ) {
+      new M5AttributeFieldDef<>( FID_PATH_TO_L2, IValedFileConstants.DT_DIRECTORY_FILE, //
+          TSID_NAME, STR_BRIDGE_CFG_FILE_DIR, //
+          TSID_DESCRIPTION, STR_BRIDGE_CFG_FILE_DIR_D //
+      ) {
 
         @Override
         protected void doInit() {
@@ -72,8 +74,8 @@ public class ModbusToS5CfgDocM5Model
    */
   public static final M5AttributeFieldDef<ModbusToS5CfgDoc> CFG_FILE_NAME =
       new M5AttributeFieldDef<>( FID_CFG_FILE_NAME, EAtomicType.STRING, //
-          TSID_NAME, STR_N_CFG_FILE_NAME, //
-          TSID_DESCRIPTION, STR_D_CFG_FILE_NAME //
+          TSID_NAME, STR_BRIDGE_CFG_FILE_BARE_NAME, //
+          TSID_DESCRIPTION, STR_BRIDGE_CFG_FILE_BARE_NAME_D //
       ) {
 
         @Override

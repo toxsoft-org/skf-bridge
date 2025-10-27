@@ -15,6 +15,7 @@ import org.toxsoft.core.tslib.av.avtree.*;
 import org.toxsoft.core.tslib.av.list.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.coll.*;
+import org.toxsoft.core.tslib.coll.helpers.*;
 import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.utils.*;
@@ -36,6 +37,8 @@ import org.toxsoft.uskat.core.gui.conn.*;
 public class ModbusToS5CfgUnitM5LifecycleManager
     extends M5LifecycleManager<OpcToS5DataCfgUnit, ModbusToS5CfgDoc> {
 
+  private final IListReorderer<OpcToS5DataCfgUnit> reorderer;
+
   /**
    * Constructor by M5 model and context
    *
@@ -44,6 +47,7 @@ public class ModbusToS5CfgUnitM5LifecycleManager
    */
   public ModbusToS5CfgUnitM5LifecycleManager( IM5Model<OpcToS5DataCfgUnit> aModel, ModbusToS5CfgDoc aCfgDoc ) {
     super( aModel, true, true, true, true, aCfgDoc );
+    reorderer = new ListReorderer<>( master().dataUnits() );
   }
 
   @Override
@@ -51,13 +55,9 @@ public class ModbusToS5CfgUnitM5LifecycleManager
     return master().dataUnits();
   }
 
-  /**
-   * dima 27.12.24 open access to guts to reoder items
-   *
-   * @return {@link IListEdit} list of data units
-   */
-  public IListEdit<OpcToS5DataCfgUnit> getListEditEntities() {
-    return master().dataUnits();
+  @Override
+  protected IListReorderer<OpcToS5DataCfgUnit> doGetItemsReorderer() {
+    return reorderer;
   }
 
   @Override

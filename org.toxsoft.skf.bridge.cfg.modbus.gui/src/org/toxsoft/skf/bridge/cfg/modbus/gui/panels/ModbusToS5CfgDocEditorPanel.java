@@ -2,10 +2,9 @@ package org.toxsoft.skf.bridge.cfg.modbus.gui.panels;
 
 import static org.toxsoft.core.tsgui.bricks.actions.ITsStdActionDefs.*;
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
-import static org.toxsoft.skf.bridge.cfg.modbus.gui.panels.ISkResources.*;
-import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.*;
-import static org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.*;
-import static org.toxsoft.uskat.core.ISkHardConstants.*;
+import static org.toxsoft.core.tslib.utils.TsLibUtils.*;
+import static org.toxsoft.skf.bridge.cfg.modbus.gui.l10n.ISkBridgeCfgModbusGuiSharedResources.*;
+import static org.toxsoft.skf.bridge.cfg.modbus.gui.panels.IPackageConstants.*;
 
 import org.eclipse.swt.*;
 import org.eclipse.swt.custom.*;
@@ -28,7 +27,7 @@ import org.toxsoft.core.tsgui.panels.*;
 import org.toxsoft.core.tsgui.panels.toolbar.*;
 import org.toxsoft.core.tsgui.utils.layout.*;
 import org.toxsoft.core.tsgui.widgets.*;
-import org.toxsoft.core.tslib.av.impl.*;
+import org.toxsoft.core.tsgui.widgets.contrib.*;
 import org.toxsoft.core.tslib.av.list.*;
 import org.toxsoft.core.tslib.bricks.filter.*;
 import org.toxsoft.core.tslib.bricks.strid.more.*;
@@ -36,7 +35,6 @@ import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.gw.skid.*;
-import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.type.*;
@@ -44,14 +42,27 @@ import org.toxsoft.skf.bridge.cfg.modbus.gui.utils.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.panels.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
-import org.toxsoft.skide.plugin.exconn.service.*;
 import org.toxsoft.uskat.core.api.objserv.*;
 import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.gui.conn.*;
 import org.toxsoft.uskat.core.gui.km5.sded.*;
 
 /**
- * Editor panel for creating, editing, deleting modbus to s5 cfg docs.
+ * Editor panel for creating, editing, deleting MODBUS bridges configurations.
+ * <p>
+ * MODBUS bridge configurations are provided by {@link ModbusToS5CfgDocService#getCfgDocs()}. Instance of the service
+ * {@link ModbusToS5CfgDocService} is in the application context.
+ * <p>
+ * FIXME {@link ModbusToS5CfgDocService} instance is created and put in context here, by this class. It is a <b>bad</b>
+ * idea making this panel unusable twice (or more0 in a single application. All E4 service initializations must be
+ * placed in plugin initialization code (somewhere in <code>AddonXxx</code> or <code>QuantXxx</code>).
+ * <p>
+ * Contains:
+ * <ul>
+ * <li>left panel - editable list of bridge configurations provided by
+ * {@link ModbusToS5CfgDocService#getCfgDocs()};</li>
+ * <li>right tab folder - opens editor of the bridge configuration selected in left panel in separate TabItem.</li>
+ * </ul>
  *
  * @author max
  * @author dima
@@ -59,72 +70,30 @@ import org.toxsoft.uskat.core.gui.km5.sded.*;
 public class ModbusToS5CfgDocEditorPanel
     extends TsPanel {
 
-  final static String ACTID_EDIT_UNITS = SK_ID + ".users.gui.EditUnits"; //$NON-NLS-1$
-
-  final static String ACTID_EDIT_NODES = SK_ID + ".users.gui.EditNodes"; //$NON-NLS-1$
-
-  final static TsActionDef ACDEF_EDIT_UNITS =
-      TsActionDef.ofPush2( ACTID_EDIT_UNITS, STR_N_EDIT_CONFIG_SET, STR_D_EDIT_CONFIG_SET, ICONID_EDIT_UNITS );
-
-  final static TsActionDef ACDEF_EDIT_NODES =
-      TsActionDef.ofPush2( ACTID_EDIT_NODES, STR_N_EDIT_OPC_UA_NODES, STR_D_EDIT_OPC_UA_NODES, ICONID_EDIT_NODES );
-
-  final static String ACTID_SAVE_DOC = SK_ID + "bridge.cfg.opcua.to.s5.save.doc"; //$NON-NLS-1$
-
-  final static TsActionDef ACDEF_SAVE_DOC =
-      TsActionDef.ofPush2( ACTID_SAVE_DOC, STR_N_SAVE_CONFIG, STR_D_SAVE_CONFIG, ICONID_SAVE_DOC );
-
-  final static String ACTID_S5_SERVER_SELECT = SK_ID + "bridge.cfg.opcua.to.s5.server.select"; //$NON-NLS-1$
-
-  final static String ACTID_OPC_SERVER_SELECT = SK_ID + "bridge.cfg.opcua.to.s5.opc.server.select"; //$NON-NLS-1$
-
-  final static String ACTID_IP_ADDRESS_SELECT = SK_ID + "bridge.cfg.modbus.ip.address.select"; //$NON-NLS-1$
-
-  final static String ACTID_COPY_ALL = SK_ID + "bridge.cfg.modbus.copy.all"; //$NON-NLS-1$
-
-  final static String ACTID_UP_SEL_ITEM   = SK_ID + "bridge.cfg.modbus.up.selected.item";   //$NON-NLS-1$
-  final static String ACTID_DOWN_SEL_ITEM = SK_ID + "bridge.cfg.modbus.down.selected.item"; //$NON-NLS-1$
-
-  final static TsActionDef ACDEF_S5_SERVER_SELECT = TsActionDef.ofPush2( ACTID_S5_SERVER_SELECT, STR_N_SELECT_S5_SERVER,
-      STR_D_SELECT_S5_SERVER, ICONID_S5_SERVER_SELECT );
-
-  final static TsActionDef ACDEF_IP_ADDRESS_SELECT = TsActionDef.ofCheck2( ACTID_IP_ADDRESS_SELECT,
-      ISkResources.STR_N_SELECT_IP_ADDRESS, ISkResources.STR_D_SELECT_IP_ADDRESS, ICONID_FILTER );
-
-  final static TsActionDef ACDEF_OPC_SERVER_SELECT = TsActionDef.ofPush2( ACTID_OPC_SERVER_SELECT,
-      STR_N_SELECT_OPC_UA_SERVER, STR_D_SELECT_OPC_UA_SERVER, ICONID_OPC_SERVER_SELECT );
-
-  final static TsActionDef ACDEF_COPY_ALL = TsActionDef.ofPush2( ACTID_COPY_ALL, ISkResources.STR_N_COPY_ALL,
-      ISkResources.STR_D_COPY_ALL, ITsStdIconIds.ICONID_LIST_ADD_ALL );
-
-  final static TsActionDef ACDEF_UP_SEL_ITEM = TsActionDef.ofPush2( ACTID_UP_SEL_ITEM, STR_N_UP_SELECTED_ITEM,
-      STR_D_UP_SELECTED_ITEM, ITsStdIconIds.ICONID_ARROW_UP );
-
-  final static TsActionDef ACDEF_DOWN_SEL_ITEM = TsActionDef.ofPush2( ACTID_DOWN_SEL_ITEM, STR_N_DOWN_SELECTED_ITEM,
-      STR_D_DOWN_SELECTED_ITEM, ITsStdIconIds.ICONID_ARROW_DOWN );
-
   final ISkConnection conn;
 
   IM5CollectionPanel<ModbusToS5CfgDoc> opcToS5DataCfgDocPanel;
 
   private CTabFolder tabFolder;
 
-  private TextControlContribution textContr1;
+  // GOGA 2025-10-25 --- remove "Select USkat server" button
+  // private TextControlContribution textContr1;
+  // ---
 
   /**
    * Current selected IP address
    */
-  private ModbusDevice            selAddress = ModbusDevice.DEFAULT_DEVICE;
-  private TextControlContribution selAddressTextContr;
+  private ModbusDevice      selAddress = ModbusDevice.DEFAULT_DEVICE;
+  private LabelContribution filterAddressLabel;
 
   /**
-   * Конструктор панели.
+   * Constructor.
    * <p>
-   * Конструктор просто запоминает ссылку на контекст, без создания копии.
+   * Constructor stores reference to the context, does not creates copy.
    *
-   * @param aParent {@link Composite} - родительская панель
-   * @param aContext {@link ITsGuiContext} - контекст панели
-   * @throws TsNullArgumentRtException любой аргумент = null
+   * @param aParent {@link Composite} - parent component
+   * @param aContext {@link ITsGuiContext} - the context
+   * @throws TsNullArgumentRtException any argument = <code>null</code>
    */
   public ModbusToS5CfgDocEditorPanel( Composite aParent, ITsGuiContext aContext ) {
     super( aParent, aContext );
@@ -142,13 +111,14 @@ public class ModbusToS5CfgDocEditorPanel
     ITsGuiContext ctx = new TsGuiContext( aContext );
     ctx.params().addAll( aContext.params() );
 
-    // IMultiPaneComponentConstants.OPDEF_IS_DETAILS_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
+    // IMultiPaneComponentConstants.OPDEF_IS_DETAILS_PANE.setValue( ctx.params(), AV_TRUE );
     // IMultiPaneComponentConstants.OPDEF_DETAILS_PANE_PLACE.setValue( ctx.params(),
     // avValobj( EBorderLayoutPlacement.SOUTH ) );
-    // IMultiPaneComponentConstants.OPDEF_IS_SUPPORTS_TREE.setValue( ctx.params(), AvUtils.AV_TRUE );
-    IMultiPaneComponentConstants.OPDEF_IS_ACTIONS_CRUD.setValue( ctx.params(), AvUtils.AV_TRUE );
+    // IMultiPaneComponentConstants.OPDEF_IS_SUPPORTS_TREE.setValue( ctx.params(), AV_TRUE );
+    IMultiPaneComponentConstants.OPDEF_IS_ACTIONS_CRUD.setValue( ctx.params(), AV_TRUE );
     // добавляем в панель фильтр
-    // IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
+    IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( ctx.params(), AV_TRUE );
+    IMultiPaneComponentConstants.OPDEF_DBLCLICK_ACTION_ID.setValue( ctx.params(), avStr( ACTID_EDIT_UNITS ) );
 
     MultiPaneComponentModown<ModbusToS5CfgDoc> componentModown =
         new MultiPaneComponentModown<>( ctx, model, lm.itemsProvider(), lm ) {
@@ -158,40 +128,23 @@ public class ModbusToS5CfgDocEditorPanel
               IListEdit<ITsActionDef> aActs ) {
             aActs.add( ACDEF_SEPARATOR );
             aActs.add( ACDEF_EDIT_UNITS );
-            // aActs.add( ACDEF_EDIT_NODES );
-
-            ITsToolbar toolbar =
-
-                super.doCreateToolbar( aContext2, aName, aIconSize, aActs );
-
-            toolbar.addListener( aActionId -> {
-              // nop
-
-            } );
-
-            toolbar.setIconSize( EIconSize.IS_24X24 );
+            ITsToolbar toolbar = super.doCreateToolbar( aContext2, aName, aIconSize, aActs );
             return toolbar;
           }
 
           @Override
           protected void doProcessAction( String aActionId ) {
             ModbusToS5CfgDoc selDoc = selectedItem();
-
             switch( aActionId ) {
-
               case ACTID_EDIT_UNITS:
                 editOpcCfgDoc( selDoc );
                 break;
-
-              case ACTID_EDIT_NODES:
-                // editOpcCfgNodes( selDoc );
-                break;
-
               default:
-                throw new TsNotAllEnumsUsedRtException( aActionId );
+                break;
             }
           }
         };
+
     opcToS5DataCfgDocPanel = new M5CollectionPanelMpcModownWrapper<>( componentModown, false );
 
     SashForm sf = new SashForm( this, SWT.HORIZONTAL );
@@ -204,11 +157,23 @@ public class ModbusToS5CfgDocEditorPanel
 
   }
 
-  protected void editOpcCfgDoc( ModbusToS5CfgDoc aSelDoc ) {
+  private static IMapEdit<ModbusToS5CfgDoc, CTabItem> tabItemsMap = new ElemMap<>();
 
-    // создаем новую общую закладку закладку
-    CTabItem tabItem = new CTabItem( tabFolder, SWT.CLOSE );
+  protected void editOpcCfgDoc( ModbusToS5CfgDoc aSelDoc ) {
+    // if configuration is already edited, activate item and return
+    CTabItem tabItem = tabItemsMap.findByKey( aSelDoc );
+    if( tabItem != null ) {
+      tabFolder.setSelection( tabItem );
+      return;
+    }
+
+    // create new tab item to edit configuration
+    tabItem = new CTabItem( tabFolder, SWT.CLOSE );
+    tabItemsMap.put( aSelDoc, tabItem );
+    tabItem.addDisposeListener( e -> tabItemsMap.removeByKey( aSelDoc ) );
+
     tabItem.setText( aSelDoc.nmName() );
+    tabItem.setToolTipText( aSelDoc.description() );
 
     TsComposite frame = new TsComposite( tabFolder );
     frame.setLayout( new BorderLayout() );
@@ -221,11 +186,13 @@ public class ModbusToS5CfgDocEditorPanel
 
     // Создаём закладку для конфигурации связей opc-sk
     CTabItem tabCfgUnitsItem = new CTabItem( tabSubFolder, SWT.NONE );
-    tabCfgUnitsItem.setText( STR_LINKS );
+    tabCfgUnitsItem.setText( STR_TAB_DATA_BINDINGS );
+    tabCfgUnitsItem.setToolTipText( STR_TAB_DATA_BINDINGS_D );
 
     // Создаём закладку IP адресов
     CTabItem tabIPAddrsItem = new CTabItem( tabSubFolder, SWT.NONE );
-    tabIPAddrsItem.setText( ISkResources.STR_IP_ADDRESES );
+    tabIPAddrsItem.setText( STR_TAB_MODBUS_DEVICES );
+    tabIPAddrsItem.setToolTipText( STR_TAB_MODBUS_DEVICES_D );
 
     ITsGuiContext ctx = new TsGuiContext( tsContext() );
     ctx.params().addAll( tsContext().params() );
@@ -233,34 +200,43 @@ public class ModbusToS5CfgDocEditorPanel
     TsToolbar toolBar = new TsToolbar( ctx );
     toolBar.setIconSize( EIconSize.IS_24X24 );
     toolBar.addActionDef( ACDEF_SAVE_DOC );
-    toolBar.addActionDef( ACDEF_S5_SERVER_SELECT );
-
-    toolBar.addSeparator();
+    // GOGA 2025-10-25 --- remove "Select USkat server" button
+    // toolBar.addActionDef( ACDEF_S5_SERVER_SELECT );
+    // toolBar.addSeparator();
+    // ---
 
     Control toolbarCtrl = toolBar.createControl( frame );
     toolbarCtrl.setLayoutData( BorderLayout.NORTH );
 
-    textContr1 = new TextControlContribution( "Label", 200, STR_SK_CONN_DESCR, SWT.NONE ); //$NON-NLS-1$
-    toolBar.addContributionItem( textContr1 );
+    // GOGA 2025-10-25 --- remove "Select USkat server" button
+    // textContr1 = new TextControlContribution( "Label", 200, STR_SK_CONN_DESCR, SWT.NONE ); //$NON-NLS-1$
+    // toolBar.addContributionItem( textContr1 );
+    // ---
 
     IM5Domain m5 = conn.scope().get( IM5Domain.class );
 
     toolBar.addListener( aActionId -> {
-      if( aActionId.equals( ACDEF_SAVE_DOC.id() ) ) {
-        ModbusToS5CfgDocService service = ctx.get( ModbusToS5CfgDocService.class );
-        service.saveCfgDoc( aSelDoc );
-        return;
-      }
-      if( aActionId.equals( ACDEF_S5_SERVER_SELECT.id() ) ) {
-        ISkideExternalConnectionsService connService =
-            ctx.eclipseContext().get( ISkideExternalConnectionsService.class );
-        IdChain idChain = connService.selectConfigAndOpenConnection( ctx );
-        if( idChain != null ) {
-          ctx.put( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_S5_CONNECTION, idChain );
-          textContr1.setText( STR_SK_CONN_DESCR + idChain.first() );
+      switch( aActionId ) {
+        case ACTID_SAVE_DOC: {
+          ModbusToS5CfgDocService service = ctx.get( ModbusToS5CfgDocService.class );
+          service.saveCfgDoc( aSelDoc );
+          break;
         }
-
-        return;
+        // GOGA 2025-10-25 --- remove "Select USkat server" button
+        // case ACTID_S5_SERVER_SELECT: {
+        // ISkideExternalConnectionsService connService =
+        // ctx.eclipseContext().get( ISkideExternalConnectionsService.class );
+        // IdChain idChain = connService.selectConfigAndOpenConnection( ctx );
+        // if( idChain != null ) {
+        // ctx.put( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_S5_CONNECTION, idChain );
+        // textContr1.setText( STR_SK_CONN_DESCR + idChain.first() );
+        // }
+        //
+        // break;
+        // }
+        // ---
+        default:
+          break;
       }
 
     } );
@@ -270,20 +246,25 @@ public class ModbusToS5CfgDocEditorPanel
     // IdChain defaultConnIdChain = connSup.getDefaultConnectionKey();
     IdChain defaultConnIdChain = ISkConnectionSupplier.DEF_CONN_ID;
     ctx.put( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_S5_CONNECTION, defaultConnIdChain );
-    String defConnName = defaultConnIdChain.first() != null ? defaultConnIdChain.first() : STR_DEFAULT_WORKROOM_SK_CONN;
-    textContr1.setText( STR_SK_CONN_DESCR + defConnName );
+
+    // GOGA 2025-10-25 --- remove "Select USkat server" button
+    // String defConnName = defaultConnIdChain.first() != null ? defaultConnIdChain.first() :
+    // STR_DEFAULT_WORKROOM_SK_CONN;
+    // textContr1.setText( STR_SK_CONN_DESCR + defConnName );
+    // ---
 
     // Модель cвязи Gwid -> Modbus register
     IM5Model<OpcToS5DataCfgUnit> linksModel =
         m5.getModel( OpcToS5DataCfgUnitM5Model.MODEL_ID_TEMPLATE + ".modbus", OpcToS5DataCfgUnit.class ); //$NON-NLS-1$
 
-    // IMultiPaneComponentConstants.OPDEF_IS_DETAILS_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
+    // IMultiPaneComponentConstants.OPDEF_IS_DETAILS_PANE.setValue( ctx.params(), AV_TRUE );
     // IMultiPaneComponentConstants.OPDEF_DETAILS_PANE_PLACE.setValue( ctx.params(),
     // avValobj( EBorderLayoutPlacement.SOUTH ) );
-    // IMultiPaneComponentConstants.OPDEF_IS_SUPPORTS_TREE.setValue( ctx.params(), AvUtils.AV_TRUE );
-    IMultiPaneComponentConstants.OPDEF_IS_ACTIONS_CRUD.setValue( ctx.params(), AvUtils.AV_TRUE );
+    // IMultiPaneComponentConstants.OPDEF_IS_SUPPORTS_TREE.setValue( ctx.params(), AV_TRUE );
+    IMultiPaneComponentConstants.OPDEF_IS_ACTIONS_CRUD.setValue( ctx.params(), AV_TRUE );
     // добавляем в панель фильтр
-    IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( ctx.params(), AvUtils.AV_TRUE );
+    IMultiPaneComponentConstants.OPDEF_IS_FILTER_PANE.setValue( ctx.params(), AV_TRUE );
+    IMultiPaneComponentConstants.OPDEF_IS_ACTIONS_REORDER.setValue( ctx.params(), AV_TRUE );
     IM5LifecycleManager<OpcToS5DataCfgUnit> linksLm = new ModbusToS5CfgUnitM5LifecycleManager( linksModel, aSelDoc );
 
     MultiPaneComponentModown<OpcToS5DataCfgUnit> linksMpc =
@@ -299,10 +280,10 @@ public class ModbusToS5CfgDocEditorPanel
             aActs.add( OpcToS5DataCfgDocEditorPanel.ACDEF_GENERATE_FILE );
             aActs.add( ACDEF_SEPARATOR );
             aActs.add( ACDEF_COPY_ALL );
-            aActs.add( ACDEF_IP_ADDRESS_SELECT );
+            aActs.add( ACDEF_FILTER_BY_ADDRESS );
             aActs.add( ACDEF_SEPARATOR );
-            aActs.add( ACDEF_UP_SEL_ITEM );
-            aActs.add( ACDEF_DOWN_SEL_ITEM );
+            // aActs.add( ACDEF_LIST_ELEM_MOVE_UP );
+            // aActs.add( ACDEF_LIST_ELEM_MOVE_DOWN );
 
             ITsToolbar toolbar = super.doCreateToolbar( aContext, aName, aIconSize, aActs );
 
@@ -322,13 +303,13 @@ public class ModbusToS5CfgDocEditorPanel
                 ((ModbusToS5CfgUnitM5LifecycleManager)lifecycleManager()).generateDlmFileFromCurrState( ctx );
                 ((ModbusToS5CfgUnitM5LifecycleManager)lifecycleManager()).generateDevFileFromCurrState( ctx );
                 break;
-              case ACTID_IP_ADDRESS_SELECT:
-                boolean checked = toolbar().getAction( ACTID_IP_ADDRESS_SELECT ).isChecked();
+              case ACTID_FILTER_BY_ADDRESS:
+                boolean checked = toolbar().getAction( ACTID_FILTER_BY_ADDRESS ).isChecked();
                 if( checked ) {
                   // select IP
                   ModbusDevice address = PanelModbusDeviceSelector.selectModbusDevice( tsContext(), selAddress );
                   if( address == null ) {
-                    toolbar().getAction( ACTID_IP_ADDRESS_SELECT ).setChecked( false );
+                    toolbar().getAction( ACTID_FILTER_BY_ADDRESS ).setChecked( false );
                   }
                   else {
                     setNewIPAddress( tree(), address );
@@ -401,32 +382,9 @@ public class ModbusToS5CfgDocEditorPanel
                 }
                 break;
               }
-              case ACTID_UP_SEL_ITEM: {
-                OpcToS5DataCfgUnit selected = tree().selectedItem();
-                ModbusToS5CfgUnitM5LifecycleManager lm = (ModbusToS5CfgUnitM5LifecycleManager)lifecycleManager();
-                int currIndex = lm.getListEditEntities().indexOf( selected );
-                if( currIndex - 1 >= 0 ) {
-                  lm.getListEditEntities().removeByIndex( currIndex );
-                  lm.getListEditEntities().insert( --currIndex, selected );
-                  fillViewer( selected );
-                }
-                break;
-              }
-
-              case ACTID_DOWN_SEL_ITEM: {
-                OpcToS5DataCfgUnit selected = tree().selectedItem();
-                ModbusToS5CfgUnitM5LifecycleManager lm = (ModbusToS5CfgUnitM5LifecycleManager)lifecycleManager();
-                int currIndex = lm.getListEditEntities().indexOf( selected );
-                if( currIndex + 1 < lm.getListEditEntities().size() ) {
-                  lm.getListEditEntities().removeByIndex( currIndex );
-                  lm.getListEditEntities().insert( ++currIndex, selected );
-                  fillViewer( selected );
-                }
-                break;
-              }
 
               default:
-                throw new TsNotAllEnumsUsedRtException( aActionId );
+                break;
             }
           }
 
@@ -441,10 +399,9 @@ public class ModbusToS5CfgDocEditorPanel
     IM5LifecycleManager<ModbusDevice> ipAddressLm = new ModbusDeviceM5LifecycleManager( ipAddresessModel, service );
 
     tabCfgUnitsItem.setControl( opcToS5DataCfgUnitPanel.createControl( tabSubFolder ) );
-    // add label to dispale selected IP
-    selAddressTextContr =
-        new TextControlContribution( "selAddressTextContrId", 200, ISkResources.STR_SEL_IP_ADDRESS, SWT.NONE ); //$NON-NLS-1$
-    linksMpc.toolbar().addContributionItem( selAddressTextContr );
+    // add label to display selected IP
+    filterAddressLabel = new LabelContribution( "filterAddressLabelId", 200, EMPTY_STRING, SWT.NONE ); //$NON-NLS-1$
+    linksMpc.toolbar().addContributionItem( filterAddressLabel );
     clearFilter( linksMpc.tree() );
 
     // create IP adddreses panel
@@ -523,7 +480,7 @@ public class ModbusToS5CfgDocEditorPanel
     IM5Model<ISkObject> modelSk = m5.getModel( IKM5SdedConstants.MID_SDED_SK_OBJECT, ISkObject.class );
     IM5LifecycleManager<ISkObject> lmSk = modelSk.getLifecycleManager( conn );
     ITsGuiContext ctx = new TsGuiContext( aContext );
-    TsDialogInfo di = new TsDialogInfo( ctx, DLG_T_SKID_SEL, STR_MSG_SKID_SELECTION );
+    TsDialogInfo di = new TsDialogInfo( ctx, STR_SELECT_MULTI_COPY_DEST_SKID, STR_SELECT_MULTI_COPY_DEST_SKID_D );
     ISkObject initObj = aInitSkid == null ? null : conn.coreApi().objService().get( aInitSkid );
     ISkObject selObj = M5GuiUtils.askSelectItem( di, modelSk, initObj, lmSk.itemsProvider(), lmSk );
     if( selObj != null ) {
@@ -538,14 +495,16 @@ public class ModbusToS5CfgDocEditorPanel
       ITsFilter<OpcToS5DataCfgUnit> filter = new FilterByModbusDevice( address );
       aIm5TreeViewer.filterManager().setFilter( filter );
       selAddress = address;
-      selAddressTextContr.setText( ISkResources.STR_SEL_IP_ADDRESS + address.nmName() );
+      filterAddressLabel.label().setText( String.format( FMT_FILTERED_DEVICE_ADDRESS, address.nmName() ) );
+      filterAddressLabel.label().setToolTipText( String.format( FMT_FILTERED_DEVICE_ADDRESS_D, address.nmName() ) );
     }
 
   }
 
   void clearFilter( IM5TreeViewer<OpcToS5DataCfgUnit> aTreeViewer ) {
     aTreeViewer.filterManager().setFilter( ITsFilter.ALL );
-    selAddressTextContr.setText( TsLibUtils.EMPTY_STRING );
+    filterAddressLabel.label().setText( EMPTY_STRING );
+    filterAddressLabel.label().setToolTipText( EMPTY_STRING );
   }
 
 }

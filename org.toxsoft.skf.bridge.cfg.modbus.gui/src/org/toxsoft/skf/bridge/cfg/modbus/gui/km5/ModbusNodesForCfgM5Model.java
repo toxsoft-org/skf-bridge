@@ -1,18 +1,15 @@
 package org.toxsoft.skf.bridge.cfg.modbus.gui.km5;
 
-import static org.toxsoft.core.tsgui.graphics.icons.ITsStdIconIds.*;
 import static org.toxsoft.core.tsgui.m5.IM5Constants.*;
 import static org.toxsoft.core.tsgui.m5.gui.mpc.IMultiPaneComponentConstants.*;
 import static org.toxsoft.core.tsgui.valed.api.IValedControlConstants.*;
 import static org.toxsoft.core.tslib.av.EAtomicType.*;
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
-import static org.toxsoft.skf.bridge.cfg.modbus.gui.km5.ISkResources.*;
-import static org.toxsoft.skf.bridge.cfg.opcua.gui.km5.ISkResources.*;
-import static org.toxsoft.uskat.core.ISkHardConstants.*;
+import static org.toxsoft.skf.bridge.cfg.modbus.gui.km5.IPackageConstants.*;
+import static org.toxsoft.skf.bridge.cfg.modbus.gui.l10n.ISkBridgeCfgModbusGuiSharedResources.*;
 
 import org.eclipse.swt.widgets.*;
-import org.toxsoft.core.tsgui.bricks.actions.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tsgui.m5.gui.mpc.*;
@@ -53,41 +50,6 @@ public class ModbusNodesForCfgM5Model
    */
   public static final String MODEL_ID = "bridge.cfg.modbus.m5.ModbusNodesForCfgM5Model"; //$NON-NLS-1$
 
-  final static String ACTID_ADD_AS_STR = SK_ID + ".opcua.to.s5.add.nodeid.as.str"; //$NON-NLS-1$
-
-  final static String ACTID_EDIT_AS_STR = SK_ID + ".opcua.to.s5.edit.nodeid.as.str"; //$NON-NLS-1$
-
-  final static TsActionDef ACDEF_ADD_AS_STR =
-      TsActionDef.ofPush2( ACTID_ADD_AS_STR, STR_N_ADD_AS_STRING, STR_D_ADD_AS_STRING, ICONID_LIST_ADD );
-
-  final static TsActionDef ACDEF_EDIT_AS_STR =
-      TsActionDef.ofPush2( ACTID_EDIT_AS_STR, STR_N_EDIT_AS_STRING, STR_D_EDIT_AS_STRING, ICONID_DOCUMENT_EDIT );
-
-  /**
-   * Id of translator refbook.
-   */
-  final static String REG_TRANSLATOR_REFBOOK = "reg.translator"; //$NON-NLS-1$
-
-  /**
-   * Id of parametor words count in translator refbook.
-   */
-  final static String REG_TRANS_REF_ATTR_WORDS_COUNT = "wordsCount"; //$NON-NLS-1$
-
-  /**
-   * Id of parametor request type in translator refbook.
-   */
-  final static String REG_TRANS_REF_ATTR_REQ_TYPE = "requestType"; //$NON-NLS-1$
-
-  /**
-   * Id of parametor value type in translator refbook.
-   */
-  final static String REG_TRANS_REF_ATTR_VAL_TYPE = "valueType"; //$NON-NLS-1$
-
-  /**
-   * Id of parametor params in translator refbook.
-   */
-  final static String REG_TRANS_REF_ATTR_PARAMS = "params"; //$NON-NLS-1$
-
   /**
    * address
    */
@@ -127,8 +89,8 @@ public class ModbusNodesForCfgM5Model
    * Attribute {@link ModbusNode#getModbusDevice()}.
    */
   public final M5AttributeFieldDef<IAtomicValue> MODBUS_DEVICE = new M5AttributeFieldDef<>( FID_MODBUS_DEVICE, VALOBJ, //
-      TSID_NAME, STR_N_MODBUS_DEVICE, //
-      TSID_DESCRIPTION, STR_D_MODBUS_DEVICE, //
+      TSID_NAME, STR_MBNODE_DEVICE, //
+      TSID_DESCRIPTION, STR_MBNODE_DEVICE_D, //
       TSID_KEEPER_ID, ModbusDevice.KEEPER_ID, //
       OPID_EDITOR_FACTORY_NAME, ValedAvValobjModbusDeviceEditor.FACTORY_NAME //
   ) {
@@ -149,8 +111,8 @@ public class ModbusNodesForCfgM5Model
    */
   public final M5AttributeFieldDef<IAtomicValue> REGISTER =
       new M5AttributeFieldDef<>( FID_REGISTER, EAtomicType.INTEGER, //
-          TSID_NAME, STR_N_MODBUS_REGISTER, //
-          TSID_DESCRIPTION, STR_N_MODBUS_REGISTER, //
+          TSID_NAME, STR_MBNODE_REGISTER, //
+          TSID_DESCRIPTION, STR_MBNODE_REGISTER_D, //
           TSID_DEFAULT_VALUE, avInt( 100 ) //
       ) {
 
@@ -174,7 +136,7 @@ public class ModbusNodesForCfgM5Model
 
         @Override
         protected void doInit() {
-          setNameAndDescription( STR_N_TRANSLATOR, STR_D_TRANSLATOR );
+          setNameAndDescription( STR_MBNODE_TRANSLATOR, STR_MBNODE_TRANSLATOR_D );
           setFlags( M5FF_COLUMN );
           params().setBool( TSID_IS_NULL_ALLOWED, AV_TRUE.asBool() );
           setLookupProvider( () -> {
@@ -219,8 +181,8 @@ public class ModbusNodesForCfgM5Model
    */
   public final M5AttributeFieldDef<IAtomicValue> WORDS_COUNT =
       new M5AttributeFieldDef<>( FID_WORDS_COUNT, EAtomicType.INTEGER, //
-          TSID_NAME, STR_N_MODBUS_WORDS_COUNT, //
-          TSID_DESCRIPTION, STR_D_MODBUS_WORDS_COUNT, //
+          TSID_NAME, STR_MBNODE_WORDS_COUNT, //
+          TSID_DESCRIPTION, STR_MBNODE_WORDS_COUNT_D, //
           TSID_DEFAULT_VALUE, avInt( 1 ) //
       ) {
 
@@ -240,8 +202,8 @@ public class ModbusNodesForCfgM5Model
    */
   public final M5AttributeFieldDef<IAtomicValue> VALUE_TYPE =
       new M5AttributeFieldDef<>( FID_VALUE_TYPE, EAtomicType.VALOBJ, //
-          TSID_NAME, STR_N_MODBUS_VALUE_TYPE, //
-          TSID_DESCRIPTION, STR_D_MODBUS_VALUE_TYPE, //
+          TSID_NAME, STR_MBNODE_VALUE_TYPE, //
+          TSID_DESCRIPTION, STR_MBNODE_VALUE_TYPE_D, //
           TSID_KEEPER_ID, EAtomicType.KEEPER_ID //
       ) {
 
@@ -262,8 +224,8 @@ public class ModbusNodesForCfgM5Model
    */
   public final M5AttributeFieldDef<IAtomicValue> REQUEST_TYPE =
       new M5AttributeFieldDef<>( FID_REQUEST_TYPE, EAtomicType.VALOBJ, //
-          TSID_NAME, STR_N_MODBUS_REQUEST_TYPE, //
-          TSID_DESCRIPTION, STR_D_MODBUS_REQUEST_TYPE, //
+          TSID_NAME, STR_MBNODE_REQUEST_TYPE, //
+          TSID_DESCRIPTION, STR_MBNODE_REQUEST_TYPE_D, //
           TSID_KEEPER_ID, ERequestType.KEEPER_ID //
       ) {
 
@@ -284,8 +246,8 @@ public class ModbusNodesForCfgM5Model
    */
   public final M5AttributeFieldDef<IAtomicValue> PARAMETERS_STR =
       new M5AttributeFieldDef<>( FID_PARAMETERS_STR, EAtomicType.STRING, //
-          TSID_NAME, STR_N_MODBUS_PARAMETERS_STR, //
-          TSID_DESCRIPTION, STR_D_MODBUS_PARAMETERS_STR //
+          TSID_NAME, STR_MBNODE_PARAM_STR, //
+          TSID_DESCRIPTION, STR_MBNODE_PARAM_STR_D //
       ) {
 
         @Override

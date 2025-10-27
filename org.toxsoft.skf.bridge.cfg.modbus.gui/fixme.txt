@@ -1,0 +1,10 @@
+Needs to be fixed:
+ 
+--- icons/ directory content violates ToxSoft's MWS rules
+--- clean-up unsed icons from icons/
+--- create ICONID_XXX constant in IBridgeCfgModbusConstants
+--- use ICONID_XXX instead of other means in the code (if any icon is used)
+
+
+Rename entities
+--- ModbusToS5CfgDoc -> ModbugBridgeCfg (also rename related files like M5, panels, etc)

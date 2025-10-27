@@ -6,24 +6,27 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.toxsoft.skf.bridge.cfg.modbus.gui.Activator
 Bundle-Vendor: Toxsoft
 Require-Bundle: org.eclipse.core.runtime,
- org.toxsoft.core.tslib,
- org.toxsoft.core.tsgui,
  org.eclipse.swt,
- org.toxsoft.uskat.core.gui,
- org.toxsoft.uskat.core,
+ org.eclipse.jface,
  org.eclipse.e4.core.contexts,
  org.eclipse.e4.ui.model.workbench,
- org.eclipse.jface,
- org.toxsoft.core.log4j,
  org.toxsoft.extlibs.log4j,
- org.toxsoft.core.txtproj.lib,
- org.toxsoft.skide.plugin.exconn,
- org.toxsoft.skf.bridge.cfg.opcua.gui,
+ org.toxsoft.core.tslib,
+ org.toxsoft.core.log4j,
+ org.toxsoft.core.tsgui,
  org.toxsoft.core.tsgui.rcp,
- org.toxsoft.skf.refbooks.lib
+ org.toxsoft.core.txtproj.lib,
+ org.toxsoft.uskat.core,
+ org.toxsoft.uskat.core.gui,
+ org.toxsoft.skide.plugin.exconn,
+ org.toxsoft.skf.refbooks.lib,
+ org.toxsoft.skf.bridge.cfg.opcua.gui
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: org.toxsoft.skf.bridge.cfg.modbus.gui
 Bundle-ActivationPolicy: lazy
 Export-Package: org.toxsoft.skf.bridge.cfg.modbus.gui,
  org.toxsoft.skf.bridge.cfg.modbus.gui.km5,
- org.toxsoft.skf.bridge.cfg.modbus.gui.panels
+ org.toxsoft.skf.bridge.cfg.modbus.gui.l10n,
+ org.toxsoft.skf.bridge.cfg.modbus.gui.panels,
+ org.toxsoft.skf.bridge.cfg.modbus.gui.type,
+ org.toxsoft.skf.bridge.cfg.modbus.gui.utils

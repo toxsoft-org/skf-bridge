@@ -67,7 +67,7 @@ public class QuantBridgeCfgModbus
 
   @Override
   protected void doInitWin( IEclipseContext aWinContext ) {
-    IBridgeCfgModbusConstants.init( aWinContext );
+    IBridgeCfgModbusGuiConstants.init( aWinContext );
 
     // SkCoreUtils.registerSkServiceCreator( VtReportTemplateService.CREATOR );
     // SkCoreUtils.registerSkServiceCreator( VtGraphTemplateService.CREATOR );

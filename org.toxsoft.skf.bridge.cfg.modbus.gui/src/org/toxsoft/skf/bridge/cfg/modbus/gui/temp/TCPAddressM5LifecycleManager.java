@@ -1,4 +1,4 @@
-package org.toxsoft.skf.bridge.cfg.modbus.gui.km5;
+package org.toxsoft.skf.bridge.cfg.modbus.gui.temp;
 
 import static org.toxsoft.core.tsgui.m5.IM5Constants.*;
 import static org.toxsoft.skf.bridge.cfg.modbus.gui.km5.ISkResources.*;

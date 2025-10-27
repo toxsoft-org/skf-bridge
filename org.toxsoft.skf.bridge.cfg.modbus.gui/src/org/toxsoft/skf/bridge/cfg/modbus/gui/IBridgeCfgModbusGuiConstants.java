@@ -9,15 +9,16 @@ import org.toxsoft.core.tsgui.graphics.icons.*;
  * @author max
  */
 @SuppressWarnings( { "javadoc" } )
-public interface IBridgeCfgModbusConstants {
+public interface IBridgeCfgModbusGuiConstants {
 
   //
   // ------------------------------------------------------------------------------------
   // Icons
 
-  String PREFIX_OF_ICON_FIELD_NAME = "ICONID_"; //$NON-NLS-1$
-
-  String ICONID_EDIT_UNITS = "edit_units"; //$NON-NLS-1$
+  String PREFIX_OF_ICON_FIELD_NAME = "ICONID_";           //$NON-NLS-1$
+  String ICONID_MODBUS_LOGO        = "modbus-logo";       //$NON-NLS-1$
+  String ICONID_MODBUS_INOUT       = "modbus-inout";      //$NON-NLS-1$
+  String ICONID_MODBUS_INOUT_EDIT  = "modbus-inout-edit"; //$NON-NLS-1$
 
   /**
    * Constants registration.
@@ -26,6 +27,7 @@ public interface IBridgeCfgModbusConstants {
    */
   static void init( IEclipseContext aWinContext ) {
     ITsIconManager iconManager = aWinContext.get( ITsIconManager.class );
-    iconManager.registerStdIconByIds( Activator.PLUGIN_ID, IBridgeCfgModbusConstants.class, PREFIX_OF_ICON_FIELD_NAME );
+    iconManager.registerStdIconByIds( Activator.PLUGIN_ID, IBridgeCfgModbusGuiConstants.class,
+        PREFIX_OF_ICON_FIELD_NAME );
   }
 }

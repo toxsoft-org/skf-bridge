@@ -1,7 +1,7 @@
 package org.toxsoft.skf.bridge.cfg.modbus.gui.km5;
 
 import static org.toxsoft.core.tsgui.m5.IM5Constants.*;
-import static org.toxsoft.skf.bridge.cfg.modbus.gui.km5.ISkResources.*;
+import static org.toxsoft.skf.bridge.cfg.modbus.gui.l10n.ISkBridgeCfgModbusGuiSharedResources.*;
 
 import java.net.*;
 
