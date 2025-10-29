@@ -4,7 +4,6 @@ import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
 /**
  * Constans defining bridges subsystem in USkat.
- * <p>
  *
  * @author hazard157
  */
