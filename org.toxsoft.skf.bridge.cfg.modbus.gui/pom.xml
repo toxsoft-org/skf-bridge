@@ -8,5 +8,23 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>org.toxsoft.skf.bridge.cfg.modbus.gui</artifactId>
     <packaging>eclipse-plugin</packaging>
-
-</project>
+    
+    <build>
+      <plugins>
+        <plugin>
+          <groupId>org.eclipse.tycho</groupId>
+          <artifactId>tycho-compiler-plugin</artifactId>
+          <configuration>
+            <source>${java.version}</source>
+            <target>${java.version}</target>
+            <useProjectSettings>true</useProjectSettings>
+            <optimize>true</optimize>
+            <showWarnings>false</showWarnings>              
+            <!-- 2025-10-29 mvk  исключение кода из компиляции -->
+            <excludes>
+               <exclude>org/toxsoft/skf/bridge/cfg/modbus/gui/temp/**</exclude>
+            </excludes> 
+          </configuration>
+        </plugin>        
+      </plugins>
+    </build></project>
