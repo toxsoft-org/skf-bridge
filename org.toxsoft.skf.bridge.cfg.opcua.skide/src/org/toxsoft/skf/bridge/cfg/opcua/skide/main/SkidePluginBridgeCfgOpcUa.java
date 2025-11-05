@@ -2,7 +2,7 @@ package org.toxsoft.skf.bridge.cfg.opcua.skide.main;
 
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.skide.ISkidePluginBridgeCfgOpcUaConstants.*;
-import static org.toxsoft.skf.bridge.cfg.opcua.skide.ISkidePluginBridgeCfgOpcUaSharedResources.*;
+import static org.toxsoft.skf.bridge.cfg.opcua.skide.l10n.ISkfBridgeCfgOpcUaSkideSharedResources.*;
 import static org.toxsoft.skide.core.ISkideCoreConstants.*;
 
 import org.toxsoft.core.tsgui.bricks.ctx.*;
@@ -32,7 +32,7 @@ public class SkidePluginBridgeCfgOpcUa
     super( SKIDE_PLUGIN_ID, OptionSetUtils.createOpSet( //
         TSID_NAME, STR_SKIDE_PLUGIN_BRIDGE_CFG_OPC_UA, //
         TSID_DESCRIPTION, STR_SKIDE_PLUGIN_BRIDGE_CFG_OPC_UA_D, //
-        TSID_ICON_ID, ICONID_SKIDE_PLUGIN //
+        TSID_ICON_ID, ICONID_OPCUA_RUN_1 //
     ) );
   }
 

@@ -14,11 +14,11 @@ public interface ISkidePluginBridgeCfgOpcUaConstants {
   // ------------------------------------------------------------------------------------
   // Icons
 
-  String PREFIX_OF_ICON_FIELD_NAME = "ICONID_";          //$NON-NLS-1$
-  String ICONID_SKIDE_PLUGIN       = "opc_ua_browser-2"; //$NON-NLS-1$
-  String ICONID_CFG_UNIT           = "opc_ua_browser-1"; //$NON-NLS-1$
-  String ICONID_SD_SKIDE_PLUGIN    = "OPS-configs";      //$NON-NLS-1$
-  String ICONID_CFG_SKIDE_PLUGIN   = "OPS-edit";         //$NON-NLS-1$
+  String PREFIX_OF_ICON_FIELD_NAME = "ICONID_";     //$NON-NLS-1$
+  String ICONID_OPCUA_RUN_1        = "opcua-run-1"; //$NON-NLS-1$
+  String ICONID_OPCUA_RUN_2        = "opcua-run-2"; //$NON-NLS-1$
+  String ICONID_OPCUA_SKIDE        = "opcua-skide"; //$NON-NLS-1$
+  String ICONID_OPCUA_EDIT         = "opcua-edit";  //$NON-NLS-1$
 
   /**
    * Constants registration.
