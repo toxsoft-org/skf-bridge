@@ -6,45 +6,41 @@ import static org.toxsoft.skf.bridge.cfg.opcua.gui.IOpcUaServerConnCfgConstants.
 import static org.toxsoft.uskat.core.ISkHardConstants.*;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.*;
 
-import org.eclipse.swt.SWT;
+import org.eclipse.swt.*;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.widgets.*;
-import org.jopendocument.dom.spreadsheet.*;
 import org.toxsoft.core.tsgui.bricks.actions.*;
-import org.toxsoft.core.tsgui.bricks.ctx.ITsGuiContext;
-import org.toxsoft.core.tsgui.bricks.ctx.impl.TsGuiContext;
-import org.toxsoft.core.tsgui.dialogs.ETsDialogCode;
-import org.toxsoft.core.tsgui.dialogs.TsDialogUtils;
-import org.toxsoft.core.tsgui.graphics.icons.EIconSize;
-import org.toxsoft.core.tsgui.m5.IM5Domain;
-import org.toxsoft.core.tsgui.m5.IM5Model;
-import org.toxsoft.core.tsgui.m5.gui.mpc.IMultiPaneComponentConstants;
-import org.toxsoft.core.tsgui.m5.gui.mpc.impl.MultiPaneComponentModown;
-import org.toxsoft.core.tsgui.m5.gui.panels.IM5CollectionPanel;
-import org.toxsoft.core.tsgui.m5.gui.panels.impl.M5CollectionPanelMpcModownWrapper;
-import org.toxsoft.core.tsgui.m5.model.IM5LifecycleManager;
-import org.toxsoft.core.tsgui.panels.TsPanel;
-import org.toxsoft.core.tsgui.panels.toolbar.ITsToolbar;
-import org.toxsoft.core.tsgui.utils.layout.BorderLayout;
-import org.toxsoft.core.tsgui.utils.layout.EBorderLayoutPlacement;
-import org.toxsoft.core.tslib.av.impl.AvUtils;
-import org.toxsoft.core.tslib.bricks.apprefs.IAppPreferences;
+import org.toxsoft.core.tsgui.bricks.ctx.*;
+import org.toxsoft.core.tsgui.bricks.ctx.impl.*;
+import org.toxsoft.core.tsgui.dialogs.*;
+import org.toxsoft.core.tsgui.graphics.icons.*;
+import org.toxsoft.core.tsgui.m5.*;
+import org.toxsoft.core.tsgui.m5.gui.mpc.*;
+import org.toxsoft.core.tsgui.m5.gui.mpc.impl.*;
+import org.toxsoft.core.tsgui.m5.gui.panels.*;
+import org.toxsoft.core.tsgui.m5.gui.panels.impl.*;
+import org.toxsoft.core.tsgui.m5.model.*;
+import org.toxsoft.core.tsgui.panels.*;
+import org.toxsoft.core.tsgui.panels.toolbar.*;
+import org.toxsoft.core.tsgui.utils.layout.*;
+import org.toxsoft.core.tslib.av.impl.*;
+import org.toxsoft.core.tslib.bricks.apprefs.*;
 import org.toxsoft.core.tslib.bricks.apprefs.impl.*;
-import org.toxsoft.core.tslib.coll.IListEdit;
+import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.utils.errors.*;
-import org.toxsoft.core.tslib.utils.logs.impl.LoggerUtils;
-import org.toxsoft.core.txtproj.lib.storage.IKeepablesStorage;
-import org.toxsoft.core.txtproj.lib.workroom.ITsWorkroom;
-import org.toxsoft.skf.bridge.cfg.opcua.gui.Activator;
+import org.toxsoft.core.tslib.utils.logs.impl.*;
+import org.toxsoft.core.txtproj.lib.storage.*;
+import org.toxsoft.core.txtproj.lib.workroom.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
-import org.toxsoft.skf.bridge.cfg.opcua.service.IOpcUaServerConnCfgService;
-import org.toxsoft.skf.bridge.cfg.opcua.service.impl.OpcUaServerConnCfgService;
-import org.toxsoft.uskat.core.connection.ISkConnection;
-import org.toxsoft.uskat.core.gui.conn.ISkConnectionSupplier;
-import org.toxsoft.uskat.core.gui.glib.query.SkProgressDialog;
+import org.toxsoft.skf.bridge.cfg.opcua.service.*;
+import org.toxsoft.skf.bridge.cfg.opcua.service.impl.*;
+import org.toxsoft.uskat.core.connection.*;
+import org.toxsoft.uskat.core.gui.conn.*;
+import org.toxsoft.uskat.core.gui.glib.query.*;
 
 /**
  * Editor panel for creating, editing, deleting opc ua server connections.
@@ -142,8 +138,10 @@ public class OpcUaServerConnCfgEditorPanel
               // TODO Auto-generated method stub
 
             } );
+            // GOGA --- 2025-11-05 Use default icon size, Luke!
             // установим пока 32, там посмотрим
-            toolbar.setIconSize( EIconSize.IS_32X32 );
+            // toolbar.setIconSize( EIconSize.IS_32X32 );
+            // ---
             return toolbar;
           }
 

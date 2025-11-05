@@ -376,7 +376,9 @@ public class OpcUaTreeBrowserPanel
           }
 
         } );
-        toolBar.setIconSize( EIconSize.IS_32X32 );
+        // GOGA --- 2025-11-05 Use default icon size, Luke!
+        // toolBar.setIconSize( EIconSize.IS_32X32 );
+        // ---
         return toolBar;
       }
 

@@ -225,7 +225,9 @@ public class CfgOpcUaNodeM5Model
 
                 } );
 
-                toolbar.setIconSize( EIconSize.IS_24X24 );
+                // GOGA --- 2025-11-05 Use default icon size, Luke!
+                // toolbar.setIconSize( EIconSize.IS_24X24 );
+                // ---
                 return toolbar;
               }
 
