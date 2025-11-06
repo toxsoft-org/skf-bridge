@@ -14,20 +14,71 @@ import org.toxsoft.uskat.core.connection.*;
  */
 public interface IOpcCommonDlmCfgGenerator {
 
+  /**
+   * Устанавливается массив единиц мапирования - каждая единица, в общем случае, связывает список gwid сервера со
+   * списком тегов opc
+   *
+   * @param aCfgUnits IList - массив единиц мапирования
+   * @return IOpcCommonDlmCfgGenerator - ссылка на генератор
+   */
   IOpcCommonDlmCfgGenerator setUnits( IList<OpcToS5DataCfgUnit> aCfgUnits );
 
+  /**
+   * Устанавливает соединение с сервером
+   *
+   * @param aConn ISkConnection - соединение с сервером
+   * @return IOpcCommonDlmCfgGenerator - ссылка на генератор
+   */
   IOpcCommonDlmCfgGenerator setConnection( ISkConnection aConn );
 
+  /**
+   * Устанавливает преобразователь из сущности узла (тега, регистра) в идентификатор
+   *
+   * @param aConvertor INodeIdConvertor - преобразователь из сущности узла (тега, регистра) в идентификатор
+   * @return IOpcCommonDlmCfgGenerator - ссылка на генератор
+   */
   IOpcCommonDlmCfgGenerator setNodeIdConvertor( INodeIdConvertor aConvertor );
 
+  /**
+   * Устанавливает фильтр единиц мпирования по gwid
+   *
+   * @param aGwidFilter IGwidFilter - фильтр единиц мпирования по gwid
+   * @return IOpcCommonDlmCfgGenerator - ссылка на генератор
+   */
   IOpcCommonDlmCfgGenerator setGwidFilter( IGwidFilter aGwidFilter );
 
+  /**
+   * Устанавливает дополнительные свойства, расставляемые по файлу после его предварительной генерации
+   *
+   * @param aProperties дополнительные свойства: список, каждый элемент которого массив трёх строк: название свойства,
+   *          путь в файле, значение (может быть форматом)
+   * @return IOpcCommonDlmCfgGenerator - ссылка на генератор
+   */
   IOpcCommonDlmCfgGenerator setAdditionalProperties( IList<IStringList> aProperties );
 
+  /**
+   * Определитель комплексного тега (специальный набор тегов, формирующий один сложный тег, отвечающий за набор команд
+   * или нси)
+   *
+   * @param aComplexTagDetector IComplexTagDetector - Определитель комплексного тега
+   * @return IOpcCommonDlmCfgGenerator - ссылка на генератор
+   */
   IOpcCommonDlmCfgGenerator setComplexTagDetector( IComplexTagDetector aComplexTagDetector );
 
+  /**
+   * Устанавливает источник значений параметров (например, по умолчанию - из контекста) в частности для доп свойств
+   * {@link #setAdditionalProperties(IList)}
+   *
+   * @param aParamValueSource IDevCfgParamValueSource - источник значений параметров в частности для доп свойств
+   * @return IOpcCommonDlmCfgGenerator - ссылка на генератор
+   */
   IOpcCommonDlmCfgGenerator setParamValueSource( IDevCfgParamValueSource aParamValueSource );
 
+  /**
+   * Формирует содержимое файла конфигурации DLM (.dlmcfg)
+   *
+   * @return IAvTree - содержимое файла конфигурации DLM (.dlmcfg)
+   */
   IAvTree generate();
 
   /**

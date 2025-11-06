@@ -3,6 +3,7 @@ package org.toxsoft.skf.bridge.cfg.opcua.gui.utils;
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.skide.IGreenWorldRefbooks.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.utils.OpcUaUtils.*;
+
 import java.util.*;
 
 //import org.eclipse.milo.opcua.stack.core.types.builtin.*;
@@ -11,7 +12,6 @@ import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.avtree.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.*;
-import org.toxsoft.core.tslib.bricks.strid.coll.*;
 import org.toxsoft.core.tslib.bricks.validator.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
@@ -32,7 +32,9 @@ import org.toxsoft.uskat.core.connection.*;
  * Converter of cfg to avtree and back
  *
  * @author max
+ * @deprecated use {@link IOpcCommonDevCfgGenerator} and {@link IOpcCommonDlmCfgGenerator}
  */
+@Deprecated
 public class OpcToS5DataCfgConverter {
 
   /**

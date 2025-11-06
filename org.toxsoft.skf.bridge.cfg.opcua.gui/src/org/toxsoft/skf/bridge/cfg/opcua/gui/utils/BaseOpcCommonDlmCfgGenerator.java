@@ -27,6 +27,11 @@ import org.toxsoft.skf.refbooks.lib.*;
 import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.gui.conn.*;
 
+/**
+ * Реализация генератора содержимого файла dlmcfg
+ *
+ * @author max
+ */
 public class BaseOpcCommonDlmCfgGenerator
     implements IOpcCommonDlmCfgGenerator {
 
@@ -851,7 +856,7 @@ public class BaseOpcCommonDlmCfgGenerator
     return pinTree1;
   }
 
-  private static void insertProperties( IAvTree avTree, IList<IStringList> aProperties, ITsGuiContext aContext ) {
+  static void insertProperties( IAvTree avTree, IList<IStringList> aProperties, ITsGuiContext aContext ) {
     for( IStringList aProp : aProperties ) {
       Iterator<String> iterator = aProp.iterator();
       String name = iterator.next();
@@ -866,7 +871,7 @@ public class BaseOpcCommonDlmCfgGenerator
     }
   }
 
-  private static String parseAndConvertValue( String aValue, ITsGuiContext aContext ) {
+  static String parseAndConvertValue( String aValue, ITsGuiContext aContext ) {
     String value = aValue;
 
     while( value.contains( "{$" ) ) {
@@ -891,7 +896,7 @@ public class BaseOpcCommonDlmCfgGenerator
     return value;
   }
 
-  private static IList<AvTree> getPropertyDestination( IAvTree avTree, String aPath ) {
+  static IList<AvTree> getPropertyDestination( IAvTree avTree, String aPath ) {
     StringTokenizer st = new StringTokenizer( aPath, "#" );
 
     AvTree result = (AvTree)avTree;

@@ -6,20 +6,69 @@ import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.filegen.*;
 import org.toxsoft.uskat.core.connection.*;
 
+/**
+ * Генератор содержимого файла dlmcfg по массиву конфигурационных юнитов s5-opc. Построен по паттерну - билдер: сначала
+ * устанавливаются все необходимые исходные данные - затем вызывается метод generate().
+ *
+ * @author max
+ */
 public interface IOpcCommonDevCfgGenerator {
 
+  /**
+   * Устанавливается массив единиц мапирования - каждая единица описывает тег OPC UA
+   *
+   * @param aCfgUnits IList - массив единиц мапирования
+   * @return IOpcCommonDlmCfgGenerator - ссылка на генератор
+   */
   IOpcCommonDevCfgGenerator setUnits( IList<CfgOpcUaNode> aCfgUnits );
 
+  /**
+   * Устанавливает соединение с сервером
+   *
+   * @param aConn ISkConnection - соединение с сервером
+   * @return IOpcCommonDlmCfgGenerator - ссылка на генератор
+   */
   IOpcCommonDevCfgGenerator setConnection( ISkConnection aConn );
 
+  /**
+   * Устанавливает преобразователь из сущности узла (тега, регистра) в идентификатор
+   *
+   * @param aConvertor INodeIdConvertor - преобразователь из сущности узла (тега, регистра) в идентификатор
+   * @return IOpcCommonDlmCfgGenerator - ссылка на генератор
+   */
   IOpcCommonDevCfgGenerator setNodeIdConvertor( INodeIdConvertor aConvertor );
 
+  /**
+   * Устанавливает фильтр тегов
+   *
+   * @param aNodeFilter IOpcUaNodeFilter - фильтр тегов
+   * @return IOpcCommonDlmCfgGenerator - ссылка на генератор
+   */
   IOpcCommonDevCfgGenerator setNodeFilter( IOpcUaNodeFilter aNodeFilter );
 
+  /**
+   * Устанавливает дополнительные свойства, расставляемые по файлу после его предварительной генерации
+   *
+   * @param aProperties дополнительные свойства: список, каждый элемент которого массив трёх строк: название свойства,
+   *          путь в файле, значение (может быть форматом)
+   * @return IOpcCommonDlmCfgGenerator - ссылка на генератор
+   */
   IOpcCommonDevCfgGenerator setAdditionalProperties( IList<IStringList> aProperties );
 
+  /**
+   * Устанавливает источник значений параметров (например, по умолчанию - из контекста) в частности для доп свойств
+   * {@link #setAdditionalProperties(IList)}
+   *
+   * @param aParamValueSource IDevCfgParamValueSource - источник значений параметров в частности для доп свойств
+   * @return IOpcCommonDlmCfgGenerator - ссылка на генератор
+   */
   IOpcCommonDevCfgGenerator setParamValueSource( IDevCfgParamValueSource aParamValueSource );
 
+  /**
+   * Формирует содержимое файла конфигурации драйвера (.devcfg)
+   *
+   * @return IAvTree - содержимое файла конфигурации драйвера (.devcfg)
+   */
   IAvTree generate();
 
   String JAVA_CLASS_PARAM_NAME  = "javaClassName";

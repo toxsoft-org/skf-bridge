@@ -229,11 +229,82 @@ public class OpcUaUtils {
   }
 
   /**
-   * Generates devcfg file from configuration Doc.
+   * Generates devcfg file from configuration Doc using generator.
    *
    * @param aDoc OpcToS5DataCfgDoc - configuration Doc.
    * @param aContext ITsGuiContext - context.
    */
+  public static void generateDevCfgFileFromCurrStateNew( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext ) {
+    String selected = formCfgFileFullName( aDoc, aContext, getDevCfgRelativeSysPath(), DEVCFG_FILE_EXTENTION );
+    if( selected == null ) {
+      return;
+    }
+    if( selected.endsWith( DEVCFG_FILE_EXTENTION ) ) {
+      selected = selected.substring( 0, selected.indexOf( DEVCFG_FILE_EXTENTION ) );
+    }
+
+    Shell shell = aContext.find( Shell.class );
+    IList<String> filterStrs = aDoc.getGroupIds();
+    // new ElemArrayList<>( "TKA1", "TKA2", "TKA3" );
+
+    if( filterStrs.size() == 0 ) {
+      filterStrs = new ElemArrayList<>( TsLibUtils.EMPTY_STRING );
+    }
+
+    for( String fStr : filterStrs ) {
+      try {
+        ITsGuiContext convCtx = new TsGuiContext( aContext );
+        convCtx.params().setStr( "group", fStr );
+
+        IOpcCommonDevCfgGenerator generator = new BaseOpcCommonDevCfgGenerator( convCtx );
+        generator.setUnits( aDoc.getNodesCfgs() );
+        generator.setNodeFilter( fStr.length() > 0 ? new IOpcUaNodeFilter.DeaultByStrOpcUaNodeFilter( fStr )
+            : IOpcUaNodeFilter.EMPTY_FILTER );
+
+        IDevCfgParamValueSource paramValueSource =
+            Optional.ofNullable( convCtx.eclipseContext().get( IDevCfgParamValueSource.class ) )
+                .orElse( ( aaParamName, aaContext ) -> aaContext.params().findByKey( aaParamName ) );
+        generator.setParamValueSource( paramValueSource );
+
+        String devPropertiesPathStratStr = "dev#";
+
+        generator
+            .setAdditionalProperties( getPropertiesWithStartStr( aDoc.getProperties(), devPropertiesPathStratStr ) );
+
+        IAvTree avTree = generator.generate();
+
+        String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
+        AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
+
+        String DLM_CONFIG_STR = "DeviceConfig = "; //$NON-NLS-1$
+
+        String selectedFileName =
+            selected + (fStr.length() > 0 ? ("_" + fStr) : TsLibUtils.EMPTY_STRING) + DEVCFG_FILE_EXTENTION;
+        File dstFile = new File( selectedFileName );
+        if( !dstFile.exists() ) {
+          dstFile.createNewFile();
+        }
+
+        PinsConfigFileFormatter.format( TMP_DEST_FILE, selectedFileName, DLM_CONFIG_STR, true );
+
+        TsDialogUtils.info( shell, MSG_CONFIG_FILE_DEVCFG_CREATED, selectedFileName );
+      }
+      catch( Exception e ) {
+        LoggerUtils.errorLogger().error( e );
+        TsDialogUtils.error( shell, e );
+      }
+    }
+  }
+
+  /**
+   * Generates devcfg file from configuration Doc.
+   *
+   * @param aDoc OpcToS5DataCfgDoc - configuration Doc.
+   * @param aContext ITsGuiContext - context.
+   * @deprecated use {@link #generateDevCfgFileFromCurrStateNew(OpcToS5DataCfgDoc, ITsGuiContext)} with
+   *             {@link IOpcCommonDevCfgGenerator}
+   */
+  @Deprecated
   public static void generateDevCfgFileFromCurrState( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext ) {
     String selected = formCfgFileFullName( aDoc, aContext, getDevCfgRelativeSysPath(), DEVCFG_FILE_EXTENTION );
     if( selected == null ) {
@@ -250,7 +321,7 @@ public class OpcUaUtils {
     IList<IStringList> properties = aDoc.getProperties();
 
     if( filterStrs.size() == 0 ) {
-      filterStrs = new ElemArrayList<>( "" );
+      filterStrs = new ElemArrayList<>( TsLibUtils.EMPTY_STRING );
     }
 
     for( String fStr : filterStrs ) {
@@ -270,7 +341,8 @@ public class OpcUaUtils {
 
         String DLM_CONFIG_STR = "DeviceConfig = "; //$NON-NLS-1$
 
-        String selectedFileName = selected + (fStr.length() > 0 ? ("_" + fStr) : "") + DEVCFG_FILE_EXTENTION;
+        String selectedFileName =
+            selected + (fStr.length() > 0 ? ("_" + fStr) : TsLibUtils.EMPTY_STRING) + DEVCFG_FILE_EXTENTION;
         File dstFile = new File( selectedFileName );
         if( !dstFile.exists() ) {
           dstFile.createNewFile();
@@ -279,6 +351,151 @@ public class OpcUaUtils {
         PinsConfigFileFormatter.format( TMP_DEST_FILE, selectedFileName, DLM_CONFIG_STR, true );
 
         TsDialogUtils.info( shell, MSG_CONFIG_FILE_DEVCFG_CREATED, selectedFileName );
+      }
+      catch( Exception e ) {
+        LoggerUtils.errorLogger().error( e );
+        TsDialogUtils.error( shell, e );
+      }
+    }
+  }
+
+  /**
+   * Generates dlmcfg file from configuration Doc using generator.
+   *
+   * @param aDoc OpcToS5DataCfgDoc - configuration Doc.
+   * @param aContext ITsGuiContext - context.
+   */
+  public static void generateDlmCfgFileFromCurrStateNew( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext ) {
+    String selected = formCfgFileFullName( aDoc, aContext, getDlmCfgRelativeSysPath(), DLMCFG_FILE_EXTENTION );
+    if( selected == null ) {
+      return;
+    }
+    if( selected.endsWith( DLMCFG_FILE_EXTENTION ) ) {
+      selected = selected.substring( 0, selected.indexOf( DLMCFG_FILE_EXTENTION ) );
+    }
+
+    Shell shell = aContext.find( Shell.class );
+
+    IList<String> filterStrs = aDoc.getGroupIds();
+    // new ElemArrayList<>( "TKA1", "TKA2", "TKA3" );
+
+    if( filterStrs.size() == 0 ) {
+      filterStrs = new ElemArrayList<>( TsLibUtils.EMPTY_STRING );
+    }
+
+    for( String fStr : filterStrs ) {
+      try {
+        ITsGuiContext convCtx = new TsGuiContext( aContext );
+        convCtx.params().setStr( "group", fStr );
+
+        IOpcCommonDlmCfgGenerator generator = new BaseOpcCommonDlmCfgGenerator( convCtx );
+        generator.setUnits( aDoc.dataUnits() );
+
+        generator.setGwidFilter(
+            fStr.length() > 0 ? new IGwidFilter.DeaultByStrGwidFilter( fStr ) : IGwidFilter.EMPTY_FILTER );
+
+        IComplexTagDetector complexTagDetector =
+            Optional.ofNullable( convCtx.eclipseContext().get( IComplexTagDetector.class ) )
+                .orElse( ( aaUnit, aaContext ) -> false );
+        generator.setComplexTagDetector( complexTagDetector );
+
+        IDevCfgParamValueSource paramValueSource =
+            Optional.ofNullable( convCtx.eclipseContext().get( IDevCfgParamValueSource.class ) )
+                .orElse( ( aaParamName, aaContext ) -> aaContext.params().findByKey( aaParamName ) );
+        generator.setParamValueSource( paramValueSource );
+
+        String dlmPropertiesPathStratStr = "dlm#";
+
+        generator
+            .setAdditionalProperties( getPropertiesWithStartStr( aDoc.getProperties(), dlmPropertiesPathStratStr ) );
+
+        INodeIdConvertor nodeIdConvertor =
+            Optional.ofNullable( convCtx.eclipseContext().get( INodeIdConvertor.class ) ).orElse( aNodeEntity -> {
+              OpcNodeInfo nodeid = aNodeEntity.asValobj();
+              // TODO - подумать откуда брать идентификатор (сейчас по умолчанию) - должен совпадать с devcfg
+              return new Pair<>( IOpcCommonDevCfgGenerator.OPC_TAG_DEVICE_UA, nodeid.getNodeId().toParseableString() );
+            } );
+
+        generator.setNodeIdConvertor( nodeIdConvertor );
+
+        IAvTree avTree = generator.generate();
+        String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
+        AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
+
+        String DLM_CONFIG_STR = "DlmConfig = "; //$NON-NLS-1$
+
+        String selectedFileName =
+            selected + (fStr.length() > 0 ? ("_" + fStr) : TsLibUtils.EMPTY_STRING) + DLMCFG_FILE_EXTENTION;
+        File dstFile = new File( selectedFileName );
+        if( !dstFile.exists() ) {
+          dstFile.createNewFile();
+        }
+
+        PinsConfigFileFormatter.format( TMP_DEST_FILE, selectedFileName, DLM_CONFIG_STR, true );
+
+        TsDialogUtils.info( shell, MSG_CONFIG_FILE_DLMCFG_CREATED, selectedFileName );
+      }
+      catch( Exception e ) {
+        LoggerUtils.errorLogger().error( e );
+        TsDialogUtils.error( shell, e );
+      }
+    }
+  }
+
+  /**
+   * Generates dlmcfg file from configuration Doc.
+   *
+   * @param aDoc OpcToS5DataCfgDoc - configuration Doc.
+   * @param aContext ITsGuiContext - context.
+   * @deprecated use {@link #generateDlmCfgFileFromCurrStateNew(OpcToS5DataCfgDoc, ITsGuiContext)} with
+   *             {@link IOpcCommonDlmCfgGenerator}
+   */
+  @Deprecated
+  public static void generateDlmCfgFileFromCurrState( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext ) {
+    String selected = formCfgFileFullName( aDoc, aContext, getDlmCfgRelativeSysPath(), DLMCFG_FILE_EXTENTION );
+    if( selected == null ) {
+      return;
+    }
+    if( selected.endsWith( DLMCFG_FILE_EXTENTION ) ) {
+      selected = selected.substring( 0, selected.indexOf( DLMCFG_FILE_EXTENTION ) );
+    }
+
+    Shell shell = aContext.find( Shell.class );
+
+    IList<String> filterStrs = aDoc.getGroupIds();
+    // new ElemArrayList<>( "TKA1", "TKA2", "TKA3" );
+
+    if( filterStrs.size() == 0 ) {
+      filterStrs = new ElemArrayList<>( TsLibUtils.EMPTY_STRING );
+    }
+
+    for( String fStr : filterStrs ) {
+      try {
+        ISkConnectionSupplier cs = aContext.get( ISkConnectionSupplier.class );
+        TsInternalErrorRtException.checkNull( cs );
+        ISkConnection conn = cs.defConn();
+        TsInternalErrorRtException.checkNull( conn );
+        IGwidFilter filter =
+            fStr.length() > 0 ? new IGwidFilter.DeaultByStrGwidFilter( fStr ) : IGwidFilter.EMPTY_FILTER;
+        IAvTree avTree = OpcToS5DataCfgConverter.convertToDlmCfgTree( aDoc.dataUnits(), conn, aNodeEntity -> {
+          OpcNodeInfo nodeid = aNodeEntity.asValobj();
+          return new Pair<>( OpcToS5DataCfgConverter.OPC_TAG_DEVICE, nodeid.getNodeId().toParseableString() );
+        }, filter );
+        String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
+        AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
+
+        String DLM_CONFIG_STR = "DlmConfig = "; //$NON-NLS-1$
+
+        String selectedFileName =
+            selected + (fStr.length() > 0 ? ("_" + fStr) : TsLibUtils.EMPTY_STRING) + DLMCFG_FILE_EXTENTION;
+        File dstFile = new File( selectedFileName );
+        if( !dstFile.exists() ) {
+          dstFile.createNewFile();
+        }
+
+        PinsConfigFileFormatter.format( TMP_DEST_FILE, selectedFileName, DLM_CONFIG_STR, true );
+
+        TsDialogUtils.info( shell, MSG_CONFIG_FILE_DLMCFG_CREATED, selectedFileName );
       }
       catch( Exception e ) {
         LoggerUtils.errorLogger().error( e );
@@ -370,140 +587,27 @@ public class OpcUaUtils {
     return retVal;
   }
 
-  /**
-   * Generates dlmcfg file from configuration Doc.
-   *
-   * @param aDoc OpcToS5DataCfgDoc - configuration Doc.
-   * @param aContext ITsGuiContext - context.
-   */
-  public static void generateDlmCfgFileFromCurrStateNew( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext ) {
-    String selected = formCfgFileFullName( aDoc, aContext, getDlmCfgRelativeSysPath(), DLMCFG_FILE_EXTENTION );
-    if( selected == null ) {
-      return;
-    }
-    if( selected.endsWith( DLMCFG_FILE_EXTENTION ) ) {
-      selected = selected.substring( 0, selected.indexOf( DLMCFG_FILE_EXTENTION ) );
-    }
+  private static IList<IStringList> getPropertiesWithStartStr( IList<IStringList> aInitProperties, String aStartStr ) {
+    IListEdit<IStringList> filteredAdditionalProperties = new ElemArrayList<>();
 
-    Shell shell = aContext.find( Shell.class );
+    for( IStringList addParam : aInitProperties ) {
+      String name = addParam.get( 0 );
+      String vall = addParam.get( 1 );
+      String path = addParam.get( 2 );
 
-    IList<String> filterStrs = aDoc.getGroupIds();
-    // new ElemArrayList<>( "TKA1", "TKA2", "TKA3" );
+      if( path.startsWith( aStartStr ) ) {
+        String cuttedPath = path.substring( aStartStr.length() );
 
-    if( filterStrs.size() == 0 ) {
-      filterStrs = new ElemArrayList<>( "" );
-    }
+        IStringListEdit filteredddParam = new StringArrayList();
+        filteredddParam.add( name );
+        filteredddParam.add( vall );
+        filteredddParam.add( cuttedPath );
 
-    for( String fStr : filterStrs ) {
-      try {
-        ITsGuiContext convCtx = new TsGuiContext( aContext );
-        convCtx.params().setStr( "group", fStr );
-
-        IOpcCommonDlmCfgGenerator generator = new BaseOpcCommonDlmCfgGenerator( convCtx );
-        generator.setUnits( aDoc.dataUnits() );
-
-        generator.setGwidFilter(
-            fStr.length() > 0 ? new IGwidFilter.DeaultByStrGwidFilter( fStr ) : IGwidFilter.EMPTY_FILTER );
-
-        IComplexTagDetector complexTagDetector =
-            Optional.ofNullable( convCtx.eclipseContext().get( IComplexTagDetector.class ) )
-                .orElse( ( aaUnit, aaContext ) -> false );
-        generator.setComplexTagDetector( complexTagDetector );
-
-        IDevCfgParamValueSource paramValueSource =
-            Optional.ofNullable( convCtx.eclipseContext().get( IDevCfgParamValueSource.class ) )
-                .orElse( ( aaParamName, aaContext ) -> aaContext.params().findByKey( aaParamName ) );
-        generator.setParamValueSource( paramValueSource );
-
-        generator.setAdditionalProperties( aDoc.getProperties() );
-
-        INodeIdConvertor nodeIdConvertor =
-            Optional.ofNullable( convCtx.eclipseContext().get( INodeIdConvertor.class ) ).orElse( aNodeEntity -> {
-              OpcNodeInfo nodeid = aNodeEntity.asValobj();
-              return new Pair<>( OpcToS5DataCfgConverter.OPC_TAG_DEVICE, nodeid.getNodeId().toParseableString() );
-            } );
-
-        generator.setNodeIdConvertor( nodeIdConvertor );
-
-        IAvTree avTree = generator.generate();
-        String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
-        AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
-
-        String DLM_CONFIG_STR = "DlmConfig = "; //$NON-NLS-1$
-
-        String selectedFileName = selected + (fStr.length() > 0 ? ("_" + fStr) : "") + DLMCFG_FILE_EXTENTION;
-        File dstFile = new File( selectedFileName );
-        if( !dstFile.exists() ) {
-          dstFile.createNewFile();
-        }
-
-        PinsConfigFileFormatter.format( TMP_DEST_FILE, selectedFileName, DLM_CONFIG_STR, true );
-
-        TsDialogUtils.info( shell, MSG_CONFIG_FILE_DLMCFG_CREATED, selectedFileName );
-      }
-      catch( Exception e ) {
-        LoggerUtils.errorLogger().error( e );
-        TsDialogUtils.error( shell, e );
+        filteredAdditionalProperties.add( filteredddParam );
       }
     }
-  }
 
-  /**
-   * Generates dlmcfg file from configuration Doc.
-   *
-   * @param aDoc OpcToS5DataCfgDoc - configuration Doc.
-   * @param aContext ITsGuiContext - context.
-   */
-  public static void generateDlmCfgFileFromCurrState( OpcToS5DataCfgDoc aDoc, ITsGuiContext aContext ) {
-    String selected = formCfgFileFullName( aDoc, aContext, getDlmCfgRelativeSysPath(), DLMCFG_FILE_EXTENTION );
-    if( selected == null ) {
-      return;
-    }
-    if( selected.endsWith( DLMCFG_FILE_EXTENTION ) ) {
-      selected = selected.substring( 0, selected.indexOf( DLMCFG_FILE_EXTENTION ) );
-    }
-
-    Shell shell = aContext.find( Shell.class );
-
-    IList<String> filterStrs = aDoc.getGroupIds();
-    // new ElemArrayList<>( "TKA1", "TKA2", "TKA3" );
-
-    if( filterStrs.size() == 0 ) {
-      filterStrs = new ElemArrayList<>( "" );
-    }
-
-    for( String fStr : filterStrs ) {
-      try {
-        ISkConnectionSupplier cs = aContext.get( ISkConnectionSupplier.class );
-        TsInternalErrorRtException.checkNull( cs );
-        ISkConnection conn = cs.defConn();
-        TsInternalErrorRtException.checkNull( conn );
-        IGwidFilter filter =
-            fStr.length() > 0 ? new IGwidFilter.DeaultByStrGwidFilter( fStr ) : IGwidFilter.EMPTY_FILTER;
-        IAvTree avTree = OpcToS5DataCfgConverter.convertToDlmCfgTree( aDoc.dataUnits(), conn, aNodeEntity -> {
-          OpcNodeInfo nodeid = aNodeEntity.asValobj();
-          return new Pair<>( OpcToS5DataCfgConverter.OPC_TAG_DEVICE, nodeid.getNodeId().toParseableString() );
-        }, filter );
-        String TMP_DEST_FILE = "destDlmFile.tmp"; //$NON-NLS-1$
-        AvTreeKeeper.KEEPER.write( new File( TMP_DEST_FILE ), avTree );
-
-        String DLM_CONFIG_STR = "DlmConfig = "; //$NON-NLS-1$
-
-        String selectedFileName = selected + (fStr.length() > 0 ? ("_" + fStr) : "") + DLMCFG_FILE_EXTENTION;
-        File dstFile = new File( selectedFileName );
-        if( !dstFile.exists() ) {
-          dstFile.createNewFile();
-        }
-
-        PinsConfigFileFormatter.format( TMP_DEST_FILE, selectedFileName, DLM_CONFIG_STR, true );
-
-        TsDialogUtils.info( shell, MSG_CONFIG_FILE_DLMCFG_CREATED, selectedFileName );
-      }
-      catch( Exception e ) {
-        LoggerUtils.errorLogger().error( e );
-        TsDialogUtils.error( shell, e );
-      }
-    }
+    return filteredAdditionalProperties;
   }
 
   @SuppressWarnings( "null" )

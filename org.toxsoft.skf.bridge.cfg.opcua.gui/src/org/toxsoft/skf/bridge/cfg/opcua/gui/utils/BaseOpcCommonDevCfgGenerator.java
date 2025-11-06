@@ -1,7 +1,5 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.utils;
 
-import java.util.*;
-
 import org.toxsoft.core.tsgui.bricks.ctx.*;
 import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.avtree.*;
@@ -19,6 +17,11 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.uskat.core.connection.*;
 import org.toxsoft.uskat.core.gui.conn.*;
 
+/**
+ * TODO
+ *
+ * @author AUTHOR_NAME
+ */
 public class BaseOpcCommonDevCfgGenerator
     implements IOpcCommonDevCfgGenerator {
 
@@ -167,6 +170,8 @@ public class BaseOpcCommonDevCfgGenerator
 
     IAvTree tree = AvTree.createSingleAvTree( OPC2S5_CFG_NODE_ID, opSet, nodes );
 
+    BaseOpcCommonDlmCfgGenerator.insertProperties( tree, properties, context );
+
     return tree;
   }
 
@@ -175,8 +180,6 @@ public class BaseOpcCommonDevCfgGenerator
 
     // массив тегов группы
     AvTree tagsMassivTree = AvTree.createArrayAvTree();
-
-    Set<String> alreadyAddedTags = new HashSet<>();
 
     for( CfgOpcUaNode tagData : aCfgNodes ) {
       if( !aGroupFilter.isValid( tagData ) ) {
