@@ -162,7 +162,7 @@ public class BaseOpcCommonDlmCfgGenerator
 
     result = AvTree.createSingleAvTree( DLM_CFG_NODE_ID_TEMPLATE, opSet, nodes );
 
-    insertProperties( result, properties, context );
+    insertProperties( result, properties, paramValueSource, context );
 
     return result;
   }
@@ -856,7 +856,8 @@ public class BaseOpcCommonDlmCfgGenerator
     return pinTree1;
   }
 
-  static void insertProperties( IAvTree avTree, IList<IStringList> aProperties, ITsGuiContext aContext ) {
+  public static void insertProperties( IAvTree avTree, IList<IStringList> aProperties,
+      IDevCfgParamValueSource aParamValueSource, ITsGuiContext aContext ) {
     for( IStringList aProp : aProperties ) {
       Iterator<String> iterator = aProp.iterator();
       String name = iterator.next();
@@ -866,12 +867,13 @@ public class BaseOpcCommonDlmCfgGenerator
       IList<AvTree> destinations = getPropertyDestination( avTree, path );
 
       for( AvTree dest : destinations ) {
-        dest.fieldsEdit().setStr( name, parseAndConvertValue( value, aContext ) );
+        dest.fieldsEdit().setStr( name, parseAndConvertValue( value, aParamValueSource, aContext ) );
       }
     }
   }
 
-  static String parseAndConvertValue( String aValue, ITsGuiContext aContext ) {
+  static String parseAndConvertValue( String aValue, IDevCfgParamValueSource aParamValueSource,
+      ITsGuiContext aContext ) {
     String value = aValue;
 
     while( value.contains( "{$" ) ) {
@@ -879,7 +881,8 @@ public class BaseOpcCommonDlmCfgGenerator
       int eIndex = value.indexOf( "}", sIndex );
       if( eIndex > 0 ) {
         String paramName = value.substring( sIndex + 2, eIndex );
-        IAtomicValue paramVal = aContext.params().findByKey( paramName );
+        IAtomicValue paramVal = aParamValueSource.getDevCfgParamValue( paramName, aContext );// aContext.params().findByKey(
+                                                                                             // paramName );
 
         if( paramVal != null && paramVal.isAssigned() ) {
           value = value.replace( "{$" + paramName + "}", paramVal.asString() );

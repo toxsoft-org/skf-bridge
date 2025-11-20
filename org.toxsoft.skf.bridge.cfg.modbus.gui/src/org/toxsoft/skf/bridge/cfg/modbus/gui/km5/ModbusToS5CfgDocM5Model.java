@@ -5,10 +5,16 @@ import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
 import static org.toxsoft.skf.bridge.cfg.modbus.gui.l10n.ISkBridgeCfgModbusGuiSharedResources.*;
 
+import org.toxsoft.core.tsgui.m5.model.*;
 import org.toxsoft.core.tsgui.m5.model.impl.*;
 import org.toxsoft.core.tsgui.m5.std.fields.*;
 import org.toxsoft.core.tsgui.rcp.valed.*;
+import org.toxsoft.core.tsgui.valed.api.*;
 import org.toxsoft.core.tslib.av.*;
+import org.toxsoft.core.tslib.coll.*;
+import org.toxsoft.core.tslib.coll.primtypes.*;
+import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
+//import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 
 /**
  * M5 model realization for {@link ModbusToS5CfgDoc} entities.
@@ -48,6 +54,11 @@ public class ModbusToS5CfgDocM5Model
    * Cfg file name (without extension)
    */
   public static final String FID_CFG_FILE_NAME = "cfg.file.name"; //$NON-NLS-1$
+
+  /**
+   * Attr id for additional properties to modify generated cfg files
+   */
+  public static final String FID_ADDITIONAL_PROPERTIES = "additional.properties"; //$NON-NLS-1$
 
   /**
    * Attribute {@link ModbusToS5CfgDoc#getL2Path() } path to l2 dir
@@ -90,13 +101,52 @@ public class ModbusToS5CfgDocM5Model
       };
 
   /**
+   * Attribute {@link ModbusToS5CfgDoc#getProperties() } additional properties to modify generated cfg files
+   */
+  public static final IM5MultiModownFieldDef<ModbusToS5CfgDoc, IStringList> ADDITIONAL_PROPERTIES =
+      new M5MultiModownFieldDef<>( FID_ADDITIONAL_PROPERTIES, StringPropertiesM5Model.MODEL_ID ) {
+
+        @Override
+        protected void doInit() {
+          setNameAndDescription( STR_BRIDGE_ADD_PROPERTIES, STR_BRIDGE_ADD_PROPERTIES_D );
+          setFlags( M5FF_COLUMN | M5FF_DETAIL );
+          // пропишем сразу стандартный продюсер
+          // IStringListEdit dfltProducer = new StringArrayList();
+          // dfltProducer.add( "javaClassName" );
+          // dfltProducer.add( "org.toxsoft.l2.thd.opc.ua.milo.OpcUaMiloDriverProducer" );
+          // dfltProducer.add( "dev" );
+          // IListEdit<IStringList> dfltProps = new ElemArrayList<IStringList>();
+          // dfltProps.add( dfltProducer );
+          // setDefaultValue( dfltProps );
+          // задаем нормальный размер!
+          tsContext().params().setInt( IValedControlConstants.OPDEF_VERTICAL_SPAN, 3 );
+        }
+
+        protected IList<IStringList> doGetFieldValue( ModbusToS5CfgDoc aEntity ) {
+          return aEntity.getProperties();
+        }
+
+        protected String doGetFieldValueName( ModbusToS5CfgDoc aEntity ) {
+          IList<IStringList> props = aEntity.getProperties();
+          StringBuilder result = new StringBuilder();
+
+          for( IStringList prop : props ) {
+            result.append( prop.first() );
+            result.append( ", " ); //$NON-NLS-1$
+          }
+
+          return result.toString();
+        }
+      };
+
+  /**
    * Constructor.
    */
   public ModbusToS5CfgDocM5Model() {
     super( MODEL_ID, ModbusToS5CfgDoc.class );
     // прячем никому не нужный ID
     ID.setFlags( M5FF_HIDDEN | M5FF_INVARIANT );
-    addFieldDefs( ID, NAME, PATH_TO_L2, CFG_FILE_NAME, DESCRIPTION );
+    addFieldDefs( ID, NAME, PATH_TO_L2, CFG_FILE_NAME, DESCRIPTION, ADDITIONAL_PROPERTIES );
 
   }
 }

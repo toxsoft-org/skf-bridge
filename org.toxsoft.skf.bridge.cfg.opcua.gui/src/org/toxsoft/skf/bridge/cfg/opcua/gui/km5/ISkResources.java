@@ -77,16 +77,20 @@ public interface ISkResources {
   /**
    * {@link OpcToS5DataCfgDocM5Model}
    */
-  String STR_N_PATH_TO_L2      = Messages.STR_N_PATH_TO_L2;
-  String STR_D_PATH_TO_L2      = Messages.STR_D_PATH_TO_L2;
-  String STR_N_CFG_FILE_NAME   = Messages.STR_N_CFG_FILE_NAME;
-  String STR_D_CFG_FILE_NAME   = Messages.STR_D_CFG_FILE_NAME;
-  String STR_N_END_POINT_URL   = "End point URL";
-  String STR_D_END_POINT_URL   = "End point URL (IP:port)";
-  String STR_N_OPC_UA_USER     = "user";
-  String STR_D_OPC_UA_USER     = "OPC UA user";
-  String STR_N_OPC_UA_PASSWORD = "password";
-  String STR_D_OPC_UA_PASSWORD = "OPC UA password";
+  String STR_N_PATH_TO_L2            = Messages.STR_N_PATH_TO_L2;
+  String STR_D_PATH_TO_L2            = Messages.STR_D_PATH_TO_L2;
+  String STR_N_CFG_FILE_NAME         = Messages.STR_N_CFG_FILE_NAME;
+  String STR_D_CFG_FILE_NAME         = Messages.STR_D_CFG_FILE_NAME;
+  String STR_N_END_POINT_URL         = "End point URL";
+  String STR_D_END_POINT_URL         = "End point URL (IP:port)";
+  String STR_N_OPC_UA_USER           = "user";
+  String STR_D_OPC_UA_USER           = "OPC UA user";
+  String STR_N_OPC_UA_PASSWORD       = "password";
+  String STR_D_OPC_UA_PASSWORD       = "OPC UA password";
+  String STR_BRIDGE_ADD_PROPERTIES   = "Add. props";
+  String STR_BRIDGE_ADD_PROPERTIES_D = "Additional properties";
+  String STR_BRIDGE_GROUPS           = "Groups";
+  String STR_BRIDGE_GROUPS_D         = "Groups";
 
   /**
    * {@link OpcToS5DataCfgUnitM5LifecycleManager}

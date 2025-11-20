@@ -1,7 +1,5 @@
 package org.toxsoft.skf.bridge.cfg.modbus.gui.km5;
 
-import static org.toxsoft.skf.bridge.cfg.modbus.gui.l10n.ISkBridgeCfgModbusGuiSharedResources.*;
-
 import java.io.*;
 
 import org.toxsoft.core.tslib.bricks.keeper.*;
@@ -14,7 +12,6 @@ import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.utils.errors.*;
-import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.type.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
@@ -78,6 +75,23 @@ public class ModbusToS5CfgDoc
             aSw.writeEol();
           }
 
+          IList<IStringList> properties = aEntity.getProperties();
+
+          // Properties
+          if( properties.size() > 0 ) {
+            // props count
+            aSw.writeInt( properties.size() );
+            aSw.writeSeparatorChar();
+            aSw.writeEol();
+
+            for( int i = 0; i < properties.size(); i++ ) {
+              // one prop
+              StringListKeeper.KEEPER.write( aSw, properties.get( i ) );
+              aSw.writeSeparatorChar();
+              aSw.writeEol();
+            }
+          }
+
           aSw.writeQuotedString( CHECK_DOC );
           aSw.decNewLine();
         }
@@ -109,14 +123,54 @@ public class ModbusToS5CfgDoc
             units.add( unit );
           }
 
-          if( !aSr.readQuotedString().equals( CHECK_DOC ) ) {
-            LoggerUtils.errorLogger().error( LOG_ERR_READING_CONFIG );
+          // if( !aSr.readQuotedString().equals( CHECK_DOC ) ) {
+          // LoggerUtils.errorLogger().error( LOG_ERR_READING_CONFIG );
+          // }
+
+          IListEdit<IStringList> properties = new ElemArrayList<>();
+
+          // для совместимости с предыдущей версией
+          try {
+            String line = aSr.readUntilDelimiter();
+            if( line.equals( "\"" + CHECK_DOC + "\"" ) ) {
+              System.out.println( "For debug:  empty properties" );
+            }
+            else {
+              try {
+                // свойства
+                int propsCount = Integer.parseInt( line.trim() );// aSr.readInt();
+                aSr.ensureSeparatorChar();
+
+                for( int i = 0; i < propsCount; i++ ) {
+                  // one prop
+                  IStringList prop = StringListKeeper.KEEPER.read( aSr );
+                  aSr.ensureSeparatorChar();
+                  properties.add( prop );
+                }
+
+                System.out.println( "For debug: props count = " + propsCount );
+
+                aSr.ensureString( "\"" + CHECK_DOC + "\"" );
+              }
+              catch( Exception ee ) {
+                // для совместимости с предыдущей версией
+
+                System.out.println( "Error Doc Read" );
+              }
+            }
+            // aSr.ensureString( "\"" + CHECK_DOC + "\"" );
+            // aSr.readQuotedString();
+
+          }
+          catch( Exception e ) {
+            System.out.println( "Error Doc Read" );
           }
 
           ModbusToS5CfgDoc result = new ModbusToS5CfgDoc( id, name, descr );
           result.dataCfgUnits = units;
           result.setL2Path( l2Path );
           result.setCfgFilesPrefix( cfgFileName );
+          result.setProperties( properties );
           return result;
         }
       };
@@ -130,6 +184,11 @@ public class ModbusToS5CfgDoc
    * List of nodes cfgs.
    */
   private IStringMapEdit<ModbusNode> nodesCfgs = new StringMap<>();
+
+  /**
+   * Доп свойства
+   */
+  private IListEdit<IStringList> properties = new ElemArrayList<>();
 
   /**
    * Path to l2 bridge
@@ -200,6 +259,14 @@ public class ModbusToS5CfgDoc
    */
   public void removeDataUnit( OpcToS5DataCfgUnit aDataUnit ) {
     dataCfgUnits.remove( aDataUnit );
+  }
+
+  public IList<IStringList> getProperties() {
+    return properties;
+  }
+
+  public void setProperties( IList<IStringList> aProperties ) {
+    properties = new ElemArrayList<>( aProperties );
   }
 
   /**

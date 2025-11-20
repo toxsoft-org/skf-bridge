@@ -70,6 +70,16 @@ public class OpcToS5DataCfgDocM5Model
   public static final String FID_PASSWORD_OPC_UA = "password.opc_ua"; //$NON-NLS-1$
 
   /**
+   * Attr id for groups to generate separete cfg files
+   */
+  public static final String FID_GROUPS = "groups"; //$NON-NLS-1$
+
+  /**
+   * Attr id for additional properties to modify generated cfg files
+   */
+  public static final String FID_ADDITIONAL_PROPERTIES = "additional.properties"; //$NON-NLS-1$
+
+  /**
    * Attribute {@link OpcToS5DataCfgDoc#getL2Path() } path to l2 dir
    */
   public static final M5AttributeFieldDef<OpcToS5DataCfgDoc> PATH_TO_L2 =
@@ -165,12 +175,15 @@ public class OpcToS5DataCfgDocM5Model
 
       };
 
+  /**
+   * Attribute {@link OpcToS5DataCfgDoc#getGroupIds() } groups
+   */
   public static final IM5MultiModownFieldDef<OpcToS5DataCfgDoc, String> GROUPS =
-      new M5MultiModownFieldDef<>( "GROUPS_ID", SimpleStringM5Model.MODEL_ID ) {
+      new M5MultiModownFieldDef<>( FID_GROUPS, SimpleStringM5Model.MODEL_ID ) {
 
         @Override
         protected void doInit() {
-          setNameAndDescription( "Groups", "Groups" ); //$NON-NLS-1$ //$NON-NLS-2$
+          setNameAndDescription( STR_BRIDGE_GROUPS, STR_BRIDGE_GROUPS_D );
           setFlags( M5FF_COLUMN | M5FF_DETAIL );
           // задаем нормальный размер!
           params().setInt( IValedControlConstants.OPDEF_VERTICAL_SPAN, 5 );
@@ -186,26 +199,29 @@ public class OpcToS5DataCfgDocM5Model
 
           for( String group : groups ) {
             result.append( group );
-            result.append( ", " );
+            result.append( ", " ); //$NON-NLS-1$
           }
 
           return result.toString();
         }
       };
 
+  /**
+   * Attribute {@link OpcToS5DataCfgDoc#getProperties() } additional properties to modify generated cfg files
+   */
   public static final IM5MultiModownFieldDef<OpcToS5DataCfgDoc, IStringList> PROPERTIES =
-      new M5MultiModownFieldDef<>( "PROPERTIES_ID", StringPropertiesM5Model.MODEL_ID ) {
+      new M5MultiModownFieldDef<>( FID_ADDITIONAL_PROPERTIES, StringPropertiesM5Model.MODEL_ID ) {
 
         @Override
         protected void doInit() {
-          setNameAndDescription( "Properties", "Properties" ); //$NON-NLS-1$ //$NON-NLS-2$
+          setNameAndDescription( STR_BRIDGE_ADD_PROPERTIES, STR_BRIDGE_ADD_PROPERTIES_D );
           setFlags( M5FF_COLUMN | M5FF_DETAIL );
           // пропишем сразу стандартный продюсер
           IStringListEdit dfltProducer = new StringArrayList();
-          dfltProducer.add( "javaClassName" );
-          dfltProducer.add( "org.toxsoft.l2.thd.opc.ua.milo.OpcUaMiloDriverProducer" );
-          dfltProducer.add( "dev" );
-          IListEdit<IStringList> dfltProps = new ElemArrayList<IStringList>();
+          dfltProducer.add( "javaClassName" ); //$NON-NLS-1$
+          dfltProducer.add( "org.toxsoft.l2.thd.opc.ua.milo.OpcUaMiloDriverProducer" ); //$NON-NLS-1$
+          dfltProducer.add( "dev#" ); //$NON-NLS-1$
+          IListEdit<IStringList> dfltProps = new ElemArrayList<>();
           dfltProps.add( dfltProducer );
           setDefaultValue( dfltProps );
           // задаем нормальный размер!
@@ -222,7 +238,7 @@ public class OpcToS5DataCfgDocM5Model
 
           for( IStringList prop : props ) {
             result.append( prop.first() );
-            result.append( ", " );
+            result.append( ", " ); //$NON-NLS-1$
           }
 
           return result.toString();

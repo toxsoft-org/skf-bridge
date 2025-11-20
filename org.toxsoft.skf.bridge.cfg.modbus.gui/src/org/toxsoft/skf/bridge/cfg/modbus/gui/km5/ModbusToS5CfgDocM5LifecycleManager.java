@@ -4,6 +4,7 @@ import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tsgui.m5.model.impl.*;
 import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.coll.*;
+import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.skf.bridge.cfg.modbus.gui.utils.*;
 
 /**
@@ -37,6 +38,9 @@ public class ModbusToS5CfgDocM5LifecycleManager
     newDoc.setCfgFilesPrefix( cfgFileNameVal.asString().trim() );
     newDoc.setL2Path( pathToL2Val.asValobj() );
 
+    IList<IStringList> props = aValues.get( ModbusToS5CfgDocM5Model.ADDITIONAL_PROPERTIES );
+    newDoc.setProperties( props );
+
     master().saveCfgDoc( newDoc );
 
     return newDoc;
@@ -57,6 +61,9 @@ public class ModbusToS5CfgDocM5LifecycleManager
 
     origDoc.setCfgFilesPrefix( cfgFileNameVal.asString().trim() );
     origDoc.setL2Path( pathToL2Val.asValobj() );
+
+    IList<IStringList> props = aValues.get( ModbusToS5CfgDocM5Model.ADDITIONAL_PROPERTIES );
+    origDoc.setProperties( props );
 
     master().saveCfgDoc( origDoc );
 

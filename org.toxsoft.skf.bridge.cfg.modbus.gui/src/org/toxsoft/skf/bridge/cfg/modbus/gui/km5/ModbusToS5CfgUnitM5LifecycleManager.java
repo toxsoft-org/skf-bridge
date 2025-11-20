@@ -7,6 +7,7 @@ import java.io.*;
 import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
+import org.toxsoft.core.tsgui.bricks.ctx.impl.*;
 import org.toxsoft.core.tsgui.dialogs.*;
 import org.toxsoft.core.tsgui.m5.*;
 import org.toxsoft.core.tsgui.m5.model.impl.*;
@@ -191,7 +192,8 @@ public class ModbusToS5CfgUnitM5LifecycleManager
       TsInternalErrorRtException.checkNull( cs );
       ISkConnection conn = cs.defConn();
       TsInternalErrorRtException.checkNull( conn );
-      IAvTree avTree = ModbusCfgDocConverter.convertToDevCfgTree( aContext, master() );
+      IAvTree avTree = convertDocToDevCfgTreeNew( aContext, master() );// ModbusCfgDocConverter.convertToDevCfgTree(
+                                                                       // aContext, master() );
       String TMP_DEST_FILE = "destDevFile.tmp"; //$NON-NLS-1$
       File tmpFile = new File( TMP_DEST_FILE );
       AvTreeKeeper.KEEPER.write( tmpFile, avTree );
@@ -205,6 +207,34 @@ public class ModbusToS5CfgUnitM5LifecycleManager
     catch( Exception e ) {
       LoggerUtils.errorLogger().error( e );
       TsDialogUtils.error( shell, e );
+    }
+  }
+
+  private IAvTree convertDocToDevCfgTreeNew( ITsGuiContext aContext, ModbusToS5CfgDoc aDoc ) {
+    try {
+
+      ModbusToS5CfgDocService docService = new ModbusToS5CfgDocService( aContext );
+      IListEdit<ModbusDevice> modbusDevices = new ElemArrayList<>( docService.getModbusDevices() );
+
+      ITsGuiContext convCtx = new TsGuiContext( aContext );
+
+      IModbusCommonDevCfgGenerator generator = new BaseModbusCommonDevCfgGenerator( convCtx );
+      aDoc.ensureNodesCfgs();
+      generator.setDevices( modbusDevices );
+      generator.setUnits( aDoc.getNodesCfgs() );
+
+      String devPropertiesPathStartStr = "dev#";
+
+      generator.setAdditionalProperties(
+          OpcUaUtils.getPropertiesWithStartStr( aDoc.getProperties(), devPropertiesPathStartStr ) );
+
+      return generator.generate();
+    }
+    catch( Exception e ) {
+      LoggerUtils.errorLogger().error( e );
+      Shell shell = aContext.find( Shell.class );
+      TsDialogUtils.error( shell, e );
+      return null;
     }
   }
 
