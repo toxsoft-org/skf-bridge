@@ -1,6 +1,5 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui;
 
-import org.toxsoft.skf.bridge.cfg.opcua.gui.Messages;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 
 /**
@@ -11,10 +10,10 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 @SuppressWarnings( value = { "javadoc" } ) // "nls",
 public interface IBridgeCfgOpcUaResources {
 
-  String MSG_ERR_INV_GWID_FORMAT = Messages.getString( "MSG_ERR_INV_GWID_FORMAT" ); //$NON-NLS-1$
-  String MSG_ERR_INV_SKID_FORMAT = Messages.getString( "MSG_ERR_INV_SkID_FORMAT" ); //$NON-NLS-1$
+  // String MSG_ERR_INV_GWID_FORMAT = Messages.getString( "MSG_ERR_INV_GWID_FORMAT" ); //$NON-NLS-1$
+  // String MSG_ERR_INV_SKID_FORMAT = Messages.getString( "MSG_ERR_INV_SkID_FORMAT" ); //$NON-NLS-1$
 
-  String STR_N_PARAM_NODEID        = Messages.getString( "STR_N_PARAM_NODEID" );        //$NON-NLS-1$
+  // String STR_N_PARAM_NODEID = Messages.getString( "STR_N_PARAM_NODEID" ); //$NON-NLS-1$
   String STR_N_PARAM_STRID         = Messages.getString( "STR_N_PARAM_STRID" );         //$NON-NLS-1$
   String STR_D_PARAM_STRID         = Messages.getString( "STR_D_PARAM_STRID" );         //$NON-NLS-1$
   String STR_D_BY_OPC_NODES_STRUCT = Messages.getString( "STR_D_BY_OPC_NODES_STRUCT" ); //$NON-NLS-1$

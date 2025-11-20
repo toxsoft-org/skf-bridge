@@ -29,6 +29,8 @@ import org.toxsoft.core.tslib.av.impl.*;
 import org.toxsoft.core.tslib.bricks.apprefs.*;
 import org.toxsoft.core.tslib.bricks.apprefs.impl.*;
 import org.toxsoft.core.tslib.coll.*;
+import org.toxsoft.core.tslib.coll.primtypes.*;
+import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.core.txtproj.lib.storage.*;
@@ -58,6 +60,8 @@ public class OpcUaServerConnCfgEditorPanel
   IM5CollectionPanel<IOpcUaServerConnCfg> opcUaConnCfgPanel;
 
   private CTabFolder tabFolder;
+
+  private IStringMapEdit<CTabItem> tabItemsMap = new StringMap<>();
 
   private OpcUaTreeBrowserPanel nodesBrowser;
 
@@ -221,17 +225,22 @@ public class OpcUaServerConnCfgEditorPanel
     try {
       progressDialog.run( true, true, aMonitor -> {
         shell.getDisplay().asyncExec( () -> {
-
-          ITsGuiContext browserContext = new TsGuiContext( tsContext() );
-
-          // выясняем текущего пользователя
-          // ISkConnectionSupplier conSupp = tsContext().get( ISkConnectionSupplier.class );
-          // ISkConnection connectionForUser = conSupp.defConn();
+          // if configuration is already open, activate item and return
+          CTabItem tabItem = tabItemsMap.findByKey( aSelCfg.id() );
+          if( tabItem != null ) {
+            tabFolder.setSelection( tabItem );
+            return;
+          }
 
           // создаем новую закладку
-          CTabItem tabItem = new CTabItem( tabFolder, SWT.CLOSE );
+          tabItem = new CTabItem( tabFolder, SWT.CLOSE );
+          tabItemsMap.put( aSelCfg.id(), tabItem );
+          tabItem.addDisposeListener( e -> tabItemsMap.removeByKey( aSelCfg.id() ) );
+
           tabItem.setText( aSelCfg.nmName() );
+
           // create vertical sash
+          ITsGuiContext browserContext = new TsGuiContext( tsContext() );
           SashForm verticalSashForm = new SashForm( tabFolder, SWT.VERTICAL );
           nodesBrowser = new OpcUaTreeBrowserPanel( verticalSashForm, browserContext, aSelCfg );
           UaVariableNodeListPanel nodesInspector =

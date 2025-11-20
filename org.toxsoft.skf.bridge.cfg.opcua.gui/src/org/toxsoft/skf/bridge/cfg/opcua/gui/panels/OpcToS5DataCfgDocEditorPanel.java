@@ -28,6 +28,8 @@ import org.toxsoft.core.tsgui.widgets.*;
 import org.toxsoft.core.tslib.av.impl.*;
 import org.toxsoft.core.tslib.bricks.strid.more.*;
 import org.toxsoft.core.tslib.coll.*;
+import org.toxsoft.core.tslib.coll.primtypes.*;
+import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.login.*;
@@ -96,6 +98,8 @@ public class OpcToS5DataCfgDocEditorPanel
 
   private TextControlContribution textContr1;
   private TextControlContribution textContr2;
+
+  private IStringMapEdit<CTabItem> tabItemsMap = new StringMap<>();
 
   private IM5CollectionPanel<CfgOpcUaNode> cfgNodesPanel;
 
@@ -182,10 +186,20 @@ public class OpcToS5DataCfgDocEditorPanel
   }
 
   protected void editOpcCfgDoc( OpcToS5DataCfgDoc aSelDoc ) {
+    // if configuration is already edited, activate item and return
+    CTabItem tabItem = tabItemsMap.findByKey( aSelDoc.id() );
+    if( tabItem != null ) {
+      tabFolder.setSelection( tabItem );
+      return;
+    }
 
     // создаем новую общую закладку закладку
-    CTabItem tabItem = new CTabItem( tabFolder, SWT.CLOSE );
+    tabItem = new CTabItem( tabFolder, SWT.CLOSE );
+    tabItemsMap.put( aSelDoc.id(), tabItem );
+    tabItem.addDisposeListener( e -> tabItemsMap.removeByKey( aSelDoc.id() ) );
+
     tabItem.setText( aSelDoc.nmName() );
+    tabItem.setToolTipText( aSelDoc.description() );
 
     TsComposite frame = new TsComposite( tabFolder );
     frame.setLayout( new BorderLayout() );
