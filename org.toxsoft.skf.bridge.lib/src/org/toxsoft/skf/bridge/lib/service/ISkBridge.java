@@ -23,4 +23,6 @@ public interface ISkBridge
 
   // TODO bridge config: maybe BLOB string (or several BLOBs)?
 
+  // TODO bridge commands: restart, shutdown, set_config, etc
+
 }

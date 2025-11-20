@@ -33,15 +33,4 @@ interface IPackageConstants {
   TsActionDef ACDEF_COPY_ALL =
       TsActionDef.ofPush2( ACTID_COPY_ALL, STR_ACT_MULTI_COPY, STR_ACT_MULTI_COPY_D, ICONID_LIST_ADD_ALL );
 
-  // GOGA 2025-10-25 --- remove unused code (copy-pasted from OPC UA configurator)
-  // String ACTID_EDIT_NODES = SK_ID + ".act.EditNodes"; //$NON-NLS-1$
-  // TsActionDef ACDEF_EDIT_NODES =
-  // TsActionDef.ofPush2( ACTID_EDIT_NODES, STR_N_EDIT_OPC_UA_NODES, STR_D_EDIT_OPC_UA_NODES, ICONID_EDIT_NODES );
-  // ---
-  // GOGA 2025-10-25 --- remove "Select USkat server" button
-  // String ACTID_S5_SERVER_SELECT = SK_ID + ".act.server_select"; //$NON-NLS-1$
-  // TsActionDef ACDEF_S5_SERVER_SELECT = TsActionDef.ofPush2( ACTID_S5_SERVER_SELECT, STR_N_SELECT_S5_SERVER,
-  // STR_D_SELECT_S5_SERVER, ICONID_S5_SERVER_SELECT );
-  // ---
-
 }

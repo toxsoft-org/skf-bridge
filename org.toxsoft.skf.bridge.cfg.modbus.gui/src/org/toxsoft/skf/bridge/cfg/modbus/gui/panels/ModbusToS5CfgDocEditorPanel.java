@@ -76,9 +76,7 @@ public class ModbusToS5CfgDocEditorPanel
 
   private CTabFolder tabFolder;
 
-  // GOGA 2025-10-25 --- remove "Select USkat server" button
-  // private TextControlContribution textContr1;
-  // ---
+  private IMapEdit<ModbusToS5CfgDoc, CTabItem> tabItemsMap = new ElemMap<>();
 
   /**
    * Current selected IP address
@@ -157,8 +155,6 @@ public class ModbusToS5CfgDocEditorPanel
 
   }
 
-  private static IMapEdit<ModbusToS5CfgDoc, CTabItem> tabItemsMap = new ElemMap<>();
-
   protected void editOpcCfgDoc( ModbusToS5CfgDoc aSelDoc ) {
     // if configuration is already edited, activate item and return
     CTabItem tabItem = tabItemsMap.findByKey( aSelDoc );
@@ -200,18 +196,9 @@ public class ModbusToS5CfgDocEditorPanel
     TsToolbar toolBar = new TsToolbar( ctx );
     toolBar.setIconSize( EIconSize.IS_24X24 );
     toolBar.addActionDef( ACDEF_SAVE_DOC );
-    // GOGA 2025-10-25 --- remove "Select USkat server" button
-    // toolBar.addActionDef( ACDEF_S5_SERVER_SELECT );
-    // toolBar.addSeparator();
-    // ---
 
     Control toolbarCtrl = toolBar.createControl( frame );
     toolbarCtrl.setLayoutData( BorderLayout.NORTH );
-
-    // GOGA 2025-10-25 --- remove "Select USkat server" button
-    // textContr1 = new TextControlContribution( "Label", 200, STR_SK_CONN_DESCR, SWT.NONE ); //$NON-NLS-1$
-    // toolBar.addContributionItem( textContr1 );
-    // ---
 
     IM5Domain m5 = conn.scope().get( IM5Domain.class );
 
@@ -222,19 +209,6 @@ public class ModbusToS5CfgDocEditorPanel
           service.saveCfgDoc( aSelDoc );
           break;
         }
-        // GOGA 2025-10-25 --- remove "Select USkat server" button
-        // case ACTID_S5_SERVER_SELECT: {
-        // ISkideExternalConnectionsService connService =
-        // ctx.eclipseContext().get( ISkideExternalConnectionsService.class );
-        // IdChain idChain = connService.selectConfigAndOpenConnection( ctx );
-        // if( idChain != null ) {
-        // ctx.put( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_S5_CONNECTION, idChain );
-        // textContr1.setText( STR_SK_CONN_DESCR + idChain.first() );
-        // }
-        //
-        // break;
-        // }
-        // ---
         default:
           break;
       }
@@ -246,12 +220,6 @@ public class ModbusToS5CfgDocEditorPanel
     // IdChain defaultConnIdChain = connSup.getDefaultConnectionKey();
     IdChain defaultConnIdChain = ISkConnectionSupplier.DEF_CONN_ID;
     ctx.put( OpcToS5DataCfgUnitM5Model.OPCUA_BRIDGE_CFG_S5_CONNECTION, defaultConnIdChain );
-
-    // GOGA 2025-10-25 --- remove "Select USkat server" button
-    // String defConnName = defaultConnIdChain.first() != null ? defaultConnIdChain.first() :
-    // STR_DEFAULT_WORKROOM_SK_CONN;
-    // textContr1.setText( STR_SK_CONN_DESCR + defConnName );
-    // ---
 
     // Модель cвязи Gwid -> Modbus register
     IM5Model<OpcToS5DataCfgUnit> linksModel =
