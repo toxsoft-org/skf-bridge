@@ -73,6 +73,8 @@ public interface ISkBridgeCfgModbusGuiSharedResources {
   String STR_BRIDGE_CFG_FILE_DIR_D       = Messages.getString( "STR_BRIDGE_CFG_FILE_DIR_D" );       //$NON-NLS-1$
   String STR_BRIDGE_CFG_FILE_BARE_NAME   = Messages.getString( "STR_BRIDGE_CFG_FILE_BARE_NAME" );   //$NON-NLS-1$
   String STR_BRIDGE_CFG_FILE_BARE_NAME_D = Messages.getString( "STR_BRIDGE_CFG_FILE_BARE_NAME_D" ); //$NON-NLS-1$
+  String STR_BRIDGE_ADD_PROPERTIES       = Messages.getString( "STR_BRIDGE_ADD_PROPERTIES" );       //$NON-NLS-1$
+  String STR_BRIDGE_ADD_PROPERTIES_D     = Messages.getString( "STR_BRIDGE_ADD_PROPERTIES_D" );     //$NON-NLS-1$
 
   /**
    * {@link ModbusDeviceOptionsUtils}

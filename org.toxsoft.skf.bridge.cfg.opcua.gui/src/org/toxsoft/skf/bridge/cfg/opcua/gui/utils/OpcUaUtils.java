@@ -587,7 +587,7 @@ public class OpcUaUtils {
     return retVal;
   }
 
-  private static IList<IStringList> getPropertiesWithStartStr( IList<IStringList> aInitProperties, String aStartStr ) {
+  public static IList<IStringList> getPropertiesWithStartStr( IList<IStringList> aInitProperties, String aStartStr ) {
     IListEdit<IStringList> filteredAdditionalProperties = new ElemArrayList<>();
 
     for( IStringList addParam : aInitProperties ) {

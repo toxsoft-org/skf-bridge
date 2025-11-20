@@ -170,7 +170,7 @@ public class BaseOpcCommonDevCfgGenerator
 
     IAvTree tree = AvTree.createSingleAvTree( OPC2S5_CFG_NODE_ID, opSet, nodes );
 
-    BaseOpcCommonDlmCfgGenerator.insertProperties( tree, properties, context );
+    BaseOpcCommonDlmCfgGenerator.insertProperties( tree, properties, paramValueSource, context );
 
     return tree;
   }
