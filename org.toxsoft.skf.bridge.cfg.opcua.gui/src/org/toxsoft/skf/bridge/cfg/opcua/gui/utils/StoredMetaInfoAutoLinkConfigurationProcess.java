@@ -6,6 +6,7 @@ import static org.toxsoft.skf.bridge.cfg.opcua.gui.utils.OpcUaUtils.*;
 
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.toxsoft.core.tsgui.bricks.ctx.*;
+import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.opset.impl.*;
 import org.toxsoft.core.tslib.bricks.threadexec.*;
 import org.toxsoft.core.tslib.coll.*;
@@ -190,7 +191,7 @@ public class StoredMetaInfoAutoLinkConfigurationProcess
 
         OpcUaUtils.OP_CMD_OPC_ID.setValue( realization, avInt( cmdOpcCode ) );
 
-        String name = STR_LINK_PREFIX + cmd2Nodes.gwid().asString();
+        String name = STR_LINK_PREFIX + cmd2Nodes.gwid().canonicalString();
 
         OpcToS5DataCfgUnit unit = new OpcToS5DataCfgUnit( strid, name, gwids, convertNodeListToAtomicList( nodes ) );
 
@@ -244,7 +245,7 @@ public class StoredMetaInfoAutoLinkConfigurationProcess
         OpcUaUtils.OP_IS_CURR.setValue( realization, avBool( dataInfo.isCurr() ) );
         OpcUaUtils.OP_IS_HIST.setValue( realization, avBool( dataInfo.isHist() ) );
 
-        String name = STR_LINK_PREFIX + gwid.asString();
+        String name = STR_LINK_PREFIX + gwid.canonicalString();
 
         OpcToS5DataCfgUnit unit = new OpcToS5DataCfgUnit( strid, name, gwids, convertNodeListToAtomicList( nodes ) );
 
@@ -295,7 +296,7 @@ public class StoredMetaInfoAutoLinkConfigurationProcess
           OpcUaUtils.OP_BIT_INDEX.setValue( realization, avInt( bitIndex.bitIndex() ) );
         }
 
-        String name = STR_LINK_PREFIX + gwid.asString();
+        String name = STR_LINK_PREFIX + gwid.canonicalString();
 
         OpcToS5DataCfgUnit unit = new OpcToS5DataCfgUnit( strid, name, gwids, convertNodeListToAtomicList( nodes ) );
         unit.setTypeOfCfgUnit( type );
@@ -328,6 +329,18 @@ public class StoredMetaInfoAutoLinkConfigurationProcess
 
         OptionSet realization = new OptionSet( realType.getDefaultValues() );
 
+        // replace newVal, oldVal of booean param of event into proper param (by max 2025.11.30)
+        ISkClassInfo classInfo = currConn.coreApi().sysdescr().findClassInfo( gwid.classId() );
+        if( classInfo != null ) {
+          IDtoEventInfo eventInfo = classInfo.events().list().findByKey( gwid.propId() );
+          if( eventInfo != null ) {
+            if( eventInfo.paramDefs().size() == 1
+                && eventInfo.paramDefs().first().atomicType() == EAtomicType.BOOLEAN ) {
+              OpcUaUtils.OP_FORMER_EVENT_PARAM.setValue( realization, avStr( eventInfo.paramDefs().first().id() ) );
+            }
+          }
+        }
+
         if( bitIndex != null ) {
           int index = bitIndex.bitIndex();
           boolean genUp = bitIndex.isGenerateUp();
@@ -338,7 +351,7 @@ public class StoredMetaInfoAutoLinkConfigurationProcess
           OpcUaUtils.OP_CONDITION_SWITCH_OFF.setValue( realization, avBool( genDn ) );
         }
 
-        String name = STR_LINK_PREFIX + gwid.asString();
+        String name = STR_LINK_PREFIX + gwid.canonicalString();
 
         OpcToS5DataCfgUnit unit = new OpcToS5DataCfgUnit( strid, name, gwids, convertNodeListToAtomicList( nodes ) );
 
