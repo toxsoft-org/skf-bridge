@@ -128,7 +128,7 @@ public class ModbusNodesForCfgM5Model
       };
 
   /**
-   * Attribute {@link ModbusNode#getRegTranslator() } jr param from design form
+   * Field {@link ModbusNode#getRegTranslator()}
    */
   public M5SingleLookupFieldDef<IAtomicValue, ISkRefbookItem> REG_TRANSLATOR =
       new M5SingleLookupFieldDef<>( FID_REG_TRANSLATOR,

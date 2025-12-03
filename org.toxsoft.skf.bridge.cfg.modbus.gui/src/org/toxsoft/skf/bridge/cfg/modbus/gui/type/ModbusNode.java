@@ -170,9 +170,9 @@ public class ModbusNode {
   }
 
   /**
-   * Returns params of node as string
+   * Returns parameters of node as string
    *
-   * @return String - params of node as string
+   * @return String - parameters of node as string
    */
   public String getParams() {
     return params;
@@ -188,18 +188,18 @@ public class ModbusNode {
   }
 
   /**
-   * Returns register translator idetifier of node as string
+   * Returns register translator identifier of node as string
    *
-   * @return String - register translator idetifier as string
+   * @return String - register translator identifier as string
    */
   public String getRegTranslator() {
     return regTranslator;
   }
 
   /**
-   * Sets register translator idetifier of node as string
+   * Sets register translator identifier of node as string
    *
-   * @param aRegTranslator String - register translator idetifier as string
+   * @param aRegTranslator String - register translator identifier as string
    */
   public void setRegTranslator( String aRegTranslator ) {
     regTranslator = aRegTranslator;
