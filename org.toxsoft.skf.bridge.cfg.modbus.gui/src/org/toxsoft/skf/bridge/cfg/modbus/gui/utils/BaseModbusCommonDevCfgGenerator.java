@@ -180,7 +180,7 @@ public class BaseModbusCommonDevCfgGenerator
 
     IOptionSetEdit opSet = new OptionSet();
 
-    opSet.setStr( JAVA_CLASS_PARAM_NAME, "Trest." + JAVA_CLASS_PARAM_VAL_TEMPLATE );
+    opSet.setStr( JAVA_CLASS_PARAM_NAME, JAVA_CLASS_PARAM_VAL_TEMPLATE );
     opSet.setStr( ID_PARAM_NAME, MODBUS_DEVICE_ID );
     opSet.setStr( DESCRIPTION_PARAM_NAME, DESCRIPTION_PARAM_VAL_TEMPLATE );
     opSet.setInt( SYNCH_PERIOD_PARAM_NAME, 1000 );
