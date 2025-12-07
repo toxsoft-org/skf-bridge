@@ -114,12 +114,16 @@ public class OpcUaNodeM5LifecycleManager
     return result;
   }
 
-  boolean stopBrowse = false;
+  // GOGA 2025-12-07 ---
+  // boolean stopBrowse = false;
+  // ---
 
   private void browseNode( String indent, OpcUaClient client, UaTreeNode aParent, IListEdit<UaTreeNode> rNodes ) {
-    if( stopBrowse ) {
-      return;
-    }
+    // GOGA 2025-12-07 ---
+    // if( stopBrowse ) {
+    // return;
+    // }
+    // ---
     BrowseDescription browse = new BrowseDescription( aParent.getUaNode().getNodeId(), //
         BrowseDirection.Forward, //
         Identifiers.References, //
@@ -155,19 +159,23 @@ public class OpcUaNodeM5LifecycleManager
 
           UaTreeNode treeNode = new UaTreeNode( aParent, uaNode );
           rNodes.add( treeNode );
+          // GOGA 2025-12-07 ---
           // dima 01.08.23 останавливаемся когда текущий node это node типа VariableNode
           // if( uaNode instanceof UaObjectNode ) {
-          if( uaNode instanceof UaVariableNode ) {
-            System.out.println( String.format( "%s Node=%s, display=%s", indent, rd.getBrowseName().toString(), //$NON-NLS-1$
-                uaNode.getDisplayName() ) );
-            // FIXME для ускорения загрузки
-            // останавливаемся после первого узла типа переменная
-            // stopBrowse = true;
-            // return;
-          }
-          else {
-            browseNode( indent + " ", client, treeNode, rNodes ); //$NON-NLS-1$
-          }
+          // // if( uaNode instanceof UaVariableNode ) {
+          // System.out.println( String.format( "%s Node=%s, display=%s", indent, rd.getBrowseName().toString(),
+          // //$NON-NLS-1$
+          // uaNode.getDisplayName() ) );
+          // // FIXME для ускорения загрузки
+          // // останавливаемся после первого узла типа переменная
+          // // stopBrowse = true;
+          // // return;
+          // }
+          // else {
+          // browseNode( indent + " ", client, treeNode, rNodes ); //$NON-NLS-1$
+          // }
+          // ---
+          browseNode( indent + " ", client, treeNode, rNodes ); //$NON-NLS-1$
         }
 
       }
