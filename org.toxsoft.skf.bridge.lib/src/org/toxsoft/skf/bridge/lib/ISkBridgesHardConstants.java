@@ -14,4 +14,9 @@ public interface ISkBridgesHardConstants {
    */
   String CLSID_BRIDGE = SK_ID + ".Bridge"; //$NON-NLS-1$
 
+  // TODO extension of config files
+
+  String FILE_EXT_DLM_CONFIG    = "dlmcfg"; //$NON-NLS-1$
+  String FILE_EXT_DEVICE_CONFIG = "devcfg"; //$NON-NLS-1$
+
 }

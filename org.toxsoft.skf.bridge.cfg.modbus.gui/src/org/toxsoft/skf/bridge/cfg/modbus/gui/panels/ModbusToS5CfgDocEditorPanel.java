@@ -54,7 +54,7 @@ import org.toxsoft.uskat.core.gui.km5.sded.*;
  * {@link ModbusToS5CfgDocService} is in the application context.
  * <p>
  * FIXME {@link ModbusToS5CfgDocService} instance is created and put in context here, by this class. It is a <b>bad</b>
- * idea making this panel unusable twice (or more0 in a single application. All E4 service initializations must be
+ * idea making this panel unusable twice (or more) in a single application. All E4 service initializations must be
  * placed in plugin initialization code (somewhere in <code>AddonXxx</code> or <code>QuantXxx</code>).
  * <p>
  * Contains:
