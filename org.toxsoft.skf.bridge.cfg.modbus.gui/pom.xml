@@ -8,7 +8,9 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>org.toxsoft.skf.bridge.cfg.modbus.gui</artifactId>
     <packaging>eclipse-plugin</packaging>
-    
+
+
+    <!-- 2025-10-29 mvk  исключение кода из компиляции -->
     <build>
       <plugins>
         <plugin>
@@ -19,12 +21,14 @@
             <target>${java.version}</target>
             <useProjectSettings>true</useProjectSettings>
             <optimize>true</optimize>
-            <showWarnings>false</showWarnings>              
+            <showWarnings>false</showWarnings>
             <!-- 2025-10-29 mvk  исключение кода из компиляции -->
             <excludes>
                <exclude>org/toxsoft/skf/bridge/cfg/modbus/gui/temp/**</exclude>
-            </excludes> 
+            </excludes>
           </configuration>
-        </plugin>        
+        </plugin>
       </plugins>
-    </build></project>
+    </build>
+
+</project>
