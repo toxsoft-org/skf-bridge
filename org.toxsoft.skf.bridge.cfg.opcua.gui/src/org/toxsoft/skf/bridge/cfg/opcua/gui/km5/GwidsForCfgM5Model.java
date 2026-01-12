@@ -165,22 +165,13 @@ public class GwidsForCfgM5Model
               protected void doProcessAction( String aActionId ) {
 
                 switch( aActionId ) {
-
-                  case ACTID_ADD_AS_STR:
-                    // Gwid gwid =
-                    super.doAddItem();
-
-                    break;
-
-                  case ACTID_EDIT_AS_STR:
-                    // Gwid gwid =
-                    super.doEditItem( selectedItem() );
-
-                    break;
-
-                  default:
-                    throw new TsNotAllEnumsUsedRtException( aActionId );
+                  case ACTID_ADD_AS_STR -> // Gwid gwid =
+                      super.doAddItem();
+                  case ACTID_EDIT_AS_STR -> // Gwid gwid =
+                      super.doEditItem( selectedItem() );
+                  default -> throw new TsNotAllEnumsUsedRtException( aActionId );
                 }
+
               }
 
               @Override

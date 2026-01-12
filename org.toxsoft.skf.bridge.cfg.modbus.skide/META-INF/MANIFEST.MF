@@ -21,7 +21,6 @@ Require-Bundle: jakarta.inject.jakarta.inject-api,
  org.toxsoft.uskat.core,
  org.toxsoft.uskat.core.gui,
  org.toxsoft.skide.core,
- org.toxsoft.skide.exe,
  org.toxsoft.skf.bridge.cfg.modbus.gui
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: org.toxsoft.skf.bridge.cfg.modbus.skide
