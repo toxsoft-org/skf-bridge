@@ -270,8 +270,7 @@ public class GwidsForCfgM5Model
         if( selUgwi == null ) {
           return null;
         }
-        retVal = Gwid.createAttr( UgwiKindRriAttr.getClassId( selUgwi ), UgwiKindRriAttr.getObjStrid( selUgwi ),
-            UgwiKindRriAttr.getAttrId( selUgwi ) );
+        retVal = UgwiKindRriAttr.INSTANCE.getGwid( selUgwi );
         break;
       default:
         break;

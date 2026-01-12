@@ -76,7 +76,7 @@ public class ModbusDeviceM5Model
       new M5AttributeFieldDef<>( FID_IS_TCP_INDEX, EAtomicType.BOOLEAN, //
           TSID_NAME, STR_MDEV_IS_TCP, //
           TSID_DESCRIPTION, STR_MDEV_IS_TCP_D, //
-          TSID_FORMAT_STRING, "%Б[TCP|RTU]", //$NON-NLS-1$
+          TSID_FORMAT_STRING, "%Б[RTU|TCP]", //$NON-NLS-1$
           M5_OPDEF_FLAGS, avInt( M5FF_COLUMN ), //
           TSID_DEFAULT_VALUE, AV_TRUE //
       ) {
