@@ -57,7 +57,6 @@ import org.toxsoft.uskat.s5.server.interceptors.*;
 import org.toxsoft.uskat.s5.server.startup.*;
 import org.toxsoft.uskat.s5.utils.*;
 import org.toxsoft.uskat.s5.utils.jobs.*;
-import org.toxsoft.uskat.s5.utils.progress.*;
 
 /**
  * Однонаправленный(!) шлюз службы {@link IBaGateway}.
@@ -873,7 +872,6 @@ class S5Gateway
     // для локальных соединений
     IS5ConnectionParams.OP_HOSTS.setValue( ctx.params(), avValobj( connectionInfo.hosts() ) );
     IS5ConnectionParams.REF_CLASSLOADER.setRef( ctx, S5Gateway.class.getClassLoader() );
-    IS5ConnectionParams.REF_MONITOR.setRef( ctx, IS5ProgressMonitor.NULL );
     IS5ConnectionParams.OP_CLIENT_PROGRAM.setValue( ctx.params(), avStr( module.id() ) );
     IS5ConnectionParams.OP_CLIENT_VERSION.setValue( ctx.params(), avValobj( module.version() ) );
     IS5ConnectionParams.OP_CONNECT_TIMEOUT.setValue( ctx.params(), avInt( connectionTimeout ) );
