@@ -894,8 +894,8 @@ public class RefbookGenerator {
     rbBitMasks = rbServ.defineRefbook( REFBOOK_BITMASK_OPCUA );
     try {
       SpreadSheet book = SpreadSheet.createFromFile( aRefbookFile );
-      // scan all pages except first
-      for( int sheetNo = 1; sheetNo < book.getSheetCount(); sheetNo++ ) {
+      // scan all pages
+      for( int sheetNo = 0; sheetNo < book.getSheetCount(); sheetNo++ ) {
         Sheet classSheet = book.getSheet( sheetNo );
         // get name of class
         String className = classSheet.getName();
@@ -932,7 +932,9 @@ public class RefbookGenerator {
       String on = getOn( classSheet, rowNum );
       String off = getOff( classSheet, rowNum );
       // create itemId
-      String itemId = className + "." + identificator + "." + idw;
+      // exclude word id
+      // String itemId = className + "." + identificator + "." + idw;
+      String itemId = className + "." + identificator;
       // fill refbook
       addBitMaskRbItem( rbBitMasks, itemId, name, descr, idw, Integer.parseInt( bitNum ), off, on,
           identificator.startsWith( "rri" ) );
