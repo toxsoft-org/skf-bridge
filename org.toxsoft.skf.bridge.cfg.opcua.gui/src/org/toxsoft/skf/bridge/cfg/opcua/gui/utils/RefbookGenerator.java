@@ -888,8 +888,9 @@ public class RefbookGenerator {
       return;
     }
     // удаляем существующий
-    rbServ.removeRefbook( REFBOOK_BITMASK_OPCUA.id() );
-
+    if( rbBitMasks != null ) {
+      rbServ.removeRefbook( REFBOOK_BITMASK_OPCUA.id() );
+    }
     // create refbook of BITMASK
     rbBitMasks = rbServ.defineRefbook( REFBOOK_BITMASK_OPCUA );
     try {
