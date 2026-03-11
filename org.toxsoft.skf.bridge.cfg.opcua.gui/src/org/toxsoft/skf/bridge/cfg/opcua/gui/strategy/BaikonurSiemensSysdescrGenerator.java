@@ -26,6 +26,7 @@ import org.toxsoft.core.tslib.gw.skid.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
+import org.toxsoft.skf.refbooks.lib.*;
 import org.toxsoft.skf.rri.lib.*;
 import org.toxsoft.uskat.core.api.objserv.*;
 import org.toxsoft.uskat.core.api.sysdescr.*;
@@ -52,6 +53,19 @@ public class BaikonurSiemensSysdescrGenerator
   public BaikonurSiemensSysdescrGenerator( ITsGuiContext aContext, OpcUaClient aClient,
       IOpcUaServerConnCfg aOpcUaServerConnCfg, MultiPaneComponentModown<UaTreeNode> aComponentModown ) {
     super( aContext, aClient, aOpcUaServerConnCfg, aComponentModown );
+    // при создании стратегии проверяем и создаем все что нужно для ее (стратегии) работы
+    // проверка справочников
+    ISkRefbookService rbServ = conn.coreApi().getService( ISkRefbookService.SERVICE_ID );
+    // create all essential refbooks: SiBitMask, BitMask
+    RefbookGenerator rbGenerator = new RefbookGenerator( conn, getShell() );
+    if( rbServ.findRefbook( RefbookGenerator.REFBOOK_SI_BITMASK_OPCUA.id() ) == null ) {
+      rbGenerator.createSiAIBitMaskRefbook();
+    }
+    if( rbServ.findRefbook( RefbookGenerator.REFBOOK_BITMASK_OPCUA.id() ) == null ) {
+      // BitMask
+      rbGenerator.createPoligonBitMaskRefbook();
+    }
+
   }
 
   @Override

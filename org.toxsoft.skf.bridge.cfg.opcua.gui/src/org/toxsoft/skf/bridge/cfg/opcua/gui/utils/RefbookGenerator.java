@@ -66,6 +66,14 @@ public class RefbookGenerator {
     }
   }
 
+  public static final String RBATRID_SI_MASKS_SRC_CLASS_ID     = "srcClassId";
+  public static final String RBATRID_SI_MASKS_SRC_OBJ_ID       = "srcObjId";
+  public static final String RBATRID_SI_MASKS_SRC_WORD_DATA_ID = "srcWordDataId";
+  public static final String RBATRID_SI_MASKS_DRV_CLASS_ID     = "drvClassId";
+  public static final String RBATRID_SI_MASKS_DRV_OBJ_ID       = "drvObjId";
+  public static final String RBATRID_SI_MASKS_DRV_FLAG_DATA_ID = "drvFlagDataId";
+  public static final String RBID_SI_BITMASK                   = "Samsung.AnalogInput.BitMasks";
+
   /**
    * server connection
    */
@@ -225,6 +233,85 @@ public class RefbookGenerator {
           ATRINF_BITMASK_IDW, //
           ATRINF_BITMASK_ON, //
           ATRINF_BITMASK_OFF //
+      ), //
+      new StridablesList<>( ///
+      // no CLOBs
+      ), ///
+      new StridablesList<>( ///
+      // no rivets
+      ), ///
+      new StridablesList<>( ///
+      // no links
+      ) ///
+  );
+
+  /**
+   * Attribute {@link ISkRefbook#attrs() #RBATRID_SI_MASKS_SRC_CLASS_ID}.
+   */
+  static IDtoAttrInfo ATRINF_SI_MASKS_SRC_CLASS_ID = DtoAttrInfo.create2( RBATRID_SI_MASKS_SRC_CLASS_ID, DDEF_STRING, //
+      TSID_NAME, "класс источник", TSID_DESCRIPTION, "Класс источник данного", //
+      TSID_DEFAULT_VALUE, AvUtils.AV_STR_EMPTY //
+  );
+
+  /**
+   * Attribute {@link ISkRefbook#attrs() #RBATRID_SI_MASKS_SRC_OBJ_ID}.
+   */
+  static IDtoAttrInfo ATRINF_SI_MASKS_SRC_OBJ_ID = DtoAttrInfo.create2( RBATRID_SI_MASKS_SRC_OBJ_ID, DDEF_STRING, //
+      TSID_NAME, "объект источник", TSID_DESCRIPTION, "Объект источник данного", //
+      TSID_DEFAULT_VALUE, AvUtils.AV_STR_EMPTY //
+  );
+
+  /**
+   * Attribute {@link ISkRefbook#attrs() #RBATRID_SI_MASKS_SRC_WORD_DATA_ID}.
+   */
+  static IDtoAttrInfo ATRINF_SI_MASKS_SRC_WORD_DATA_ID =
+      DtoAttrInfo.create2( RBATRID_SI_MASKS_SRC_WORD_DATA_ID, DDEF_STRING, //
+          TSID_NAME, "слово состояния источник", TSID_DESCRIPTION, "Слово состояния источника данного", //
+          TSID_DEFAULT_VALUE, AvUtils.AV_STR_EMPTY //
+      );
+
+  /**
+   * Attribute {@link ISkRefbook#attrs() #RBATRID_SI_MASKS_DRV_CLASS_ID}.
+   */
+  static IDtoAttrInfo ATRINF_SI_MASKS_DRV_CLASS_ID = DtoAttrInfo.create2( RBATRID_SI_MASKS_DRV_CLASS_ID, DDEF_STRING, //
+      TSID_NAME, "класс производного данного", TSID_DESCRIPTION, "Класс производного данного", //
+      TSID_DEFAULT_VALUE, AvUtils.AV_STR_EMPTY //
+  );
+
+  /**
+   * Attribute {@link ISkRefbook#attrs() #RBATRID_SI_MASKS_DRV_OBJ_ID}.
+   */
+  static IDtoAttrInfo ATRINF_SI_MASKS_DRV_OBJ_ID = DtoAttrInfo.create2( RBATRID_SI_MASKS_DRV_OBJ_ID, DDEF_STRING, //
+      TSID_NAME, "объект производного", TSID_DESCRIPTION, "Объект производного данного", //
+      TSID_DEFAULT_VALUE, AvUtils.AV_STR_EMPTY //
+  );
+
+  /**
+   * Attribute {@link ISkRefbook#attrs() #RBATRID_SI_MASKS_DRV_FLAG_DATA_ID}.
+   */
+  static IDtoAttrInfo ATRINF_SI_MASKS_DRV_FLAG_DATA_ID =
+      DtoAttrInfo.create2( RBATRID_SI_MASKS_DRV_FLAG_DATA_ID, DDEF_STRING, //
+          TSID_NAME, "флаг производного данного", TSID_DESCRIPTION, "Флаг производного данного", //
+          TSID_DEFAULT_VALUE, AvUtils.AV_STR_EMPTY //
+      );
+
+  /**
+   * Refbook: BitMask - Битовые маски.
+   * <p>
+   */
+  public static IDtoRefbookInfo REFBOOK_SI_BITMASK_OPCUA = DtoRefbookInfo.create( RBID_SI_BITMASK, ///
+      OptionSetUtils.createOpSet( ///
+          TSID_NAME, "Самсунг, битовые маски AI", //$NON-NLS-1$
+          TSID_DESCRIPTION, "Самсунг, битовые маски аналоговых вводов" //$NON-NLS-1$
+      ), ///
+      new StridablesList<>( ///
+          ATRINF_SI_MASKS_SRC_CLASS_ID, //
+          ATRINF_SI_MASKS_SRC_OBJ_ID, //
+          ATRINF_SI_MASKS_SRC_WORD_DATA_ID, //
+          ATRINF_BITMASK_BITN, //
+          ATRINF_SI_MASKS_DRV_CLASS_ID, //
+          ATRINF_SI_MASKS_DRV_OBJ_ID, //
+          ATRINF_SI_MASKS_DRV_FLAG_DATA_ID //
       ), //
       new StridablesList<>( ///
       // no CLOBs
@@ -506,6 +593,11 @@ public class RefbookGenerator {
     IDtoFullObject rbItem = b.buildItem();
     aRefbook.defineItem( rbItem );
 
+  }
+
+  public void createSiAIBitMaskRefbook() {
+    ISkRefbookService rbServ = conn.coreApi().getService( ISkRefbookService.SERVICE_ID );
+    ISkRefbook rbBitMasks = rbServ.defineRefbook( REFBOOK_SI_BITMASK_OPCUA );
   }
 
   public void createPoligonBitMaskRefbook() {
@@ -873,6 +965,91 @@ public class RefbookGenerator {
     b.setValue( RBATRID_BITMASK___IDW, AvUtils.avStr( aWordId ) );
     b.setValue( RBATRID_BITMASK___OFF, AvUtils.avStr( aFallStr ) );
     b.setValue( RBATRID_BITMASK___ON, AvUtils.avStr( aFrontStr ) );
+    IDtoFullObject rbItem = b.buildItem();
+    aRefbook.defineItem( rbItem );
+
+  }
+
+  /**
+   * Импорт справочника масок для проекта Самсунг из файла <br>
+   * TODO перенести в правильное место/код!
+   *
+   * @param aRefbookFile
+   */
+  public void importSiAIBitMaskRefbook( File aRefbookFile ) {
+    ISkRefbookService rbServ = conn.coreApi().getService( ISkRefbookService.SERVICE_ID );
+    // ask user to rewrite existing refbook
+    ISkRefbook rbBitMasks = rbServ.findRefbook( REFBOOK_SI_BITMASK_OPCUA.id() );
+
+    if( rbBitMasks != null && TsDialogUtils.askYesNoCancel( shell,
+        "Справочник масок аналоговых входов %s существует. Хотите перезалить его?",
+        rbBitMasks.attrs().getValue( ISkHardConstants.AID_NAME ).asString() ) != ETsDialogCode.YES ) {
+      return;
+    }
+    // удаляем существующий
+    if( rbBitMasks != null ) {
+      rbServ.removeRefbook( REFBOOK_SI_BITMASK_OPCUA.id() );
+    }
+    // create refbook
+    rbBitMasks = rbServ.defineRefbook( REFBOOK_SI_BITMASK_OPCUA );
+    try {
+      SpreadSheet book = SpreadSheet.createFromFile( aRefbookFile );
+      // scan for page "Маски"
+      for( int sheetNo = 0; sheetNo < book.getSheetCount(); sheetNo++ ) {
+        Sheet currSheet = book.getSheet( sheetNo );
+        // get name of sheet
+        String sheetName = currSheet.getName();
+        if( sheetName.compareTo( "Маски" ) == 0 ) {
+          fillSiMasksRbItems( rbBitMasks, currSheet );
+          break;
+        }
+      }
+    }
+    catch( IOException ex ) {
+      LoggerUtils.errorLogger().error( ex );
+    }
+  }
+
+  private static int COLUMN_SI_BITMASK_DRV_CLASS_ID = 4;
+  private static int COLUMN_SI_BITMASK_DRV_DATA_ID  = COLUMN_SI_BITMASK_DRV_CLASS_ID + 1;
+  private static int COLUMN_SI_BITMASK_DRV_OBJ_ID   = COLUMN_SI_BITMASK_DRV_CLASS_ID + 2;
+  private static int COLUMN_SI_BITMASK_SRC_DATA_ID  = COLUMN_SI_BITMASK_DRV_CLASS_ID + 3;
+  private static int COLUMN_SI_BITMASK_BIT_NUM      = COLUMN_SI_BITMASK_DRV_CLASS_ID + 4;
+
+  private void fillSiMasksRbItems( ISkRefbook aRbSiBitMasks, Sheet aMaskSheet ) {
+    int emptyRows = 0;
+    for( int rowNum = 2; rowNum < aMaskSheet.getRowCount(); rowNum++ ) {
+      if( emptyRows >= 3 ) {
+        return;
+      }
+      // read row fields
+      String drvClassId = getStringValue( aMaskSheet, COLUMN_SI_BITMASK_DRV_CLASS_ID, rowNum );
+      if( drvClassId.isBlank() ) {
+        continue;
+      }
+      String drvDataId = getStringValue( aMaskSheet, COLUMN_SI_BITMASK_DRV_DATA_ID, rowNum );
+      String drvObjId = getStringValue( aMaskSheet, COLUMN_SI_BITMASK_DRV_OBJ_ID, rowNum );
+      String srcDataId = getStringValue( aMaskSheet, COLUMN_SI_BITMASK_SRC_DATA_ID, rowNum );
+      String bitNum = getStringValue( aMaskSheet, COLUMN_SI_BITMASK_BIT_NUM, rowNum );
+      // create itemId
+      // exclude word id
+      String itemId = drvClassId + "." + drvObjId + "." + drvDataId;
+      // fill refbook
+      addSiBitMaskRbItem( aRbSiBitMasks, itemId, drvClassId, drvObjId, drvDataId, srcDataId,
+          Integer.parseInt( bitNum ) );
+    }
+  }
+
+  private void addSiBitMaskRbItem( ISkRefbook aRefbook, String aItemId, String aDrvClassId, String aDrvObjId,
+      String aDrvFlagId, String aSrcDataId, int aBitNumber ) {
+    RefookItemBuider b = new RefookItemBuider( aItemId, aItemId, aItemId, aRefbook );
+    b.setValue( RBATRID_SI_MASKS_SRC_CLASS_ID, AvUtils.avStr( "AnalogInputControls" ) );
+    b.setValue( RBATRID_SI_MASKS_SRC_OBJ_ID, AvUtils.avStr( "AnalogInputControls" ) );
+    b.setValue( RBATRID_SI_MASKS_SRC_WORD_DATA_ID, AvUtils.avStr( aSrcDataId ) );
+    b.setValue( RBATRID_BITMASK___BITN, AvUtils.avInt( aBitNumber ) );
+    b.setValue( RBATRID_SI_MASKS_DRV_CLASS_ID, AvUtils.avStr( aDrvClassId ) );
+    b.setValue( RBATRID_SI_MASKS_DRV_OBJ_ID, AvUtils.avStr( aDrvObjId ) );
+    b.setValue( RBATRID_SI_MASKS_DRV_FLAG_DATA_ID, AvUtils.avStr( aDrvFlagId ) );
     IDtoFullObject rbItem = b.buildItem();
     aRefbook.defineItem( rbItem );
 
