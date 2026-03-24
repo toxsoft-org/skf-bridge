@@ -639,12 +639,12 @@ public class OpcUaUtils {
    */
   public static OpcUaClient selectOpcConfigAndOpenConnection( ITsGuiContext aContext ) {
     IOpcUaServerConnCfg conConf = OpcUaUtils.selectOpcServerConfig( aContext );
-    // dima 13.10.23 сохраним в контекст
-    aContext.put( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG, conConf );
     if( conConf == null ) {
       return null;
     }
 
+    // dima 13.10.23 сохраним в контекст
+    aContext.put( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG, conConf );
     try {
       OpcUaClient client = OpcUaUtils.createClient( conConf );
       client.connect().get();
