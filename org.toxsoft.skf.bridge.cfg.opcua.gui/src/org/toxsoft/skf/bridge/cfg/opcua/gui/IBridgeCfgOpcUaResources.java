@@ -33,10 +33,12 @@ public interface IBridgeCfgOpcUaResources {
   String STR_N_PARAM_DISPLAY_NAME = Messages.getString( "STR_N_PARAM_DISPLAY_NAME" ); //$NON-NLS-1$
   String STR_D_PARAM_DISPLAY_NAME = Messages.getString( "STR_D_PARAM_DISPLAY_NAME" ); //$NON-NLS-1$
 
-  String STR_N_PARAM_DESCRIPTION      = Messages.getString( "STR_N_PARAM_DESCRIPTION" ); //$NON-NLS-1$
-  String STR_D_PARAM_DESCRIPTION      = Messages.getString( "STR_D_PARAM_DESCRIPTION" ); //$NON-NLS-1$
-  String STR_N_IMPORT_BITMASK_REFBOOK = "Импорт справочника битовых масок";
-  String STR_D_IMPORT_BITMASK_REFBOOK = "Импорт справочника BitMask (битовых масок)";
+  String STR_N_PARAM_DESCRIPTION         = Messages.getString( "STR_N_PARAM_DESCRIPTION" ); //$NON-NLS-1$
+  String STR_D_PARAM_DESCRIPTION         = Messages.getString( "STR_D_PARAM_DESCRIPTION" ); //$NON-NLS-1$
+  String STR_N_IMPORT_BITMASK_REFBOOK    = "Импорт справочника битовых масок";
+  String STR_D_IMPORT_BITMASK_REFBOOK    = "Импорт справочника BitMask (битовых масок)";
+  String STR_N_IMPORT_SI_BITMASK_REFBOOK = "Импорт SI справочника битовых масок";
+  String STR_D_IMPORT_SI_BITMASK_REFBOOK = "Импорт SI справочника BitMask (битовых масок)";
 
   /**
    * {@link DtoObjectM5Model}

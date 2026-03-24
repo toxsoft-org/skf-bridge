@@ -87,6 +87,14 @@ public class OpcUaServerConnCfgEditorPanel
       STR_N_IMPORT_BITMASK_REFBOOK, STR_D_IMPORT_BITMASK_REFBOOK, ICONID_IMPORT_BLACK );
 
   /**
+   * id действия "import SI BitMask refbook"
+   */
+  final static String IMPORT_SI_BITMASK_REFBOOK_ACT_ID = "import_SI_BitMask_refbook_act_id"; //$NON-NLS-1$
+
+  TsActionDef ACDEF_IMPORT_SI_BITMASK_REFBOOK = TsActionDef.ofPush2( IMPORT_SI_BITMASK_REFBOOK_ACT_ID,
+      STR_N_IMPORT_SI_BITMASK_REFBOOK, STR_D_IMPORT_SI_BITMASK_REFBOOK, ICONID_IMPORT );
+
+  /**
    * Конструктор панели.
    * <p>
    * Конструктор просто запоминает ссылку на контекст, без создания копии.
@@ -133,6 +141,7 @@ public class OpcUaServerConnCfgEditorPanel
             aActs.add( ACDEF_REMOVE_CACHE );
             aActs.add( ITsStdActionDefs.ACDEF_SEPARATOR );
             aActs.add( ACDEF_IMPORT_BITMASK_REFBOOK );
+            aActs.add( ACDEF_IMPORT_SI_BITMASK_REFBOOK );
 
             ITsToolbar toolbar =
 
@@ -179,6 +188,18 @@ public class OpcUaServerConnCfgEditorPanel
                   rbImporter.importPoligonBitMaskRefbook( refbookFile );
                   // notify user
                   TsDialogUtils.info( getShell(), "Справочник битовых масок импортирован" );
+                }
+                break;
+              case IMPORT_SI_BITMASK_REFBOOK_ACT_ID:
+                dlg = new FileDialog( getShell() );
+                dlg.setFilterExtensions( new String[] { "*.ods", "*.*" } ); //$NON-NLS-1$ //$NON-NLS-2$
+                filePath = dlg.open();
+                if( filePath != null ) {
+                  File refbookFile = new File( filePath );
+                  RefbookGenerator rbImporter = new RefbookGenerator( connSup.defConn(), getShell() );
+                  rbImporter.importSiAIBitMaskRefbook( refbookFile );
+                  // notify user
+                  TsDialogUtils.info( getShell(), "Справочник битовых масок проекта SI импортирован" );
                 }
                 break;
               default:
