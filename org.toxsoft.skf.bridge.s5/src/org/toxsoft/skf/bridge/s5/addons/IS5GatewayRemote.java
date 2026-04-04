@@ -1,9 +1,9 @@
 package org.toxsoft.skf.bridge.s5.addons;
 
-import javax.ejb.Remote;
+import org.toxsoft.skf.bridge.s5.lib.*;
+import org.toxsoft.uskat.s5.server.backend.addons.*;
 
-import org.toxsoft.skf.bridge.s5.lib.IBaGateway;
-import org.toxsoft.uskat.s5.server.backend.addons.IS5BackendAddonRemote;
+import jakarta.ejb.*;
 
 /**
  * Удаленный интерфейс службы {@link IBaGateway}.

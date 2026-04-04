@@ -1,13 +1,11 @@
 package org.toxsoft.skf.bridge.s5.supports;
 
-import javax.ejb.Local;
+import org.toxsoft.core.tslib.bricks.strid.coll.*;
+import org.toxsoft.core.tslib.utils.errors.*;
+import org.toxsoft.skf.bridge.s5.lib.*;
+import org.toxsoft.uskat.s5.server.backend.*;
 
-import org.toxsoft.core.tslib.bricks.strid.coll.IStridablesList;
-import org.toxsoft.core.tslib.utils.errors.TsIllegalArgumentRtException;
-import org.toxsoft.core.tslib.utils.errors.TsNullArgumentRtException;
-import org.toxsoft.skf.bridge.s5.lib.IBaGateway;
-import org.toxsoft.skf.bridge.s5.lib.ISkGatewayInfo;
-import org.toxsoft.uskat.s5.server.backend.IS5BackendSupportSingleton;
+import jakarta.ejb.*;
 
 /**
  * Локальный интерфейс синглетона backend {@link IBaGateway} предоставляемый s5-сервером.

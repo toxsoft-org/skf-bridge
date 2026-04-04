@@ -5,8 +5,6 @@ import static org.toxsoft.skf.bridge.s5.supports.IS5Resources.*;
 import static org.toxsoft.uskat.s5.server.IS5ImplementConstants.*;
 import static org.toxsoft.uskat.s5.utils.threads.impl.S5Lockable.*;
 
-import javax.ejb.*;
-
 import org.toxsoft.core.tslib.av.impl.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.*;
@@ -32,6 +30,8 @@ import org.toxsoft.uskat.s5.server.sessions.*;
 import org.toxsoft.uskat.s5.server.startup.*;
 import org.toxsoft.uskat.s5.utils.jobs.*;
 import org.toxsoft.uskat.s5.utils.threads.impl.*;
+
+import jakarta.ejb.*;
 
 /**
  * Синглетон backend {@link IBaGateway} предоставляемый s5-сервером.

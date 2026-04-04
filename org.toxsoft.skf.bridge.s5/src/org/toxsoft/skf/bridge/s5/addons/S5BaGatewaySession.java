@@ -4,8 +4,6 @@ import static org.toxsoft.uskat.s5.server.IS5ImplementConstants.*;
 
 import java.util.concurrent.*;
 
-import javax.ejb.*;
-
 import org.toxsoft.core.tslib.bricks.strid.coll.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.skf.bridge.s5.lib.*;
@@ -13,6 +11,8 @@ import org.toxsoft.skf.bridge.s5.supports.*;
 import org.toxsoft.uskat.s5.server.backend.addons.*;
 import org.toxsoft.uskat.s5.server.sessions.init.*;
 import org.toxsoft.uskat.s5.server.sessions.pas.*;
+
+import jakarta.ejb.*;
 
 /**
  * Сессия реализации службы {@link IBaGateway}.
