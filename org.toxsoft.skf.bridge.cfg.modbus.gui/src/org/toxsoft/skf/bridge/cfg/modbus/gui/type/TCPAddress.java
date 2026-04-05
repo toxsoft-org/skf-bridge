@@ -79,7 +79,7 @@ public class TCPAddress
             ip = InetAddress.getByName( ipStr );
           }
           catch( UnknownHostException ex ) {
-            LoggerUtils.errorLogger().error( ex );
+            LoggerUtils.error( ex );
             ip = null;
           }
           aSr.ensureChar( CHAR_ITEM_SEPARATOR );
@@ -110,7 +110,7 @@ public class TCPAddress
       ip = InetAddress.getByName( "192.168.0.1" );
     }
     catch( UnknownHostException ex ) {
-      LoggerUtils.errorLogger().error( ex );
+      LoggerUtils.error( ex );
     }
     port = 502;
   }

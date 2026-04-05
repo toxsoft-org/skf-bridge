@@ -150,7 +150,7 @@ public class BaikonurSiemensSysdescrGenerator
 
         Gwid gwid = Gwid.createCmd( obj.classId(), obj.id(), cmdInfo.id() );
         if( uaNode != null ) {
-          LoggerUtils.defaultLogger().debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
+          LoggerUtils.debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
               gwid.canonicalString() );
           String nodeDescr = parentNode.getBrowseName() + "::" + uaNode.getBrowseName(); //$NON-NLS-1$
           IStringListEdit argIds = new StringArrayList();
@@ -161,7 +161,7 @@ public class BaikonurSiemensSysdescrGenerator
           node2BknCmdGwidList.add( node2BknCmdGwid );
         }
         else {
-          LoggerUtils.errorLogger().error( "Can't match Baikonur cmd: ? -> %s", gwid.canonicalString() ); //$NON-NLS-1$
+          LoggerUtils.error( "Can't match Baikonur cmd: ? -> %s", gwid.canonicalString() ); //$NON-NLS-1$
           if( TsDialogUtils.askYesNoCancel( getShell(), "Can't match Baikonur cmd: ? -> %s\n Do you want to continue?", //$NON-NLS-1$
               gwid.canonicalString() ) != ETsDialogCode.YES ) {
             return;
@@ -179,14 +179,14 @@ public class BaikonurSiemensSysdescrGenerator
         }
         Gwid gwid = Gwid.createRtdata( obj.classId(), obj.id(), rtdInfo.id() );
         if( uaNode != null ) {
-          LoggerUtils.defaultLogger().debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
+          LoggerUtils.debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
               gwid.canonicalString() );
           String nodeDescr = parentNode.getBrowseName() + "::" + uaNode.getBrowseName(); //$NON-NLS-1$
           UaNode2Gwid node2Gwid = new UaNode2Gwid( uaNode.getNodeId(), nodeDescr, gwid );
           node2RtdGwidList.add( node2Gwid );
         }
         else {
-          LoggerUtils.errorLogger().error( "Can't match rtData: ? -> %s", gwid.canonicalString() ); //$NON-NLS-1$
+          LoggerUtils.error( "Can't match rtData: ? -> %s", gwid.canonicalString() ); //$NON-NLS-1$
           if( TsDialogUtils.askYesNoCancel( getShell(), "Can't match rtData: ? -> %s\n Do you want to continue?", //$NON-NLS-1$
               gwid.canonicalString() ) != ETsDialogCode.YES ) {
             return;
@@ -203,7 +203,7 @@ public class BaikonurSiemensSysdescrGenerator
         }
         Gwid gwid = Gwid.createEvent( obj.classId(), obj.id(), evtInfo.id() );
         if( uaNode != null ) {
-          LoggerUtils.defaultLogger().debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
+          LoggerUtils.debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
               gwid.canonicalString() );
           String nodeDescr = parentNode.getBrowseName() + "::" + uaNode.getBrowseName(); //$NON-NLS-1$
           IStringListEdit paramIds = new StringArrayList();
@@ -214,7 +214,7 @@ public class BaikonurSiemensSysdescrGenerator
           node2EvtGwidList.add( node2EventGwid );
         }
         else {
-          LoggerUtils.errorLogger().error( "Can't match event: ? -> %s", gwid.canonicalString() ); //$NON-NLS-1$
+          LoggerUtils.error( "Can't match event: ? -> %s", gwid.canonicalString() ); //$NON-NLS-1$
           if( TsDialogUtils.askYesNoCancel( getShell(), "Can't match event: ? -> %s\n Do you want to continue?", //$NON-NLS-1$
               gwid.canonicalString() ) != ETsDialogCode.YES ) {
             return;

@@ -97,7 +97,7 @@ public class OpcUaNodeM5LifecycleManager
       rootNode = master().getAddressSpace().getNode( topNodeId );
     }
     catch( UaException ex ) {
-      LoggerUtils.errorLogger().error( ex );
+      LoggerUtils.error( ex );
       return result;
     }
     UaTreeNode root = new UaTreeNode( null, rootNode );
@@ -109,7 +109,7 @@ public class OpcUaNodeM5LifecycleManager
     cached = result;
     saveUaTreeNodes( result );
     long delta = endTime - startTime;
-    LoggerUtils.defaultLogger().debug( "Browse took %d[ms]", delta ); //$NON-NLS-1$
+    LoggerUtils.debug( "Browse took %d[ms]", delta ); //$NON-NLS-1$
 
     return result;
   }
@@ -181,7 +181,7 @@ public class OpcUaNodeM5LifecycleManager
       }
     }
     catch( Exception e ) {
-      LoggerUtils.errorLogger().error( e, "Browsing nodeId=%s failed: %s", //$NON-NLS-1$
+      LoggerUtils.error( e, "Browsing nodeId=%s failed: %s", //$NON-NLS-1$
           aParent.getUaNode().getNodeId().toParseableString(), e.getMessage() );
     }
   }

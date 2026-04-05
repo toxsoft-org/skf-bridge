@@ -293,7 +293,7 @@ public class OpcToS5DataCfgDocEditorPanel
           }
           catch( Exception ex ) {
             // Display.getDefault().asyncExec( () -> TsDialogUtils.error( getShell(), ex ) );
-            LoggerUtils.errorLogger().error( ex );
+            LoggerUtils.error( ex );
             // return;
           }
 
@@ -313,7 +313,7 @@ public class OpcToS5DataCfgDocEditorPanel
           catch( Exception ex ) {
             Display.getDefault()
                 .asyncExec( () -> TsDialogUtils.error( getShell(), STR_OPC_UA_CONNECTING_PROCESS_FAIL ) );
-            LoggerUtils.errorLogger().error( ex );
+            LoggerUtils.error( ex );
             return;
           }
 
@@ -333,7 +333,7 @@ public class OpcToS5DataCfgDocEditorPanel
           catch( Exception ex ) {
             Display.getDefault()
                 .asyncExec( () -> TsDialogUtils.error( getShell(), STR_USE_OPC_UA_CACHE_CREATION_FAIL ) );
-            LoggerUtils.errorLogger().error( ex );
+            LoggerUtils.error( ex );
             return;
           }
         } );

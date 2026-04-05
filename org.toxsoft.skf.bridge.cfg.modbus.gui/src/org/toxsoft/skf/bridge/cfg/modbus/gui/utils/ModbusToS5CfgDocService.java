@@ -60,7 +60,7 @@ public class ModbusToS5CfgDocService
         ipAddrsCopy = new StridablesList<>( storage.readColl( SECT_ID_ADDRESSES, TCPAddress.KEEPER ) );
       }
       catch( Exception e ) {
-        LoggerUtils.errorLogger().error( e );
+        LoggerUtils.error( e );
         Shell shell = context.find( Shell.class );
         TsDialogUtils.error( shell, e );
       }
@@ -82,7 +82,7 @@ public class ModbusToS5CfgDocService
       stored = new StridablesList<>( storage.readColl( SECT_ID_ADDRESSES, TCPAddress.KEEPER ) );
     }
     catch( Exception e ) {
-      LoggerUtils.errorLogger().error( e );
+      LoggerUtils.error( e );
       Shell shell = context.find( Shell.class );
       TsDialogUtils.error( shell, e );
     }
@@ -135,7 +135,7 @@ public class ModbusToS5CfgDocService
       stored = new StridablesList<>( storage.readColl( SECT_ID_MODBUS_DEVICES, ModbusDevice.KEEPER ) );
     }
     catch( Exception e ) {
-      LoggerUtils.errorLogger().error( e );
+      LoggerUtils.error( e );
       Shell shell = context.find( Shell.class );
       TsDialogUtils.error( shell, e );
     }
@@ -183,7 +183,7 @@ public class ModbusToS5CfgDocService
         devicesCopy = new StridablesList<>( storage.readColl( SECT_ID_MODBUS_DEVICES, ModbusDevice.KEEPER ) );
       }
       catch( Exception e ) {
-        LoggerUtils.errorLogger().error( e );
+        LoggerUtils.error( e );
         Shell shell = context.find( Shell.class );
         TsDialogUtils.error( shell, e );
       }

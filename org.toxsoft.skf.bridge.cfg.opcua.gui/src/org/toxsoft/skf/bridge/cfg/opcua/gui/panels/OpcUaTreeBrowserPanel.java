@@ -279,7 +279,7 @@ public class OpcUaTreeBrowserPanel
       client.connect().get();
     }
     catch( Exception ex ) {
-      LoggerUtils.errorLogger().error( ex );
+      LoggerUtils.error( ex );
       TsDialogUtils.error( getShell(), "Can't connect to OPC UA server: %s\n Error message: %s",
           aOpcUaServerConnCfg.host(), ex.getMessage() );
       return;
@@ -371,7 +371,7 @@ public class OpcUaTreeBrowserPanel
             // }
             // EAtomicType ret = OpcUaUtils.getValueTypeOfNode( aContext, aOpcUaServerConnCfg,
             // selectedNode.getUaNode().getNodeId().toParseableString() );
-            // LoggerUtils.defaultLogger().debug( ret.toString() );
+            // LoggerUtils.debug( ret.toString() );
             checkNode2Gwid( aContext );
           }
 
@@ -928,7 +928,7 @@ public class OpcUaTreeBrowserPanel
           // readEventInfo( cinf, varNode, aNode2ClassGwidList );
         }
         catch( UaRuntimeException | UaException ex ) {
-          LoggerUtils.errorLogger().error( ex );
+          LoggerUtils.error( ex );
           TsDialogUtils.error( getShell(), ERR_MSG_CACHE_OUTDATED );
         }
       }
@@ -1434,7 +1434,7 @@ public class OpcUaTreeBrowserPanel
 
         Gwid gwid = Gwid.createCmd( obj.classId(), obj.id(), cmdInfo.id() );
         if( uaNode != null ) {
-          LoggerUtils.defaultLogger().debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
+          LoggerUtils.debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
               gwid.asString() );
           String nodeDescr = parentNode.getBrowseName() + "::" + uaNode.getBrowseName(); //$NON-NLS-1$
           IStringListEdit argIds = new StringArrayList();
@@ -1445,7 +1445,7 @@ public class OpcUaTreeBrowserPanel
           node2BknCmdGwidList.add( node2BknCmdGwid );
         }
         else {
-          LoggerUtils.errorLogger().error( "Can't match Baikonur cmd: ? -> %s", gwid.asString() ); //$NON-NLS-1$
+          LoggerUtils.error( "Can't match Baikonur cmd: ? -> %s", gwid.asString() ); //$NON-NLS-1$
         }
       }
 
@@ -1472,14 +1472,14 @@ public class OpcUaTreeBrowserPanel
         }
         Gwid gwid = Gwid.createRtdata( obj.classId(), obj.id(), rtdInfo.id() );
         if( uaNode != null ) {
-          LoggerUtils.defaultLogger().debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
+          LoggerUtils.debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
               gwid.asString() );
           String nodeDescr = parentNode.getBrowseName() + "::" + uaNode.getBrowseName(); //$NON-NLS-1$
           UaNode2Gwid node2Gwid = new UaNode2Gwid( uaNode.getNodeId(), nodeDescr, gwid );
           node2RtdGwidList.add( node2Gwid );
         }
         else {
-          LoggerUtils.errorLogger().error( "Can't match rtData: ? -> %s", gwid.asString() ); //$NON-NLS-1$
+          LoggerUtils.error( "Can't match rtData: ? -> %s", gwid.asString() ); //$NON-NLS-1$
         }
       }
       // идем по списку его rriProperties
@@ -1509,14 +1509,14 @@ public class OpcUaTreeBrowserPanel
         }
         Gwid gwid = Gwid.createAttr( obj.classId(), obj.id(), attrInfo.id() );
         if( uaNode != null ) {
-          LoggerUtils.defaultLogger().debug( "%s [%s] -> RRI attr %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
+          LoggerUtils.debug( "%s [%s] -> RRI attr %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
               gwid.asString() );
           String nodeDescr = parentNode.getBrowseName() + "::" + uaNode.getBrowseName(); //$NON-NLS-1$
           UaNode2Gwid node2Gwid = new UaNode2Gwid( uaNode.getNodeId(), nodeDescr, gwid );
           node2RriGwidList.add( node2Gwid );
         }
         else {
-          LoggerUtils.errorLogger().error( "Can't match rtData: ? -> %s", gwid.asString() ); //$NON-NLS-1$
+          LoggerUtils.error( "Can't match rtData: ? -> %s", gwid.asString() ); //$NON-NLS-1$
         }
       }
       // идем по списку его events
@@ -1537,7 +1537,7 @@ public class OpcUaTreeBrowserPanel
         }
         Gwid gwid = Gwid.createEvent( obj.classId(), obj.id(), evtInfo.id() );
         if( uaNode != null ) {
-          LoggerUtils.defaultLogger().debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
+          LoggerUtils.debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
               gwid.asString() );
           String nodeDescr = parentNode.getBrowseName() + "::" + uaNode.getBrowseName(); //$NON-NLS-1$
           IStringListEdit paramIds = new StringArrayList();
@@ -1548,7 +1548,7 @@ public class OpcUaTreeBrowserPanel
           node2EvtGwidList.add( node2EventGwid );
         }
         else {
-          LoggerUtils.errorLogger().error( "Can't match event: ? -> %s", gwid.asString() ); //$NON-NLS-1$
+          LoggerUtils.error( "Can't match event: ? -> %s", gwid.asString() ); //$NON-NLS-1$
         }
       }
     }

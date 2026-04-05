@@ -377,7 +377,7 @@ public class ModbusNodesForCfgM5Model
               requestTypeValed.setValue( AvUtils.avFromObj( rType ) );
             }
             catch( TsItemNotFoundRtException e ) {
-              LoggerUtils.errorLogger().error( e, "Couldnot find ERequestType with id: %s", requestTypeVal.asString() ); //$NON-NLS-1$
+              LoggerUtils.error( e, "Couldnot find ERequestType with id: %s", requestTypeVal.asString() ); //$NON-NLS-1$
               // nop
             }
           }
@@ -395,7 +395,7 @@ public class ModbusNodesForCfgM5Model
               valueTypeValed.setValue( AvUtils.avFromObj( vType ) );
             }
             catch( TsItemNotFoundRtException e ) {
-              LoggerUtils.errorLogger().error( e, "Couldnot find EAtomicType with id: &s", valueTypeVal.asString() ); //$NON-NLS-1$
+              LoggerUtils.error( e, "Couldnot find EAtomicType with id: &s", valueTypeVal.asString() ); //$NON-NLS-1$
               // nop
             }
           }

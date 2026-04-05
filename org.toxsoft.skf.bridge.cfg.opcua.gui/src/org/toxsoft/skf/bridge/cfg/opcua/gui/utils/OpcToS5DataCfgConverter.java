@@ -743,7 +743,7 @@ public class OpcToS5DataCfgConverter {
       return retVal;
     }
     catch( TsValidationFailedRtException ex ) {
-      LoggerUtils.errorLogger().error( ex );
+      LoggerUtils.error( ex );
       throw ex;
     }
 

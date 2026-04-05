@@ -478,7 +478,7 @@ public abstract class BaseSysdescrGenerator {
           // readEventInfo( cinf, varNode, aNode2ClassGwidList );
         }
         catch( UaRuntimeException | UaException ex ) {
-          LoggerUtils.errorLogger().error( ex );
+          LoggerUtils.error( ex );
           TsDialogUtils.error( getShell(), ERR_MSG_CACHE_OUTDATED );
         }
       }

@@ -1006,7 +1006,7 @@ public class RefbookGenerator {
       }
     }
     catch( IOException ex ) {
-      LoggerUtils.errorLogger().error( ex );
+      LoggerUtils.error( ex );
     }
   }
 
@@ -1081,7 +1081,7 @@ public class RefbookGenerator {
       }
     }
     catch( IOException ex ) {
-      LoggerUtils.errorLogger().error( ex );
+      LoggerUtils.error( ex );
     }
   }
 

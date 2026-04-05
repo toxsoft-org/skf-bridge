@@ -317,7 +317,7 @@ public class BaseOpcCommonDlmCfgGenerator
       return retVal;
     }
     catch( TsValidationFailedRtException ex ) {
-      LoggerUtils.errorLogger().error( ex );
+      LoggerUtils.error( ex );
       throw ex;
     }
 

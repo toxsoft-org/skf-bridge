@@ -99,7 +99,7 @@ public class UaVariableNodeM5LifecycleManager
       }
     }
     catch( InterruptedException | ExecutionException ex ) {
-      LoggerUtils.errorLogger().error( ex );
+      LoggerUtils.error( ex );
     }
     return original;
   }

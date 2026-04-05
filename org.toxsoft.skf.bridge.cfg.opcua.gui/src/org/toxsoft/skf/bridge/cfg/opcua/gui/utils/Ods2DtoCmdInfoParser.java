@@ -150,7 +150,7 @@ public class Ods2DtoCmdInfoParser {
       Integer.parseInt( cellVal );
     }
     catch( Exception ex ) {
-      LoggerUtils.errorLogger().error( ex );
+      LoggerUtils.error( ex );
       return false;
     }
     return true;

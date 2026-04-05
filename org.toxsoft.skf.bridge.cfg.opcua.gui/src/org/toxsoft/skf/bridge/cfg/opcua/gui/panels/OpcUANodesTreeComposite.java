@@ -107,7 +107,7 @@ public class OpcUANodesTreeComposite
       rootNode = clientOpcUA.getAddressSpace().getNode( topNodeId );
     }
     catch( UaException ex ) {
-      LoggerUtils.errorLogger().error( ex );
+      LoggerUtils.error( ex );
       return;
     }
 
@@ -168,7 +168,7 @@ public class OpcUANodesTreeComposite
           } ).get();
         }
         catch( InterruptedException | ExecutionException ex ) {
-          LoggerUtils.errorLogger().error( ex );
+          LoggerUtils.error( ex );
         }
       }
 

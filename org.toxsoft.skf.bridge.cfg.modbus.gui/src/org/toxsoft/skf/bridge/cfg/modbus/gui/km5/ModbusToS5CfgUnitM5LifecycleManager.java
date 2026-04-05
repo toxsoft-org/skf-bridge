@@ -163,7 +163,7 @@ public class ModbusToS5CfgUnitM5LifecycleManager
       TsDialogUtils.info( shell, MSG_CONFIG_FILE_DLMCFG_CREATED, selected );
     }
     catch( Exception e ) {
-      LoggerUtils.errorLogger().error( e );
+      LoggerUtils.error( e );
       TsDialogUtils.error( shell, e );
     }
   }
@@ -205,7 +205,7 @@ public class ModbusToS5CfgUnitM5LifecycleManager
       TsDialogUtils.info( shell, MSG_CONFIG_FILE_DEVCFG_CREATED, selected );
     }
     catch( Exception e ) {
-      LoggerUtils.errorLogger().error( e );
+      LoggerUtils.error( e );
       TsDialogUtils.error( shell, e );
     }
   }
@@ -231,7 +231,7 @@ public class ModbusToS5CfgUnitM5LifecycleManager
       return generator.generate();
     }
     catch( Exception e ) {
-      LoggerUtils.errorLogger().error( e );
+      LoggerUtils.error( e );
       Shell shell = aContext.find( Shell.class );
       TsDialogUtils.error( shell, e );
       return null;

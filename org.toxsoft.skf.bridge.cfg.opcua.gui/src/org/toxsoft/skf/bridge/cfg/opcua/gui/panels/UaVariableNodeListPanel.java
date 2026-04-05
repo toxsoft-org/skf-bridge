@@ -98,7 +98,7 @@ public class UaVariableNodeListPanel
         updateSubscription();
       }
       catch( InterruptedException | ExecutionException ex ) {
-        LoggerUtils.errorLogger().error( ex );
+        LoggerUtils.error( ex );
       }
     }
     else {

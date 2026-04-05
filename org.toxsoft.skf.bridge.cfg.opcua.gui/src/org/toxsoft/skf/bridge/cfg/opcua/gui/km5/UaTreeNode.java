@@ -200,7 +200,7 @@ public class UaTreeNode {
         uaNode = client.getAddressSpace().getNode( ni );
       }
       catch( UaException ex ) {
-        LoggerUtils.errorLogger().error( ex );
+        LoggerUtils.error( ex );
       }
     }
     return uaNode;

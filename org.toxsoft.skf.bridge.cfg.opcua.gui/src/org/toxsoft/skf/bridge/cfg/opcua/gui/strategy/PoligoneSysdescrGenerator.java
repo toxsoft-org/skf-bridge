@@ -1,8 +1,6 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.strategy;
 
-import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
 import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
-import static org.toxsoft.skf.bridge.cfg.opcua.gui.panels.ISkResources.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.skide.IGreenWorldRefbooks.*;
 
 import org.eclipse.milo.opcua.sdk.client.*;
@@ -20,7 +18,6 @@ import org.toxsoft.core.tslib.av.metainfo.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.*;
 import org.toxsoft.core.tslib.bricks.strid.coll.*;
-import org.toxsoft.core.tslib.bricks.strid.coll.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.coll.primtypes.*;
@@ -197,14 +194,14 @@ public class PoligoneSysdescrGenerator
         }
         Gwid gwid = Gwid.createRtdata( obj.classId(), obj.id(), rtdInfo.id() );
         if( uaNode != null ) {
-          LoggerUtils.defaultLogger().debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
+          LoggerUtils.debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
               gwid.canonicalString() );
           String nodeDescr = parentNode.getBrowseName() + "::" + uaNode.getBrowseName(); //$NON-NLS-1$
           UaNode2Gwid node2Gwid = new UaNode2Gwid( uaNode.getNodeId(), nodeDescr, gwid );
           node2RtdGwidList.add( node2Gwid );
         }
         else {
-          LoggerUtils.errorLogger().error( "Can't match rtData: ? -> %s", gwid.canonicalString() ); //$NON-NLS-1$
+          LoggerUtils.error( "Can't match rtData: ? -> %s", gwid.canonicalString() ); //$NON-NLS-1$
         }
       }
       // идем по списку его rriProperties
@@ -226,7 +223,7 @@ public class PoligoneSysdescrGenerator
         }
         Gwid gwid = Gwid.createAttr( obj.classId(), obj.id(), attrInfo.id() );
         if( uaNode != null ) {
-          LoggerUtils.defaultLogger().debug( "%s [%s] -> RRI attr %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
+          LoggerUtils.debug( "%s [%s] -> RRI attr %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
               gwid.canonicalString() );
           String nodeDescr = parentNode.getBrowseName() + "::" + uaNode.getBrowseName(); //$NON-NLS-1$
           UaNode2Gwid node2Gwid = new UaNode2Gwid( uaNode.getNodeId(), nodeDescr, gwid );
@@ -235,7 +232,7 @@ public class PoligoneSysdescrGenerator
           node2RriGwidList.add( node2Gwid );
         }
         else {
-          LoggerUtils.errorLogger().error( "Can't match rtData: ? -> %s", gwid.canonicalString() ); //$NON-NLS-1$
+          LoggerUtils.error( "Can't match rtData: ? -> %s", gwid.canonicalString() ); //$NON-NLS-1$
         }
       }
       // идем по списку его events
@@ -249,7 +246,7 @@ public class PoligoneSysdescrGenerator
         }
         Gwid gwid = Gwid.createEvent( obj.classId(), obj.id(), evtInfo.id() );
         if( uaNode != null ) {
-          LoggerUtils.defaultLogger().debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
+          LoggerUtils.debug( "%s [%s] -> %s", uaNode.getBrowseName(), uaNode.getNodeId(), //$NON-NLS-1$
               gwid.canonicalString() );
           String nodeDescr = parentNode.getBrowseName() + "::" + uaNode.getBrowseName(); //$NON-NLS-1$
           IStringListEdit paramIds = new StringArrayList();
@@ -260,7 +257,7 @@ public class PoligoneSysdescrGenerator
           node2EvtGwidList.add( node2EventGwid );
         }
         else {
-          LoggerUtils.errorLogger().error( "Can't match event: ? -> %s", gwid.canonicalString() ); //$NON-NLS-1$
+          LoggerUtils.error( "Can't match event: ? -> %s", gwid.canonicalString() ); //$NON-NLS-1$
         }
       }
     }
@@ -301,7 +298,7 @@ public class PoligoneSysdescrGenerator
       section.setAttrParamValue( aGwid.skid(), aGwid.propId(), av, "auto init on creation" );
     }
     catch( UaException ex ) {
-      LoggerUtils.errorLogger().error( ex );
+      LoggerUtils.error( ex );
     }
   }
 
@@ -324,8 +321,7 @@ public class PoligoneSysdescrGenerator
     IAtomicValue defaultConvertVal = AvUtils.avFromObj( aValue.getValue() );
 
     if( defaultConvertVal == null ) {
-      LoggerUtils.errorLogger().error( "Cant convert from opc '%s' to IAtomicValue",
-          aValue.getValue().getClass().getName() );
+      LoggerUtils.error( "Cant convert from opc '%s' to IAtomicValue", aValue.getValue().getClass().getName() );
     }
 
     return defaultConvertVal;

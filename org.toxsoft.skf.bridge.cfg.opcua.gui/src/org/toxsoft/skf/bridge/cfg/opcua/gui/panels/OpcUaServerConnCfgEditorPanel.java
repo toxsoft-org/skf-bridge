@@ -277,7 +277,7 @@ public class OpcUaServerConnCfgEditorPanel
       } );
     }
     catch( InvocationTargetException | InterruptedException ex ) {
-      LoggerUtils.errorLogger().error( ex );
+      LoggerUtils.error( ex );
     }
 
   }
