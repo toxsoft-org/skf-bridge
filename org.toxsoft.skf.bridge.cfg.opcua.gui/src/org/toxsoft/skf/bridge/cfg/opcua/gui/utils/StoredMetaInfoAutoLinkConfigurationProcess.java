@@ -30,13 +30,13 @@ import org.toxsoft.uskat.core.impl.*;
 public class StoredMetaInfoAutoLinkConfigurationProcess
     implements IAutoLinkConfigurationProcess {
 
-  private final static String CFG_CMD_UNIT_ID_FORMAT = "opctos5.bridge.cfg.cmd.unit.id%d.%s";
+  private final static String CFG_CMD_UNIT_ID_FORMAT = "opctos5.bridge.cfg.cmd.unit.id%d.%s"; //$NON-NLS-1$
 
-  private final static String CFG_DATA_UNIT_ID_FORMAT = "opctos5.bridge.cfg.data.unit.id%d.%s.%s";
+  private final static String CFG_DATA_UNIT_ID_FORMAT = "opctos5.bridge.cfg.data.unit.id%d.%s.%s"; //$NON-NLS-1$
 
-  private final static String CFG_RRI_UNIT_ID_FORMAT = "opctos5.bridge.cfg.rri.unit.id%d.%s.%s";
+  private final static String CFG_RRI_UNIT_ID_FORMAT = "opctos5.bridge.cfg.rri.unit.id%d.%s.%s"; //$NON-NLS-1$
 
-  private final static String CFG_EVENT_UNIT_ID_FORMAT = "opctos5.bridge.cfg.event.unit.id%d.%s.%s";
+  private final static String CFG_EVENT_UNIT_ID_FORMAT = "opctos5.bridge.cfg.event.unit.id%d.%s.%s"; //$NON-NLS-1$
 
   @Override
   public IList<OpcToS5DataCfgUnit> formCfgUnitsFromAutoElements( ITsGuiContext aContext, ISkConnection currConn,
@@ -327,18 +327,25 @@ public class StoredMetaInfoAutoLinkConfigurationProcess
             bitIndex == null ? OpcUaUtils.CFG_UNIT_REALIZATION_TYPE_TAG_VALUE_CHANGED
                 : OpcUaUtils.CFG_UNIT_REALIZATION_TYPE_BIT_SWITCH_EVENT );
 
-        OptionSet realization = new OptionSet( realType.getDefaultValues() );
-
-        // replace newVal, oldVal of booean param of event into proper param (by max 2025.11.30)
+        // replace value changed realization by switch realization in case bool val (by max 2026.05.15)
+        boolean isBoolButNotIndexed = false;
         ISkClassInfo classInfo = currConn.coreApi().sysdescr().findClassInfo( gwid.classId() );
-        if( classInfo != null ) {
+        if( bitIndex == null && classInfo != null ) {
           IDtoEventInfo eventInfo = classInfo.events().list().findByKey( gwid.propId() );
           if( eventInfo != null ) {
             if( eventInfo.paramDefs().size() == 1
                 && eventInfo.paramDefs().first().atomicType() == EAtomicType.BOOLEAN ) {
-              OpcUaUtils.OP_FORMER_EVENT_PARAM.setValue( realization, avStr( eventInfo.paramDefs().first().id() ) );
+              realType = typeReg2.getTypeOfRealizationById( type, OpcUaUtils.CFG_UNIT_REALIZATION_TYPE_SWITCH_EVENT );
+              isBoolButNotIndexed = true;
             }
           }
+        }
+
+        OptionSet realization = new OptionSet( realType.getDefaultValues() );
+        if( isBoolButNotIndexed ) {
+          //Добавляем значения полей для отработки любых изменений параметра
+          OpcUaUtils.OP_CONDITION_SWITCH_ON.setValue( realization, avBool( true ) );
+          OpcUaUtils.OP_CONDITION_SWITCH_OFF.setValue( realization, avBool( true ) );
         }
 
         if( bitIndex != null ) {
