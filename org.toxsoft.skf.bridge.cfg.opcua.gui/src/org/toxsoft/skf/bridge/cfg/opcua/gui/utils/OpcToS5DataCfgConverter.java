@@ -395,7 +395,9 @@ public class OpcToS5DataCfgConverter {
 
     // атрибуты НСИ
     IAvTree rriAttrsArrayTree = createRriAttrs( aCfgUnits, aConn );
-    nodes.put( RRI_DEFS, rriAttrsArrayTree );
+    if( rriAttrsArrayTree.arrayLength() > 0 ) {
+      nodes.put( RRI_DEFS, rriAttrsArrayTree );
+    }
 
     // события
     IAvTree eventsMassivTree = createEvents( aCfgUnits );

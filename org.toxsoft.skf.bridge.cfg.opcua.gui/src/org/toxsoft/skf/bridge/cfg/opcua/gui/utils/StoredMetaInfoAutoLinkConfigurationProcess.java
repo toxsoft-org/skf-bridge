@@ -90,118 +90,118 @@ public class StoredMetaInfoAutoLinkConfigurationProcess
       // simple cmds (as events) try
       // Max for bkn
 
-      // String cmdSectId = getTreeSectionNameByConfig( SECTID_OPC_UA_NODES_2_BKN_CMD_GWIDS_TEMPLATE, conConf );
-      // IList<UaNode2EventGwid> autoCmdEvents = loadNodes2Gwids( aContext, cmdSectId, UaNode2EventGwid.KEEPER );
-      //
-      // System.out.println( "Auto simple cmd elements size = " + autoCmdEvents.size() ); //$NON-NLS-1$
-      // for( UaNode2EventGwid cmd2Nodes : autoCmdEvents ) {
-      // String strid = String.format( CFG_CMD_UNIT_ID_FORMAT, Long.valueOf( System.currentTimeMillis() ),
-      // cmd2Nodes.gwid().strid() );
-      // ECfgUnitType type = ECfgUnitType.COMMAND;
-      //
-      // IList<Gwid> gwids = new ElemArrayList<>( cmd2Nodes.gwid() );
-      // String cmdArgParam = null;
-      // IListEdit<NodeId> nodes = new ElemArrayList<>();
-      // nodes.add( cmd2Nodes.getNodeId() );
-      //
-      // String name = STR_LINK_PREFIX + cmd2Nodes.gwid().canonicalString();
-      //
-      // OpcToS5DataCfgUnit unit = new OpcToS5DataCfgUnit( strid, name, gwids, convertNodeListToAtomicList( nodes ) );
-      //
-      // ICfgUnitRealizationType realType =
-      // typeReg2.getTypeOfRealizationById( type, CFG_UNIT_REALIZATION_TYPE_VALUE_COMMAND );
-      //
-      // unit.setTypeOfCfgUnit( type );
-      // unit.setRelizationTypeId( realType.id() );
-      //
-      // OptionSet realization = new OptionSet();
-      // OpcUaUtils.OP_CMD_JAVA_CLASS.setValue( realization, avStr( COMMANDS_JAVA_CLASS_VALUE_COMMAND_EXEC ) );
-      //
-      // if( cmd2Nodes.paramIds() != null && cmd2Nodes.paramIds().size() == 1 ) {
-      // OpcUaUtils.OP_CMD_VALUE_PARAM_ID.setValue( realization, avStr( cmd2Nodes.paramIds().first() ) );
-      // }
-      //
-      // unit.setRealizationOpts( realization );
-      //
-      // result.add( unit );
-      // }
+      String cmdSectId = getTreeSectionNameByConfig( SECTID_OPC_UA_NODES_2_BKN_CMD_GWIDS_TEMPLATE, conConf );
+      IList<UaNode2EventGwid> autoCmdEvents = loadNodes2Gwids( aContext, cmdSectId, UaNode2EventGwid.KEEPER );
 
-      // Commands
-      // dima
-
-      IList<CmdGwid2UaNodes> autoElements = OpcUaUtils.loadCmdGwid2Nodes( aContext, conConf );
-      System.out.println( "Auto cmd elements size = " + autoElements.size() ); //$NON-NLS-1$
-      for( CmdGwid2UaNodes cmd2Nodes : autoElements ) {
-
-        IList<Gwid> gwids = new ElemArrayList<>( cmd2Nodes.gwid() );
-        String cmdArgParam = null;
-        IListEdit<NodeId> nodes = new ElemArrayList<>();
-        nodes.add( cmd2Nodes.getNodeCmdId() );
-        // dima 08.02.24 сразу заносим все ноды аргументов
-        nodes.add( cmd2Nodes.getNodeCmdArgInt() == null ? NodeId.NULL_VALUE : cmd2Nodes.getNodeCmdArgInt() );
-        nodes.add( cmd2Nodes.getNodeCmdArgFlt() == null ? NodeId.NULL_VALUE : cmd2Nodes.getNodeCmdArgFlt() );
-        switch( cmd2Nodes.argType() ) {
-          case INTEGER:
-            cmdArgParam = Ods2DtoCmdInfoParser.CMD_ARG_INT_ID;
-            break;
-          case FLOATING:
-            cmdArgParam = Ods2DtoCmdInfoParser.CMD_ARG_FLT_ID;
-            break;
-          case BOOLEAN:
-          case NONE:
-          case STRING:
-          case TIMESTAMP:
-          case VALOBJ:
-          default:
-            break;
-        }
-        // old version
-        // if( cmd2Nodes.getNodeCmdArgInt() != null ) {
-        // nodes.add( cmd2Nodes.getNodeCmdArgInt() );
-        // cmdArgParam = Ods2DtoCmdInfoParser.CMD_ARG_INT_ID;
-        // }
-        // else
-        // if( cmd2Nodes.getNodeCmdArgFlt() != null ) {
-        // nodes.add( cmd2Nodes.getNodeCmdArgFlt() );
-        // cmdArgParam = Ods2DtoCmdInfoParser.CMD_ARG_FLT_ID;
-        // }
-        nodes.add( cmd2Nodes.getNodeCmdFeedback() );
-
+      System.out.println( "Auto simple cmd elements size = " + autoCmdEvents.size() ); //$NON-NLS-1$
+      for( UaNode2EventGwid cmd2Nodes : autoCmdEvents ) {
         String strid = String.format( CFG_CMD_UNIT_ID_FORMAT, Long.valueOf( System.currentTimeMillis() ),
             cmd2Nodes.gwid().strid() );
         ECfgUnitType type = ECfgUnitType.COMMAND;
 
-        ICfgUnitRealizationType realType =
-            typeReg2.getTypeOfRealizationById( type, CFG_UNIT_REALIZATION_TYPE_VALUE_COMMAND_BY_ONE_TAG );
-        OptionSet realization = new OptionSet();
-        OpcUaUtils.OP_CMD_JAVA_CLASS.setValue( realization,
-            avStr( COMMANDS_JAVA_CLASS_VALUE_COMMAND_BY_ONE_TAG_EXEC ) );
-        if( cmdArgParam != null ) {
-          OpcUaUtils.OP_CMD_VALUE_PARAM_ID.setValue( realization, avStr( cmdArgParam ) );
-        }
-        int cmdOpcCode = 1;
-
-        if( cmdOpcCodes.hasKey( cmd2Nodes.gwid().classId() ) ) {
-          IStringMap<Integer> classCodes = cmdOpcCodes.getByKey( cmd2Nodes.gwid().classId() );
-
-          if( classCodes.hasKey( cmd2Nodes.gwid().propId() ) ) {
-            cmdOpcCode = classCodes.getByKey( cmd2Nodes.gwid().propId() ).intValue();
-          }
-        }
-
-        OpcUaUtils.OP_CMD_OPC_ID.setValue( realization, avInt( cmdOpcCode ) );
+        IList<Gwid> gwids = new ElemArrayList<>( cmd2Nodes.gwid() );
+        String cmdArgParam = null;
+        IListEdit<NodeId> nodes = new ElemArrayList<>();
+        nodes.add( cmd2Nodes.getNodeId() );
 
         String name = STR_LINK_PREFIX + cmd2Nodes.gwid().canonicalString();
 
         OpcToS5DataCfgUnit unit = new OpcToS5DataCfgUnit( strid, name, gwids, convertNodeListToAtomicList( nodes ) );
 
+        ICfgUnitRealizationType realType =
+            typeReg2.getTypeOfRealizationById( type, CFG_UNIT_REALIZATION_TYPE_VALUE_COMMAND );
+
         unit.setTypeOfCfgUnit( type );
         unit.setRelizationTypeId( realType.id() );
+
+        OptionSet realization = new OptionSet();
+        OpcUaUtils.OP_CMD_JAVA_CLASS.setValue( realization, avStr( COMMANDS_JAVA_CLASS_VALUE_COMMAND_EXEC ) );
+
+        if( cmd2Nodes.paramIds() != null && cmd2Nodes.paramIds().size() == 1 ) {
+          OpcUaUtils.OP_CMD_VALUE_PARAM_ID.setValue( realization, avStr( cmd2Nodes.paramIds().first() ) );
+        }
+
         unit.setRealizationOpts( realization );
 
         result.add( unit );
-        // ((OpcToS5DataCfgUnitM5LifecycleManager)lifecycleManager()).addCfgUnit( result );
       }
+
+      // Commands
+      // dima
+
+      // IList<CmdGwid2UaNodes> autoElements = OpcUaUtils.loadCmdGwid2Nodes( aContext, conConf );
+      // System.out.println( "Auto cmd elements size = " + autoElements.size() ); //$NON-NLS-1$
+      // for( CmdGwid2UaNodes cmd2Nodes : autoElements ) {
+      //
+      // IList<Gwid> gwids = new ElemArrayList<>( cmd2Nodes.gwid() );
+      // String cmdArgParam = null;
+      // IListEdit<NodeId> nodes = new ElemArrayList<>();
+      // nodes.add( cmd2Nodes.getNodeCmdId() );
+      // // dima 08.02.24 сразу заносим все ноды аргументов
+      // nodes.add( cmd2Nodes.getNodeCmdArgInt() == null ? NodeId.NULL_VALUE : cmd2Nodes.getNodeCmdArgInt() );
+      // nodes.add( cmd2Nodes.getNodeCmdArgFlt() == null ? NodeId.NULL_VALUE : cmd2Nodes.getNodeCmdArgFlt() );
+      // switch( cmd2Nodes.argType() ) {
+      // case INTEGER:
+      // cmdArgParam = Ods2DtoCmdInfoParser.CMD_ARG_INT_ID;
+      // break;
+      // case FLOATING:
+      // cmdArgParam = Ods2DtoCmdInfoParser.CMD_ARG_FLT_ID;
+      // break;
+      // case BOOLEAN:
+      // case NONE:
+      // case STRING:
+      // case TIMESTAMP:
+      // case VALOBJ:
+      // default:
+      // break;
+      // }
+      // // old version
+      // // if( cmd2Nodes.getNodeCmdArgInt() != null ) {
+      // // nodes.add( cmd2Nodes.getNodeCmdArgInt() );
+      // // cmdArgParam = Ods2DtoCmdInfoParser.CMD_ARG_INT_ID;
+      // // }
+      // // else
+      // // if( cmd2Nodes.getNodeCmdArgFlt() != null ) {
+      // // nodes.add( cmd2Nodes.getNodeCmdArgFlt() );
+      // // cmdArgParam = Ods2DtoCmdInfoParser.CMD_ARG_FLT_ID;
+      // // }
+      // nodes.add( cmd2Nodes.getNodeCmdFeedback() );
+      //
+      // String strid = String.format( CFG_CMD_UNIT_ID_FORMAT, Long.valueOf( System.currentTimeMillis() ),
+      // cmd2Nodes.gwid().strid() );
+      // ECfgUnitType type = ECfgUnitType.COMMAND;
+      //
+      // ICfgUnitRealizationType realType =
+      // typeReg2.getTypeOfRealizationById( type, CFG_UNIT_REALIZATION_TYPE_VALUE_COMMAND_BY_ONE_TAG );
+      // OptionSet realization = new OptionSet();
+      // OpcUaUtils.OP_CMD_JAVA_CLASS.setValue( realization,
+      // avStr( COMMANDS_JAVA_CLASS_VALUE_COMMAND_BY_ONE_TAG_EXEC ) );
+      // if( cmdArgParam != null ) {
+      // OpcUaUtils.OP_CMD_VALUE_PARAM_ID.setValue( realization, avStr( cmdArgParam ) );
+      // }
+      // int cmdOpcCode = 1;
+      //
+      // if( cmdOpcCodes.hasKey( cmd2Nodes.gwid().classId() ) ) {
+      // IStringMap<Integer> classCodes = cmdOpcCodes.getByKey( cmd2Nodes.gwid().classId() );
+      //
+      // if( classCodes.hasKey( cmd2Nodes.gwid().propId() ) ) {
+      // cmdOpcCode = classCodes.getByKey( cmd2Nodes.gwid().propId() ).intValue();
+      // }
+      // }
+      //
+      // OpcUaUtils.OP_CMD_OPC_ID.setValue( realization, avInt( cmdOpcCode ) );
+      //
+      // String name = STR_LINK_PREFIX + cmd2Nodes.gwid().canonicalString();
+      //
+      // OpcToS5DataCfgUnit unit = new OpcToS5DataCfgUnit( strid, name, gwids, convertNodeListToAtomicList( nodes ) );
+      //
+      // unit.setTypeOfCfgUnit( type );
+      // unit.setRelizationTypeId( realType.id() );
+      // unit.setRealizationOpts( realization );
+      //
+      // result.add( unit );
+      // // ((OpcToS5DataCfgUnitM5LifecycleManager)lifecycleManager()).addCfgUnit( result );
+      // }
       // Data
       IList<UaNode2Gwid> nodes2Gwids = OpcUaUtils.loadNodes2RtdGwids( aContext, conConf );
       for( UaNode2Gwid dataNode : nodes2Gwids ) {
@@ -343,7 +343,7 @@ public class StoredMetaInfoAutoLinkConfigurationProcess
 
         OptionSet realization = new OptionSet( realType.getDefaultValues() );
         if( isBoolButNotIndexed ) {
-          //Добавляем значения полей для отработки любых изменений параметра
+          // Добавляем значения полей для отработки любых изменений параметра
           OpcUaUtils.OP_CONDITION_SWITCH_ON.setValue( realization, avBool( true ) );
           OpcUaUtils.OP_CONDITION_SWITCH_OFF.setValue( realization, avBool( true ) );
         }
