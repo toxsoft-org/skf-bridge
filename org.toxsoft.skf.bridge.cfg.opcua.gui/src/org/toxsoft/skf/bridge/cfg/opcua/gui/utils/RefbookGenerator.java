@@ -1094,13 +1094,20 @@ public class RefbookGenerator {
     rbBitMasks = rbServ.defineRefbook( REFBOOK_BITMASK_OPCUA );
     try {
       SpreadSheet book = SpreadSheet.createFromFile( aRefbookFile );
-      // scan all pages
-      for( int sheetNo = 0; sheetNo < book.getSheetCount(); sheetNo++ ) {
-        Sheet classSheet = book.getSheet( sheetNo );
-        // get name of class
-        String className = classSheet.getName();
-        fillClassRbItems( rbBitMasks, classSheet, className );
-      }
+      // читаем "Предупреждения"
+      Sheet warningsSheet = book.getSheet( "Warnings" );
+      fillClassRbItems( rbBitMasks, warningsSheet, "Warnings" );
+      // читаем "Аварии"
+      Sheet alarmsSheet = book.getSheet( "Alarms" );
+      fillClassRbItems( rbBitMasks, alarmsSheet, "Alarms" );
+
+      // old version
+      // for( int sheetNo = 0; sheetNo < book.getSheetCount(); sheetNo++ ) {
+      // Sheet classSheet = book.getSheet( sheetNo );
+      // // get name of class
+      // String className = classSheet.getName();
+      // fillClassRbItems( rbBitMasks, classSheet, className );
+      // }
     }
     catch( IOException ex ) {
       LoggerUtils.error( ex );
@@ -1110,7 +1117,7 @@ public class RefbookGenerator {
   private void fillClassRbItems( ISkRefbook rbBitMasks, Sheet classSheet, String className ) {
     int emptyRows = 0;
     for( int rowNum = 2; rowNum < classSheet.getRowCount(); rowNum++ ) {
-      if( emptyRows >= 3 ) {
+      if( emptyRows >= 30 ) {
         return;
       }
       // read row fields
