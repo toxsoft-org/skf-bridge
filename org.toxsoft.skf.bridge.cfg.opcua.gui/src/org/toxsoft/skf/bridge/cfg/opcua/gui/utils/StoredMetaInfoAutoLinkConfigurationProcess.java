@@ -330,7 +330,7 @@ public class StoredMetaInfoAutoLinkConfigurationProcess
         // replace value changed realization by switch realization in case bool val (by max 2026.05.15)
         boolean isBoolButNotIndexed = false;
         ISkClassInfo classInfo = currConn.coreApi().sysdescr().findClassInfo( gwid.classId() );
-        if( bitIndex == null && classInfo != null ) {
+        if( (bitIndex == null || bitIndex.bitIndex() < 0) && classInfo != null ) {
           IDtoEventInfo eventInfo = classInfo.events().list().findByKey( gwid.propId() );
           if( eventInfo != null ) {
             if( eventInfo.paramDefs().size() == 1
@@ -343,9 +343,24 @@ public class StoredMetaInfoAutoLinkConfigurationProcess
 
         OptionSet realization = new OptionSet( realType.getDefaultValues() );
         if( isBoolButNotIndexed ) {
-          // Добавляем значения полей для отработки любых изменений параметра
-          OpcUaUtils.OP_CONDITION_SWITCH_ON.setValue( realization, avBool( true ) );
-          OpcUaUtils.OP_CONDITION_SWITCH_OFF.setValue( realization, avBool( true ) );
+          // dima 30.06.26 обработка булевого тега, но с генерацией только по фронту или только по спаду
+          /**
+           * Вот как должен быть описаны этот тег в справочнике <br>
+           * sk.refbooks.class.Item.BitMask = [ {CtrlSystem.ComprNotReady,{ts.Description = "Нет готовности к
+           * запуску",ts.Name = "Нет готовности",drvObjId = "",drvFlagDataId = "",Off = "нет готовности",On = "",idW =
+           * "",identificator = "rtdComprNotReady",bitN = -1},{},{}},
+           */
+          if( bitIndex != null ) {
+            boolean genUp = bitIndex.isGenerateUp();
+            boolean genDn = bitIndex.isGenerateDn();
+            OpcUaUtils.OP_CONDITION_SWITCH_ON.setValue( realization, avBool( genUp ) );
+            OpcUaUtils.OP_CONDITION_SWITCH_OFF.setValue( realization, avBool( genDn ) );
+          }
+          else {
+            // Добавляем значения полей для отработки любых изменений параметра
+            OpcUaUtils.OP_CONDITION_SWITCH_ON.setValue( realization, avBool( true ) );
+            OpcUaUtils.OP_CONDITION_SWITCH_OFF.setValue( realization, avBool( true ) );
+          }
         }
 
         if( bitIndex != null ) {
