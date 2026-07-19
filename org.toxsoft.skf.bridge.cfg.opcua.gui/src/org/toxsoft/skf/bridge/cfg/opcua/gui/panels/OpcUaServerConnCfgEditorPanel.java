@@ -185,7 +185,7 @@ public class OpcUaServerConnCfgEditorPanel
                 if( filePath != null ) {
                   File refbookFile = new File( filePath );
                   RefbookGenerator rbImporter = new RefbookGenerator( connSup.defConn(), getShell() );
-                  rbImporter.importPoligonBitMaskRefbook( refbookFile );
+                  rbImporter.importCommonBitMaskRefbook( refbookFile );
                   // notify user
                   TsDialogUtils.info( getShell(), "Справочник битовых масок импортирован" );
                 }

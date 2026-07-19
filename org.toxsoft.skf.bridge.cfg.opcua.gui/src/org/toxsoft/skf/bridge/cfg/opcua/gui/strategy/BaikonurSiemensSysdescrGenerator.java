@@ -122,6 +122,10 @@ public class BaikonurSiemensSysdescrGenerator
     IListEdit<UaNode2Gwid> node2RtdGwidList = new ElemArrayList<>();
     IListEdit<UaNode2EventGwid> node2EvtGwidList = new ElemArrayList<>();
     IListEdit<UaNode2EventGwid> node2BknCmdGwidList = new ElemArrayList<>();
+    // TODO продумать тщательнее
+    // игнорировать все ошибки не совпадения тега и Gwid. Сделано для проекта Самсунг, гдле реальное дерево ан.входа
+    // отличается от шаблонного
+    boolean ignoreAll = false;
     // в этом месте у нас 100% уже загружено дерево узлов OPC UA
     IList<UaTreeNode> treeNodes = ((OpcUaNodeM5LifecycleManager)componentModown.lifecycleManager()).getCached();
     // идем по списку объектов
@@ -162,9 +166,14 @@ public class BaikonurSiemensSysdescrGenerator
         }
         else {
           LoggerUtils.error( "Can't match Baikonur cmd: ? -> %s", gwid.canonicalString() ); //$NON-NLS-1$
-          if( TsDialogUtils.askYesNoCancel( getShell(), "Can't match Baikonur cmd: ? -> %s\n Do you want to continue?", //$NON-NLS-1$
-              gwid.canonicalString() ) != ETsDialogCode.YES ) {
-            return;
+          if( !ignoreAll ) {
+            if( TsDialogUtils.askYesNoCancel( getShell(), "Can't match Baikonur cmd: ? -> %s\n Ignore all?", //$NON-NLS-1$
+                gwid.canonicalString() ) == ETsDialogCode.YES ) {
+              ignoreAll = true;
+            }
+            else {
+              return;
+            }
           }
         }
       }
@@ -187,9 +196,14 @@ public class BaikonurSiemensSysdescrGenerator
         }
         else {
           LoggerUtils.error( "Can't match rtData: ? -> %s", gwid.canonicalString() ); //$NON-NLS-1$
-          if( TsDialogUtils.askYesNoCancel( getShell(), "Can't match rtData: ? -> %s\n Do you want to continue?", //$NON-NLS-1$
-              gwid.canonicalString() ) != ETsDialogCode.YES ) {
-            return;
+          if( !ignoreAll ) {
+            if( TsDialogUtils.askYesNoCancel( getShell(), "Can't match rtData: ? -> %s\n Do you want to continue?", //$NON-NLS-1$
+                gwid.canonicalString() ) == ETsDialogCode.YES ) {
+              ignoreAll = true;
+            }
+            else {
+              return;
+            }
           }
         }
       }
@@ -215,11 +229,15 @@ public class BaikonurSiemensSysdescrGenerator
         }
         else {
           LoggerUtils.error( "Can't match event: ? -> %s", gwid.canonicalString() ); //$NON-NLS-1$
-          if( TsDialogUtils.askYesNoCancel( getShell(), "Can't match event: ? -> %s\n Do you want to continue?", //$NON-NLS-1$
-              gwid.canonicalString() ) != ETsDialogCode.YES ) {
-            return;
+          if( !ignoreAll ) {
+            if( TsDialogUtils.askYesNoCancel( getShell(), "Can't match event: ? -> %s\n Do you want to continue?", //$NON-NLS-1$
+                gwid.canonicalString() ) == ETsDialogCode.YES ) {
+              ignoreAll = true;
+            }
+            else {
+              return;
+            }
           }
-
         }
       }
     }

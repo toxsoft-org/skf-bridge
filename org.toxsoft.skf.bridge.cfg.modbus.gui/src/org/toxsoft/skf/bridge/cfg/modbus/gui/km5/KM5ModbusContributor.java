@@ -41,6 +41,8 @@ public class KM5ModbusContributor
   protected IStringList papiCreateModels() {
     OpcUaUtils.registerCfgUnitRealizationTypes( m5().tsContext() );
 
+    addIfNotAlreadyAdded( new StringPropertiesM5Model() );
+
     addIfNotAlreadyAdded( new ModbusToS5CfgDocM5Model() );
     addIfNotAlreadyAdded( new GwidsForCfgM5Model() );
     addIfNotAlreadyAdded( new OpcToS5DataCfgUnitM5Model( OpcToS5DataCfgUnitM5Model.MODEL_ID_TEMPLATE + ".modbus", //$NON-NLS-1$

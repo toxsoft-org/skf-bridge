@@ -1,6 +1,7 @@
 package org.toxsoft.skf.bridge.cfg.opcua.gui.km5;
 
 import org.toxsoft.core.tsgui.m5.*;
+import org.toxsoft.core.tsgui.m5.model.impl.*;
 import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.coll.primtypes.impl.*;
 import org.toxsoft.core.tslib.utils.errors.*;
@@ -51,59 +52,33 @@ public class KM5OpcUaContributor
 
   @Override
   protected IStringList papiCreateModels() {
+
     OpcToS5DataCfgDocService docService = new OpcToS5DataCfgDocService( m5().tsContext() );
     m5().tsContext().put( OpcToS5DataCfgDocService.class, docService );
     OpcUaUtils.registerCfgUnitRealizationTypes( m5().tsContext() );
-    OpcUaServerConnCfgModel opcUaServerConnCfgModel = new OpcUaServerConnCfgModel();
-    myModels.add( opcUaServerConnCfgModel.id() );
-    m5().addModel( opcUaServerConnCfgModel );
 
-    OpcUaNodeModel opcUaModel = new OpcUaNodeModel();
-    myModels.add( opcUaModel.id() );
-    m5().addModel( opcUaModel );
-
-    UaVariableNodeM5Model uaVariableNodeM5Model = new UaVariableNodeM5Model();
-    myModels.add( uaVariableNodeM5Model.id() );
-    m5().addModel( uaVariableNodeM5Model );
-
-    DtoObjectM5Model dtoObjectM5Model = new DtoObjectM5Model( skConn() );
-    myModels.add( dtoObjectM5Model.id() );
-    m5().addModel( dtoObjectM5Model );
-
-    GwidsForCfgM5Model gwidsForCfgM5Model = new GwidsForCfgM5Model();
-    myModels.add( gwidsForCfgM5Model.id() );
-    m5().addModel( gwidsForCfgM5Model );
-
-    OpcToS5DataCfgUnitM5Model opcToS5DataCfgUnitM5Model = new OpcToS5DataCfgUnitM5Model(
-        OpcToS5DataCfgUnitM5Model.MODEL_ID_TEMPLATE + ".opcua", NodesForCfgM5Model.MODEL_ID );
-    myModels.add( opcToS5DataCfgUnitM5Model.id() );
-    m5().addModel( opcToS5DataCfgUnitM5Model );
-
-    OpcToS5DataCfgDocM5Model opcToS5DataCfgDocM5Model = new OpcToS5DataCfgDocM5Model();
-    myModels.add( opcToS5DataCfgDocM5Model.id() );
-    m5().addModel( opcToS5DataCfgDocM5Model );
-
-    NodesForCfgM5Model nodesForCfgM5Model = new NodesForCfgM5Model();
-    myModels.add( nodesForCfgM5Model.id() );
-    m5().addModel( nodesForCfgM5Model );
-
-    CfgUnitRealizationTypeM5Model cfgUnitRealizationTypeM5Model = new CfgUnitRealizationTypeM5Model();
-    myModels.add( cfgUnitRealizationTypeM5Model.id() );
-    m5().addModel( cfgUnitRealizationTypeM5Model );
-
-    CfgOpcUaNodeM5Model cfgOpcUaNodeM5Model = new CfgOpcUaNodeM5Model();
-    myModels.add( cfgOpcUaNodeM5Model.id() );
-    m5().addModel( cfgOpcUaNodeM5Model );
-
-    StringPropertiesM5Model stringPropertiesM5Model = new StringPropertiesM5Model();
-    myModels.add( stringPropertiesM5Model.id() );
-    m5().addModel( stringPropertiesM5Model );
-
-    SimpleStringM5Model simpleStringM5Model = new SimpleStringM5Model();
-    myModels.add( simpleStringM5Model.id() );
-    m5().addModel( simpleStringM5Model );
+    addIfNotAlreadyAdded( new OpcUaServerConnCfgModel() );
+    addIfNotAlreadyAdded( new OpcUaNodeModel() );
+    addIfNotAlreadyAdded( new UaVariableNodeM5Model() );
+    addIfNotAlreadyAdded( new DtoObjectM5Model( skConn() ) );
+    addIfNotAlreadyAdded( new GwidsForCfgM5Model() );
+    addIfNotAlreadyAdded( new OpcToS5DataCfgUnitM5Model( OpcToS5DataCfgUnitM5Model.MODEL_ID_TEMPLATE + ".opcua",
+        NodesForCfgM5Model.MODEL_ID ) );
+    addIfNotAlreadyAdded( new OpcToS5DataCfgDocM5Model() );
+    addIfNotAlreadyAdded( new NodesForCfgM5Model() );
+    addIfNotAlreadyAdded( new CfgUnitRealizationTypeM5Model() );
+    addIfNotAlreadyAdded( new CfgOpcUaNodeM5Model() );
+    addIfNotAlreadyAdded( new StringPropertiesM5Model() );
+    addIfNotAlreadyAdded( new SimpleStringM5Model() );
 
     return CONRTIBUTED_MODEL_IDS;
+  }
+
+  private <T> void addIfNotAlreadyAdded( M5Model<T> aModel ) {
+    if( m5().findModel( aModel.id() ) == null ) {
+      myModels.add( aModel.id() );
+      m5().addModel( aModel );
+    }
   }
 
 }
