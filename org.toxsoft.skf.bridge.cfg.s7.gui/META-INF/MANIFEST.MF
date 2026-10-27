@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: S7 bridge configurator GUI
+Bundle-SymbolicName: org.toxsoft.skf.bridge.cfg.s7.gui
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.toxsoft.skf.brifge.cfg.s7.gui.Activator
+Bundle-Vendor: ToxSoft Ltd.
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.toxsoft.core.tslib,
+ ru.toxsoft.l2.core,
+ org.toxsoft.l2.thd.s7
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Automatic-Module-Name: org.toxsoft.skf.brifge.cfg.s7.gui
+Bundle-ActivationPolicy: lazy
+Import-Package: ru.toxsoft.l2.thd.opc
