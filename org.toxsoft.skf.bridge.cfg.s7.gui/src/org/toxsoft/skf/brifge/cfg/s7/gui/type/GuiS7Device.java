@@ -42,7 +42,7 @@ public class GuiS7Device
         protected void doWrite( IStrioWriter aSw, GuiS7Device aEntity ) {
           aSw.incNewLine();
 
-          // id, name, description
+          // id, name
           aSw.writeAsIs( aEntity.id() );
           aSw.writeSeparatorChar();
           aSw.writeEol();
@@ -56,7 +56,7 @@ public class GuiS7Device
 
         @Override
         protected GuiS7Device doRead( IStrioReader aSr ) {
-          // id, name, description
+          // id, name
           String id = aSr.readIdPath();
           aSr.ensureSeparatorChar();
           String name = aSr.readQuotedString();
@@ -116,42 +116,42 @@ public class GuiS7Device
    *
    * @return String - identifier of S7 connection
    */
-  public String getDeviceS7ConnectionId() {
-    StringBuilder result = new StringBuilder();
-    result.append( "tcp" );
-
-    String ipAddress = S7DeviceOptionsUtils.OP_TCP_IP_ADDRESS.getValue( getDeviceOptValues() ).asString();
-    int rack = S7DeviceOptionsUtils.OP_RACK.getValue( getDeviceOptValues() ).asInt();
-    int slot = S7DeviceOptionsUtils.OP_SLOT.getValue( getDeviceOptValues() ).asInt();
-
-    result.append( "_" );
-    result.append( ipAddress );
-    result.append( "_" );
-    result.append( rack );
-    result.append( "_" );
-    result.append( slot );
-    return result.toString().replace( ".", "_" );
-  }
+  // public String getDeviceS7ConnectionId() {
+  // StringBuilder result = new StringBuilder();
+  // result.append( "tcp" );
+  //
+  // String ipAddress = S7DeviceOptionsUtils.OP_TCP_IP_ADDRESS.getValue( getDeviceOptValues() ).asString();
+  // int rack = S7DeviceOptionsUtils.OP_RACK.getValue( getDeviceOptValues() ).asInt();
+  // int slot = S7DeviceOptionsUtils.OP_SLOT.getValue( getDeviceOptValues() ).asInt();
+  //
+  // result.append( "_" );
+  // result.append( ipAddress );
+  // result.append( "_" );
+  // result.append( rack );
+  // result.append( "_" );
+  // result.append( slot );
+  // return result.toString().replace( ".", "_" );
+  // }
 
   /**
    * Returns device identifier forming from its connection options
    *
    * @return String - device identifier forming from its connection options (tcp-ipAddress-port, rtu-portName-address)
    */
-  public String getDeviceId() {
-    StringBuilder result = new StringBuilder();
-    result.append( "tcp" );
-
-    IList<IDataDef> paramDefinitions = S7DeviceOptionsUtils.getParamDefinitions();
-
-    for( IDataDef dDef : paramDefinitions ) {
-      result.append( "_" );
-      result.append( dDef.id() );
-      result.append( "_" );
-      result.append( dDef.getValue( deviceOptValues ).toString() );
-    }
-    return result.toString().replace( ".", "_" );
-  }
+  // public String getDeviceId() {
+  // StringBuilder result = new StringBuilder();
+  // result.append( "tcp" );
+  //
+  // IList<IDataDef> paramDefinitions = S7DeviceOptionsUtils.getParamDefinitions();
+  //
+  // for( IDataDef dDef : paramDefinitions ) {
+  // result.append( "_" );
+  // result.append( dDef.id() );
+  // result.append( "_" );
+  // result.append( dDef.getValue( deviceOptValues ).toString() );
+  // }
+  // return result.toString().replace( ".", "_" );
+  // }
 
   @Override
   public String toString() {
@@ -164,5 +164,20 @@ public class GuiS7Device
 
   public void addDataBlock( GuiS7DataBlock aDataBlock ) {
     dataBlocks.add( aDataBlock );
+  }
+
+  public static String generateId( IOptionSetEdit aDeviceOptValues ) {
+    StringBuilder result = new StringBuilder();
+    result.append( "tcp" );
+
+    IList<IDataDef> paramDefinitions = S7DeviceOptionsUtils.getParamDefinitions();
+
+    for( IDataDef dDef : paramDefinitions ) {
+      result.append( "_" );
+      result.append( dDef.id() );
+      result.append( "_" );
+      result.append( dDef.getValue( aDeviceOptValues ).toString() );
+    }
+    return result.toString().replace( ".", "_" );
   }
 }

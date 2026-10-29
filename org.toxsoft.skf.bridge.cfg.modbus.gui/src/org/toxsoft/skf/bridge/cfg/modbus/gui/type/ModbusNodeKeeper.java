@@ -30,7 +30,7 @@ public class ModbusNodeKeeper
   }
 
   @Override
-  protected void doWrite( IStrioWriter aSw, ModbusNode aEntity ) {
+  protected void doWrite( IStrioWriter aSw, ModbusNode aEntity ) { // NB!
     ModbusDevice.KEEPER.write( aSw, aEntity.getModbusDevice() );
     aSw.writeSeparatorChar();
     aSw.writeEol();

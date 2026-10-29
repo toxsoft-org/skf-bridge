@@ -6,10 +6,17 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.toxsoft.skf.brifge.cfg.s7.gui.Activator
 Bundle-Vendor: ToxSoft Ltd.
 Require-Bundle: org.eclipse.ui,
+ org.eclipse.e4.ui.model.workbench;bundle-version="2.4.300",
  org.eclipse.core.runtime,
  org.toxsoft.core.tslib,
  ru.toxsoft.l2.core,
- org.toxsoft.l2.thd.s7
+ org.toxsoft.l2.thd.s7,
+ org.toxsoft.core.tsgui,
+ org.toxsoft.uskat.core.gui,
+ org.toxsoft.skf.bridge.cfg.modbus.gui,
+ org.eclipse.e4.core.contexts,
+ org.toxsoft.skf.bridge.cfg.opcua.gui,
+ org.toxsoft.uskat.core;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: org.toxsoft.skf.brifge.cfg.s7.gui
 Bundle-ActivationPolicy: lazy

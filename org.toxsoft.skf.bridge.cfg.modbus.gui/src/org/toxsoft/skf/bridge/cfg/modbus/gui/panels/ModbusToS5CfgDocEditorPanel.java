@@ -268,7 +268,7 @@ public class ModbusToS5CfgDocEditorPanel
 
             switch( aActionId ) {
               case OpcToS5DataCfgDocEditorPanel.ACTID_GENERATE_FILE:
-                ((ModbusToS5CfgUnitM5LifecycleManager)lifecycleManager()).generateDlmFileFromCurrState( ctx );
+                ((ModbusToS5CfgUnitM5LifecycleManager)lifecycleManager()).generateDlmFileFromCurrState( ctx ); // NB!
                 ((ModbusToS5CfgUnitM5LifecycleManager)lifecycleManager()).generateDevFileFromCurrState( ctx );
                 break;
               case ACTID_FILTER_BY_ADDRESS:
@@ -324,7 +324,7 @@ public class ModbusToS5CfgDocEditorPanel
                         node.getValueType(), node.getRequestType() );
                     newNodes.add( newNode );
                   }
-                  initVals.set( OpcToS5DataCfgUnitM5Model.FID_NODES, convertToAtomicList( newNodes ) );
+                  initVals.set( OpcToS5DataCfgUnitM5Model.FID_NODES, convertToAtomicList( newNodes ) ); // NB!
                   // create new item
                   OpcToS5DataCfgUnit item = lifecycleManager().create( initVals );
                   newItems.add( item );

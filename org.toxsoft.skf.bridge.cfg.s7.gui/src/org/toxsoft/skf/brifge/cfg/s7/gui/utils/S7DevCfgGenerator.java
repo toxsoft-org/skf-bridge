@@ -45,11 +45,11 @@ public class S7DevCfgGenerator
   private static IAvTree createS7TagTree( GuiS7Tag aGuiS7Tag ) {
     IOptionSetEdit tagOpSet = new OptionSet();
     tagOpSet.setStr( TAG_ID, aGuiS7Tag.getId() );
-    tagOpSet.setInt( TAG_BUFFER_OFFSET, aGuiS7Tag.bufferOffset );
-    tagOpSet.setStr( TAG_KIND_ID, aGuiS7Tag.tagKind.getName() );
-    tagOpSet.setStr( TAG_VALUE_TYPE_ID, aGuiS7Tag.valueType.id() );
-    if( aGuiS7Tag.valueType.equals( EAtomicType.BOOLEAN ) ) {
-      tagOpSet.setInt( BIT_NUMBER, aGuiS7Tag.bitNumber );
+    tagOpSet.setInt( TAG_BUFFER_OFFSET, aGuiS7Tag.getBufferOffset() );
+    tagOpSet.setStr( TAG_KIND_ID, aGuiS7Tag.getTagKind().getName() );
+    tagOpSet.setStr( TAG_VALUE_TYPE_ID, aGuiS7Tag.getValueType().id() );
+    if( aGuiS7Tag.getValueType().equals( EAtomicType.BOOLEAN ) ) {
+      tagOpSet.setInt( BIT_NUMBER, aGuiS7Tag.getBitNumber() );
     }
 
     IAvTree tagTree =
@@ -138,51 +138,10 @@ public class S7DevCfgGenerator
   @SuppressWarnings( "nls" )
   public static void main( String[] aArgs ) {
     S7DevCfgGenerator devCfgGenerator = new S7DevCfgGenerator();
-    // создаем два девайса
-    // Moscow bench configuration
-    IOptionSetEdit deviceOptValues = new OptionSet();
-    S7DeviceOptionsUtils.OP_TCP_IP_ADDRESS.setValue( deviceOptValues, AvUtils.avStr( "192.168.12.39" ) );
-    S7DeviceOptionsUtils.OP_RACK.setValue( deviceOptValues, AvUtils.avInt( 0 ) );
-    S7DeviceOptionsUtils.OP_SLOT.setValue( deviceOptValues, AvUtils.avInt( 1 ) );
-    GuiS7Device benchDevice =
-        new GuiS7Device( "bench_IP_192_168_12_39_rack_0.slot_1.id", "Siemens bench, rack 0, slot 1", deviceOptValues );
-    // создаем блок данных DB6
-    GuiS7DataBlock benchDeviceDB6 = new GuiS7DataBlock( benchDevice, 6 );
-    benchDevice.addDataBlock( benchDeviceDB6 );
-    // тег DB6.DBD20
-    GuiS7Tag s7Tag = new GuiS7Tag( benchDeviceDB6, 20, EAtomicType.FLOATING, 7, EKind.RW );
-    benchDeviceDB6.addTag( s7Tag );
-    // тег DB6.DBD24
-    s7Tag = new GuiS7Tag( benchDeviceDB6, 24, EAtomicType.FLOATING, 0, EKind.RW );
-    benchDeviceDB6.addTag( s7Tag );
 
-    // создаем блок данных DB50
-    GuiS7DataBlock benchDeviceDB50 = new GuiS7DataBlock( benchDevice, 50 );
-    benchDevice.addDataBlock( benchDeviceDB50 );
-    // тег DB50.DBX0.2
-    s7Tag = new GuiS7Tag( benchDeviceDB50, 0, EAtomicType.BOOLEAN, 2, EKind.RW );
-    benchDeviceDB50.addTag( s7Tag );
-    // тег DB50.DBX4.5
-    s7Tag = new GuiS7Tag( benchDeviceDB50, 4, EAtomicType.BOOLEAN, 5, EKind.RW );
-    benchDeviceDB50.addTag( s7Tag );
-    // тег DB50.DBX4.6
-    s7Tag = new GuiS7Tag( benchDeviceDB50, 4, EAtomicType.BOOLEAN, 6, EKind.RW );
-    benchDeviceDB50.addTag( s7Tag );
-
-    // создаем блок данных DB58
-    GuiS7DataBlock benchDeviceDB58 = new GuiS7DataBlock( benchDevice, 58 );
-    benchDevice.addDataBlock( benchDeviceDB58 );
-    // тег DB58.DBW12
-    s7Tag = new GuiS7Tag( benchDeviceDB58, 12, EAtomicType.INTEGER, 0, EKind.RW );
-    benchDeviceDB58.addTag( s7Tag );
-    devCfgGenerator.addS7Device( benchDevice );
-
-    deviceOptValues = new OptionSet();
-    S7DeviceOptionsUtils.OP_TCP_IP_ADDRESS.setValue( deviceOptValues, AvUtils.avStr( "192.168.12.39" ) );
-    S7DeviceOptionsUtils.OP_RACK.setValue( deviceOptValues, AvUtils.avInt( 0 ) );
-    S7DeviceOptionsUtils.OP_SLOT.setValue( deviceOptValues, AvUtils.avInt( 1 ) );
-    GuiS7Device device2 = new GuiS7Device( "fake_device.id", "fake device just for testing", deviceOptValues );
-    devCfgGenerator.addS7Device( device2 );
+    for( GuiS7Device device : getTestConfig() ) {
+      devCfgGenerator.addS7Device( device );
+    }
 
     IAvTree s7DevicesTree = devCfgGenerator.generate();
 
@@ -234,4 +193,54 @@ public class S7DevCfgGenerator
 
   }
 
+  @SuppressWarnings( "nls" )
+  public static IList<GuiS7Device> getTestConfig() {
+    IListEdit<GuiS7Device> retVal = new ElemArrayList<>();
+    // создаем два девайса
+    // Moscow bench configuration
+    IOptionSetEdit deviceOptValues = new OptionSet();
+    S7DeviceOptionsUtils.OP_TCP_IP_ADDRESS.setValue( deviceOptValues, AvUtils.avStr( "192.168.12.39" ) );
+    S7DeviceOptionsUtils.OP_RACK.setValue( deviceOptValues, AvUtils.avInt( 0 ) );
+    S7DeviceOptionsUtils.OP_SLOT.setValue( deviceOptValues, AvUtils.avInt( 1 ) );
+    GuiS7Device benchDevice =
+        new GuiS7Device( "bench_IP_192_168_12_39_rack_0.slot_1.id", "Siemens bench, rack 0, slot 1", deviceOptValues );
+    // создаем блок данных DB6
+    GuiS7DataBlock benchDeviceDB6 = new GuiS7DataBlock( benchDevice, 6 );
+    benchDevice.addDataBlock( benchDeviceDB6 );
+    // тег DB6.DBD20
+    GuiS7Tag s7Tag = new GuiS7Tag( benchDeviceDB6, EKind.RW, 20, EAtomicType.FLOATING );
+    benchDeviceDB6.addTag( s7Tag );
+    // тег DB6.DBD24
+    s7Tag = new GuiS7Tag( benchDeviceDB6, EKind.RW, 24, EAtomicType.FLOATING );
+    benchDeviceDB6.addTag( s7Tag );
+
+    // создаем блок данных DB50
+    GuiS7DataBlock benchDeviceDB50 = new GuiS7DataBlock( benchDevice, 50 );
+    benchDevice.addDataBlock( benchDeviceDB50 );
+    // тег DB50.DBX0.2
+    s7Tag = new GuiS7Tag( benchDeviceDB50, EKind.RW, 0, 2 );
+    benchDeviceDB50.addTag( s7Tag );
+    // тег DB50.DBX4.5
+    s7Tag = new GuiS7Tag( benchDeviceDB50, EKind.RW, 4, 5 );
+    benchDeviceDB50.addTag( s7Tag );
+    // тег DB50.DBX4.6
+    s7Tag = new GuiS7Tag( benchDeviceDB50, EKind.RW, 4, 6 );
+    benchDeviceDB50.addTag( s7Tag );
+
+    // создаем блок данных DB58
+    GuiS7DataBlock benchDeviceDB58 = new GuiS7DataBlock( benchDevice, 58 );
+    benchDevice.addDataBlock( benchDeviceDB58 );
+    // тег DB58.DBW12
+    s7Tag = new GuiS7Tag( benchDeviceDB58, EKind.RW, 12, EAtomicType.INTEGER );
+    benchDeviceDB58.addTag( s7Tag );
+    retVal.add( benchDevice );
+
+    deviceOptValues = new OptionSet();
+    S7DeviceOptionsUtils.OP_TCP_IP_ADDRESS.setValue( deviceOptValues, AvUtils.avStr( "192.168.12.39" ) );
+    S7DeviceOptionsUtils.OP_RACK.setValue( deviceOptValues, AvUtils.avInt( 0 ) );
+    S7DeviceOptionsUtils.OP_SLOT.setValue( deviceOptValues, AvUtils.avInt( 1 ) );
+    GuiS7Device fakeDevice = new GuiS7Device( "fake_device.id", "fake device just for testing", deviceOptValues );
+    retVal.add( fakeDevice );
+    return retVal;
+  }
 }

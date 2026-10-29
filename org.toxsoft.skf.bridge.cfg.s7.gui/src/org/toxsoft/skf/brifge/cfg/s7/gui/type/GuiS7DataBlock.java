@@ -1,8 +1,12 @@
 package org.toxsoft.skf.brifge.cfg.s7.gui.type;
 
+import org.toxsoft.core.tslib.bricks.keeper.*;
+import org.toxsoft.core.tslib.bricks.keeper.AbstractEntityKeeper.*;
+import org.toxsoft.core.tslib.bricks.strio.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
 import org.toxsoft.core.tslib.utils.*;
+import org.toxsoft.core.tslib.utils.valobj.*;
 
 /**
  * Описание одного блока данных S7
@@ -20,9 +24,40 @@ public class GuiS7DataBlock {
   private IListEdit<GuiS7Tag> tags = new ElemArrayList<>();
 
   /**
+   * Идентификатор регистрации хранителя {@link #KEEPER} в реестре {@link TsValobjUtils}.
+   */
+  public static final String KEEPER_ID = "GuiS7DataBlock"; //$NON-NLS-1$
+
+  /**
+   * Keeper singleton.
+   */
+  public final static IEntityKeeper<GuiS7DataBlock> KEEPER =
+      new AbstractEntityKeeper<>( GuiS7DataBlock.class, EEncloseMode.NOT_IN_PARENTHESES, null ) {
+
+        @Override
+        protected void doWrite( IStrioWriter aSw, GuiS7DataBlock aEntity ) {
+          GuiS7Device.KEEPER.write( aSw, aEntity.getS7Device() );
+          aSw.writeSeparatorChar();
+          aSw.writeEol();
+          aSw.writeInt( aEntity.getDBNumber() );
+          aSw.writeSeparatorChar();
+          aSw.writeEol();
+        }
+
+        @Override
+        protected GuiS7DataBlock doRead( IStrioReader aSr ) {
+          GuiS7Device s7Device = GuiS7Device.KEEPER.read( aSr );
+          aSr.ensureSeparatorChar();
+          int dbNumber = aSr.readInt();
+          aSr.ensureSeparatorChar();
+          return new GuiS7DataBlock( s7Device, dbNumber );
+
+        }
+      };
+
+  /**
    * @param aGuiS7Device - S7 Device {@link GuiS7Device}
    * @param aDBNumber - number of DB
-   * @param aIsOutput - output DB
    */
   public GuiS7DataBlock( GuiS7Device aGuiS7Device, int aDBNumber ) {
     guiS7Device = aGuiS7Device;
@@ -34,9 +69,8 @@ public class GuiS7DataBlock {
    */
   @SuppressWarnings( "nls" )
   public String getId() {
-    String deviceID = guiS7Device.getDeviceId();
     String ID_FMT_STR = "%s.dataBlock%d";
-    String retVal = String.format( ID_FMT_STR, deviceID, Integer.valueOf( dbNumber ) );
+    String retVal = String.format( ID_FMT_STR, guiS7Device.id(), Integer.valueOf( dbNumber ) );
     return retVal;
   }
 
@@ -96,9 +130,12 @@ public class GuiS7DataBlock {
   @SuppressWarnings( "boxing" )
   @Override
   public String toString() {
-    return String.format( "%s : %d", guiS7Device.getDeviceId(), dbNumber );
+    return String.format( "%s : %d", guiS7Device.id(), dbNumber );
   }
 
+  /**
+   * @return list of lags {@link IList}
+   */
   public IList<GuiS7Tag> getTags() {
     return tags;
   }

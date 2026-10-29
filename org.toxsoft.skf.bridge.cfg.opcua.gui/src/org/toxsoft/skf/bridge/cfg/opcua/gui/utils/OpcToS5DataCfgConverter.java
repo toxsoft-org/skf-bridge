@@ -12,7 +12,6 @@ import org.toxsoft.core.tslib.av.*;
 import org.toxsoft.core.tslib.av.avtree.*;
 import org.toxsoft.core.tslib.av.opset.*;
 import org.toxsoft.core.tslib.av.opset.impl.*;
-import org.toxsoft.core.tslib.bricks.strid.impl.*;
 import org.toxsoft.core.tslib.bricks.validator.impl.*;
 import org.toxsoft.core.tslib.coll.*;
 import org.toxsoft.core.tslib.coll.impl.*;
@@ -1281,13 +1280,40 @@ public class OpcToS5DataCfgConverter {
   }
 
   private static IAvTree createTag( CfgOpcUaNode aData ) {
-
-    String pinId = StridUtils.makeIdFromString( aData.getNodeId() );
+    // new version
+    // String pinId = StridUtils.makeIdFromString( aData.getNodeId() );
+    //
+    // IOptionSetEdit pinOpSet1 = new OptionSet();
+    //
+    // pinOpSet1.setStr( OPC_TAG_PARAM_NAME, aData.getNodeId() );
+    // pinOpSet1.setStr( PIN_ID_PARAM_NAME, pinId );
+    // pinOpSet1.setStr( PIN_TYPE_PARAM_NAME, aData.getType().id() );
+    //
+    // // ЗАПЛАТКА TODO - переделать драйвер!!!!!!!!! TODO
+    // if( aData.getType() == EAtomicType.INTEGER ) {
+    // pinOpSet1.setStr( PIN_TYPE_EXTRA_PARAM_NAME, "INT" );
+    // }
+    //
+    // // if( aData.getCmdWordBitIndex() > -1 ) {
+    // // pinOpSet1.setBool( PIN_CONTROL_WORD_PARAM_NAME, true );
+    // // }
+    //
+    // IAvTree pinTree1 = null;
+    // try {
+    // pinTree1 =
+    // AvTree.createSingleAvTree( String.format( PIN_TAG_NODE_ID_FORMAT, pinId ), pinOpSet1, IStringMap.EMPTY );
+    // }
+    // catch( TsValidationFailedRtException e ) {
+    // System.out.println( aData.getNodeId() );
+    // throw e;
+    // }
+    // return pinTree1;
+    // dima 06.10.26 old version
 
     IOptionSetEdit pinOpSet1 = new OptionSet();
 
     pinOpSet1.setStr( OPC_TAG_PARAM_NAME, aData.getNodeId() );
-    pinOpSet1.setStr( PIN_ID_PARAM_NAME, pinId );
+    pinOpSet1.setStr( PIN_ID_PARAM_NAME, getPinId( aData.getNodeId() ) );
     pinOpSet1.setStr( PIN_TYPE_PARAM_NAME, aData.getType().id() );
 
     // ЗАПЛАТКА TODO - переделать драйвер!!!!!!!!! TODO
@@ -1301,34 +1327,35 @@ public class OpcToS5DataCfgConverter {
 
     IAvTree pinTree1 = null;
     try {
-      pinTree1 =
-          AvTree.createSingleAvTree( String.format( PIN_TAG_NODE_ID_FORMAT, pinId ), pinOpSet1, IStringMap.EMPTY );
+      pinTree1 = AvTree.createSingleAvTree( String.format( PIN_TAG_NODE_ID_FORMAT, getPinId( aData.getNodeId() ) ),
+          pinOpSet1, IStringMap.EMPTY );
     }
     catch( TsValidationFailedRtException e ) {
       System.out.println( aData.getNodeId() );
       throw e;
     }
     return pinTree1;
+
   }
 
   // hazard157 2026-05-16 replaced by StridUtils.makeIdFromString()
-  // private static String getPinId1( String aTagName ) {
-  // String result = aTagName;
-  // result = result.replace( " ", "_" );
-  // result = result.replace( "-", "_" );
-  // result = result.replace( ".", "_" );
-  // result = result.replace( "(", "_" );
-  // result = result.replace( ")", "_" );
-  // result = result.replace( "=", "_" );
-  // result = result.replace( ";", "_" );
-  // result = result.replace( "\\\"", "" );
-  // result = result.replace( "\"", "" );
-  //
-  // if( result.contains( "ₒ" ) ) {
-  // result = result.replace( "ₒ", "Om" );
-  // }
-  // return result;
-  // }
+  private static String getPinId( String aTagName ) {
+    String result = aTagName;
+    result = result.replace( " ", "_" );
+    result = result.replace( "-", "_" );
+    result = result.replace( ".", "_" );
+    result = result.replace( "(", "_" );
+    result = result.replace( ")", "_" );
+    result = result.replace( "=", "_" );
+    result = result.replace( ";", "_" );
+    result = result.replace( "\\\"", "" );
+    result = result.replace( "\"", "" );
+
+    if( result.contains( "ₒ" ) ) {
+      result = result.replace( "ₒ", "Om" );
+    }
+    return result;
+  }
 
   interface IGroupFilter {
 
