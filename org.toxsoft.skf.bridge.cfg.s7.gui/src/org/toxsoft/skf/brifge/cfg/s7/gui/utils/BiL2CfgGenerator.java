@@ -413,6 +413,64 @@ public class BiL2CfgGenerator
   }
 
   @SuppressWarnings( "nls" )
+  public static void createBiL2Config() {
+    // BI L2 configuration
+    // create S7 device
+    String deviceId = createS7Device( "192.168.12.39", 0, 1, "IrkAZ bench of inhectors S7 server" );
+    // DB1.DBD48 -> "bi.AnalogInput", "SF_AIV_FT1", "CV"
+    String tagId = addDataTag( deviceId, 1, EKind.RW, 48, EAtomicType.FLOATING );
+    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.AnalogInput", "SF_AIV_FT1", "CV" ) );
+
+    // DB2.DBD48 -> "bi.AnalogInput", "SP_AIV_PT1", "CV"
+    tagId = addDataTag( deviceId, 2, EKind.RW, 48, EAtomicType.FLOATING );
+    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.AnalogInput", "SP_AIV_PT1", "CV" ) );
+    // DB3.DBD48 -> "bi.AnalogInput", "SP_AIV_PT2", "CV"
+    tagId = addDataTag( deviceId, 3, EKind.RW, 48, EAtomicType.FLOATING );
+    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.AnalogInput", "SP_AIV_PT2", "CV" ) );
+    // DB4.DBD48 -> "bi.AnalogInput", "SG_AIV_GS1", "CV"
+    tagId = addDataTag( deviceId, 4, EKind.RW, 48, EAtomicType.FLOATING );
+    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.AnalogInput", "SG_AIV_GS1", "CV" ) );
+    // DB5.DBD48 -> "bi.AnalogInput", "SG_AIV_GS2", "CV"
+    tagId = addDataTag( deviceId, 4, EKind.RW, 48, EAtomicType.FLOATING );
+    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.AnalogInput", "SG_AIV_GS2", "CV" ) );
+
+    // DB30.DBX23.0 -> "bi.Valve", "VLV1_DB", "Kvf"
+    tagId = addBitTag( deviceId, 30, EKind.RW, 23, 0 );
+    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV1_DB", "Kvf" ) );
+    // DB30.DBX23.1 -> "bi.Valve", "VLV1_DB", "Kvb"
+    tagId = addBitTag( deviceId, 30, EKind.RW, 23, 1 );
+    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV1_DB", "Kvb" ) );
+    // DB30.DBX23.7 -> "bi.Valve", "VLV1_DB", "UPwr"
+    tagId = addBitTag( deviceId, 30, EKind.RW, 23, 7 );
+    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV1_DB", "UPwr" ) );
+    // DB30.DBX22.4 -> "bi.Valve", "VLV1_DB", "MMF"
+    tagId = addBitTag( deviceId, 30, EKind.RW, 22, 4 );
+    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV1_DB", "MMF" ) );
+    // DB30.DBX22.4 -> "bi.Valve", "VLV1_DB", "MMB"
+    tagId = addBitTag( deviceId, 30, EKind.RW, 22, 5 );
+    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV1_DB", "MMB" ) );
+
+    // DB31.DBX23.0 -> "bi.Valve", "VLV2_DB", "Kvf" Сработал КВ на открытие, краска DB31.DBX23.0
+    tagId = addBitTag( deviceId, 31, EKind.RW, 23, 0 );
+    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV2_DB", "Kvf" ) );
+    // DB31.DBX23.0 -> "bi.Valve", "VLV2_DB", "Kvb" Сработал КВ на открытие, краска DB31.DBX23.0
+    tagId = addBitTag( deviceId, 31, EKind.RW, 23, 1 );
+    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV2_DB", "Kvb" ) );
+    // DB31.DBX23.7 -> "bi.Valve", "VLV2_DB", "UPwr"
+    tagId = addBitTag( deviceId, 31, EKind.RW, 23, 7 );
+    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV2_DB", "UPwr" ) );
+    // DB31.DBX22.4 -> "bi.Valve", "VLV2_DB", "MMF"
+    tagId = addBitTag( deviceId, 31, EKind.RW, 22, 4 );
+    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV2_DB", "MMF" ) );
+    // DB31.DBX22.4 -> "bi.Valve", "VLV2_DB", "MMB"
+    tagId = addBitTag( deviceId, 31, EKind.RW, 22, 5 );
+    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV2_DB", "MMB" ) );
+
+    generateDevCfgFile();
+    generateDlmCfgFile();
+  }
+
+  @SuppressWarnings( "nls" )
   public static IList<GuiS7Device> getTestConfig() {
     IListEdit<GuiS7Device> retVal = new ElemArrayList<>();
     // создаем два девайса
