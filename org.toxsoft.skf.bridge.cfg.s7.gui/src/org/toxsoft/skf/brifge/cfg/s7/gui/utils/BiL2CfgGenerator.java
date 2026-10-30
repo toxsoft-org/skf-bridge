@@ -24,15 +24,13 @@ import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.utils.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
-import org.toxsoft.l2.thd.s7.*;
+import org.toxsoft.core.tslib.utils.valobj.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.filegen.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 import org.toxsoft.skf.brifge.cfg.s7.gui.type.*;
 
-import ru.toxsoft.l2.core.cfg.*;
-import ru.toxsoft.l2.core.hal.devices.impl.*;
 import ru.toxsoft.l2.thd.opc.*;
 
 /**
@@ -45,6 +43,9 @@ public class BiL2CfgGenerator
 
   private static final String DATA_JAVA_CLASS_ONE_TO_ONE_DATA_TRANSMITTER_FACTORY =
       "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.OneToOneDataTransmitterFactory"; //$NON-NLS-1$
+
+  private static final String DATA_JAVA_CLASS_ONE_INT_TO_ONE_BIT_DATA_TRANSMITTER_FACTORY =
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.SingleIntToSingleBoolDataTransmitterFactory"; //$NON-NLS-1$
 
   private final static String CFG_CMD_UNIT_ID_FORMAT = "opctos5.bridge.cfg.cmd.unit.id%d.%s"; //$NON-NLS-1$
 
@@ -106,6 +107,7 @@ public class BiL2CfgGenerator
     }
     // нет такого блока
     GuiS7DataBlock newDataBlock = new GuiS7DataBlock( device, aDBNumber );
+    device.addDataBlock( newDataBlock );
     GuiS7Tag tag = new GuiS7Tag( newDataBlock, aTagKind, aOffset, aValueType );
     newDataBlock.addTag( tag );
     return tag.getId();
@@ -135,6 +137,7 @@ public class BiL2CfgGenerator
     }
     // нет такого блока
     GuiS7DataBlock newDataBlock = new GuiS7DataBlock( device, aDBNumber );
+    device.addDataBlock( newDataBlock );
     GuiS7Tag tag = new GuiS7Tag( newDataBlock, aTagKind, aOffset, aBitNumber );
     newDataBlock.addTag( tag );
     return tag.getId();
@@ -356,48 +359,50 @@ public class BiL2CfgGenerator
    */
   @SuppressWarnings( "nls" )
   public static void main( String[] aArgs ) {
-    BiL2CfgGenerator devCfgGenerator = new BiL2CfgGenerator();
+    createBiL2Config();
 
-    for( GuiS7Device device : getTestConfig() ) {
-      devCfgGenerator.addS7Device( device );
-    }
-
-    IAvTree s7DevicesTree = devCfgGenerator.generate();
-
-    IUnitConfig s7Config = new IUnitConfig() {
-
-      @Override
-      public String nmName() {
-        return "s7Config.name";
-      }
-
-      @Override
-      public String id() {
-        return "s7Config.id";
-      }
-
-      @Override
-      public String description() {
-        return "s7Config.description";
-      }
-
-      @Override
-      public IAvTree params() {
-        return s7DevicesTree;
-      }
-    };
-    S7DeviceProducer deviceProducer = new S7DeviceProducer();
-    deviceProducer.configYourself( s7Config );
-    try {
-      for( AbstractSpecificDevice abstractDevice : deviceProducer.createSpecificDevices() ) {
-        S7Device s7Device = (S7Device)abstractDevice;
-        s7Device.readValuesFromLL1();
-      }
-    }
-    catch( Exception ex ) {
-      // TODO Auto-generated catch block
-      LoggerUtils.error( ex );
-    }
+    // BiL2CfgGenerator devCfgGenerator = new BiL2CfgGenerator();
+    //
+    // for( GuiS7Device device : getTestConfig() ) {
+    // devCfgGenerator.addS7Device( device );
+    // }
+    //
+    // IAvTree s7DevicesTree = devCfgGenerator.generate();
+    //
+    // IUnitConfig s7Config = new IUnitConfig() {
+    //
+    // @Override
+    // public String nmName() {
+    // return "s7Config.name";
+    // }
+    //
+    // @Override
+    // public String id() {
+    // return "s7Config.id";
+    // }
+    //
+    // @Override
+    // public String description() {
+    // return "s7Config.description";
+    // }
+    //
+    // @Override
+    // public IAvTree params() {
+    // return s7DevicesTree;
+    // }
+    // };
+    // S7DeviceProducer deviceProducer = new S7DeviceProducer();
+    // deviceProducer.configYourself( s7Config );
+    // try {
+    // for( AbstractSpecificDevice abstractDevice : deviceProducer.createSpecificDevices() ) {
+    // S7Device s7Device = (S7Device)abstractDevice;
+    // s7Device.readValuesFromLL1();
+    // }
+    // }
+    // catch( Exception ex ) {
+    // // TODO Auto-generated catch block
+    // LoggerUtils.error( ex );
+    // }
 
     // String TMP_DEST_FILE = "destDevFile.tmp"; //$NON-NLS-1$
     // File tmpFile = new File( TMP_DEST_FILE );
@@ -414,6 +419,11 @@ public class BiL2CfgGenerator
 
   @SuppressWarnings( "nls" )
   public static void createBiL2Config() {
+    TsValobjUtils.registerKeeperIfNone( ECfgUnitType.KEEPER_ID, ECfgUnitType.KEEPER );
+    TsValobjUtils.registerKeeperIfNone( GuiS7Device.KEEPER_ID, GuiS7Device.KEEPER );
+    TsValobjUtils.registerKeeperIfNone( GuiS7DataBlock.KEEPER_ID, GuiS7DataBlock.KEEPER );
+    TsValobjUtils.registerKeeperIfNone( GuiS7TagKeeper.KEEPER_ID, GuiS7TagKeeper.KEEPER );
+
     // BI L2 configuration
     // create S7 device
     String deviceId = createS7Device( "192.168.12.39", 0, 1, "IrkAZ bench of inhectors S7 server" );
@@ -545,22 +555,42 @@ public class BiL2CfgGenerator
     paramDefinitions.add( OpcUaUtils.OP_IS_HIST );
 
     OptionSet defaultParams = new OptionSet();
+    if( !aTag.getValueType().equals( EAtomicType.BOOLEAN ) ) {
+      // ----------------------------------------------------
+      // Определение первой реализации данных (простое - один к одному)
+      OpcUaUtils.OP_DATA_JAVA_CLASS.setValue( defaultParams,
+          avStr( DATA_JAVA_CLASS_ONE_TO_ONE_DATA_TRANSMITTER_FACTORY ) );
+      OpcUaUtils.OP_SYNCH_PERIOD.setValue( defaultParams, avInt( 1000 ) );
+      OpcUaUtils.OP_IS_CURR.setValue( defaultParams, avBool( true ) );
+      OpcUaUtils.OP_IS_HIST.setValue( defaultParams, avBool( true ) );
 
-    // ----------------------------------------------------
-    // Определение первой реализации данных (простое - один к одному)
-    OpcUaUtils.OP_DATA_JAVA_CLASS.setValue( defaultParams,
-        avStr( DATA_JAVA_CLASS_ONE_TO_ONE_DATA_TRANSMITTER_FACTORY ) );
-    OpcUaUtils.OP_SYNCH_PERIOD.setValue( defaultParams, avInt( 1000 ) );
-    OpcUaUtils.OP_IS_CURR.setValue( defaultParams, avBool( true ) );
-    OpcUaUtils.OP_IS_HIST.setValue( defaultParams, avBool( true ) );
+      ICfgUnitRealizationType dataOneToOne = new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_ONT_TO_ONE_DATA,
+          STR_ONE_2_ONE, ECfgUnitType.DATA, paramDefinitions, defaultParams );
 
-    ICfgUnitRealizationType dataOneToOne =
-        new CfgUnitRealizationType( OpcUaUtils.CFG_UNIT_REALIZATION_TYPE_ONT_TO_ONE_DATA, STR_ONE_2_ONE,
-            ECfgUnitType.DATA, paramDefinitions, defaultParams );
+      opcToS5DataCfgUnit.setRelizationTypeId( dataOneToOne.id() );
+    }
+    else {
+      // ----------------------------------------------------
+      // Определение второй реализации данных (битовое данное из интового тега)
 
-    opcToS5DataCfgUnit.setRelizationTypeId( dataOneToOne.id() );
+      paramDefinitions.add( OP_BIT_INDEX );
+
+      defaultParams = new OptionSet();
+      OP_DATA_JAVA_CLASS.setValue( defaultParams,
+          avStr( DATA_JAVA_CLASS_ONE_INT_TO_ONE_BIT_DATA_TRANSMITTER_FACTORY ) );
+      OP_BIT_INDEX.setValue( defaultParams, avInt( aTag.getBitNumber() ) );
+
+      OP_SYNCH_PERIOD.setValue( defaultParams, avInt( 0 ) );
+      OP_IS_CURR.setValue( defaultParams, avBool( true ) );
+      OP_IS_HIST.setValue( defaultParams, avBool( true ) );
+
+      ICfgUnitRealizationType dataIntToOne =
+          new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_ONE_INT_TO_ONE_BIT_DATA, STR_BIT_FROM_WORD,
+              ECfgUnitType.DATA, paramDefinitions, defaultParams );
+
+      opcToS5DataCfgUnit.setRelizationTypeId( dataIntToOne.id() );
+    }
     opcToS5DataCfgUnit.setRealizationOpts( defaultParams );
-
     return opcToS5DataCfgUnit;
   }
 
