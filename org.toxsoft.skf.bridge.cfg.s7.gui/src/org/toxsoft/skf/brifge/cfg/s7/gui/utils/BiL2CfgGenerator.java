@@ -310,35 +310,6 @@ public class BiL2CfgGenerator {
     }
   }
 
-  // @Override
-  // public IAvTree generate() {
-  //
-  // // массив S7 уcтройств
-  // AvTree devicesArrayTree = AvTree.createArrayAvTree();
-  //
-  // for( GuiS7Device device : s7Devices ) {
-  // IAvTree db = createS7DeviceTree( device );
-  // devicesArrayTree.addElement( db );
-  // }
-  //
-  // // создаем самое верхнее описание, раздел драйвера целиком
-  // StringMap<IAvTree> devices = new StringMap<>();
-  // devices.put( S7_DEVICES_ARRAY_NAME, devicesArrayTree );
-  //
-  // IOptionSetEdit opSet = new OptionSet();
-  // // тут настройки самого драйвера
-  // opSet.setStr( JAVA_CLASS_PARAM_NAME, JAVA_CLASS_PARAM_VAL_TEMPLATE );
-  // opSet.setStr( ID_PARAM_NAME, S7_DEVICE_ID );
-  // opSet.setStr( DESCRIPTION_PARAM_NAME, DESCRIPTION_PARAM_VAL_TEMPLATE );
-  // opSet.setInt( SYNCH_PERIOD_PARAM_NAME, 1000 );
-  //
-  // IAvTree tree = AvTree.createSingleAvTree( S7_CFG_NODE_ID, opSet, devices );
-  //
-  // // FIXME
-  // // BaseOpcCommonDlmCfgGenerator.insertProperties( tree, properties, paramValueSource, context );
-  // return tree;
-  // }
-
   /**
    * Just for testing
    *
@@ -347,63 +318,11 @@ public class BiL2CfgGenerator {
   @SuppressWarnings( "nls" )
   public static void main( String[] aArgs ) {
     createBiL2Config();
-
-    // BiL2CfgGenerator devCfgGenerator = new BiL2CfgGenerator();
-    //
-    // for( GuiS7Device device : getTestConfig() ) {
-    // devCfgGenerator.addS7Device( device );
-    // }
-    //
-    // IAvTree s7DevicesTree = devCfgGenerator.generate();
-    //
-    // IUnitConfig s7Config = new IUnitConfig() {
-    //
-    // @Override
-    // public String nmName() {
-    // return "s7Config.name";
-    // }
-    //
-    // @Override
-    // public String id() {
-    // return "s7Config.id";
-    // }
-    //
-    // @Override
-    // public String description() {
-    // return "s7Config.description";
-    // }
-    //
-    // @Override
-    // public IAvTree params() {
-    // return s7DevicesTree;
-    // }
-    // };
-    // S7DeviceProducer deviceProducer = new S7DeviceProducer();
-    // deviceProducer.configYourself( s7Config );
-    // try {
-    // for( AbstractSpecificDevice abstractDevice : deviceProducer.createSpecificDevices() ) {
-    // S7Device s7Device = (S7Device)abstractDevice;
-    // s7Device.readValuesFromLL1();
-    // }
-    // }
-    // catch( Exception ex ) {
-    // // TODO Auto-generated catch block
-    // LoggerUtils.error( ex );
-    // }
-
-    // String TMP_DEST_FILE = "destDevFile.tmp"; //$NON-NLS-1$
-    // File tmpFile = new File( TMP_DEST_FILE );
-    // AvTreeKeeper.KEEPER.write( tmpFile, s7DevicesTree );
-    // try {
-    // PinsConfigFileFormatter.format( TMP_DEST_FILE, "s7bench.devcfg", DEV_CONFIG_STR, true );
-    // }
-    // catch( IOException ex ) {
-    // // TODO Auto-generated catch block
-    // LoggerUtils.error( ex );
-    // }
-
   }
 
+  /**
+   * Create L2 configuration for project BI
+   */
   @SuppressWarnings( "nls" )
   public static void createBiL2Config() {
     TsValobjUtils.registerKeeperIfNone( ECfgUnitType.KEEPER_ID, ECfgUnitType.KEEPER );
@@ -466,57 +385,6 @@ public class BiL2CfgGenerator {
     generateDevCfgFile();
     generateDlmCfgFile();
   }
-
-  // @SuppressWarnings( "nls" )
-  // public static IList<GuiS7Device> getTestConfig() {
-  // IListEdit<GuiS7Device> retVal = new ElemArrayList<>();
-  // // создаем два девайса
-  // // Moscow bench configuration
-  // IOptionSetEdit deviceOptValues = new OptionSet();
-  // S7DeviceOptionsUtils.OP_TCP_IP_ADDRESS.setValue( deviceOptValues, AvUtils.avStr( "192.168.12.39" ) );
-  // S7DeviceOptionsUtils.OP_RACK.setValue( deviceOptValues, AvUtils.avInt( 0 ) );
-  // S7DeviceOptionsUtils.OP_SLOT.setValue( deviceOptValues, AvUtils.avInt( 1 ) );
-  // GuiS7Device benchDevice =
-  // new GuiS7Device( "bench_IP_192_168_12_39_rack_0.slot_1.id", "Siemens bench, rack 0, slot 1", deviceOptValues );
-  // // создаем блок данных DB6
-  // GuiS7DataBlock benchDeviceDB6 = new GuiS7DataBlock( benchDevice, 6 );
-  // benchDevice.addDataBlock( benchDeviceDB6 );
-  // // тег DB6.DBD20
-  // GuiS7Tag s7Tag = new GuiS7Tag( benchDeviceDB6, EKind.RW, 20, EAtomicType.FLOATING );
-  // benchDeviceDB6.addTag( s7Tag );
-  // // тег DB6.DBD24
-  // s7Tag = new GuiS7Tag( benchDeviceDB6, EKind.RW, 24, EAtomicType.FLOATING );
-  // benchDeviceDB6.addTag( s7Tag );
-  //
-  // // создаем блок данных DB50
-  // GuiS7DataBlock benchDeviceDB50 = new GuiS7DataBlock( benchDevice, 50 );
-  // benchDevice.addDataBlock( benchDeviceDB50 );
-  // // тег DB50.DBX0.2
-  // s7Tag = new GuiS7Tag( benchDeviceDB50, EKind.RW, 0, 2 );
-  // benchDeviceDB50.addTag( s7Tag );
-  // // тег DB50.DBX4.5
-  // s7Tag = new GuiS7Tag( benchDeviceDB50, EKind.RW, 4, 5 );
-  // benchDeviceDB50.addTag( s7Tag );
-  // // тег DB50.DBX4.6
-  // s7Tag = new GuiS7Tag( benchDeviceDB50, EKind.RW, 4, 6 );
-  // benchDeviceDB50.addTag( s7Tag );
-  //
-  // // создаем блок данных DB58
-  // GuiS7DataBlock benchDeviceDB58 = new GuiS7DataBlock( benchDevice, 58 );
-  // benchDevice.addDataBlock( benchDeviceDB58 );
-  // // тег DB58.DBW12
-  // s7Tag = new GuiS7Tag( benchDeviceDB58, EKind.RW, 12, EAtomicType.INTEGER );
-  // benchDeviceDB58.addTag( s7Tag );
-  // retVal.add( benchDevice );
-  //
-  // deviceOptValues = new OptionSet();
-  // S7DeviceOptionsUtils.OP_TCP_IP_ADDRESS.setValue( deviceOptValues, AvUtils.avStr( "192.168.12.39" ) );
-  // S7DeviceOptionsUtils.OP_RACK.setValue( deviceOptValues, AvUtils.avInt( 0 ) );
-  // S7DeviceOptionsUtils.OP_SLOT.setValue( deviceOptValues, AvUtils.avInt( 1 ) );
-  // GuiS7Device fakeDevice = new GuiS7Device( "fake_device.id", "fake device just for testing", deviceOptValues );
-  // retVal.add( fakeDevice );
-  // return retVal;
-  // }
 
   static IAvList convertToAtomicList( IList<GuiS7Tag> aNodeList ) {
     IAvListEdit result = new AvList( new ElemArrayList<>() );
