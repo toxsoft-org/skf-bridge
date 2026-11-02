@@ -35,7 +35,17 @@ import org.toxsoft.skf.brifge.cfg.s7.gui.type.*;
 import ru.toxsoft.l2.thd.opc.*;
 
 /**
- * Реализация генератора содержимого файлов конфигурации драйвера S7 ( biS7.devcfg & biS7.dlmcfg)
+ * Реализация генератора содержимого файлов конфигурации драйвера S7 ( biS7.devcfg & biS7.dlmcfg). <br>
+ * Работает по паттерну builder:
+ * <ul>
+ * <li>создаем S7 устройство методом {@link #createS7Device(String, int, int, String) }</li>
+ * <li>описываем его теги {@link #addDataTag(String, int, EKind, int, EAtomicType)} или
+ * {@link #addBitTag(String, int, EKind, int, int)}</li>
+ * <li>привязываем к тегу {@link GuiS7Tag } его USkat Id {@link Gwid} методом
+ * {@link #linkS7Tag2Gwid(String, Gwid) }</li>
+ * <li>генерируем нужные конфигурационные файлы методом {@link #generateDevCfgFile() } & {@link #generateDlmCfgFile() }
+ * <li>для удобства я написал метод методом {@link #createBiL2Config() } - создает целиком конфигурацию</li></li>
+ * </ul>
  *
  * @author dima
  */
