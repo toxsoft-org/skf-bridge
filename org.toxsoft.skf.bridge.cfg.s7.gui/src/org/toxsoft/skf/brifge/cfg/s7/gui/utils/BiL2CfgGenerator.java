@@ -1,6 +1,7 @@
 package org.toxsoft.skf.brifge.cfg.s7.gui.utils;
 
 import static org.toxsoft.core.tslib.av.impl.AvUtils.*;
+import static org.toxsoft.skf.brifge.cfg.s7.gui.utils.BiL2CfgGeneratorConstants.*;
 import static org.toxsoft.l2.thd.s7.IS7ThdConstants.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.km5.ISkResources.*;
 import static org.toxsoft.skf.bridge.cfg.opcua.gui.utils.ISkResources.*;
@@ -38,16 +39,7 @@ import ru.toxsoft.l2.thd.opc.*;
  *
  * @author dima
  */
-public class BiL2CfgGenerator
-    implements IS7DevCfgGenerator {
-
-  private static final String DATA_JAVA_CLASS_ONE_TO_ONE_DATA_TRANSMITTER_FACTORY =
-      "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.OneToOneDataTransmitterFactory"; //$NON-NLS-1$
-
-  private static final String DATA_JAVA_CLASS_ONE_INT_TO_ONE_BIT_DATA_TRANSMITTER_FACTORY =
-      "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.SingleIntToSingleBoolDataTransmitterFactory"; //$NON-NLS-1$
-
-  private final static String CFG_CMD_UNIT_ID_FORMAT = "opctos5.bridge.cfg.cmd.unit.id%d.%s"; //$NON-NLS-1$
+public class BiL2CfgGenerator {
 
   /**
    * Все S7 устройства для данной конфигурации
@@ -189,21 +181,6 @@ public class BiL2CfgGenerator
     return null;
   }
 
-  /**
-   * все S7 устройства
-   */
-  protected IListEdit<GuiS7Device> s7Devices = new ElemArrayList<>();
-
-  /**
-   * Added device info to driver configuration
-   *
-   * @param aDevice S7 device configuration info
-   */
-  public void addS7Device( GuiS7Device aDevice ) {
-    s7Devices.add( aDevice );
-  }
-  // protected ITsGuiContext context;
-
   private static IAvTree createS7TagTree( GuiS7Tag aGuiS7Tag ) {
     IOptionSetEdit tagOpSet = new OptionSet();
     tagOpSet.setStr( TAG_ID, aGuiS7Tag.getId() );
@@ -323,34 +300,34 @@ public class BiL2CfgGenerator
     }
   }
 
-  @Override
-  public IAvTree generate() {
-
-    // массив S7 уcтройств
-    AvTree devicesArrayTree = AvTree.createArrayAvTree();
-
-    for( GuiS7Device device : s7Devices ) {
-      IAvTree db = createS7DeviceTree( device );
-      devicesArrayTree.addElement( db );
-    }
-
-    // создаем самое верхнее описание, раздел драйвера целиком
-    StringMap<IAvTree> devices = new StringMap<>();
-    devices.put( S7_DEVICES_ARRAY_NAME, devicesArrayTree );
-
-    IOptionSetEdit opSet = new OptionSet();
-    // тут настройки самого драйвера
-    opSet.setStr( JAVA_CLASS_PARAM_NAME, JAVA_CLASS_PARAM_VAL_TEMPLATE );
-    opSet.setStr( ID_PARAM_NAME, S7_DEVICE_ID );
-    opSet.setStr( DESCRIPTION_PARAM_NAME, DESCRIPTION_PARAM_VAL_TEMPLATE );
-    opSet.setInt( SYNCH_PERIOD_PARAM_NAME, 1000 );
-
-    IAvTree tree = AvTree.createSingleAvTree( S7_CFG_NODE_ID, opSet, devices );
-
-    // FIXME
-    // BaseOpcCommonDlmCfgGenerator.insertProperties( tree, properties, paramValueSource, context );
-    return tree;
-  }
+  // @Override
+  // public IAvTree generate() {
+  //
+  // // массив S7 уcтройств
+  // AvTree devicesArrayTree = AvTree.createArrayAvTree();
+  //
+  // for( GuiS7Device device : s7Devices ) {
+  // IAvTree db = createS7DeviceTree( device );
+  // devicesArrayTree.addElement( db );
+  // }
+  //
+  // // создаем самое верхнее описание, раздел драйвера целиком
+  // StringMap<IAvTree> devices = new StringMap<>();
+  // devices.put( S7_DEVICES_ARRAY_NAME, devicesArrayTree );
+  //
+  // IOptionSetEdit opSet = new OptionSet();
+  // // тут настройки самого драйвера
+  // opSet.setStr( JAVA_CLASS_PARAM_NAME, JAVA_CLASS_PARAM_VAL_TEMPLATE );
+  // opSet.setStr( ID_PARAM_NAME, S7_DEVICE_ID );
+  // opSet.setStr( DESCRIPTION_PARAM_NAME, DESCRIPTION_PARAM_VAL_TEMPLATE );
+  // opSet.setInt( SYNCH_PERIOD_PARAM_NAME, 1000 );
+  //
+  // IAvTree tree = AvTree.createSingleAvTree( S7_CFG_NODE_ID, opSet, devices );
+  //
+  // // FIXME
+  // // BaseOpcCommonDlmCfgGenerator.insertProperties( tree, properties, paramValueSource, context );
+  // return tree;
+  // }
 
   /**
    * Just for testing
@@ -480,56 +457,56 @@ public class BiL2CfgGenerator
     generateDlmCfgFile();
   }
 
-  @SuppressWarnings( "nls" )
-  public static IList<GuiS7Device> getTestConfig() {
-    IListEdit<GuiS7Device> retVal = new ElemArrayList<>();
-    // создаем два девайса
-    // Moscow bench configuration
-    IOptionSetEdit deviceOptValues = new OptionSet();
-    S7DeviceOptionsUtils.OP_TCP_IP_ADDRESS.setValue( deviceOptValues, AvUtils.avStr( "192.168.12.39" ) );
-    S7DeviceOptionsUtils.OP_RACK.setValue( deviceOptValues, AvUtils.avInt( 0 ) );
-    S7DeviceOptionsUtils.OP_SLOT.setValue( deviceOptValues, AvUtils.avInt( 1 ) );
-    GuiS7Device benchDevice =
-        new GuiS7Device( "bench_IP_192_168_12_39_rack_0.slot_1.id", "Siemens bench, rack 0, slot 1", deviceOptValues );
-    // создаем блок данных DB6
-    GuiS7DataBlock benchDeviceDB6 = new GuiS7DataBlock( benchDevice, 6 );
-    benchDevice.addDataBlock( benchDeviceDB6 );
-    // тег DB6.DBD20
-    GuiS7Tag s7Tag = new GuiS7Tag( benchDeviceDB6, EKind.RW, 20, EAtomicType.FLOATING );
-    benchDeviceDB6.addTag( s7Tag );
-    // тег DB6.DBD24
-    s7Tag = new GuiS7Tag( benchDeviceDB6, EKind.RW, 24, EAtomicType.FLOATING );
-    benchDeviceDB6.addTag( s7Tag );
-
-    // создаем блок данных DB50
-    GuiS7DataBlock benchDeviceDB50 = new GuiS7DataBlock( benchDevice, 50 );
-    benchDevice.addDataBlock( benchDeviceDB50 );
-    // тег DB50.DBX0.2
-    s7Tag = new GuiS7Tag( benchDeviceDB50, EKind.RW, 0, 2 );
-    benchDeviceDB50.addTag( s7Tag );
-    // тег DB50.DBX4.5
-    s7Tag = new GuiS7Tag( benchDeviceDB50, EKind.RW, 4, 5 );
-    benchDeviceDB50.addTag( s7Tag );
-    // тег DB50.DBX4.6
-    s7Tag = new GuiS7Tag( benchDeviceDB50, EKind.RW, 4, 6 );
-    benchDeviceDB50.addTag( s7Tag );
-
-    // создаем блок данных DB58
-    GuiS7DataBlock benchDeviceDB58 = new GuiS7DataBlock( benchDevice, 58 );
-    benchDevice.addDataBlock( benchDeviceDB58 );
-    // тег DB58.DBW12
-    s7Tag = new GuiS7Tag( benchDeviceDB58, EKind.RW, 12, EAtomicType.INTEGER );
-    benchDeviceDB58.addTag( s7Tag );
-    retVal.add( benchDevice );
-
-    deviceOptValues = new OptionSet();
-    S7DeviceOptionsUtils.OP_TCP_IP_ADDRESS.setValue( deviceOptValues, AvUtils.avStr( "192.168.12.39" ) );
-    S7DeviceOptionsUtils.OP_RACK.setValue( deviceOptValues, AvUtils.avInt( 0 ) );
-    S7DeviceOptionsUtils.OP_SLOT.setValue( deviceOptValues, AvUtils.avInt( 1 ) );
-    GuiS7Device fakeDevice = new GuiS7Device( "fake_device.id", "fake device just for testing", deviceOptValues );
-    retVal.add( fakeDevice );
-    return retVal;
-  }
+  // @SuppressWarnings( "nls" )
+  // public static IList<GuiS7Device> getTestConfig() {
+  // IListEdit<GuiS7Device> retVal = new ElemArrayList<>();
+  // // создаем два девайса
+  // // Moscow bench configuration
+  // IOptionSetEdit deviceOptValues = new OptionSet();
+  // S7DeviceOptionsUtils.OP_TCP_IP_ADDRESS.setValue( deviceOptValues, AvUtils.avStr( "192.168.12.39" ) );
+  // S7DeviceOptionsUtils.OP_RACK.setValue( deviceOptValues, AvUtils.avInt( 0 ) );
+  // S7DeviceOptionsUtils.OP_SLOT.setValue( deviceOptValues, AvUtils.avInt( 1 ) );
+  // GuiS7Device benchDevice =
+  // new GuiS7Device( "bench_IP_192_168_12_39_rack_0.slot_1.id", "Siemens bench, rack 0, slot 1", deviceOptValues );
+  // // создаем блок данных DB6
+  // GuiS7DataBlock benchDeviceDB6 = new GuiS7DataBlock( benchDevice, 6 );
+  // benchDevice.addDataBlock( benchDeviceDB6 );
+  // // тег DB6.DBD20
+  // GuiS7Tag s7Tag = new GuiS7Tag( benchDeviceDB6, EKind.RW, 20, EAtomicType.FLOATING );
+  // benchDeviceDB6.addTag( s7Tag );
+  // // тег DB6.DBD24
+  // s7Tag = new GuiS7Tag( benchDeviceDB6, EKind.RW, 24, EAtomicType.FLOATING );
+  // benchDeviceDB6.addTag( s7Tag );
+  //
+  // // создаем блок данных DB50
+  // GuiS7DataBlock benchDeviceDB50 = new GuiS7DataBlock( benchDevice, 50 );
+  // benchDevice.addDataBlock( benchDeviceDB50 );
+  // // тег DB50.DBX0.2
+  // s7Tag = new GuiS7Tag( benchDeviceDB50, EKind.RW, 0, 2 );
+  // benchDeviceDB50.addTag( s7Tag );
+  // // тег DB50.DBX4.5
+  // s7Tag = new GuiS7Tag( benchDeviceDB50, EKind.RW, 4, 5 );
+  // benchDeviceDB50.addTag( s7Tag );
+  // // тег DB50.DBX4.6
+  // s7Tag = new GuiS7Tag( benchDeviceDB50, EKind.RW, 4, 6 );
+  // benchDeviceDB50.addTag( s7Tag );
+  //
+  // // создаем блок данных DB58
+  // GuiS7DataBlock benchDeviceDB58 = new GuiS7DataBlock( benchDevice, 58 );
+  // benchDevice.addDataBlock( benchDeviceDB58 );
+  // // тег DB58.DBW12
+  // s7Tag = new GuiS7Tag( benchDeviceDB58, EKind.RW, 12, EAtomicType.INTEGER );
+  // benchDeviceDB58.addTag( s7Tag );
+  // retVal.add( benchDevice );
+  //
+  // deviceOptValues = new OptionSet();
+  // S7DeviceOptionsUtils.OP_TCP_IP_ADDRESS.setValue( deviceOptValues, AvUtils.avStr( "192.168.12.39" ) );
+  // S7DeviceOptionsUtils.OP_RACK.setValue( deviceOptValues, AvUtils.avInt( 0 ) );
+  // S7DeviceOptionsUtils.OP_SLOT.setValue( deviceOptValues, AvUtils.avInt( 1 ) );
+  // GuiS7Device fakeDevice = new GuiS7Device( "fake_device.id", "fake device just for testing", deviceOptValues );
+  // retVal.add( fakeDevice );
+  // return retVal;
+  // }
 
   static IAvList convertToAtomicList( IList<GuiS7Tag> aNodeList ) {
     IAvListEdit result = new AvList( new ElemArrayList<>() );

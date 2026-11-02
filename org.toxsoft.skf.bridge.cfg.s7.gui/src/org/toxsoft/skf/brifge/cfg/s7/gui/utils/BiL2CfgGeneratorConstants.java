@@ -1,7 +1,5 @@
 package org.toxsoft.skf.brifge.cfg.s7.gui.utils;
 
-import org.toxsoft.core.tslib.av.avtree.*;
-
 /**
  * Генератор содержимого файла s7.devcfg по массиву конфигурационных юнитов sk-s7. Построен по паттерну - билдер:
  * сначала устанавливаются все необходимые исходные данные - затем вызывается метод generate().
@@ -9,14 +7,15 @@ import org.toxsoft.core.tslib.av.avtree.*;
  * @author dima
  */
 @SuppressWarnings( { "javadoc", "nls" } )
-public interface IS7DevCfgGenerator {
+public interface BiL2CfgGeneratorConstants {
 
-  /**
-   * Формирует содержимое файла конфигурации драйвера (.devcfg)
-   *
-   * @return IAvTree - содержимое файла конфигурации драйвера (.devcfg)
-   */
-  IAvTree generate();
+  String DATA_JAVA_CLASS_ONE_TO_ONE_DATA_TRANSMITTER_FACTORY =
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.OneToOneDataTransmitterFactory"; //$NON-NLS-1$
+
+  String DATA_JAVA_CLASS_ONE_INT_TO_ONE_BIT_DATA_TRANSMITTER_FACTORY =
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.SingleIntToSingleBoolDataTransmitterFactory"; //$NON-NLS-1$
+
+  String CFG_CMD_UNIT_ID_FORMAT = "opctos5.bridge.cfg.cmd.unit.id%d.%s"; //$NON-NLS-1$
 
   String DEV_CONFIG_STR = "DeviceConfig = ";
 
