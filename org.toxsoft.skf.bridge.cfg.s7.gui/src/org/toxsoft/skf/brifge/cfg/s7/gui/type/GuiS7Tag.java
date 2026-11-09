@@ -15,6 +15,8 @@ public class GuiS7Tag {
 
   private int bufferOffset = 0;
 
+  private int bufferSize = 1;
+
   private EAtomicType valueType = EAtomicType.FLOATING;
 
   private int bitNumber = -1; // только для типа Boolean
@@ -25,12 +27,15 @@ public class GuiS7Tag {
    * @param aGuiS7DataBlock parent DB
    * @param aTagKind - R/W/RW
    * @param aBufferOffset - offset in DB buffer
+   * @param aBufferSize - size of buffer in bytes. float, long = 4, short, word = 2, uint8, boolean = 1.
    * @param aValueType - type of value
    */
-  public GuiS7Tag( GuiS7DataBlock aGuiS7DataBlock, EKind aTagKind, int aBufferOffset, EAtomicType aValueType ) {
+  public GuiS7Tag( GuiS7DataBlock aGuiS7DataBlock, EKind aTagKind, int aBufferOffset, int aBufferSize,
+      EAtomicType aValueType ) {
     dataBlock = aGuiS7DataBlock;
     tagKind = aTagKind;
     bufferOffset = aBufferOffset;
+    bufferSize = aBufferOffset;
     valueType = aValueType;
   }
 
@@ -75,10 +80,17 @@ public class GuiS7Tag {
   }
 
   /**
-   * @return offset of valiue in DB buffer
+   * @return offset of value in DB buffer
    */
   public int getBufferOffset() {
     return bufferOffset;
+  }
+
+  /**
+   * @return size of values buffer
+   */
+  public int getBufferSize() {
+    return bufferSize;
   }
 
   /**

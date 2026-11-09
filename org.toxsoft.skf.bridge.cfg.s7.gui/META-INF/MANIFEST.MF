@@ -16,8 +16,10 @@ Require-Bundle: org.eclipse.ui,
  org.toxsoft.skf.bridge.cfg.modbus.gui,
  org.eclipse.e4.core.contexts,
  org.toxsoft.skf.bridge.cfg.opcua.gui,
- org.toxsoft.uskat.core;bundle-version="1.0.0"
+ org.toxsoft.uskat.core;bundle-version="1.0.0",
+ org.toxsoft.extlibs.opendocument;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: org.toxsoft.skf.brifge.cfg.s7.gui
 Bundle-ActivationPolicy: lazy
 Import-Package: ru.toxsoft.l2.thd.opc
+Export-Package: org.toxsoft.skf.brifge.cfg.s7.gui.utils

@@ -88,12 +88,13 @@ public class BiL2CfgGenerator {
    * @param aServerId - id S7 сервера
    * @param aDBNumber - номер блока
    * @param aTagKind - тип тега {@link EKind}
-   * @param aOffset - смещение внутри блока
+   * @param aBufOffset - смещение внутри блока
+   * @param aBufSize - размер буфера значения
    * @param aValueType - тип значения {@link EAtomicType}
    * @return id нового тега
    */
   @SuppressWarnings( "nls" )
-  public static String addDataTag( String aServerId, int aDBNumber, EKind aTagKind, int aOffset,
+  public static String addDataTag( String aServerId, int aDBNumber, EKind aTagKind, int aBufOffset, int aBufSize,
       EAtomicType aValueType ) {
     TsIllegalArgumentRtException.checkTrue( aValueType.equals( EAtomicType.BOOLEAN ),
         "for bit tag use method 'addBitTag(...)'" );
@@ -102,7 +103,7 @@ public class BiL2CfgGenerator {
     // ищем в его блоках
     for( GuiS7DataBlock db : device.getDataBlocks() ) {
       if( db.getDBNumber() == aDBNumber ) {
-        GuiS7Tag tag = new GuiS7Tag( db, aTagKind, aOffset, aValueType );
+        GuiS7Tag tag = new GuiS7Tag( db, aTagKind, aBufOffset, aBufSize, aValueType );
         db.addTag( tag );
         return tag.getId();
       }
@@ -110,7 +111,7 @@ public class BiL2CfgGenerator {
     // нет такого блока
     GuiS7DataBlock newDataBlock = new GuiS7DataBlock( device, aDBNumber );
     device.addDataBlock( newDataBlock );
-    GuiS7Tag tag = new GuiS7Tag( newDataBlock, aTagKind, aOffset, aValueType );
+    GuiS7Tag tag = new GuiS7Tag( newDataBlock, aTagKind, aBufOffset, aBufSize, aValueType );
     newDataBlock.addTag( tag );
     return tag.getId();
   }
@@ -334,20 +335,20 @@ public class BiL2CfgGenerator {
     // create S7 device
     String deviceId = createS7Device( "192.168.12.39", 0, 1, "IrkAZ bench of inhectors S7 server" );
     // DB1.DBD48 -> "bi.AnalogInput", "SF_AIV_FT1", "CV"
-    String tagId = addDataTag( deviceId, 1, EKind.RW, 48, EAtomicType.FLOATING );
+    String tagId = addDataTag( deviceId, 1, EKind.RW, 48, 4, EAtomicType.FLOATING );
     linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.AnalogInput", "SF_AIV_FT1", "CV" ) );
 
     // DB2.DBD48 -> "bi.AnalogInput", "SP_AIV_PT1", "CV"
-    tagId = addDataTag( deviceId, 2, EKind.RW, 48, EAtomicType.FLOATING );
+    tagId = addDataTag( deviceId, 2, EKind.RW, 4, 48, EAtomicType.FLOATING );
     linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.AnalogInput", "SP_AIV_PT1", "CV" ) );
     // DB3.DBD48 -> "bi.AnalogInput", "SP_AIV_PT2", "CV"
-    tagId = addDataTag( deviceId, 3, EKind.RW, 48, EAtomicType.FLOATING );
+    tagId = addDataTag( deviceId, 3, EKind.RW, 48, 4, EAtomicType.FLOATING );
     linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.AnalogInput", "SP_AIV_PT2", "CV" ) );
     // DB4.DBD48 -> "bi.AnalogInput", "SG_AIV_GS1", "CV"
-    tagId = addDataTag( deviceId, 4, EKind.RW, 48, EAtomicType.FLOATING );
+    tagId = addDataTag( deviceId, 4, EKind.RW, 48, 4, EAtomicType.FLOATING );
     linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.AnalogInput", "SG_AIV_GS1", "CV" ) );
     // DB5.DBD48 -> "bi.AnalogInput", "SG_AIV_GS2", "CV"
-    tagId = addDataTag( deviceId, 4, EKind.RW, 48, EAtomicType.FLOATING );
+    tagId = addDataTag( deviceId, 4, EKind.RW, 48, 4, EAtomicType.FLOATING );
     linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.AnalogInput", "SG_AIV_GS2", "CV" ) );
 
     // DB30.DBX23.0 -> "bi.Valve", "VLV1_DB", "Kvf"

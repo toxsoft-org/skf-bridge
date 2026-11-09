@@ -42,6 +42,9 @@ public class GuiS7TagKeeper
     aSw.writeInt( aEntity.getBufferOffset() );
     aSw.writeSeparatorChar();
     aSw.writeEol();
+    aSw.writeInt( aEntity.getBufferSize() );
+    aSw.writeSeparatorChar();
+    aSw.writeEol();
     aSw.writeQuotedString( aEntity.getValueType().name() );
     aSw.writeSeparatorChar();
     aSw.writeEol();
@@ -61,10 +64,12 @@ public class GuiS7TagKeeper
     aSr.ensureSeparatorChar();
     int bufferOffset = aSr.readInt();
     aSr.ensureSeparatorChar();
+    int bufferSize = aSr.readInt();
+    aSr.ensureSeparatorChar();
     EAtomicType valueType = EAtomicType.valueOf( aSr.readQuotedString() );
     aSr.ensureSeparatorChar();
     if( !valueType.equals( EAtomicType.BOOLEAN ) ) {
-      return new GuiS7Tag( dataBlock, tagKid, bufferOffset, valueType );
+      return new GuiS7Tag( dataBlock, tagKid, bufferOffset, bufferSize, valueType );
     }
     int bitNumber = aSr.readInt();
     aSr.ensureSeparatorChar();
