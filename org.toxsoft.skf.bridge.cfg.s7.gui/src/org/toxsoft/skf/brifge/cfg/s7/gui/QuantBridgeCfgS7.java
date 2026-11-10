@@ -4,7 +4,6 @@ import org.eclipse.e4.core.contexts.*;
 import org.toxsoft.core.tsgui.bricks.quant.*;
 import org.toxsoft.core.tsgui.valed.impl.*;
 import org.toxsoft.core.tslib.utils.valobj.*;
-import org.toxsoft.skf.bridge.cfg.modbus.gui.panels.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.brifge.cfg.s7.gui.type.*;
 
@@ -47,8 +46,8 @@ public class QuantBridgeCfgS7
     // m5.addModel( new VtReportParamM5Model() );
 
     ValedControlFactoriesRegistry vcReg = aWinContext.get( ValedControlFactoriesRegistry.class );
-    vcReg.registerFactory( ValedModbusDeviceEditor.FACTORY );
-    vcReg.registerFactory( ValedAvValobjModbusDeviceEditor.FACTORY );
+    // vcReg.registerFactory( ValedModbusDeviceEditor.FACTORY );
+    // vcReg.registerFactory( ValedAvValobjModbusDeviceEditor.FACTORY );
   }
 
 }
