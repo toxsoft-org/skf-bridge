@@ -1,27 +1,12 @@
 package org.toxsoft.skf.brifge.cfg.s7.gui.utils;
 
-import static org.toxsoft.core.tsgui.m5.IM5Constants.*;
-import static org.toxsoft.core.tslib.av.metainfo.IAvMetaConstants.*;
-
-import java.io.*;
 import java.util.regex.*;
 
-import org.eclipse.swt.widgets.*;
 import org.jopendocument.dom.spreadsheet.*;
 import org.toxsoft.core.tslib.av.*;
-import org.toxsoft.core.tslib.av.impl.*;
-import org.toxsoft.core.tslib.av.metainfo.*;
-import org.toxsoft.core.tslib.av.opset.*;
-import org.toxsoft.core.tslib.av.opset.impl.*;
-import org.toxsoft.core.tslib.bricks.strid.coll.*;
-import org.toxsoft.core.tslib.bricks.strid.coll.impl.*;
-import org.toxsoft.core.tslib.coll.helpers.*;
-import org.toxsoft.core.tslib.coll.primtypes.*;
 import org.toxsoft.core.tslib.gw.gwid.*;
 import org.toxsoft.core.tslib.utils.errors.*;
 import org.toxsoft.core.tslib.utils.logs.impl.*;
-import org.toxsoft.uskat.core.api.sysdescr.*;
-import org.toxsoft.uskat.core.impl.dto.*;
 
 import ru.toxsoft.l2.thd.opc.*;
 
@@ -32,15 +17,15 @@ import ru.toxsoft.l2.thd.opc.*;
  */
 public class S7Utils {
 
-  private static final String  ROWS_START        = "#";
-  private static final String  ROWS_END          = "##";
+  private static final String  ROWS_START        = "#";                                       //$NON-NLS-1$
+  private static final String  ROWS_END          = "##";                                      //$NON-NLS-1$
   private static final int     CLASSID_COL_NUM   = 0;
   private static final int     OBJID_COL_NUM     = 1;
   private static final int     DATAID_COL_NUM    = 2;
   private static final int     ADDRESS_COL_NUM   = 4;
   private static final int     TYPE_COL_NUM      = 5;
   private static final int     GWID_KIND_COL_NUM = 6;
-  private static final Pattern objS7Pattern      = Pattern.compile( "([A-Z_\\d]+).([A-Z])" );
+  private static final Pattern objS7Pattern      = Pattern.compile( "([A-Z_\\d]+).([A-Z])" ); //$NON-NLS-1$
 
   private static class S7AddressParser {
 
@@ -55,13 +40,14 @@ public class S7Utils {
      * <li>DB4.DBW58.0 - буфер 2 байт, byte значение (uint16) со смещением 0</li>
      * </ul>
      */
-    Pattern p     = Pattern.compile( "DB([\\d]+).DB([XBWD])([\\d]+).([\\d])" );
+    Pattern p     = Pattern.compile( "DB([\\d]+).DB([XBWD])([\\d]+).([\\d])" ); //$NON-NLS-1$
     int     dbNum;
     int     bufSize;
     int     bufOffset;
     int     bitOffset;
     boolean isBit = false;
 
+    @SuppressWarnings( { "nls", "boxing" } )
     void parseS7Adress( String aAddressStr ) {
       String dbNumStr;
       String bufSizeStr;
@@ -90,6 +76,7 @@ public class S7Utils {
     }
   }
 
+  @SuppressWarnings( "nls" )
   static int s7BufferSize( String aBufSize ) {
     if( aBufSize.compareTo( "D" ) == 0 ) {
       return 4;
@@ -101,6 +88,7 @@ public class S7Utils {
     return 1;
   }
 
+  @SuppressWarnings( "nls" )
   static boolean isBitTag( String aTagType ) {
     return (aTagType.compareTo( "X" ) == 0);
   }
@@ -117,6 +105,7 @@ public class S7Utils {
    * <li>float32</li>
    * <li>Real</li>
    * <li>DInt</li>
+   * <li>Int</li>
    * <li>StateWord</li>
    * <li>ControlWord</li>
    * <li>uint8</li>
@@ -126,6 +115,7 @@ public class S7Utils {
    * @param aValTypeStr строка описания типа S7
    * @return {@link EAtomicType}
    */
+  @SuppressWarnings( "nls" )
   public static EAtomicType s7AtomicType( String aValTypeStr ) {
     String trimmed = aValTypeStr.trim();
     if( trimmed.compareTo( "float32" ) == 0 || trimmed.compareTo( "Real" ) == 0 ) {
@@ -142,7 +132,15 @@ public class S7Utils {
     throw new TsIllegalArgumentRtException( aValTypeStr );
   }
 
-  public static void generateL2Cfg( SpreadSheet aBook, Sheet aPage, String aS7ServerId ) {
+  /**
+   * Parse one sheet and add tag <-> Gwid descriptions to generator
+   *
+   * @param aBiL2CfgGenerator {@link BiL2CfgGenerator} - l2 configuration generator
+   * @param aPage {@link Sheet} - sheet of one class objects
+   * @param aS7ServerId - S7 server ID
+   */
+  @SuppressWarnings( "boxing" )
+  public static void parseL2Cfg( BiL2CfgGenerator aBiL2CfgGenerator, Sheet aPage, String aS7ServerId ) {
 
     int firstRow = firstRowNumber( aPage ) + 2;
     int lastRow = lastRowNumber( aPage );
@@ -153,16 +151,18 @@ public class S7Utils {
       if( address == null || address.trim().isBlank() ) {
         continue;
       }
+      String gwidKind = getStringValue( aPage, GWID_KIND_COL_NUM, row );
       S7AddressParser parser = new S7AddressParser();
       parser.parseS7Adress( address );
       String tagId;
       if( parser.isBit ) {
-        tagId = BiL2CfgGenerator.addBitTag( aS7ServerId, parser.dbNum, EKind.RW, parser.bufOffset, parser.bitOffset );
+        tagId = aBiL2CfgGenerator.addBitTag( aS7ServerId, parser.dbNum, getTagKind( gwidKind ), parser.bufOffset,
+            parser.bitOffset );
       }
       else {
         String type = getStringValue( aPage, TYPE_COL_NUM, row );
-        tagId = BiL2CfgGenerator.addDataTag( aS7ServerId, parser.dbNum, EKind.RW, parser.bufOffset, parser.bufSize,
-            s7AtomicType( type ) );
+        tagId = aBiL2CfgGenerator.addDataTag( aS7ServerId, parser.dbNum, getTagKind( gwidKind ), parser.bufOffset,
+            parser.bufSize, s7AtomicType( type ) );
       }
       // читаем его Gwid
       String classId = getStringValue( aPage, CLASSID_COL_NUM, row );
@@ -172,20 +172,18 @@ public class S7Utils {
         objId = n.group( 1 );
       }
       else {
-        // TODO
-        // TsIllegalArgumentRtException.
+        throw new TsIllegalStateRtException( "Can't parse object id from cell value: %s in row = %d", objId, row ); //$NON-NLS-1$
       }
       String dataId = getStringValue( aPage, DATAID_COL_NUM, row );
-      String gwidKind = getStringValue( aPage, GWID_KIND_COL_NUM, row );
       switch( EGwidKind.findById( gwidKind ) ) {
         case GW_RTDATA:
           // добавляем в конфигурацию
           Gwid tagRtdGwid = Gwid.createRtdata( classId, objId, dataId );
-          BiL2CfgGenerator.linkS7Tag2Gwid( tagId, tagRtdGwid );
+          aBiL2CfgGenerator.linkS7Tag2Gwid( tagId, tagRtdGwid );
           break;
         case GW_CMD:
           Gwid tagCmdGwid = Gwid.createCmd( classId, objId, dataId );
-          BiL2CfgGenerator.linkS7Tag2Gwid( tagId, tagCmdGwid );
+          aBiL2CfgGenerator.linkS7Tag2Gwid( tagId, tagCmdGwid );
           break;
         case GW_ATTR:
         case GW_CLASS:
@@ -201,7 +199,16 @@ public class S7Utils {
     }
   }
 
-  public static int firstRowNumber( Sheet aSheet ) {
+  private static EKind getTagKind( String aGwidKind ) {
+    return switch( EGwidKind.findById( aGwidKind ) ) {
+      case GW_RTDATA -> EKind.R;
+      case GW_CMD -> EKind.W;
+      case GW_ATTR, GW_CLASS, GW_CLOB, GW_CMD_ARG, GW_EVENT, GW_EVENT_PARAM, GW_LINK, GW_RIVET -> throw new TsIllegalStateRtException();
+      default -> throw new TsIllegalStateRtException();
+    };
+  }
+
+  private static int firstRowNumber( Sheet aSheet ) {
     for( int i = 0; i < 10000; i++ ) {
       if( ROWS_START.equals( aSheet.getCellAt( 0, i ).getTextValue() ) ) {
         return i;
@@ -210,7 +217,7 @@ public class S7Utils {
     return 0;
   }
 
-  public static int lastRowNumber( Sheet aSheet ) {
+  private static int lastRowNumber( Sheet aSheet ) {
     for( int i = 0; i < 10000; i++ ) {
       try {
         String val = aSheet.getCellAt( 0, i ).getTextValue();
@@ -230,8 +237,8 @@ public class S7Utils {
     // nop
   }
 
-  public static void main( String[] args )
-      throws IOException {
+  @SuppressWarnings( { "javadoc", "nls" } )
+  public static void main( String[] args ) {
     S7AddressParser parser = new S7AddressParser();
     parser.parseS7Adress( "DB4.DBD48.0" );
     parser.parseS7Adress( "DB4.DBX56.0" );
@@ -243,10 +250,6 @@ public class S7Utils {
     for( String s7Type : s7Types ) {
       LoggerUtils.debug( "s7Type:%s -> EAtomicType:%s\n", s7Type, s7AtomicType( s7Type ) ); //
     }
-    for( EGwidKind gwidKind : EGwidKind.asList() ) {
-      LoggerUtils.debug( "gwidKind id : %s, name : %s\n", gwidKind.id(), gwidKind.name() ); //
-    }
-
   }
 
 }

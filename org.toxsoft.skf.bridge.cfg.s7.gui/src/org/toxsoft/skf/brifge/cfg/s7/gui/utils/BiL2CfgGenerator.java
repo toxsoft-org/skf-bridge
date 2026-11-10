@@ -39,7 +39,7 @@ import ru.toxsoft.l2.thd.opc.*;
  * Работает по паттерну builder:
  * <ul>
  * <li>создаем S7 устройство методом {@link #createS7Device(String, int, int, String) }</li>
- * <li>описываем его теги {@link #addDataTag(String, int, EKind, int, EAtomicType)} или
+ * <li>описываем его теги {@link #addDataTag(String, int, EKind, int, int, EAtomicType)} или
  * {@link #addBitTag(String, int, EKind, int, int)}</li>
  * <li>привязываем к тегу {@link GuiS7Tag } его USkat Id {@link Gwid} методом
  * {@link #linkS7Tag2Gwid(String, Gwid) }</li>
@@ -70,7 +70,7 @@ public class BiL2CfgGenerator {
    * @param aName - название устройства
    * @return id устройства
    */
-  public static String createS7Device( String aIP, int aRack, int aSlot, String aName ) {
+  public String createS7Device( String aIP, int aRack, int aSlot, String aName ) {
     IOptionSetEdit deviceOptValues = new OptionSet();
     S7DeviceOptionsUtils.OP_TCP_IP_ADDRESS.setValue( deviceOptValues, AvUtils.avStr( aIP ) );
     S7DeviceOptionsUtils.OP_RACK.setValue( deviceOptValues, AvUtils.avInt( aRack ) );
@@ -94,7 +94,7 @@ public class BiL2CfgGenerator {
    * @return id нового тега
    */
   @SuppressWarnings( "nls" )
-  public static String addDataTag( String aServerId, int aDBNumber, EKind aTagKind, int aBufOffset, int aBufSize,
+  public String addDataTag( String aServerId, int aDBNumber, EKind aTagKind, int aBufOffset, int aBufSize,
       EAtomicType aValueType ) {
     TsIllegalArgumentRtException.checkTrue( aValueType.equals( EAtomicType.BOOLEAN ),
         "for bit tag use method 'addBitTag(...)'" );
@@ -127,7 +127,7 @@ public class BiL2CfgGenerator {
    * @param aBitNumber - номер бита в слове состояния тега
    * @return id нового тега
    */
-  public static String addBitTag( String aServerId, int aDBNumber, EKind aTagKind, int aOffset, int aBitNumber ) {
+  public String addBitTag( String aServerId, int aDBNumber, EKind aTagKind, int aOffset, int aBitNumber ) {
     // получаем S7 server
     GuiS7Device device = devicesMap.getByKey( aServerId );
     // ищем в его блоках
@@ -154,7 +154,7 @@ public class BiL2CfgGenerator {
    * @param aTagId - id S7 tag
    * @param aGwid - {@link Gwid}
    */
-  public static void linkS7Tag2Gwid( String aTagId, Gwid aGwid ) {
+  public void linkS7Tag2Gwid( String aTagId, Gwid aGwid ) {
     GuiS7Tag tag = getTag( aTagId );
     TsIllegalStateRtException.checkNull( tag, "Unknown tag: %s", aTagId ); //$NON-NLS-1$
     switch( aGwid.kind() ) {
@@ -316,16 +316,15 @@ public class BiL2CfgGenerator {
    *
    * @param aArgs program arguments
    */
-  @SuppressWarnings( "nls" )
   public static void main( String[] aArgs ) {
-    createBiL2Config();
+    BiL2CfgGenerator generator = new BiL2CfgGenerator();
+    generator.createBiL2Config();
   }
 
   /**
    * Create L2 configuration for project BI
    */
-  @SuppressWarnings( "nls" )
-  public static void createBiL2Config() {
+  public void createBiL2Config() {
     TsValobjUtils.registerKeeperIfNone( ECfgUnitType.KEEPER_ID, ECfgUnitType.KEEPER );
     TsValobjUtils.registerKeeperIfNone( GuiS7Device.KEEPER_ID, GuiS7Device.KEEPER );
     TsValobjUtils.registerKeeperIfNone( GuiS7DataBlock.KEEPER_ID, GuiS7DataBlock.KEEPER );
@@ -333,56 +332,56 @@ public class BiL2CfgGenerator {
 
     // BI L2 configuration
     // create S7 device
-    String deviceId = createS7Device( "192.168.12.39", 0, 1, "IrkAZ bench of inhectors S7 server" );
-    // DB1.DBD48 -> "bi.AnalogInput", "SF_AIV_FT1", "CV"
-    String tagId = addDataTag( deviceId, 1, EKind.RW, 48, 4, EAtomicType.FLOATING );
-    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.AnalogInput", "SF_AIV_FT1", "CV" ) );
-
-    // DB2.DBD48 -> "bi.AnalogInput", "SP_AIV_PT1", "CV"
-    tagId = addDataTag( deviceId, 2, EKind.RW, 4, 48, EAtomicType.FLOATING );
-    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.AnalogInput", "SP_AIV_PT1", "CV" ) );
-    // DB3.DBD48 -> "bi.AnalogInput", "SP_AIV_PT2", "CV"
-    tagId = addDataTag( deviceId, 3, EKind.RW, 48, 4, EAtomicType.FLOATING );
-    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.AnalogInput", "SP_AIV_PT2", "CV" ) );
-    // DB4.DBD48 -> "bi.AnalogInput", "SG_AIV_GS1", "CV"
-    tagId = addDataTag( deviceId, 4, EKind.RW, 48, 4, EAtomicType.FLOATING );
-    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.AnalogInput", "SG_AIV_GS1", "CV" ) );
-    // DB5.DBD48 -> "bi.AnalogInput", "SG_AIV_GS2", "CV"
-    tagId = addDataTag( deviceId, 4, EKind.RW, 48, 4, EAtomicType.FLOATING );
-    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.AnalogInput", "SG_AIV_GS2", "CV" ) );
-
-    // DB30.DBX23.0 -> "bi.Valve", "VLV1_DB", "Kvf"
-    tagId = addBitTag( deviceId, 30, EKind.RW, 23, 0 );
-    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV1_DB", "Kvf" ) );
-    // DB30.DBX23.1 -> "bi.Valve", "VLV1_DB", "Kvb"
-    tagId = addBitTag( deviceId, 30, EKind.RW, 23, 1 );
-    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV1_DB", "Kvb" ) );
-    // DB30.DBX23.7 -> "bi.Valve", "VLV1_DB", "UPwr"
-    tagId = addBitTag( deviceId, 30, EKind.RW, 23, 7 );
-    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV1_DB", "UPwr" ) );
-    // DB30.DBX22.4 -> "bi.Valve", "VLV1_DB", "MMF"
-    tagId = addBitTag( deviceId, 30, EKind.RW, 22, 4 );
-    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV1_DB", "MMF" ) );
-    // DB30.DBX22.4 -> "bi.Valve", "VLV1_DB", "MMB"
-    tagId = addBitTag( deviceId, 30, EKind.RW, 22, 5 );
-    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV1_DB", "MMB" ) );
-
-    // DB31.DBX23.0 -> "bi.Valve", "VLV2_DB", "Kvf" Сработал КВ на открытие, краска DB31.DBX23.0
-    tagId = addBitTag( deviceId, 31, EKind.RW, 23, 0 );
-    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV2_DB", "Kvf" ) );
-    // DB31.DBX23.0 -> "bi.Valve", "VLV2_DB", "Kvb" Сработал КВ на открытие, краска DB31.DBX23.0
-    tagId = addBitTag( deviceId, 31, EKind.RW, 23, 1 );
-    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV2_DB", "Kvb" ) );
-    // DB31.DBX23.7 -> "bi.Valve", "VLV2_DB", "UPwr"
-    tagId = addBitTag( deviceId, 31, EKind.RW, 23, 7 );
-    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV2_DB", "UPwr" ) );
-    // DB31.DBX22.4 -> "bi.Valve", "VLV2_DB", "MMF"
-    tagId = addBitTag( deviceId, 31, EKind.RW, 22, 4 );
-    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV2_DB", "MMF" ) );
-    // DB31.DBX22.4 -> "bi.Valve", "VLV2_DB", "MMB"
-    tagId = addBitTag( deviceId, 31, EKind.RW, 22, 5 );
-    linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV2_DB", "MMB" ) );
-
+    // String deviceId = createS7Device( "192.168.12.39", 0, 1, "IrkAZ bench of inhectors S7 server" );
+    // // DB1.DBD48 -> "bi.AnalogInput", "SF_AIV_FT1", "CV"
+    // String tagId = addDataTag( deviceId, 1, EKind.RW, 48, 4, EAtomicType.FLOATING );
+    // aGenerator.linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.AnalogInput", "SF_AIV_FT1", "CV" ) );
+    //
+    // // DB2.DBD48 -> "bi.AnalogInput", "SP_AIV_PT1", "CV"
+    // tagId = addDataTag( deviceId, 2, EKind.RW, 4, 48, EAtomicType.FLOATING );
+    // aGenerator.linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.AnalogInput", "SP_AIV_PT1", "CV" ) );
+    // // DB3.DBD48 -> "bi.AnalogInput", "SP_AIV_PT2", "CV"
+    // tagId = addDataTag( deviceId, 3, EKind.RW, 48, 4, EAtomicType.FLOATING );
+    // linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.AnalogInput", "SP_AIV_PT2", "CV" ) );
+    // // DB4.DBD48 -> "bi.AnalogInput", "SG_AIV_GS1", "CV"
+    // tagId = addDataTag( deviceId, 4, EKind.RW, 48, 4, EAtomicType.FLOATING );
+    // linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.AnalogInput", "SG_AIV_GS1", "CV" ) );
+    // // DB5.DBD48 -> "bi.AnalogInput", "SG_AIV_GS2", "CV"
+    // tagId = addDataTag( deviceId, 4, EKind.RW, 48, 4, EAtomicType.FLOATING );
+    // linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.AnalogInput", "SG_AIV_GS2", "CV" ) );
+    //
+    // // DB30.DBX23.0 -> "bi.Valve", "VLV1_DB", "Kvf"
+    // tagId = addBitTag( deviceId, 30, EKind.RW, 23, 0 );
+    // linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV1_DB", "Kvf" ) );
+    // // DB30.DBX23.1 -> "bi.Valve", "VLV1_DB", "Kvb"
+    // tagId = addBitTag( deviceId, 30, EKind.RW, 23, 1 );
+    // linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV1_DB", "Kvb" ) );
+    // // DB30.DBX23.7 -> "bi.Valve", "VLV1_DB", "UPwr"
+    // tagId = addBitTag( deviceId, 30, EKind.RW, 23, 7 );
+    // linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV1_DB", "UPwr" ) );
+    // // DB30.DBX22.4 -> "bi.Valve", "VLV1_DB", "MMF"
+    // tagId = addBitTag( deviceId, 30, EKind.RW, 22, 4 );
+    // linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV1_DB", "MMF" ) );
+    // // DB30.DBX22.4 -> "bi.Valve", "VLV1_DB", "MMB"
+    // tagId = addBitTag( deviceId, 30, EKind.RW, 22, 5 );
+    // linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV1_DB", "MMB" ) );
+    //
+    // // DB31.DBX23.0 -> "bi.Valve", "VLV2_DB", "Kvf" Сработал КВ на открытие, краска DB31.DBX23.0
+    // tagId = addBitTag( deviceId, 31, EKind.RW, 23, 0 );
+    // linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV2_DB", "Kvf" ) );
+    // // DB31.DBX23.0 -> "bi.Valve", "VLV2_DB", "Kvb" Сработал КВ на открытие, краска DB31.DBX23.0
+    // tagId = addBitTag( deviceId, 31, EKind.RW, 23, 1 );
+    // linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV2_DB", "Kvb" ) );
+    // // DB31.DBX23.7 -> "bi.Valve", "VLV2_DB", "UPwr"
+    // tagId = addBitTag( deviceId, 31, EKind.RW, 23, 7 );
+    // linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV2_DB", "UPwr" ) );
+    // // DB31.DBX22.4 -> "bi.Valve", "VLV2_DB", "MMF"
+    // tagId = addBitTag( deviceId, 31, EKind.RW, 22, 4 );
+    // linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV2_DB", "MMF" ) );
+    // // DB31.DBX22.4 -> "bi.Valve", "VLV2_DB", "MMB"
+    // tagId = addBitTag( deviceId, 31, EKind.RW, 22, 5 );
+    // linkS7Tag2Gwid( tagId, Gwid.createRtdata( "bi.Valve", "VLV2_DB", "MMB" ) );
+    //
     generateDevCfgFile();
     generateDlmCfgFile();
   }
@@ -411,41 +410,44 @@ public class BiL2CfgGenerator {
     paramDefinitions.add( OpcUaUtils.OP_IS_HIST );
 
     OptionSet defaultParams = new OptionSet();
-    if( !aTag.getValueType().equals( EAtomicType.BOOLEAN ) ) {
-      // ----------------------------------------------------
-      // Определение первой реализации данных (простое - один к одному)
-      OpcUaUtils.OP_DATA_JAVA_CLASS.setValue( defaultParams,
-          avStr( DATA_JAVA_CLASS_ONE_TO_ONE_DATA_TRANSMITTER_FACTORY ) );
-      OpcUaUtils.OP_SYNCH_PERIOD.setValue( defaultParams, avInt( 1000 ) );
-      OpcUaUtils.OP_IS_CURR.setValue( defaultParams, avBool( true ) );
-      OpcUaUtils.OP_IS_HIST.setValue( defaultParams, avBool( true ) );
+    // see dima comment low
+    // if( !aTag.getValueType().equals( EAtomicType.BOOLEAN ) ) {
+    // ----------------------------------------------------
+    // Определение первой реализации данных (простое - один к одному)
+    OpcUaUtils.OP_DATA_JAVA_CLASS.setValue( defaultParams,
+        avStr( DATA_JAVA_CLASS_ONE_TO_ONE_DATA_TRANSMITTER_FACTORY ) );
+    OpcUaUtils.OP_SYNCH_PERIOD.setValue( defaultParams, avInt( 1000 ) );
+    OpcUaUtils.OP_IS_CURR.setValue( defaultParams, avBool( true ) );
+    OpcUaUtils.OP_IS_HIST.setValue( defaultParams, avBool( true ) );
 
-      ICfgUnitRealizationType dataOneToOne = new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_ONT_TO_ONE_DATA,
-          STR_ONE_2_ONE, ECfgUnitType.DATA, paramDefinitions, defaultParams );
+    ICfgUnitRealizationType dataOneToOne = new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_ONT_TO_ONE_DATA,
+        STR_ONE_2_ONE, ECfgUnitType.DATA, paramDefinitions, defaultParams );
 
-      opcToS5DataCfgUnit.setRelizationTypeId( dataOneToOne.id() );
-    }
-    else {
-      // ----------------------------------------------------
-      // Определение второй реализации данных (битовое данное из интового тега)
-
-      paramDefinitions.add( OP_BIT_INDEX );
-
-      defaultParams = new OptionSet();
-      OP_DATA_JAVA_CLASS.setValue( defaultParams,
-          avStr( DATA_JAVA_CLASS_ONE_INT_TO_ONE_BIT_DATA_TRANSMITTER_FACTORY ) );
-      OP_BIT_INDEX.setValue( defaultParams, avInt( aTag.getBitNumber() ) );
-
-      OP_SYNCH_PERIOD.setValue( defaultParams, avInt( 0 ) );
-      OP_IS_CURR.setValue( defaultParams, avBool( true ) );
-      OP_IS_HIST.setValue( defaultParams, avBool( true ) );
-
-      ICfgUnitRealizationType dataIntToOne =
-          new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_ONE_INT_TO_ONE_BIT_DATA, STR_BIT_FROM_WORD,
-              ECfgUnitType.DATA, paramDefinitions, defaultParams );
-
-      opcToS5DataCfgUnit.setRelizationTypeId( dataIntToOne.id() );
-    }
+    opcToS5DataCfgUnit.setRelizationTypeId( dataOneToOne.id() );
+    // dima 10.11.26
+    // For S7 driver it's useless code. Such functional already implemented in Moka7
+    // }
+    // else {
+    // // ----------------------------------------------------
+    // // Определение второй реализации данных (битовое данное из интового тега)
+    //
+    // paramDefinitions.add( OP_BIT_INDEX );
+    //
+    // defaultParams = new OptionSet();
+    // OP_DATA_JAVA_CLASS.setValue( defaultParams,
+    // avStr( DATA_JAVA_CLASS_ONE_INT_TO_ONE_BIT_DATA_TRANSMITTER_FACTORY ) );
+    // OP_BIT_INDEX.setValue( defaultParams, avInt( aTag.getBitNumber() ) );
+    //
+    // OP_SYNCH_PERIOD.setValue( defaultParams, avInt( 0 ) );
+    // OP_IS_CURR.setValue( defaultParams, avBool( true ) );
+    // OP_IS_HIST.setValue( defaultParams, avBool( true ) );
+    //
+    // ICfgUnitRealizationType dataIntToOne =
+    // new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_ONE_INT_TO_ONE_BIT_DATA, STR_BIT_FROM_WORD,
+    // ECfgUnitType.DATA, paramDefinitions, defaultParams );
+    //
+    // opcToS5DataCfgUnit.setRelizationTypeId( dataIntToOne.id() );
+    // }
     opcToS5DataCfgUnit.setRealizationOpts( defaultParams );
     return opcToS5DataCfgUnit;
   }
@@ -496,9 +498,7 @@ public class BiL2CfgGenerator {
     OptionSet realization = new OptionSet();
     OpcUaUtils.OP_CMD_JAVA_CLASS.setValue( realization, avStr( COMMANDS_JAVA_CLASS_VALUE_COMMAND_EXEC ) );
 
-    // if( cmd2Nodes.paramIds() != null && cmd2Nodes.paramIds().size() == 1 ) {
-    // OpcUaUtils.OP_CMD_VALUE_PARAM_ID.setValue( realization, avStr( cmd2Nodes.paramIds().first() ) );
-    // }
+    OpcUaUtils.OP_CMD_VALUE_PARAM_ID.setValue( realization, avStr( "value" ) ); // TODO clarify //$NON-NLS-1$
 
     unit.setRealizationOpts( realization );
     return unit;
