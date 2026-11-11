@@ -31,6 +31,8 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 import org.toxsoft.skf.brifge.cfg.s7.gui.type.*;
+import org.toxsoft.uskat.core.api.sysdescr.*;
+import org.toxsoft.uskat.core.api.sysdescr.dto.*;
 
 import ru.toxsoft.l2.thd.opc.*;
 
@@ -165,8 +167,6 @@ public class BiL2CfgGenerator {
         units.add( getDataCfgUnit( aGwid, tag ) );
         break;
       case GW_EVENT:
-        // TODO
-        break;
       case GW_ATTR:
       case GW_CLASS:
       case GW_CLOB:
@@ -465,29 +465,29 @@ public class BiL2CfgGenerator {
 
     OpcToS5DataCfgUnit unit = new OpcToS5DataCfgUnit( strid, name, gwids, tagList );
 
-    IListEdit<IDataDef> paramDefenitions = new ElemArrayList<>( false );
+    IListEdit<IDataDef> paramDefinitions = new ElemArrayList<>( false );
 
-    paramDefenitions.add( OP_CMD_JAVA_CLASS );
-    paramDefenitions.add( OP_CMD_VALUE_PARAM_ID );
-    paramDefenitions.add( OP_CMD_OPC_ID );
+    paramDefinitions.add( OP_CMD_JAVA_CLASS );
+    paramDefinitions.add( OP_CMD_VALUE_PARAM_ID );
+    paramDefinitions.add( OP_CMD_OPC_ID );
 
     IOptionSetEdit defaultParams = new OptionSet();
     OP_CMD_JAVA_CLASS.setValue( defaultParams, avStr( COMMANDS_JAVA_CLASS_VALUE_COMMAND_BY_ONE_TAG_EXEC ) );
 
     ICfgUnitRealizationType realType = new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_VALUE_COMMAND,
-        STR_SET_NODE_VALUE, ECfgUnitType.COMMAND, paramDefenitions, defaultParams ) {
+        STR_SET_NODE_VALUE, ECfgUnitType.COMMAND, paramDefinitions, defaultParams ) {
 
       @Override
       public CfgOpcUaNode createInitCfg( ITsGuiContext aaContext, String aNodeId, int aNodeIndex, int aNodeCount ) {
         OpcUaServerConnCfg conConf =
             (OpcUaServerConnCfg)aaContext.find( OpcToS5DataCfgUnitM5Model.OPCUA_OPC_CONNECTION_CFG );
 
-        EAtomicType type = EAtomicType.NONE;
+        EAtomicType valType = EAtomicType.NONE;
         if( conConf != null ) {
-          type = OpcUaUtils.getValueTypeOfNode( aaContext, conConf, aNodeId );
+          valType = OpcUaUtils.getValueTypeOfNode( aaContext, conConf, aNodeId );
         }
         // dima 22.04.25 помечаем что тег на запись
-        return new CfgOpcUaNode( aNodeId, false, true, true, type );
+        return new CfgOpcUaNode( aNodeId, false, true, true, valType );
       }
 
     };
@@ -498,10 +498,138 @@ public class BiL2CfgGenerator {
     OptionSet realization = new OptionSet();
     OpcUaUtils.OP_CMD_JAVA_CLASS.setValue( realization, avStr( COMMANDS_JAVA_CLASS_VALUE_COMMAND_EXEC ) );
 
-    OpcUaUtils.OP_CMD_VALUE_PARAM_ID.setValue( realization, avStr( "value" ) ); // TODO clarify //$NON-NLS-1$
+    OpcUaUtils.OP_CMD_VALUE_PARAM_ID.setValue( realization, avStr( "value" ) ); //$NON-NLS-1$
 
     unit.setRealizationOpts( realization );
     return unit;
+  }
+
+  // описание одной события при изменении НЕ булевого значения
+  private static OpcToS5DataCfgUnit getNumberEventCfgUnit( Gwid aEvtGwid, GuiS7Tag aTag ) {
+    String strid = String.format( CFG_EVENT_UNIT_ID_FORMAT, Long.valueOf( System.currentTimeMillis() ),
+        aEvtGwid.strid(), aEvtGwid.propId() );
+
+    ECfgUnitType type = ECfgUnitType.EVENT;
+
+    IList<Gwid> gwids = new ElemArrayList<>( aEvtGwid );
+    IAvList tagList = convertToAtomicList( new SingleItemList<>( aTag ) );
+
+    String name = STR_LINK_PREFIX + aEvtGwid.canonicalString();
+
+    OpcToS5DataCfgUnit unit = new OpcToS5DataCfgUnit( strid, name, gwids, tagList );
+
+    ICfgUnitRealizationType realType = getEventRealTypeOldVal2NewVal();
+
+    OptionSet realization = new OptionSet( realType.getDefaultValues() );
+
+    unit.setTypeOfCfgUnit( type );
+    unit.setRelizationTypeId( realType.id() );
+    unit.setRealizationOpts( realization );
+
+    return unit;
+  }
+
+  // описание одной события при изменении булевого значения
+  private static OpcToS5DataCfgUnit getBoolEventCfgUnit( Gwid aEvtGwid, GuiS7Tag aTag, boolean isOn, boolean isOff ) {
+    String strid = String.format( CFG_EVENT_UNIT_ID_FORMAT, Long.valueOf( System.currentTimeMillis() ),
+        aEvtGwid.strid(), aEvtGwid.propId() );
+
+    ECfgUnitType type = ECfgUnitType.EVENT;
+
+    IList<Gwid> gwids = new ElemArrayList<>( aEvtGwid );
+    IAvList tagList = convertToAtomicList( new SingleItemList<>( aTag ) );
+
+    String name = STR_LINK_PREFIX + aEvtGwid.canonicalString();
+
+    OpcToS5DataCfgUnit unit = new OpcToS5DataCfgUnit( strid, name, gwids, tagList );
+
+    ICfgUnitRealizationType realType = getBoolEventRealType();
+
+    OptionSet realization = new OptionSet( realType.getDefaultValues() );
+    OpcUaUtils.OP_CONDITION_SWITCH_ON.setValue( realization, avBool( isOn ) );
+    OpcUaUtils.OP_CONDITION_SWITCH_OFF.setValue( realization, avBool( isOff ) );
+
+    unit.setTypeOfCfgUnit( type );
+    unit.setRelizationTypeId( realType.id() );
+    unit.setRealizationOpts( realization );
+
+    return unit;
+  }
+
+  private static ICfgUnitRealizationType getEventRealTypeOldVal2NewVal() {
+    IListEdit<IDataDef> paramDefinitions = new ElemArrayList<>( false );
+
+    paramDefinitions.add( OP_EVENT_SENDER_JAVA_CLASS );
+    paramDefinitions.add( OP_CONDITION_JAVA_CLASS );
+    paramDefinitions.add( OP_PARAM_FORMER_JAVA_CLASS );
+    paramDefinitions.add( OP_FORMER_EVENT_PARAM );
+
+    IOptionSetEdit defaultParams = new OptionSet();
+    OP_EVENT_SENDER_JAVA_CLASS.setValue( defaultParams, avStr( EVENTS_JAVA_CLASS_OPC_TAGS_EVENT_SENDER ) );
+    OP_CONDITION_JAVA_CLASS.setValue( defaultParams, avStr( EVENTS_JAVA_CLASS_TAG_VALUE_CHANGED_CONDITION ) );
+    OP_PARAM_FORMER_JAVA_CLASS.setValue( defaultParams, avStr( EVENTS_ONE_TAG_CHANGED_PARAM_FORMER ) );
+    OP_FORMER_EVENT_PARAM.setValue( defaultParams, avStr( "oldVal;newVal" ) ); //$NON-NLS-1$
+
+    ICfgUnitRealizationType retVal = new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_TAG_VALUE_CHANGED,
+        STR_TAG_VAL_CHANGED_EVENT, ECfgUnitType.EVENT, paramDefinitions, defaultParams );
+
+    return retVal;
+  }
+
+  // Определение четвертой реализации события
+  private static ICfgUnitRealizationType getBoolEventRealType() {
+    IListEdit<IDataDef> paramDefinitions = new ElemArrayList<>( false );
+
+    paramDefinitions.add( OP_EVENT_SENDER_JAVA_CLASS );
+    paramDefinitions.add( OP_CONDITION_JAVA_CLASS );
+    paramDefinitions.add( OP_PARAM_FORMER_JAVA_CLASS );
+    paramDefinitions.add( OP_FORMER_EVENT_PARAM );
+    paramDefinitions.add( OP_CONDITION_SWITCH_ON );
+    paramDefinitions.add( OP_CONDITION_SWITCH_OFF );
+    // paramDefinitions.add( OP_BIT_INDEX );
+
+    IOptionSetEdit defaultParams = new OptionSet();
+    OP_EVENT_SENDER_JAVA_CLASS.setValue( defaultParams, avStr( EVENTS_JAVA_CLASS_OPC_TAGS_EVENT_SENDER ) );
+    OP_CONDITION_JAVA_CLASS.setValue( defaultParams, avStr( EVENTS_JAVA_CLASS_TAG_SWITCH_CONDITION ) );
+    OP_CONDITION_SWITCH_ON.setValue( defaultParams, avBool( true ) );
+    OP_CONDITION_SWITCH_OFF.setValue( defaultParams, avBool( false ) );
+    OP_PARAM_FORMER_JAVA_CLASS.setValue( defaultParams, avStr( EVENTS_ONE_TAG_TO_ONE_PARAM_FORMER ) );
+    OP_FORMER_EVENT_PARAM.setValue( defaultParams, avStr( STR_ON ) );
+    // OP_BIT_INDEX.setValue( defaultParams, avInt( 0 ) );
+
+    ICfgUnitRealizationType retVal = new CfgUnitRealizationType( CFG_UNIT_REALIZATION_TYPE_BIT_SWITCH_EVENT,
+        STR_BIT_WORD_TAG_VAL_CHANGED_EVENT, ECfgUnitType.EVENT, paramDefinitions, defaultParams );
+    return retVal;
+  }
+
+  /**
+   * Cоздает новое описание единицы конфигурации события на изменение булевого значения{@link OpcToS5DataCfgUnit } и
+   * добавляет его в список единиц конфигурации. <br>
+   * Тип единицы (данное, команда, событие) определяется по типу aGwid {@link Gwid }
+   *
+   * @param aTagId - id S7 tag
+   * @param aEvtGwid - {@link Gwid}
+   * @param aGenOn - генерит на фронт
+   * @param aGenOff - генерит на спад
+   */
+  public void linkS7Tag2BoolEvt( String aTagId, Gwid aEvtGwid, boolean aGenOn, boolean aGenOff ) {
+    GuiS7Tag tag = getTag( aTagId );
+    TsIllegalStateRtException.checkNull( tag, "Unknown tag: %s", aTagId ); //$NON-NLS-1$
+    units.add( getBoolEventCfgUnit( aEvtGwid, tag, aGenOn, aGenOff ) );
+  }
+
+  /**
+   * Cоздает новое описание единицы конфигурации события на изменение числового значения тега{@link OpcToS5DataCfgUnit }
+   * и добавляет его в список единиц конфигурации. <br>
+   * Тип единицы (данное, команда, событие) определяется по типу aGwid {@link Gwid }
+   *
+   * @param aTagId - id S7 tag
+   * @param aEvtGwid - {@link Gwid}
+   */
+  public void linkS7Tag2NumEvt( String aTagId, Gwid aEvtGwid ) {
+    GuiS7Tag tag = getTag( aTagId );
+    TsIllegalStateRtException.checkNull( tag, "Unknown tag: %s", aTagId ); //$NON-NLS-1$
+    units.add( getNumberEventCfgUnit( aEvtGwid, tag ) );
   }
 
 }

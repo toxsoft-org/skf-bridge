@@ -17,15 +17,19 @@ import ru.toxsoft.l2.thd.opc.*;
  */
 public class S7Utils {
 
-  private static final String  ROWS_START        = "#";                                       //$NON-NLS-1$
-  private static final String  ROWS_END          = "##";                                      //$NON-NLS-1$
-  private static final int     CLASSID_COL_NUM   = 0;
-  private static final int     OBJID_COL_NUM     = 1;
-  private static final int     DATAID_COL_NUM    = 2;
-  private static final int     ADDRESS_COL_NUM   = 4;
-  private static final int     TYPE_COL_NUM      = 5;
-  private static final int     GWID_KIND_COL_NUM = 6;
-  private static final Pattern objS7Pattern      = Pattern.compile( "([A-Z_\\d]+).([A-Z])" ); //$NON-NLS-1$
+  private static final String ROWS_START           = "#";  //$NON-NLS-1$
+  private static final String ROWS_END             = "##"; //$NON-NLS-1$
+  private static final int    CLASSID_COL_NUM      = 0;
+  private static final int    OBJID_COL_NUM        = 1;
+  private static final int    DATAID_COL_NUM       = 2;
+  private static final int    ADDRESS_COL_NUM      = 4;
+  private static final int    TYPE_COL_NUM         = 5;
+  private static final int    GWID_KIND_COL_NUM    = 6;
+  private static final int    EVENT_COL_NUM        = 7;
+  private static final int    GENERATE_ON_COL_NUM  = 8;
+  private static final int    GENERATE_OFF_COL_NUM = 9;
+
+  private static final Pattern objS7Pattern = Pattern.compile( "([A-Z_\\d]+).([A-Z])" ); //$NON-NLS-1$
 
   private static class S7AddressParser {
 
@@ -175,11 +179,26 @@ public class S7Utils {
         throw new TsIllegalStateRtException( "Can't parse object id from cell value: %s in row = %d", objId, row ); //$NON-NLS-1$
       }
       String dataId = getStringValue( aPage, DATAID_COL_NUM, row );
+      // читаем его событие
+      boolean hasEvent = getStringValue( aPage, EVENT_COL_NUM, row ).trim().compareTo( "да" ) == 0;
+      boolean genOn = getStringValue( aPage, GENERATE_ON_COL_NUM, row ).trim().compareTo( "да" ) == 0;
+      boolean genOff = getStringValue( aPage, GENERATE_OFF_COL_NUM, row ).trim().compareTo( "да" ) == 0;
+
       switch( EGwidKind.findById( gwidKind ) ) {
         case GW_RTDATA:
           // добавляем в конфигурацию
           Gwid tagRtdGwid = Gwid.createRtdata( classId, objId, dataId );
           aBiL2CfgGenerator.linkS7Tag2Gwid( tagId, tagRtdGwid );
+          if( hasEvent ) {
+            Gwid evtGwid = Gwid.createEvent( classId, objId, "evt" + dataId.substring( 3 ) );
+            String type = getStringValue( aPage, TYPE_COL_NUM, row );
+            if( s7AtomicType( type ).equals( EAtomicType.BOOLEAN ) ) {
+              aBiL2CfgGenerator.linkS7Tag2BoolEvt( tagId, evtGwid, genOn, genOff );
+            }
+            else {
+              aBiL2CfgGenerator.linkS7Tag2NumEvt( tagId, evtGwid );
+            }
+          }
           break;
         case GW_CMD:
           Gwid tagCmdGwid = Gwid.createCmd( classId, objId, dataId );

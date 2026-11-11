@@ -17,6 +17,20 @@ public interface BiL2CfgGeneratorConstants {
 
   String CFG_CMD_UNIT_ID_FORMAT = "opctos5.bridge.cfg.cmd.unit.id%d.%s"; //$NON-NLS-1$
 
+  String CFG_EVENT_UNIT_ID_FORMAT = "opctos5.bridge.cfg.event.unit.id%d.%s.%s"; //$NON-NLS-1$
+
+  String EVENTS_JAVA_CLASS_OPC_TAGS_EVENT_SENDER       =
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OpcTagsEventSender";          //$NON-NLS-1$
+  String EVENTS_JAVA_CLASS_TAG_VALUE_CHANGED_CONDITION =
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagChangedEventCondition"; //$NON-NLS-1$
+  String EVENTS_ONE_TAG_CHANGED_PARAM_FORMER           =
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagToChangedParamFormer";  //$NON-NLS-1$
+
+  String EVENTS_JAVA_CLASS_TAG_SWITCH_CONDITION =
+      "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagSwitchEventCondition"; //$NON-NLS-1$
+
+  String EVENTS_ONE_TAG_TO_ONE_PARAM_FORMER = "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OneTagToOneParamFormer"; //$NON-NLS-1$
+
   String DEV_CONFIG_STR = "DeviceConfig = ";
 
   String JAVA_CLASS_PARAM_NAME         = "javaClassName";
