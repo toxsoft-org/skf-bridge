@@ -31,8 +31,6 @@ import org.toxsoft.skf.bridge.cfg.opcua.gui.km5.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.types.*;
 import org.toxsoft.skf.bridge.cfg.opcua.gui.utils.*;
 import org.toxsoft.skf.brifge.cfg.s7.gui.type.*;
-import org.toxsoft.uskat.core.api.sysdescr.*;
-import org.toxsoft.uskat.core.api.sysdescr.dto.*;
 
 import ru.toxsoft.l2.thd.opc.*;
 
@@ -396,10 +394,14 @@ public class BiL2CfgGenerator {
 
   // описание одного данного
   private static OpcToS5DataCfgUnit getDataCfgUnit( Gwid aDataGwid, GuiS7Tag aTag ) {
+    String strid = String.format( CFG_DATA_UNIT_ID_FORMAT_, aDataGwid.strid() );
+
+    String name = STR_LINK_PREFIX + aDataGwid.canonicalString();
+
     IList<Gwid> gwidList = new ElemArrayList<>( aDataGwid );
     IAvList tagList = convertToAtomicList( new SingleItemList<>( aTag ) );
 
-    OpcToS5DataCfgUnit opcToS5DataCfgUnit = new OpcToS5DataCfgUnit( "id", "name", gwidList, tagList );
+    OpcToS5DataCfgUnit opcToS5DataCfgUnit = new OpcToS5DataCfgUnit( strid, name, gwidList, tagList );
     opcToS5DataCfgUnit.setTypeOfCfgUnit( ECfgUnitType.DATA );
 
     IListEdit<IDataDef> paramDefinitions = new ElemArrayList<>( false );
@@ -454,8 +456,7 @@ public class BiL2CfgGenerator {
 
   // описание одной команды
   private static OpcToS5DataCfgUnit getCmdCfgUnit( Gwid aCmdGwid, GuiS7Tag aTag ) {
-    String strid =
-        String.format( CFG_CMD_UNIT_ID_FORMAT, Long.valueOf( System.currentTimeMillis() ), aCmdGwid.strid() );
+    String strid = String.format( CFG_CMD_UNIT_ID_FORMAT_, aCmdGwid.strid() );
     ECfgUnitType type = ECfgUnitType.COMMAND;
 
     IList<Gwid> gwids = new ElemArrayList<>( aCmdGwid );
@@ -506,8 +507,7 @@ public class BiL2CfgGenerator {
 
   // описание одной события при изменении НЕ булевого значения
   private static OpcToS5DataCfgUnit getNumberEventCfgUnit( Gwid aEvtGwid, GuiS7Tag aTag ) {
-    String strid = String.format( CFG_EVENT_UNIT_ID_FORMAT, Long.valueOf( System.currentTimeMillis() ),
-        aEvtGwid.strid(), aEvtGwid.propId() );
+    String strid = String.format( CFG_EVENT_UNIT_ID_FORMAT_, aEvtGwid.strid(), aEvtGwid.propId() );
 
     ECfgUnitType type = ECfgUnitType.EVENT;
 
@@ -531,8 +531,7 @@ public class BiL2CfgGenerator {
 
   // описание одной события при изменении булевого значения
   private static OpcToS5DataCfgUnit getBoolEventCfgUnit( Gwid aEvtGwid, GuiS7Tag aTag, boolean isOn, boolean isOff ) {
-    String strid = String.format( CFG_EVENT_UNIT_ID_FORMAT, Long.valueOf( System.currentTimeMillis() ),
-        aEvtGwid.strid(), aEvtGwid.propId() );
+    String strid = String.format( CFG_EVENT_UNIT_ID_FORMAT_, aEvtGwid.strid(), aEvtGwid.propId() );
 
     ECfgUnitType type = ECfgUnitType.EVENT;
 

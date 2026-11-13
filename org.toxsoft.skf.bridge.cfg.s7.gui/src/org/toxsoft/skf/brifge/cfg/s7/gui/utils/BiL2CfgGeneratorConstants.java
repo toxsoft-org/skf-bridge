@@ -15,9 +15,11 @@ public interface BiL2CfgGeneratorConstants {
   String DATA_JAVA_CLASS_ONE_INT_TO_ONE_BIT_DATA_TRANSMITTER_FACTORY =
       "ru.toxsoft.l2.dlm.opc_bridge.submodules.data.SingleIntToSingleBoolDataTransmitterFactory"; //$NON-NLS-1$
 
-  String CFG_CMD_UNIT_ID_FORMAT = "opctos5.bridge.cfg.cmd.unit.id%d.%s"; //$NON-NLS-1$
+  String CFG_DATA_UNIT_ID_FORMAT_ = "s7tos5.bridge.cfg.data.unit.id.%s"; //$NON-NLS-1$
 
-  String CFG_EVENT_UNIT_ID_FORMAT = "opctos5.bridge.cfg.event.unit.id%d.%s.%s"; //$NON-NLS-1$
+  String CFG_CMD_UNIT_ID_FORMAT_ = "s7tos5.bridge.cfg.cmd.unit.id.%s"; //$NON-NLS-1$
+
+  String CFG_EVENT_UNIT_ID_FORMAT_ = "s7tos5.bridge.cfg.event.unit.id.%s.%s"; //$NON-NLS-1$
 
   String EVENTS_JAVA_CLASS_OPC_TAGS_EVENT_SENDER       =
       "ru.toxsoft.l2.dlm.opc_bridge.submodules.events.OpcTagsEventSender";          //$NON-NLS-1$
